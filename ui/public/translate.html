@@ -68,6 +68,23 @@
                 class="form-control translate-box flex-grow-1"
                 placeholder="متن خود را اینجا بنویسید یا بچسبانید..."
               ></textarea>
+              <div class="mt-3 d-flex gap-3 align-items-center">
+                <input
+                  type="file"
+                  id="fileInput"
+                  class="form-control"
+                  accept=".txt,.docx,.pdf"
+                />
+                <div class="flex-grow-1">
+                  <div class="progress" id="progressBar" style="display: none">
+                    <div
+                      class="progress-bar progress-bar-striped progress-bar-animated"
+                      role="progressbar"
+                      style="width: 0%"
+                    ></div>
+                  </div>
+                </div>
+              </div>
               <div class="mt-2 text-end">
                 <small class="text-muted fa-num" id="charCount"
                   >0 کاراکتر</small
@@ -103,6 +120,12 @@
             زبانی بزرگ بهینه‌شده برای زبان فارسی کار می‌کند و ممکن است در ترجمه
             متون تخصصی خطاهایی داشته باشد. در صورت نیاز به ترجمه تخصصی، امکان
             توسعه مترجم ویژه مبتنی بر دادگان تخصصی وجود دارد.
+          </p>
+          <p class="mb-3">
+            <span class="me-2">📄</span>
+            توجه داشته باشید که برای فایل‌های PDF (بالاخص فارسی) هنوز راه‌کار
+            قطعی برای استخراج محتوا وجود ندارد و سامانه از سرویس‌های استاندارد
+            استخراج متن استفاده می‌کند
           </p>
           <p class="mb-0">
             <span class="me-2">⚠️</span>
@@ -178,6 +201,10 @@
       const outputText = document.getElementById("outputText");
       const translateBtn = document.getElementById("translateBtn");
       const copyBtn = document.getElementById("copyBtn");
+      const fileInput = document.getElementById("fileInput");
+      const progressBar = document
+        .getElementById("progressBar")
+        .querySelector(".progress-bar");
       const charCount = document.getElementById("charCount");
 
       Object.entries(languages).forEach(([code, name]) => {
@@ -208,7 +235,7 @@
       });
 
       inputText.addEventListener("input", () => {
-        charCount.textContent = `${inputText.value.length} کاراکتر`;
+        updateCharCount();
       });
 
       copyBtn.addEventListener("click", () => {
@@ -270,6 +297,52 @@
         }
       });
       const RTL_LANGS = ["fa", "ar", "he"];
+
+      fileInput.addEventListener("change", async () => {
+        const file = fileInput.files[0];
+        if (!file) return;
+
+        progressBar.parentElement.style.display = "block";
+        progressBar.style.width = "0%";
+        inputText.value = "";
+        outputText.textContent = "در حال خواندن فایل...";
+
+        try {
+          const formData = new FormData();
+          formData.append("file", file);
+
+          const res = await fetch("/api/upload-text", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (!res.ok) throw new Error("خطا در خواندن فایل");
+
+          const data = await res.json();
+          inputText.value = data.text;
+
+          progressBar.style.width = "100%";
+          setTimeout(() => {
+            progressBar.parentElement.style.display = "none";
+            progressBar.style.width = "0%";
+          }, 600);
+
+          outputText.textContent = "";
+          updateCharCount();
+        } catch (err) {
+          showError(
+            err.message ||
+              "فایل قابل خواندن نیست. فقط PDF، DOCX و TXT پشتیبانی می‌شود."
+          );
+          progressBar.parentElement.style.display = "none";
+        } finally {
+          fileInput.value = "";
+        }
+      });
+
+      function updateCharCount() {
+        charCount.textContent = `${inputText.value.length} کاراکتر`;
+      }
 
       function updateDirection() {
         const targetCode = targetSelect.value;

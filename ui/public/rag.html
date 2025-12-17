@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>چت با داده‌ها - دستیار هوشمند فارسی</title>
+  <link rel="stylesheet" href="css/bootstrap.min.css">
+  <link rel="stylesheet" href="fonts/IranSansX/fontiran.css">
+  <link rel="stylesheet" href="css/style.css">
+    <style>
+    .chat-container { height: 80vh; overflow-y: auto; }
+    .message { margin-bottom: 1rem; padding: 1rem; border-radius: 0.5rem; }
+    .user-message { background: #0d6efd; color: white; margin-left: 20%; text-align: right; }
+    .bot-message { background: #f8f9fa; color: #333; margin-right: 20%; text-align: right; }
+    .sidebar { position: fixed; right: 0; top: 0; width: 350px; height: 100vh; background: white; box-shadow: -2px 0 10px rgba(0,0,0,0.1); overflow-y: auto; z-index: 1000; }
+    .main-chat { margin-right: 350px; padding: 20px; }
+    .file-item, .chat-item { cursor: pointer; padding: 0.5rem; border-bottom: 1px solid #eee; }
+    .file-item:hover, .chat-item:hover { background: #f8f9fa; }
+    .delete-btn { font-size: 0.8rem; color: #dc3545; }
+    #uploadInput { display: none; }
+    .rtl { direction: rtl; text-align: right; }
+    .ltr { direction: ltr; text-align: left; }
+  </style>
+</head>
+<body>
+  <div class="sidebar p-3">
+    <h5 class="mb-3">چت‌های شما</h5>
+    <div id="chatsList" class="mb-4"></div>
+    <button id="newChatBtn" class="btn btn-primary btn-sm w-100 mb-3">چت جدید</button>
+
+    <h5 class="mb-3">فایل‌های شما</h5>
+    <div id="filesList" class="mb-3"></div>
+    <label for="uploadInput" class="btn btn-outline-secondary w-100 mb-3">آپلود فایل جدید</label>
+    <input type="file" id="uploadInput" accept=".pdf,.docx,.txt" multiple>
+    <button id="deleteAllFilesBtn" class="btn btn-danger btn-sm w-100 mb-2">حذف همه فایل‌ها</button>
+    <button id="deleteAllChatsBtn" class="btn btn-warning btn-sm w-100">حذف همه چت‌ها</button>
+  </div>
+
+  <!-- Main Chat -->
+  <div class="main-chat">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h4 id="currentChatTitle">چت جدید</h4>
+      <button id="backToLogin" class="btn btn-outline-secondary">خروج</button>
+    </div>
+    <div id="chatContainer" class="chat-container border p-3 bg-light rounded"></div>
+    <div class="input-group mt-3">
+      <input type="text" id="messageInput" class="form-control" placeholder="پیام خود را بنویسید...">
+      <button id="sendBtn" class="btn btn-primary">ارسال</button>
+    </div>
+  </div>
+
+  <div class="modal fade" id="confirmModal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">تأیید حذف</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p id="confirmText">آیا مطمئن هستید؟</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">خیر</button>
+          <button type="button" class="btn btn-danger" id="confirmDeleteBtn">بله، حذف کن</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/bootstrap.bundle.min.js"></script>
+  <script src="js/common.js"></script>
+  <script>
+    let userKey = new URLSearchParams(window.location.search).get('key') || localStorage.getItem('user_key');
+    let currentChatId = null;
+    let chatHistory = [];  
+
+    const chatsList = document.getElementById('chatsList');
+    const filesList = document.getElementById('filesList');
+    const chatContainer = document.getElementById('chatContainer');
+    const messageInput = document.getElementById('messageInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const currentChatTitle = document.getElementById('currentChatTitle');
+    const newChatBtn = document.getElementById('newChatBtn');
+    const uploadInput = document.getElementById('uploadInput');
+    const deleteAllFilesBtn = document.getElementById('deleteAllFilesBtn');
+    const deleteAllChatsBtn = document.getElementById('deleteAllChatsBtn');
+    const backToLogin = document.getElementById('backToLogin');
+
+    if (!userKey || userKey.length < 16) {
+      window.location.href = '/login.html';
+    }
+
+    function isRTL(text) {
+      if (!text || text.length < 1) return false;
+      const rtlRegex = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/g;
+      const rtlChars = (text.match(rtlRegex) || []).length;
+      const totalNonWhitespaceChars = text.replace(/\s/g, "").length;
+      if (totalNonWhitespaceChars <= 10 && rtlChars >= 1) return true;
+      return rtlChars / totalNonWhitespaceChars >= 0.2;
+    }
+
+    function updateDirection(element, text) {
+      if (isRTL(text)) {
+        element.classList.add('rtl');
+        element.classList.remove('ltr');
+      } else {
+        element.classList.add('ltr');
+        element.classList.remove('rtl');
+      }
+    }
+
+    async function loadChats() {
+      const res = await fetch(`/api/rag/chats?user_key=${userKey}`);
+      const { chats } = await res.json();
+      chatsList.innerHTML = chats.map(chat => `
+        <div class="chat-item ${currentChatId === chat.chat_id ? 'bg-primary text-white' : ''}" onclick="loadChat('${chat.chat_id}')">
+          ${chat.title} <small class="d-block">${new Date(chat.last_message_at).toLocaleDateString('fa-IR')}</small>
+          <button class="delete-btn float-start" onclick="deleteChat('${chat.chat_id}', event)">حذف</button>
+        </div>
+      `).join('');
+    }
+
+    async function loadFiles() {
+      const res = await fetch(`/api/rag/files?user_key=${userKey}`);
+      const { files } = await res.json();
+      filesList.innerHTML = files.map(file => `
+        <div class="file-item">
+          📄 ${file.original_name} <small class="d-block">${(file.size / 1024 / 1024).toFixed(1)} MB</small>
+          <button class="delete-btn float-start" onclick="deleteFile('${file.file_id}', event)">حذف</button>
+        </div>
+      `).join('');
+    }
+
+    async function loadChat(chatId) {
+      currentChatId = chatId;
+      chatHistory = [];
+      chatContainer.innerHTML = '';
+      currentChatTitle.textContent = 'در حال لود...';
+      loadChats();  
+    }
+
+    async function sendMessage() {
+      const message = messageInput.value.trim();
+      if (!message) return;
+
+      const userMsg = document.createElement('div');
+      userMsg.className = 'message user-message';
+      userMsg.textContent = message;
+      chatContainer.appendChild(userMsg);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+      messageInput.value = '';
+
+      const res = await fetch('/api/rag/chat-message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_key: userKey, message, chat_id: currentChatId })
+      });
+
+      const botMsg = document.createElement('div');
+      botMsg.className = 'message bot-message';
+      chatContainer.appendChild(botMsg);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let fullResponse = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value);
+        const lines = chunk.split('\n').filter(l => l.startsWith('data: '));
+        for (const line of lines) {
+          if (line === 'data: [DONE]') continue;
+          try {
+            const json = JSON.parse(line.slice(6));
+            const token = json.choices[0].delta.content || '';
+            fullResponse += token;
+            botMsg.textContent = fullResponse;
+            updateDirection(botMsg, fullResponse);
+          } catch {}
+        }
+      }
+
+      chatHistory.push({ role: 'user', content: message });
+      chatHistory.push({ role: 'assistant', content: fullResponse });
+
+      if (currentChatId) {
+        fetch('/api/rag/chat', { method: 'POST', body: JSON.stringify({ user_key: userKey, chat_id: currentChatId }) });
+      }
+    }
+
+    uploadInput.addEventListener('change', async (e) => {
+      const formData = new FormData();
+      formData.append('file', e.target.files[0]);
+      formData.append('user_key', userKey);
+
+      const res = await fetch('/api/rag/upload', { method: 'POST', body: formData });
+      if (res.ok) {
+        alert('فایل آپلود شد!');
+        loadFiles();
+      } else {
+        const err = await res.json();
+        alert(err.error);
+      }
+    });
+
+    async function deleteFile(fileId, event) {
+      event.stopPropagation();
+      document.getElementById('confirmText').textContent = 'آیا فایل را حذف کنید؟';
+      new bootstrap.Modal(document.getElementById('confirmModal')).show();
+      document.getElementById('confirmDeleteBtn').onclick = async () => {
+        const res = await fetch(`/api/rag/file/${fileId}`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_key: userKey })
+        });
+        if (res.ok) {
+          loadFiles();
+          bootstrap.Modal.getInstance(document.getElementById('confirmModal')).hide();
+        }
+      };
+    }
+
+    deleteAllFilesBtn.addEventListener('click', () => {
+      document.getElementById('confirmText').textContent = 'آیا همه فایل‌ها را حذف کنید؟';
+      new bootstrap.Modal(document.getElementById('confirmModal')).show();
+      document.getElementById('confirmDeleteBtn').onclick = async () => {
+        const res = await fetch('/api/rag/files', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_key: userKey })
+        });
+        if (res.ok) {
+          loadFiles();
+          bootstrap.Modal.getInstance(document.getElementById('confirmModal')).hide();
+        }
+      };
+    });
+
+    async function deleteChat(chatId, event) {
+      event.stopPropagation();
+      document.getElementById('confirmText').textContent = 'آیا چت را حذف کنید؟';
+      new bootstrap.Modal(document.getElementById('confirmModal')).show();
+      document.getElementById('confirmDeleteBtn').onclick = async () => {
+        const res = await fetch(`/api/rag/chat/${chatId}`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_key: userKey })
+        });
+        if (res.ok) {
+          loadChats();
+          if (currentChatId === chatId) {
+            currentChatId = null;
+            chatContainer.innerHTML = '';
+          }
+          bootstrap.Modal.getInstance(document.getElementById('confirmModal')).hide();
+        }
+      };
+    }
+
+    deleteAllChatsBtn.addEventListener('click', () => {
+      document.getElementById('confirmText').textContent = 'آیا همه چت‌ها را حذف کنید؟';
+      new bootstrap.Modal(document.getElementById('confirmModal')).show();
+      document.getElementById('confirmDeleteBtn').onclick = async () => {
+        const res = await fetch('/api/rag/chats', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_key: userKey })
+        });
+        if (res.ok) {
+          loadChats();
+          bootstrap.Modal.getInstance(document.getElementById('confirmModal')).hide();
+        }
+      };
+    });
+
+    newChatBtn.addEventListener('click', async () => {
+      const res = await fetch('/api/rag/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_key: userKey })
+      });
+      const { chat_id } = await res.json();
+      currentChatId = chat_id;
+      chatHistory = [];
+      chatContainer.innerHTML = '';
+      currentChatTitle.textContent = 'چت جدید';
+      loadChats();
+    });
+
+    // Event listeners
+    sendBtn.addEventListener('click', sendMessage);
+    messageInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') sendMessage();
+    });
+    backToLogin.addEventListener('click', () => {
+      localStorage.removeItem('user_key');
+      window.location.href = '/login.html';
+    });
+
+    loadChats();
+    loadFiles();
+    if (currentChatId) loadChat(currentChatId);
+  </script>
+</body>
+</html>
