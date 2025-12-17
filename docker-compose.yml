@@ -1,0 +1,74 @@
+version: '3.9'
+
+services:
+  vllm:
+    image: vllm/vllm-openai:latest
+    container_name: vllm-aya
+    restart: unless-stopped
+    volumes:
+      - ./models:/models:ro
+      - ./cache:/root/.cache/huggingface
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ['0', '1']
+              capabilities: [gpu]
+    command: >
+      python -m vllm.entrypoints.openai.api_server
+      --model /models/aya-expanse-8b
+      --served-model-name aya
+      --tensor-parallel-size 4
+      --dtype auto
+      --max-model-len 16384
+      --gpu-memory-utilization 0.90
+      --block-size 16
+      --enable-chunked-prefill
+      --max-num-batched-tokens 32768
+      --port 8000
+    shm_size: '16gb'
+    ipc: host
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/v1/models"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - vdja
+
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: qdrant
+    restart: unless-stopped
+    volumes:
+      - ./qdrant_storage:/qdrant/storage
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ['2']
+              capabilities: [gpu]      
+    networks:
+      - vdja
+
+  ui:
+    image: vdja-ui:latest
+    container_name: rag-ui
+    restart: always
+    ports:
+      - "127.0.0.1:3000:3000"
+    working_dir: /app
+    depends_on:
+      vllm:
+        condition: service_healthy
+      qdrant:
+        condition: service_started
+    networks:
+      - vdja
+      
+networks:
+  vdja:
+    driver: bridge

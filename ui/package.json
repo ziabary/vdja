@@ -1,0 +1,21 @@
+{
+  "name": "vdja-ui",
+  "version": "1.0.0",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "mammoth": "^1.11.0",
+    "marked": "^17.0.1",
+    "multer": "^2.0.2",
+    "pdf-parse": "1.1.1",
+    "tika-js": "^1.0.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4"
+  }
+}

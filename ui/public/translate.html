@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ترجمه - دستیار هوشمند فارسی</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css" />
+    <link rel="stylesheet" href="fonts/IranSansX/fontiran.css" />
+    <link rel="stylesheet" href="css/style.css" />
+    <style>
+      .translate-box {
+        min-height: 200px;
+        font-size: 1.2rem;
+      }
+      .lang-select {
+        max-width: 180px;
+      }
+      .swap-btn {
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: #0d6efd;
+      }
+      .output-text {
+        white-space: pre-wrap;
+      }
+      .streaming {
+        opacity: 0.7;
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar navbar-light bg-white shadow-sm">
+      <div class="container">
+        <img src="/img/defard.png" alt="لوگو" class="logo" />
+        <span class="navbar-brand mx-auto h4 mb-0">ترجمه هوشمند</span>
+        <a href="/" class="btn btn-outline-primary">← بازگشت</a>
+      </div>
+    </nav>
+
+    <div class="container mt-4">
+      <div class="card shadow">
+        <div class="card-body p-4">
+          <!-- Language selection row - moved above boxes -->
+          <div class="row g-3 mb-4 align-items-center">
+            <div class="col-lg-6 text-start">
+              <select id="sourceLang" class="form-select lang-select">
+                <option value="auto">تشخیص خودکار</option>
+                <!-- filled by JS -->
+              </select>
+            </div>
+
+            <div class="col-auto" style="display: none">
+              <button id="swapBtn" class="swap-btn btn btn-link px-4">↔</button>
+            </div>
+
+            <div class="col-lg-6 text-end">
+              <select id="targetLang" class="form-select lang-select">
+                <!-- filled by JS -->
+              </select>
+            </div>
+          </div>
+
+          <!-- Input and output boxes in same row with equal height -->
+          <div class="row g-4" style="min-height: 300px">
+            <div class="col-lg-6 d-flex flex-column">
+              <textarea
+                id="inputText"
+                class="form-control translate-box flex-grow-1"
+                placeholder="متن خود را اینجا بنویسید یا بچسبانید..."
+              ></textarea>
+              <div class="mt-2 text-end">
+                <small class="text-muted fa-num" id="charCount"
+                  >0 کاراکتر</small
+                >
+              </div>
+            </div>
+
+            <div class="col-lg-6 d-flex flex-column">
+              <div
+                id="outputText"
+                class="form-control translate-box bg-light output-text flex-grow-1"
+                contenteditable="false"
+              ></div>
+              <div
+                class="mt-3 text-end d-flex gap-3 justify-content-end align-items-center"
+              >
+                <button id="translateBtn" class="btn btn-primary px-5">
+                  ترجمه
+                </button>
+                <button id="copyBtn" class="btn btn-outline-secondary px-4">
+                  کپی
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card-footer bg-transparent border-0 pt-0">
+        <div class="alert alert-info small mt-4" role="alert">
+          <p class="mb-3">
+            <span class="me-2">ℹ️</span>
+            <strong>توجه:</strong> این مترجم به صورت غیر برخط و بر اساس مدل‌های
+            زبانی بزرگ بهینه‌شده برای زبان فارسی کار می‌کند و ممکن است در ترجمه
+            متون تخصصی خطاهایی داشته باشد. در صورت نیاز به ترجمه تخصصی، امکان
+            توسعه مترجم ویژه مبتنی بر دادگان تخصصی وجود دارد.
+          </p>
+          <p class="mb-0">
+            <span class="me-2">⚠️</span>
+            درخواست‌های ترجمه در سیستم ذخیره نمی‌شوند، اما در هنگام ترجمه متن
+            اصلی و ترجمه آن در سرور قابل دسترسی هستند؛ به همین سبب لطفاً از
+            ارسال متون طبقه‌بندی‌شده یا حساس خودداری فرمایید.
+          </p>
+        </div>
+      </div>
+    </div>
+    <!-- Bootstrap Alert Modal -->
+    <div class="modal fade" id="errorModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+          <div class="modal-header border-0">
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+            <h5 class="modal-title text-danger">خطا</h5>
+          </div>
+          <div class="modal-body text-center py-4">
+            <p id="errorMessage" class="mb-0 lead"></p>
+          </div>
+          <div class="modal-footer border-0 justify-content-center">
+            <button
+              type="button"
+              class="btn btn-primary"
+              data-bs-dismiss="modal"
+            >
+              باشه
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <script src="js/common.js"></script>
+    <script>
+      const languages = {
+        auto: "تشخیص خودکار",
+        ar: "عربی",
+        bg: "بلغاری",
+        cs: "چکی",
+        da: "دانمارکی",
+        de: "آلمانی",
+        el: "یونانی",
+        en: "انگلیسی",
+        es: "اسپانیایی",
+        fa: "فارسی",
+        fi: "فنلاندی",
+        fr: "فرانسوی",
+        hi: "هندی",
+        id: "اندونزیایی",
+        it: "ایتالیایی",
+        ja: "ژاپنی",
+        ko: "کره‌ای",
+        nl: "هلندی",
+        pl: "لهستانی",
+        pt: "پرتغالی",
+        ru: "روسی",
+        tr: "ترکی",
+        uk: "اوکراینی",
+        zh: "چینی",
+      };
+
+      const sourceSelect = document.getElementById("sourceLang");
+      const targetSelect = document.getElementById("targetLang");
+      const swapBtn = document.getElementById("swapBtn");
+      const inputText = document.getElementById("inputText");
+      const outputText = document.getElementById("outputText");
+      const translateBtn = document.getElementById("translateBtn");
+      const copyBtn = document.getElementById("copyBtn");
+      const charCount = document.getElementById("charCount");
+
+      Object.entries(languages).forEach(([code, name]) => {
+        if (code !== "auto") {
+          const opt1 = new Option(name, code);
+          const opt2 = new Option(name, code);
+          sourceSelect.add(opt1);
+          targetSelect.add(opt2);
+        }
+      });
+      targetSelect.value = "fa";
+
+      sourceSelect.addEventListener("change", () => {
+        if (
+          sourceSelect.value === targetSelect.value &&
+          sourceSelect.value !== "auto"
+        ) {
+          targetSelect.value = "fa";
+        }
+      });
+      targetSelect.addEventListener("change", () => {
+        if (
+          sourceSelect.value === targetSelect.value &&
+          sourceSelect.value !== "auto"
+        ) {
+          sourceSelect.value = "en";
+        }
+      });
+
+      inputText.addEventListener("input", () => {
+        charCount.textContent = `${inputText.value.length} کاراکتر`;
+      });
+
+      copyBtn.addEventListener("click", () => {
+        navigator.clipboard.writeText(outputText.textContent);
+      });
+
+      translateBtn.addEventListener("click", async () => {
+        const text = inputText.value.trim();
+        if (!text) return;
+
+        translateBtn.disabled = true;
+        translateBtn.textContent = "در حال ترجمه...";
+        outputText.textContent = "";
+        outputText.classList.add("streaming");
+
+        try {
+          const res = await fetch("/api/translate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              text,
+              source_lang:
+                sourceSelect.value === "auto"
+                  ? "auto"
+                  : languages[sourceSelect.value],
+              target_lang: languages[targetSelect.value],
+            }),
+          });
+
+          if (!res.ok) throw new Error("خطا");
+
+          const reader = res.body.getReader();
+          const decoder = new TextDecoder();
+
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            const chunk = decoder.decode(value);
+            const lines = chunk
+              .split("\n")
+              .filter((line) => line.startsWith("data: "));
+
+            for (const line of lines) {
+              if (line === "data: [DONE]") continue;
+              try {
+                const json = JSON.parse(line.slice(6));
+                const token = json.choices[0].delta.content || "";
+                outputText.textContent += token;
+              } catch (e) {}
+            }
+          }
+        } catch (err) {
+          outputText.textContent = "خطا در ترجمه. لطفاً دوباره امتحان کنید.";
+        } finally {
+          translateBtn.disabled = false;
+          translateBtn.textContent = "ترجمه";
+          outputText.classList.remove("streaming");
+        }
+      });
+      const RTL_LANGS = ["fa", "ar", "he"];
+
+      function updateDirection() {
+        const targetCode = targetSelect.value;
+        const isRTL = RTL_LANGS.includes(targetCode);
+
+        // Output box direction
+        outputText.style.direction = isRTL ? "rtl" : "ltr";
+        outputText.style.textAlign = isRTL ? "right" : "left";
+
+        // Input box: follow target if source is auto, otherwise follow source
+        let inputDir = "ltr";
+        let inputAlign = "left";
+        if (sourceSelect.value === "auto") {
+          inputDir = isRTL ? "rtl" : "ltr";
+          inputAlign = isRTL ? "right" : "left";
+        } else {
+          const sourceIsRTL = RTL_LANGS.includes(sourceSelect.value);
+          inputDir = sourceIsRTL ? "rtl" : "ltr";
+          inputAlign = sourceIsRTL ? "right" : "left";
+        }
+
+        inputText.style.direction = inputDir;
+        inputText.style.textAlign = inputAlign;
+      }
+
+      // Update on load and on language change
+      targetSelect.addEventListener("change", updateDirection);
+      sourceSelect.addEventListener("change", updateDirection);
+      window.addEventListener("load", updateDirection);
+    </script>
+  </body>
+</html>
