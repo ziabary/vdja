@@ -29,7 +29,11 @@ WORKDIR /app
 RUN apk add --no-cache git openssh-client
 
 COPY --from=builder /app/node_modules ./node_modules
-COPY . .
+COPY src/ src/
+COPY public/ public/ 
+COPY package.json ./
+
+VOLUME [ "/app/db", "/app/.env" ]
 
 EXPOSE 3000
 

@@ -1,6 +1,7 @@
 const express = require("express");
-const { genAntiCachePrefix } = require("../utils/cacheBuster");
 const router = express.Router();
+const { callVLLMStream } = require("../utils/vllmUtils");
+
 const VLLM_URL = process.env.VLLM_URL || "http://localhost:8000";
 const VLLM_MODEL = process.env.VLLM_MODEL || "aya";
 
@@ -20,7 +21,6 @@ router.post("/translate", async (req, res) => {
       .status(400)
       .json({ error: "زبان مبدا و مقصد نمی‌توانند یکسان باشند" });
   }
-  const antiCachePrefix = genAntiCachePrefix();
 
   const systemPrompt = `You are a professional and accurate translator. Output only the translation, no extra text or explanation.
 When translating to Persian:
@@ -34,52 +34,75 @@ When translating to Persian:
       text
     )}"`
   );
-  try {
-    const vllmRes = await fetch(`${VLLM_URL}v1/chat/completions`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: VLLM_MODEL,
-        messages: [
-          { role: "system", content: antiCachePrefix + systemPrompt },
-          { role: "user", content: antiCachePrefix + userPrompt },
-        ],
+
+  const maxRetries = 3;
+  let attempt = 0;
+  let lastError;
+
+  while (attempt < maxRetries) {
+    attempt++;
+    try {
+      const messages = [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ];
+
+      const vllmRes = await callVLLMStream(VLLM_URL, VLLM_MODEL, messages, {
         max_tokens: 1500,
         temperature: 0.3,
-        stream: true,
-      }),
-    });
+      });
 
-    if (!vllmRes.ok) {
-      throw new Error(`vLLM error: ${vllmRes.status}`);
-    }
+      res.setHeader("Content-Type", "text/event-stream");
+      res.setHeader("Cache-Control", "no-cache");
+      res.setHeader("Connection", "keep-alive");
+      res.flushHeaders();
 
-    // Set SSE headers
-    res.setHeader("Content-Type", "text/event-stream");
-    res.setHeader("Cache-Control", "no-cache");
-    res.setHeader("Connection", "keep-alive");
-    res.flushHeaders();
+      const reader = vllmRes.body.getReader();
+      const decoder = new TextDecoder();
 
-    // Read from ReadableStream and forward chunks
-    const reader = vllmRes.body.getReader();
-    const decoder = new TextDecoder();
+      const processStream = async () => {
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) {
+              res.write("data: [DONE]\n\n");
+              res.end();
+              break;
+            }
 
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) {
-        res.write("data: [DONE]\n\n");
-        res.end();
-        break;
+            const chunk = decoder.decode(value, { stream: true });
+            if (!res.write(chunk)) {
+              await new Promise((resolve) => res.once("drain", resolve));
+            }
+          }
+        } catch (err) {
+          console.error("[Translate] Stream processing error:", err);
+          if (!res.headersSent) {
+            res.status(500).json({ error: "خطا در پردازش استریم" });
+          }
+        }
+      };
+
+      processStream();
+      return;
+    } catch (err) {
+      lastError = err;
+      console.error(
+        `[Translate] Attempt ${attempt} failed:`,
+        err.message || err
+      );
+
+      if (attempt < maxRetries) {
+        const delay = 1000 * attempt;
+        console.log(`[Translate] Retrying in ${delay}ms...`);
+        await new Promise((resolve) => setTimeout(resolve, delay));
       }
+    }
+  }
 
-      const chunk = decoder.decode(value);
-      res.write(chunk);
-    }
-  } catch (err) {
-    console.error(err);
-    if (!res.headersSent) {
-      res.status(500).json({ error: "خطا در ارتباط با مدل" });
-    }
+  console.error("[Translate] All attempts failed:", lastError);
+  if (!res.headersSent) {
+    res.status(500).json({ error: "خطا در ترجمه پس از چندین تلاش" });
   }
 });
 

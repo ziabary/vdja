@@ -4,8 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>ترجمه - دستیار هوشمند فارسی</title>
-    <link rel="stylesheet" href="css/bootstrap.min.css" />
+    <link rel="stylesheet" href="css/bootstrap.rtl.min.css" />
     <link rel="stylesheet" href="fonts/IranSansX/fontiran.css" />
+    <script src="js/marked.min.js"></script>
     <link rel="stylesheet" href="css/style.css" />
     <style>
       .translate-box {
@@ -31,7 +32,7 @@
   <body>
     <nav class="navbar navbar-light bg-white shadow-sm">
       <div class="container">
-        <img src="/img/defard.png" alt="لوگو" class="logo" />
+        <img src="/img/defard.png" alt="لوگو"/>
         <span class="navbar-brand mx-auto h4 mb-0">ترجمه هوشمند</span>
         <a href="/" class="btn btn-outline-primary">← بازگشت</a>
       </div>
@@ -133,34 +134,6 @@
             اصلی و ترجمه آن در سرور قابل دسترسی هستند؛ به همین سبب لطفاً از
             ارسال متون طبقه‌بندی‌شده یا حساس خودداری فرمایید.
           </p>
-        </div>
-      </div>
-    </div>
-    <!-- Bootstrap Alert Modal -->
-    <div class="modal fade" id="errorModal" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow">
-          <div class="modal-header border-0">
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-            ></button>
-            <h5 class="modal-title text-danger">خطا</h5>
-          </div>
-          <div class="modal-body text-center py-4">
-            <p id="errorMessage" class="mb-0 lead"></p>
-          </div>
-          <div class="modal-footer border-0 justify-content-center">
-            <button
-              type="button"
-              class="btn btn-primary"
-              data-bs-dismiss="modal"
-            >
-              باشه
-            </button>
-          </div>
         </div>
       </div>
     </div>
@@ -302,6 +275,14 @@
         const file = fileInput.files[0];
         if (!file) return;
 
+        // Client-side type check
+        const allowedTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain', 'application/msword'];
+        if (!allowedTypes.includes(file.type)) {
+          showError("نوع فایل مجاز نیست (فقط PDF, DOCX, TXT)");
+          fileInput.value = "";
+          return;
+        }
+
         progressBar.parentElement.style.display = "block";
         progressBar.style.width = "0%";
         inputText.value = "";
@@ -319,7 +300,11 @@
           if (!res.ok) throw new Error("خطا در خواندن فایل");
 
           const data = await res.json();
-          inputText.value = data.text;
+          const fullText = data.text;
+          if (fullText.length > 10000) {  // assuming same limit
+            toast("متن فایل بیش از حد مجاز است و بریده شد.", "warning");
+          }
+          inputText.value = fullText.slice(0, 10000);
 
           progressBar.style.width = "100%";
           setTimeout(() => {

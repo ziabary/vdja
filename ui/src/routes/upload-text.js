@@ -2,54 +2,59 @@ const fs = require("fs");
 const os = require("os");
 const express = require("express");
 const router = express.Router();
-const multer = require("multer");  
-const upload = multer({            
+const multer = require("multer");
+const { fileTypeFromBuffer } = require('file-type');
+const upload = multer({
   dest: os.tmpdir(),
-  limits: { fileSize: 200 * 1024 * 1024 }
+  limits: { fileSize: 200 * 1024 * 1024 },
 });
 const pdf = require("pdf-parse");
 const mammoth = require("mammoth");
 
 // Extract text from file – reliable version with pdf-parse only
-router.post("/upload-text",upload.single("file"), async (req, res) => {
+router.post("/upload-text", upload.single("file"), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: "فایلی انتخاب نشده" });
 
   let text = "";
   try {
     const buffer = fs.readFileSync(req.file.path);
+    const type = await fileTypeFromBuffer(buffer);
 
-    if (
-      req.file.mimetype === "application/pdf" ||
-      req.file.originalname.toLowerCase().endsWith(".pdf")
-    ) {
-      const data = await pdf(buffer, { pagerender: render_page });
-      text = data.text.trim();
+    const allowedTypes = {
+      pdf: "application/pdf",
+      docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      txt: "text/plain",
+    };
+    if (type && allowedTypes[type.ext]) {
+      if (type.ext === "pdf") {
+        const data = await pdf(buffer, { pagerender: render_page });
+        text = data.text.trim();
 
-      function render_page(pageData) {
-        // بهبود استخراج برای PDFهای فارسی و پیچیده
-        let render_options = {
-          normalizeWhitespace: true,
-          disableCombineTextItems: false,
-        };
-        return pageData.getTextContent(render_options).then((textContent) => {
-          let lastY,
-            text = "";
-          for (let item of textContent.items) {
-            if (lastY === item.transform[5] || !lastY) {
-              text += " " + item.str;
-            } else {
-              text += "\n" + item.str;
+        function render_page(pageData) {
+          let render_options = {
+            normalizeWhitespace: true,
+            disableCombineTextItems: false,
+          };
+          return pageData.getTextContent(render_options).then((textContent) => {
+            let lastY,
+              text = "";
+            for (let item of textContent.items) {
+              if (lastY === item.transform[5] || !lastY) {
+                text += " " + item.str;
+              } else {
+                text += "\n" + item.str;
+              }
+              lastY = item.transform[5];
             }
-            lastY = item.transform[5];
-          }
-          return text;
-        });
+            return text;
+          });
+        }
+      } else if (type.ext === "docx") {
+        const result = await mammoth.extractRawText({ buffer });
+        text = result.value;
+      } else if (type.ext === "txt") {
+        text = buffer.toString("utf8");
       }
-    } else if (req.file.originalname.toLowerCase().endsWith(".docx")) {
-      const result = await mammoth.extractRawText({ buffer });
-      text = result.value;
-    } else if (req.file.originalname.toLowerCase().endsWith(".txt")) {
-      text = buffer.toString("utf8");
     } else {
       throw new Error("فرمت فایل پشتیبانی نمی‌شود");
     }

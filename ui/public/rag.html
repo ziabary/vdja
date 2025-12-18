@@ -1,307 +1,924 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>چت با داده‌ها - دستیار هوشمند فارسی</title>
-  <link rel="stylesheet" href="css/bootstrap.min.css">
-  <link rel="stylesheet" href="fonts/IranSansX/fontiran.css">
-  <link rel="stylesheet" href="css/style.css">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>چت با داده‌ها - دستیار هوشمند فارسی</title>
+    <link rel="stylesheet" href="css/bootstrap.rtl.min.css" />
+    <link rel="stylesheet" href="css/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="fonts/IranSansX/fontiran.css" />
+    <script src="js/marked.min.js"></script>
+    <link rel="stylesheet" href="css/style.css" />
     <style>
-    .chat-container { height: 80vh; overflow-y: auto; }
-    .message { margin-bottom: 1rem; padding: 1rem; border-radius: 0.5rem; }
-    .user-message { background: #0d6efd; color: white; margin-left: 20%; text-align: right; }
-    .bot-message { background: #f8f9fa; color: #333; margin-right: 20%; text-align: right; }
-    .sidebar { position: fixed; right: 0; top: 0; width: 350px; height: 100vh; background: white; box-shadow: -2px 0 10px rgba(0,0,0,0.1); overflow-y: auto; z-index: 1000; }
-    .main-chat { margin-right: 350px; padding: 20px; }
-    .file-item, .chat-item { cursor: pointer; padding: 0.5rem; border-bottom: 1px solid #eee; }
-    .file-item:hover, .chat-item:hover { background: #f8f9fa; }
-    .delete-btn { font-size: 0.8rem; color: #dc3545; }
-    #uploadInput { display: none; }
-    .rtl { direction: rtl; text-align: right; }
-    .ltr { direction: ltr; text-align: left; }
-  </style>
-</head>
-<body>
-  <div class="sidebar p-3">
-    <h5 class="mb-3">چت‌های شما</h5>
-    <div id="chatsList" class="mb-4"></div>
-    <button id="newChatBtn" class="btn btn-primary btn-sm w-100 mb-3">چت جدید</button>
+      .chat-container {
+        height: 80vh;
+        overflow-y: auto;
+      }
+      .message {
+        margin-bottom: 1rem;
+        padding: 1rem;
+        border-radius: 0.5rem;
+      }
+      .user-message {
+        background: #0d6efd;
+        color: white;
+        margin-left: 20%;
+        text-align: right;
+      }
+      .bot-message {
+        background: #f8f9fa;
+        color: #333;
+        margin-right: 20%;
+        text-align: right;
+      }
+      .sidebar {
+        position: fixed;
+        right: 0;
+        top: 0;
+        width: 350px;
+        height: 100vh;
+        background: white;
+        box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+        overflow-y: auto;
+        z-index: 1000;
+      }
+      .main-chat {
+        margin-right: 350px;
+        padding: 20px;
+      }
+      .file-item,
+      .chat-item {
+        cursor: pointer;
+        padding: 0.5rem;
+        border-bottom: 1px solid #eee;
+      }
+      .file-item:hover,
+      .chat-item:hover {
+        background: #f8f9fa;
+      }
+      .delete-btn {
+        font-size: 0.8rem;
+        color: #dc3545;
+      }
+      #uploadInput {
+        display: none;
+      }
+      .rtl {
+        direction: rtl;
+        text-align: right;
+      }
+      .ltr {
+        direction: ltr;
+        text-align: left;
+      }
+      .logo {
+        height: 4rem;
+        text-align: center;
+      }
+      .logo img {
+        height: 100%;
+      }
+      .thinking {
+        opacity: 0.8;
+        font-style: italic;
+      }
 
-    <h5 class="mb-3">فایل‌های شما</h5>
-    <div id="filesList" class="mb-3"></div>
-    <label for="uploadInput" class="btn btn-outline-secondary w-100 mb-3">آپلود فایل جدید</label>
-    <input type="file" id="uploadInput" accept=".pdf,.docx,.txt" multiple>
-    <button id="deleteAllFilesBtn" class="btn btn-danger btn-sm w-100 mb-2">حذف همه فایل‌ها</button>
-    <button id="deleteAllChatsBtn" class="btn btn-warning btn-sm w-100">حذف همه چت‌ها</button>
-  </div>
+      .dots {
+        display: inline-block;
+        width: 20px;
+        text-align: left;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sidebar p-3">
+      <div class="logo">
+        <a href="/"><img src="img/defard.png" /></a>
+      </div>
 
-  <!-- Main Chat -->
-  <div class="main-chat">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h4 id="currentChatTitle">چت جدید</h4>
-      <button id="backToLogin" class="btn btn-outline-secondary">خروج</button>
+      <h5 class="mb-3">چت‌های شما</h5>
+      <div
+        id="chatsList"
+        class="mb-4"
+        style="max-height: calc(100vh / 2 - 8em); overflow: auto"
+      ></div>
+      <button id="newChatBtn" class="btn btn-primary btn-sm w-100 mb-3">
+        چت جدید
+      </button>
+
+      <h5 class="mb-3">اسناد شما</h5>
+      <div
+        id="filesList"
+        class="mb-3"
+        style="max-height: calc(100vh / 2 - 8em); overflow: auto"
+      ></div>
+      <label for="uploadInput" class="btn btn-outline-secondary w-100 mb-3"
+        >آپلود سند جدید</label
+      >
+      <input type="file" id="uploadInput" accept=".pdf,.docx,.txt" multiple />
+      <button id="deleteAllFilesBtn" class="btn btn-danger btn-sm w-100 mb-2">
+        حذف همه سندها
+      </button>
+      <button id="deleteAllChatsBtn" class="btn btn-warning btn-sm w-100">
+        حذف همه چت‌ها
+      </button>
     </div>
-    <div id="chatContainer" class="chat-container border p-3 bg-light rounded"></div>
-    <div class="input-group mt-3">
-      <input type="text" id="messageInput" class="form-control" placeholder="پیام خود را بنویسید...">
-      <button id="sendBtn" class="btn btn-primary">ارسال</button>
-    </div>
-  </div>
 
-  <div class="modal fade" id="confirmModal">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">تأیید حذف</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-          <p id="confirmText">آیا مطمئن هستید؟</p>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">خیر</button>
-          <button type="button" class="btn btn-danger" id="confirmDeleteBtn">بله، حذف کن</button>
+    <!-- Main Chat -->
+    <div class="main-chat">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4
+          id="currentChatTitle"
+          class="clickable-title"
+          style="cursor: pointer; display: inline-block"
+        >
+          چت جدید
+        </h4>
+
+        <button id="backToLogin" class="btn btn-outline-secondary">خروج</button>
+      </div>
+      <div
+        id="chatContainer"
+        class="chat-container border p-3 bg-light rounded"
+      ></div>
+      <div class="input-group mt-3">
+        <input
+          type="text"
+          id="messageInput"
+          class="form-control"
+          placeholder="پیام خود را بنویسید..."
+        />
+        <button id="sendBtn" class="btn btn-primary">ارسال</button>
+      </div>
+    </div>
+
+    <div class="modal fade" id="logoutModal" tabindex="-1">
+      <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">خروج</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body text-center">
+            <p>آیا مطمئنید که می‌خواهید خارج شوید؟</p>
+          </div>
+          <div class="modal-footer justify-content-center">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              لغو
+            </button>
+            <button
+              type="button"
+              class="btn btn-danger"
+              onclick="sessionStorage.removeItem('user_key'); window.location.href='/login.html'"
+            >
+              بله، خارج شو
+            </button>
+          </div>
         </div>
       </div>
     </div>
-  </div>
+    <div class="modal fade" id="confirmModal">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">تأیید حذف</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <p id="confirmText">آیا مطمئن هستید؟</p>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              خیر
+            </button>
+            <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+              بله، حذف کن
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
 
-  <script src="js/bootstrap.bundle.min.js"></script>
-  <script src="js/common.js"></script>
-  <script>
-    let userKey = new URLSearchParams(window.location.search).get('key') || localStorage.getItem('user_key');
-    let currentChatId = null;
-    let chatHistory = [];  
+    <div class="modal fade" id="editTitleModal" tabindex="-1">
+      <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">ویرایش عنوان چت</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <input
+              type="text"
+              id="newTitleInput"
+              class="form-control text-center"
+              placeholder="عنوان جدید را وارد کنید"
+            />
+          </div>
+          <div class="modal-footer justify-content-center">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              لغو
+            </button>
+            <button type="button" class="btn btn-primary" id="saveTitleBtn">
+              ذخیره
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
 
-    const chatsList = document.getElementById('chatsList');
-    const filesList = document.getElementById('filesList');
-    const chatContainer = document.getElementById('chatContainer');
-    const messageInput = document.getElementById('messageInput');
-    const sendBtn = document.getElementById('sendBtn');
-    const currentChatTitle = document.getElementById('currentChatTitle');
-    const newChatBtn = document.getElementById('newChatBtn');
-    const uploadInput = document.getElementById('uploadInput');
-    const deleteAllFilesBtn = document.getElementById('deleteAllFilesBtn');
-    const deleteAllChatsBtn = document.getElementById('deleteAllChatsBtn');
-    const backToLogin = document.getElementById('backToLogin');
-
-    if (!userKey || userKey.length < 16) {
-      window.location.href = '/login.html';
-    }
-
-    function isRTL(text) {
-      if (!text || text.length < 1) return false;
-      const rtlRegex = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/g;
-      const rtlChars = (text.match(rtlRegex) || []).length;
-      const totalNonWhitespaceChars = text.replace(/\s/g, "").length;
-      if (totalNonWhitespaceChars <= 10 && rtlChars >= 1) return true;
-      return rtlChars / totalNonWhitespaceChars >= 0.2;
-    }
-
-    function updateDirection(element, text) {
-      if (isRTL(text)) {
-        element.classList.add('rtl');
-        element.classList.remove('ltr');
-      } else {
-        element.classList.add('ltr');
-        element.classList.remove('rtl');
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <script src="js/common.js"></script>
+    <script>
+      const userKey = sessionStorage.getItem("user_key");
+      if (!userKey || userKey.length < 16) {
+        showError("لطفاً ابتدا وارد شوید.");
+        window.location.href = "/login.html";
+        throw new Error("No user key");
       }
-    }
+      let currentChatId = null;
+      let chatHistory = [];
 
-    async function loadChats() {
-      const res = await fetch(`/api/rag/chats?user_key=${userKey}`);
-      const { chats } = await res.json();
-      chatsList.innerHTML = chats.map(chat => `
-        <div class="chat-item ${currentChatId === chat.chat_id ? 'bg-primary text-white' : ''}" onclick="loadChat('${chat.chat_id}')">
-          ${chat.title} <small class="d-block">${new Date(chat.last_message_at).toLocaleDateString('fa-IR')}</small>
-          <button class="delete-btn float-start" onclick="deleteChat('${chat.chat_id}', event)">حذف</button>
-        </div>
-      `).join('');
-    }
+      const chatsList = document.getElementById("chatsList");
+      const filesList = document.getElementById("filesList");
+      const chatContainer = document.getElementById("chatContainer");
+      const messageInput = document.getElementById("messageInput");
+      const sendBtn = document.getElementById("sendBtn");
+      const currentChatTitle = document.getElementById("currentChatTitle");
+      const newChatBtn = document.getElementById("newChatBtn");
+      const uploadInput = document.getElementById("uploadInput");
+      const deleteAllFilesBtn = document.getElementById("deleteAllFilesBtn");
+      const deleteAllChatsBtn = document.getElementById("deleteAllChatsBtn");
+      const backToLogin = document.getElementById("backToLogin");
 
-    async function loadFiles() {
-      const res = await fetch(`/api/rag/files?user_key=${userKey}`);
-      const { files } = await res.json();
-      filesList.innerHTML = files.map(file => `
-        <div class="file-item">
-          📄 ${file.original_name} <small class="d-block">${(file.size / 1024 / 1024).toFixed(1)} MB</small>
-          <button class="delete-btn float-start" onclick="deleteFile('${file.file_id}', event)">حذف</button>
-        </div>
-      `).join('');
-    }
+      const titleCache = new Map();
 
-    async function loadChat(chatId) {
-      currentChatId = chatId;
-      chatHistory = [];
-      chatContainer.innerHTML = '';
-      currentChatTitle.textContent = 'در حال لود...';
-      loadChats();  
-    }
+      if (!userKey || userKey.length < 16) {
+        window.location.href = "/login.html";
+      }
 
-    async function sendMessage() {
-      const message = messageInput.value.trim();
-      if (!message) return;
+      function isRTL(text) {
+        if (!text || text.length < 1) return false;
+        const rtlRegex =
+          /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/g;
+        const rtlChars = (text.match(rtlRegex) || []).length;
+        const totalNonWhitespaceChars = text.replace(/\s/g, "").length;
+        if (totalNonWhitespaceChars <= 10 && rtlChars >= 1) return true;
+        return rtlChars / totalNonWhitespaceChars >= 0.2;
+      }
 
-      const userMsg = document.createElement('div');
-      userMsg.className = 'message user-message';
-      userMsg.textContent = message;
-      chatContainer.appendChild(userMsg);
-      chatContainer.scrollTop = chatContainer.scrollHeight;
-      messageInput.value = '';
+      function updateDirection(element, text) {
+        if (isRTL(text)) {
+          element.classList.add("rtl");
+          element.classList.remove("ltr");
+        } else {
+          element.classList.add("ltr");
+          element.classList.remove("rtl");
+        }
+      }
 
-      const res = await fetch('/api/rag/chat-message', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_key: userKey, message, chat_id: currentChatId })
+      function appendMessage(role, content) {
+        const msgDiv = document.createElement("div");
+        msgDiv.className = `message ${
+          role === "user" ? "user-message" : "bot-message"
+        }`;
+        if (role === "user") {
+          msgDiv.textContent = content;
+        } else {
+          msgDiv.innerHTML = marked.parse(
+            content.replace(/</g, "&lt;").replace(/>/g, "&gt;")
+          );
+          updateDirection(msgDiv, content);
+        }
+        chatContainer.appendChild(msgDiv);
+      }
+
+      async function loadChats() {
+        const res = await fetch(`/api/rag/chats?user_key=${userKey}`);
+        const { chats } = await res.json();
+        chatsList.innerHTML = chats
+          .map(
+            (chat) => `
+              <div class="chat-item ${
+                currentChatId === chat.chat_id ? "bg-primary text-white" : ""
+              }" onclick="loadChat('${chat.chat_id}')">
+                ${chat.title} <small class="d-inline-block">${new Date(
+              chat.last_message_at
+            ).toLocaleDateString("fa-IR")}</small>
+                <button class="delete-btn float-start" onclick="deleteChat('${
+                  chat.chat_id
+                }', event)">حذف</button>
+              </div>
+            `
+          )
+          .join("");
+      }
+
+      async function loadFiles() {
+        const res = await fetch(`/api/rag/files?user_key=${userKey}`);
+        const { files } = await res.json();
+        filesList.innerHTML = files
+          .map(
+            (file) => `
+              <div class="file-item">
+                📄 ${file.file_name} <small class="d-inline-block">${(
+              file.file_size /
+              1024 /
+              1024
+            ).toFixed(1)} MB</small>
+                <button class="delete-btn float-start text" onclick="deleteFile('${
+                  file.file_id
+                }', '${file.file_name}', event)">حذف</button>
+              </div>
+            `
+          )
+          .join("");
+      }
+
+      async function loadChat(chatId) {
+        currentChatId = chatId;
+        chatHistory = [];
+        chatContainer.innerHTML = "";
+        currentChatTitle.textContent = "در حال لود...";
+        try {
+          const res = await fetch(
+            `/api/rag/chat/${chatId}/messages?user_key=${userKey}`
+          );
+          if (!res.ok) {
+            toast("خطا در بارگذاری چت", "danger");
+            return;
+          }
+          const { messages } = await res.json();
+          chatHistory = messages.map((m) => ({
+            role: m.role,
+            content: m.content,
+          }));
+          messages.forEach((m) => appendMessage(m.role, m.content));
+          chatContainer.scrollTop = chatContainer.scrollHeight;
+        } catch (err) {
+          console.error(err);
+          toast("خطا در ارتباط", "danger");
+        }
+      }
+
+      let titleEditModal = null;
+      document.getElementById("currentChatTitle").onclick = () => {
+        console.log("clicked");
+        if (!currentChatId) return;
+
+        titleEditModal = new bootstrap.Modal(
+          document.getElementById("editTitleModal")
+        );
+        document.getElementById("newTitleInput").value =
+          currentChatTitle.textContent.trim();
+        titleEditModal.show();
+      };
+
+      document
+        .getElementById("saveTitleBtn")
+        .addEventListener("click", async () => {
+          const newTitle = document
+            .getElementById("newTitleInput")
+            .value.trim();
+          if (!newTitle || newTitle === currentChatTitle.textContent.trim()) {
+            titleEditModal.hide();
+            return;
+          }
+
+          const res = await fetch("/api/rag/chat/title", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              user_key: userKey,
+              chat_id: currentChatId,
+              title: newTitle,
+            }),
+          });
+
+          if (res.ok) {
+            currentChatTitle.innerHTML =
+              newTitle +
+              `<small class="text-muted ms-2" style="font-size: 0.5em;">(برای ویرایش کلیک کنید)</small>`;
+            toast("عنوان چت به‌روزرسانی شد", "success");
+            loadChats();
+          } else {
+            toast("خطا در تغییر عنوان", "danger");
+          }
+          titleEditModal.hide();
+        });
+
+      async function sendMessage() {
+        const message = messageInput.value.trim();
+        if (!message) return;
+
+        if (!currentChatId) {
+          try {
+            const res = await fetch("/api/rag/chat", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ user_key: userKey }),
+            });
+            if (!res.ok) {
+              toast("خطا در ساخت چت جدید", "danger");
+              return;
+            }
+            const { chat_id } = await res.json();
+            currentChatId = chat_id;
+            chatHistory = [];
+            chatContainer.innerHTML = "";
+            currentChatTitle.textContent = "چت جدید";
+            loadChats();
+          } catch (err) {
+            console.error(err);
+            toast("خطا در ساخت چت جدید", "danger");
+            return;
+          }
+        }
+
+        appendMessage("user", message);
+
+        // ساخت باکس ربات که اول لودینگ نشون می‌ده
+        const botMessageWrapper = document.createElement("div");
+        botMessageWrapper.className = "message bot-message";
+        botMessageWrapper.id = "botResponseWrapper";
+
+        const botMsg = document.createElement("div");
+        botMsg.className = "bot-text";
+
+        // نمایش اولیه لودینگ
+        botMsg.innerHTML = `
+          <span class="thinking">در حال فکر کردن</span>
+          <span class="dots">...</span>
+        `;
+
+        botMessageWrapper.appendChild(botMsg);
+
+        const sourceEl = document.createElement("div");
+        sourceEl.className = "source-info text-muted small mt-2 fa-num";
+        sourceEl.style.display = "none";
+        botMessageWrapper.appendChild(sourceEl);
+
+        chatContainer.appendChild(botMessageWrapper);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+
+        // انیمیشن نقطه‌ها
+        let dotCount = 0;
+        let dotInterval = setInterval(() => {
+          dotCount = (dotCount + 1) % 4;
+          const dotsEl = botMsg.querySelector(".dots");
+          if (dotsEl) dotsEl.textContent = ".".repeat(dotCount);
+        }, 400);
+
+        messageInput.value = "";
+
+        let fullResponse = "";
+        let attempts = 0;
+        const maxAttempts = 3;
+
+        while (attempts < maxAttempts) {
+          attempts++;
+          try {
+            const res = await fetch("/api/rag/chat-message", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                user_key: userKey,
+                message,
+                chat_id: currentChatId,
+              }),
+            });
+
+            if (!res.ok) {
+              const err = await res.json().catch(() => ({}));
+              throw new Error(err.error || "خطای سرور");
+            }
+
+            const reader = res.body.getReader();
+            const decoder = new TextDecoder();
+            fullResponse = "";
+            botMsg.innerHTML = "";
+
+            let streamCompleted = false;
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) {
+                streamCompleted = true;
+                break;
+              }
+
+              const chunk = decoder.decode(value, { stream: true });
+              const lines = chunk
+                .split("\n")
+                .filter((l) => l.startsWith("data: "));
+
+              for (const line of lines) {
+                if (line === "data: [DONE]") continue;
+                try {
+                  const json = JSON.parse(line.slice(6));
+                  const token = json.choices[0].delta.content || "";
+                  fullResponse += token;
+
+                  const safeResponse = fullResponse
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;");
+                  botMsg.innerHTML = marked.parse(safeResponse);
+                  updateDirection(botMsg, fullResponse);
+                  chatContainer.scrollTop = chatContainer.scrollHeight;
+                } catch (e) {
+                  // نادیده گرفتن خطاهای جزئی JSON
+                }
+              }
+            }
+
+            if (streamCompleted) {
+              // پردازش نهایی پاسخ: جداسازی منبع
+              let mainAnswer = fullResponse.trim();
+              let sourceText = "";
+
+              const patterns = [
+                /\n\n?\*\*?منابع?\*\*?[:：]\s*([\s\S]*)$/i,
+                /\n---\n[\s\S]*$/i,
+                /\n\nمنبع[:؛]\s*([\s\S]*)$/i,
+                /\n\*\*منبع\*\*[:؛]\s*([\s\S]*)$/i,
+                /منبع[:؛]\s*دانش داخلی مدل\s*$/i,
+                /منبع\s*:\s*دانش داخلی مدل\s*$/i,
+                /منابع\s*:\s*دانش داخلی مدل\s*$/i,
+              ];
+
+              let matched = false;
+              for (const pattern of patterns) {
+                const match = mainAnswer.match(pattern);
+                if (match) {
+                  sourceText = (match[1] || match[0]).trim();
+                  mainAnswer = mainAnswer.replace(match[0], "").trim();
+                  matched = true;
+                  break;
+                }
+              }
+
+              if (!matched || /دانش داخلی/i.test(sourceText)) {
+                sourceText = "دانش داخلی مدل";
+              } else {
+                sourceText = sourceText
+                  .replace(/^\d+\.\s*/gm, "")
+                  .replace(/منبع \d+[:：]\s*/gi, "")
+                  .split("\n")
+                  .map((s) => s.trim())
+                  .filter((s) => s && !/دانش داخلی/i.test(s))
+                  .join("، ");
+              }
+
+              // نمایش نهایی پاسخ و منبع
+              const finalSafe = mainAnswer
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;");
+              botMsg.innerHTML = marked.parse(finalSafe || fullResponse);
+
+              if (sourceText === "دانش داخلی مدل") {
+                sourceEl.innerHTML = `<em style="color:#94a3b8;">منبع: دانش داخلی مدل</em>`;
+              } else if (sourceText) {
+                sourceEl.innerHTML = `
+            <div style="margin-top:8px;padding:8px 12px;background:#f1f5f9;border-radius:8px;font-size:0.9em;color:#475569;">
+              <strong>منابع:</strong> ${escapeHtml(sourceText)}
+            </div>`;
+              }
+              sourceEl.style.display = "block";
+
+              // ذخیره در تاریخچه فقط یک بار
+              chatHistory.push({ role: "user", content: message });
+              chatHistory.push({
+                role: "assistant",
+                content: mainAnswer || fullResponse,
+              });
+
+              // تولید عنوان چت فقط برای اولین پیام
+              if (chatHistory.length === 2) {
+                await generateChatTitle(message);
+              }
+
+              // به‌روزرسانی زمان آخرین پیام
+              if (currentChatId) {
+                fetch("/api/rag/chat", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    user_key: userKey,
+                    chat_id: currentChatId,
+                  }),
+                });
+              }
+              clearInterval(dotInterval);
+              messageInput.disabled = false;
+              sendBtn.disabled = false;
+              return;
+            }
+          } catch (err) {
+            console.warn(`تلاش ${attempts} ناموفق:`, err);
+            if (attempts < maxAttempts) {
+              toast(
+                `اتصال قطع شد، تلاش مجدد ${attempts + 1} از ${maxAttempts}...`,
+                "warning"
+              );
+              fullResponse = "";
+              botMsg.innerHTML = "";
+              botMsg.innerHTML = `
+                <span class="thinking">در حال تلاش مجدد</span>
+                <span class="dots">...</span>
+              `;
+              // ری‌استارت انیمیشن
+              dotCount = 0;
+              clearInterval(dotInterval);
+              dotInterval = setInterval(() => {
+                dotCount = (dotCount + 1) % 4;
+                const dotsEl = botMsg.querySelector(".dots");
+                if (dotsEl) dotsEl.textContent = ".".repeat(dotCount);
+              }, 400);
+              await new Promise((resolve) => setTimeout(resolve, 1500));
+            }
+          }
+        }
+
+        clearInterval(dotInterval);
+        botMsg.innerHTML = marked.parse(
+          "خطا در دریافت پاسخ پس از چند تلاش. لطفاً دوباره امتحان کنید."
+        );
+        toast("خطا در ارتباط با سرور", "danger");
+        messageInput.disabled = false;
+        sendBtn.disabled = false;
+      }
+
+      function escapeHtml(text) {
+        const div = document.createElement("div");
+        div.textContent = text;
+        return div.innerHTML;
+      }
+
+      uploadInput.addEventListener("change", async (e) => {
+        const loadingModal = showLoadingModal(
+          "در حال آپلود و پردازش فایل‌ها... لطفاً صبر کنید"
+        );
+
+        let files = Array.from(e.target.files);
+        if (files.length === 0) return;
+
+        // Client-side type validation
+        const allowedTypes = [
+          "application/pdf",
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          "text/plain",
+        ];
+        files = files.filter((file) => {
+          if (!allowedTypes.includes(file.type)) {
+            toast(
+              `فایل "${file.name}" نوع مجاز نیست (فقط PDF, DOCX, TXT)`,
+              "danger"
+            );
+            return false;
+          }
+          return true;
+        });
+
+        if (files.length === 0) {
+          hideLoadingModal();
+          return;
+        }
+
+        for (const file of files) {
+          if (file.size > 200 * 1024 * 1024) {
+            toast(`فایل "${file.name}" بیش از ۲۰۰ مگابایت است`, "danger");
+            continue;
+          }
+
+          const formData = new FormData();
+          formData.append("file", file);
+          formData.append("user_key", userKey);
+
+          try {
+            const res = await fetch("/api/rag/upload", {
+              method: "POST",
+              body: formData,
+            });
+
+            if (!res.ok) {
+              const error = await res.json();
+              toast(error.error || "خطا در آپلود", "danger");
+              continue;
+            }
+
+            toast(`فایل "${file.name}" با موفقیت آپلود شد`, "success");
+          } catch (err) {
+            console.error(err);
+            toast(`خطا در ارتباط با سرور برای ${file.name}`, "danger");
+            hideLoadingModal();
+            return;
+          }
+          // Simple batching: small delay to avoid overload
+          await new Promise((resolve) => setTimeout(resolve, 500));
+        }
+
+        hideLoadingModal();
+        loadFiles();
+        uploadInput.value = "";
       });
 
-      const botMsg = document.createElement('div');
-      botMsg.className = 'message bot-message';
-      chatContainer.appendChild(botMsg);
-      chatContainer.scrollTop = chatContainer.scrollHeight;
+      async function generateChatTitle(firstMessage) {
+        const cacheKey = `${currentChatId}-${firstMessage.substring(0, 100)}`;
+        if (titleCache.has(cacheKey)) {
+          const cachedTitle = titleCache.get(cacheKey);
+          if (cachedTitle && cachedTitle.trim() !== "چت جدید") {
+            currentChatTitle.innerHTML =
+              cachedTitle.trim() +
+              `<small class="text-muted ms-2" style="font-size: 0.5em;">(برای ویرایش کلیک کنید)</small>`;
+            return;
+          }
+        }
+        try {
+          const res = await fetch("/api/rag/generate-title", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              user_key: userKey,
+              chat_id: currentChatId,
+              first_message: firstMessage,
+            }),
+          });
 
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      let fullResponse = '';
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        const chunk = decoder.decode(value);
-        const lines = chunk.split('\n').filter(l => l.startsWith('data: '));
-        for (const line of lines) {
-          if (line === 'data: [DONE]') continue;
-          try {
-            const json = JSON.parse(line.slice(6));
-            const token = json.choices[0].delta.content || '';
-            fullResponse += token;
-            botMsg.textContent = fullResponse;
-            updateDirection(botMsg, fullResponse);
-          } catch {}
+          if (res.ok) {
+            const { title } = await res.json();
+            titleCache.set(cacheKey, title);
+            if (title && title.trim() && title.trim() !== "چت جدید") {
+              currentChatTitle.innerHTML =
+                title.trim() +
+                `<small class="text-muted ms-2" style="font-size: 0.5em;">(برای ویرایش کلیک کنید)</small>`;
+              loadChats();
+            }
+          }
+        } catch (err) {
+          console.error("خطا در تولید عنوان:", err);
         }
       }
+      async function deleteFile(fileId, fileName, event) {
+        event.stopPropagation();
 
-      chatHistory.push({ role: 'user', content: message });
-      chatHistory.push({ role: 'assistant', content: fullResponse });
+        const confirmed = await confirmDialog({
+          title: "حذف فایل",
+          message: `آیا از حذف فایل «${fileName}» مطمئن هستید؟`,
+          confirmText: "بله، حذف کن",
+          confirmClass: "btn-danger",
+        });
 
-      if (currentChatId) {
-        fetch('/api/rag/chat', { method: 'POST', body: JSON.stringify({ user_key: userKey, chat_id: currentChatId }) });
-      }
-    }
+        if (!confirmed) return;
 
-    uploadInput.addEventListener('change', async (e) => {
-      const formData = new FormData();
-      formData.append('file', e.target.files[0]);
-      formData.append('user_key', userKey);
-
-      const res = await fetch('/api/rag/upload', { method: 'POST', body: formData });
-      if (res.ok) {
-        alert('فایل آپلود شد!');
-        loadFiles();
-      } else {
-        const err = await res.json();
-        alert(err.error);
-      }
-    });
-
-    async function deleteFile(fileId, event) {
-      event.stopPropagation();
-      document.getElementById('confirmText').textContent = 'آیا فایل را حذف کنید؟';
-      new bootstrap.Modal(document.getElementById('confirmModal')).show();
-      document.getElementById('confirmDeleteBtn').onclick = async () => {
         const res = await fetch(`/api/rag/file/${fileId}`, {
-          method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ user_key: userKey })
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ user_key: userKey }),
         });
-        if (res.ok) {
-          loadFiles();
-          bootstrap.Modal.getInstance(document.getElementById('confirmModal')).hide();
-        }
-      };
-    }
 
-    deleteAllFilesBtn.addEventListener('click', () => {
-      document.getElementById('confirmText').textContent = 'آیا همه فایل‌ها را حذف کنید؟';
-      new bootstrap.Modal(document.getElementById('confirmModal')).show();
-      document.getElementById('confirmDeleteBtn').onclick = async () => {
-        const res = await fetch('/api/rag/files', {
-          method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ user_key: userKey })
+        if (res.ok) {
+          toast(`فایل "${fileName}" حذف شد`, "info");
+          loadFiles();
+        } else {
+          toast("خطا در حذف فایل", "danger");
+        }
+      }
+
+      deleteAllFilesBtn.addEventListener("click", async () => {
+        const confirmed = await confirmDialog({
+          title: "حذف همه فایل‌ها",
+          message:
+            "همه فایل‌های آپلودشده حذف خواهند شد. این عمل برگشت‌ناپذیر است!",
+          confirmText: "بله، همه را حذف کن",
+          confirmClass: "btn-danger",
         });
-        if (res.ok) {
-          loadFiles();
-          bootstrap.Modal.getInstance(document.getElementById('confirmModal')).hide();
-        }
-      };
-    });
 
-    async function deleteChat(chatId, event) {
-      event.stopPropagation();
-      document.getElementById('confirmText').textContent = 'آیا چت را حذف کنید؟';
-      new bootstrap.Modal(document.getElementById('confirmModal')).show();
-      document.getElementById('confirmDeleteBtn').onclick = async () => {
+        if (!confirmed) return;
+
+        const res = await fetch("/api/rag/files", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ user_key: userKey }),
+        });
+
+        if (res.ok) {
+          toast("همه فایل‌ها حذف شدند", "info");
+          loadFiles();
+        }
+      });
+
+      async function deleteChat(chatId, event) {
+        event.stopPropagation();
+
+        const confirmed = await confirmDialog({
+          title: "حذف چت",
+          message: "آیا از حذف این چت مطمئن هستید؟",
+          confirmText: "بله، حذف کن",
+          confirmClass: "btn-danger",
+        });
+
+        if (!confirmed) return;
+
         const res = await fetch(`/api/rag/chat/${chatId}`, {
-          method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ user_key: userKey })
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ user_key: userKey }),
         });
+
         if (res.ok) {
+          toast("چت حذف شد", "info");
           loadChats();
           if (currentChatId === chatId) {
             currentChatId = null;
-            chatContainer.innerHTML = '';
+            chatContainer.innerHTML = "";
+            currentChatTitle.textContent = "چت جدید";
           }
-          bootstrap.Modal.getInstance(document.getElementById('confirmModal')).hide();
         }
-      };
-    }
+      }
 
-    deleteAllChatsBtn.addEventListener('click', () => {
-      document.getElementById('confirmText').textContent = 'آیا همه چت‌ها را حذف کنید؟';
-      new bootstrap.Modal(document.getElementById('confirmModal')).show();
-      document.getElementById('confirmDeleteBtn').onclick = async () => {
-        const res = await fetch('/api/rag/chats', {
-          method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ user_key: userKey })
+      deleteAllChatsBtn.addEventListener("click", async () => {
+        const confirmed = await confirmDialog({
+          title: "حذف همه چت‌ها",
+          message: "همه چت‌های شما حذف خواهند شد. ادامه می‌دهید؟",
+          confirmText: "بله، همه را حذف کن",
+          confirmClass: "btn-danger",
         });
+
+        if (!confirmed) return;
+
+        const res = await fetch("/api/rag/chats", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ user_key: userKey }),
+        });
+
         if (res.ok) {
+          toast("همه چت‌ها حذف شدند", "info");
           loadChats();
-          bootstrap.Modal.getInstance(document.getElementById('confirmModal')).hide();
+          currentChatId = null;
+          chatContainer.innerHTML = "";
+          currentChatTitle.textContent = "چت جدید";
         }
-      };
-    });
-
-    newChatBtn.addEventListener('click', async () => {
-      const res = await fetch('/api/rag/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_key: userKey })
       });
-      const { chat_id } = await res.json();
-      currentChatId = chat_id;
-      chatHistory = [];
-      chatContainer.innerHTML = '';
-      currentChatTitle.textContent = 'چت جدید';
+
+      newChatBtn.addEventListener("click", async () => {
+        const res = await fetch("/api/rag/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ user_key: userKey }),
+        });
+        const { chat_id } = await res.json();
+        currentChatId = chat_id;
+        chatHistory = [];
+        chatContainer.innerHTML = "";
+        currentChatTitle.textContent = "چت جدید";
+        loadChats();
+      });
+
+      // Event listeners
+      sendBtn.addEventListener("click", sendMessage);
+      messageInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") sendMessage();
+      });
+      backToLogin.addEventListener("click", async () => {
+        const confirmed = await confirmDialog({
+          title: "خروج از حساب",
+          message: "آیا می‌خواهید از حساب خود خارج شوید؟",
+          confirmText: "بله، خارج شو",
+          confirmClass: "btn-outline-danger",
+        });
+
+        if (confirmed) {
+          sessionStorage.removeItem("user_key");
+          window.location.href = "/login.html";
+        }
+      });
+
       loadChats();
-    });
-
-    // Event listeners
-    sendBtn.addEventListener('click', sendMessage);
-    messageInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') sendMessage();
-    });
-    backToLogin.addEventListener('click', () => {
-      localStorage.removeItem('user_key');
-      window.location.href = '/login.html';
-    });
-
-    loadChats();
-    loadFiles();
-    if (currentChatId) loadChat(currentChatId);
-  </script>
-</body>
+      loadFiles();
+      if (currentChatId) loadChat(currentChatId);
+    </script>
+  </body>
 </html>

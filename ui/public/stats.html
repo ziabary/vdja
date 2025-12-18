@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>آمار کاربران - دستیار هوشمند فارسی</title>
+    <link rel="stylesheet" href="css/bootstrap.rtl.min.css" />
+    <link rel="stylesheet" href="fonts/IranSansX/fontiran.css" />
+    <link rel="stylesheet" href="css/style.css" />
+    <style>
+      body {
+        background: #f8f9fa;
+      }
+      .table th {
+        background: #e9ecef;
+      }
+      .logo {
+        width: 80px;
+      }
+      .table-container {
+        max-height: 80vh;
+        overflow-y: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar navbar-light bg-white shadow-sm">
+      <div class="container">
+        <img src="/img/defard.png" alt="لوگو" />
+        <span class="navbar-brand mx-auto h4 mb-0">آمار نشست‌ها</span>
+        <a href="/" class="btn btn-outline-primary">← بازگشت به خانه</a>
+      </div>
+    </nav>
+
+    <div class="container mt-4">
+      <div class="card shadow">
+        <div class="card-body p-4">
+          <h4 class="mb-4 text-center">
+            لیست نشست‌ها بر اساس آخرین ورود
+            <small>(حداکثر ۱۰۰ نشست اخیر)</small>
+          </h4>
+          <div class="table-responsive table-container">
+            <table
+              class="table table-hover table-bordered align-middle text-center fa-num"
+            >
+              <thead class="table-light sticky-top">
+                <tr>
+                  <th>ردیف</th>
+                  <th>شناسه کاربر</th>
+                  <th>زمان ثبت‌نام</th>
+                  <th>آخرین ورود</th>
+                  <th>تعداد کل چت‌ها</th>
+                  <th>تعداد کل فایل‌های آپلودشده</th>
+                  <th>تعداد فایل‌های فعال</th>
+                  <th>حجم اشغالی فعلی (MB)</th>
+                </tr>
+              </thead>
+              <tbody id="statsTableBody">
+                <tr>
+                  <td colspan="8" class="text-muted">در حال بارگذاری...</td>
+                </tr>
+              </tbody>
+              <tfoot id="statsTableFooter">
+                <!-- ردیف مجموع کل خواهد آمد -->
+              </tfoot>
+            </table>
+          </div>
+          <div id="hiddenCountInfo" class="hidden-count text-muted text-center fa-num"></div>
+          <div class="mt-3 text-end">
+            <small class="text-muted"
+              >به‌روزرسانی: <span id="lastUpdate">-</span></small
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <script src="js/common.js"></script>
+    <script>
+      async function loadStats() {
+        try {
+          const res = await fetch("/api/admin/stats");
+          if (!res.ok) throw new Error("دسترسی ممنوع یا خطا در سرور");
+
+          const data = await res.json(); // { users: [...], totals: {...}, total_users: N }
+
+          const users = data.users || [];
+          const totals = data.totals || {};
+          const totalUsers = data.total_users || 0;
+
+          const tbody = document.getElementById("statsTableBody");
+          const tfoot = document.getElementById("statsTableFooter");
+          const hiddenInfo = document.getElementById("hiddenCountInfo");
+          tbody.innerHTML = "";
+
+          if (users.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" class="text-muted">کاربری یافت نشد</td></tr>`;
+            return;
+          }
+
+          users.forEach((user, index) => {
+            const row = document.createElement("tr");
+
+            const created = new Date(user.created_at).toLocaleString("fa-IR");
+            const lastLogin = new Date(user.last_login_at).toLocaleString(
+              "fa-IR"
+            );
+            const storageMB = user.total_storage
+              ? (user.total_storage / (1024 * 1024)).toFixed(2)
+              : "0.00";
+
+            row.innerHTML = `
+              <td>${index + 1}</td>
+              <td><code>${user.short_user_key.slice(0, 12)}...</code></td>
+              <td>${created}</td>
+              <td>${lastLogin}</td>
+              <td>${user.total_chats || 0}</td>
+              <td>${user.total_files_uploaded || 0}</td>
+              <td>${user.file_count || 0}</td>
+              <td>${storageMB}</td>
+            `;
+            tbody.appendChild(row);
+          });
+
+          const totalStorageMB = totals.total_storage
+            ? (totals.total_storage / (1024 * 1024)).toFixed(2)
+            : "0.00";
+          tfoot.innerHTML = `
+            <tr class="summary-row">
+              <td colspan="4" class="text-start ps-4">مجموع کل</td>
+              <td>${totals.total_chats || 0}</td>
+              <td>${totals.total_files_uploaded || 0}</td>
+              <td>${totals.total_active_files || 0}</td>
+              <td>${totalStorageMB}</td>
+            </tr>
+          `;
+
+          if (totalUsers > 100) {
+            const hidden = totalUsers - 100;
+            hiddenInfo.textContent = `${hidden} نشست دیگر از مجموع ${totalUsers} نشست نمایش داده نشده است.`;
+          } else {
+            hiddenInfo.textContent = `مجموع نشست‌ها: ${totalUsers}`;
+          }
+
+          document.getElementById("lastUpdate").textContent =
+            new Date().toLocaleString("fa-IR");
+        } catch (err) {
+          console.error(err);
+          document.getElementById(
+            "statsTableBody"
+          ).innerHTML = `<tr><td colspan="7" class="text-danger">خطا در بارگذاری آمار: ${err.message}</td></tr>`;
+        }
+      }
+
+      // بارگذاری اولیه و هر ۳۰ ثانیه بروزرسانی خودکار
+      loadStats();
+      setInterval(loadStats, 30000);
+    </script>
+  </body>
+</html>

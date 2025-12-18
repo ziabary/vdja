@@ -1,95 +1,245 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ورود به چت خصوصی</title>
-  <link rel="stylesheet" href="css/bootstrap.min.css">
-  <link rel="stylesheet" href="fonts/IranSansX/fontiran.css">
-  <style>
-    body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
-    .card { max-width: 480px; margin: 100px auto; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
-    .input-group-text { cursor: pointer; background: #f8f9fa; }
-    .logo { width: 80px; margin-bottom: 20px; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="row justify-content-center">
-      <div class="col-md-6">
-        <div class="card">
-          <div class="card-body p-5 text-center">
-            <img src="img/defard.png" alt="لوگو" class="logo">
-            <h3 class="mb-4">چت با داده‌های خصوصی شما</h3>
-            <div class="mb-4">
-              <label class="form-label fw-bold">کلید اختصاصی (حداقل ۱۶ کاراکتر)</label>
-              <div class="input-group">
-                <input type="password" id="userKey" class="form-control form-control-lg" placeholder="کلید خود را وارد کنید یا تولید کنید...">
-                <span class="input-group-text" id="togglePass">
-                  <i class="bi bi-eye" id="eyeIcon"></i>
-                </span>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ورود به چت خصوصی</title>
+    <link rel="stylesheet" href="css/bootstrap.rtl.min.css" />
+    <link rel="stylesheet" href="css/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="fonts/IranSansX/fontiran.css" />
+    <link rel="stylesheet" href="css/style.css" />
+
+    <style>
+      body {
+        background: linear-gradient(135deg, #3a6daa 0%, #2c3b88 100%);
+        min-height: 100vh;
+      }
+      .card {
+        max-width: 540px;
+        margin: 100px auto;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      }
+      .input-group-text {
+        cursor: pointer;
+        background: #f8f9fa;
+      }
+      .logo {
+        width: 80px;
+        margin-bottom: 20px;
+      }
+      #loading {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 100;
+        display: none;
+      }
+      #loading div {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        display: inline-block;
+        position: relative;
+        border: 3px solid;
+        border-color: #fff #fff transparent transparent;
+        box-sizing: border-box;
+        animation: rotation 1s linear infinite;
+      }
+      #loading div::after,
+      #loading div::before {
+        content: "";
+        box-sizing: border-box;
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        margin: auto;
+        border: 3px solid;
+        border-color: transparent transparent #ff3d00 #ff3d00;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        box-sizing: border-box;
+        animation: rotationBack 0.5s linear infinite;
+        transform-origin: center center;
+      }
+      #loading div::before {
+        width: 32px;
+        height: 32px;
+        border-color: #fff #fff transparent transparent;
+        animation: rotation 1.5s linear infinite;
+      }
+
+      @keyframes rotation {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+      @keyframes rotationBack {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(-360deg);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-md-6">
+          <div class="card">
+            <div class="card-body p-5 pb-1 text-center">
+              <img src="img/defard.png" alt="لوگو" class="logo" />
+              <h3 class="mb-4">چت با داده‌های خصوصی شما</h3>
+              <div class="mb-4">
+                <label class="form-label fw-bold"
+                  >کلید اختصاصی (حداقل ۱۶ کاراکتر)</label
+                >
+                <div class="input-group">
+                  <input
+                    type="password"
+                    id="userKey"
+                    class="form-control form-control-lg"
+                    placeholder="کلید خود را وارد کنید یا تولید کنید..."
+                  />
+                  <span class="input-group-text" id="togglePass">
+                    <i class="bi bi-eye" id="eyeIcon"></i>
+                  </span>
+                </div>
+                <small class="text-muted d-block mt-1"
+                  >این کلید را ایمن نگه دارید. بدون آن دسترسی از دست
+                  می‌رود.</small
+                >
               </div>
-              <small class="text-muted d-block mt-1">این کلید را ایمن نگه دارید. بدون آن دسترسی از دست می‌رود.</small>
+              <div class="d-flex gap-2 mb-3">
+                <button
+                  id="generateBtn"
+                  class="btn btn-outline-primary flex-fill"
+                >
+                  تولید کلید جدید
+                </button>
+                <button id="enterBtn" class="btn btn-primary flex-fill">
+                  ورود به چت
+                </button>
+              </div>
             </div>
-            <div class="d-flex gap-2 mb-3">
-              <button id="generateBtn" class="btn btn-outline-primary flex-fill">تولید کلید جدید</button>
-              <button id="enterBtn" class="btn btn-primary flex-fill">ورود به چت</button>
+            <div class="alert alert-warning guidelines text-start m-4 mt-0 rtl">
+              <p>
+                <span class="me-2 d-inline-block">ℹ️</span>
+                کد ورود به‌عنوان جایگزین موقت نام کاربری و رمز عبور مورد استفاده
+                است و در آینده با روش احراز هویت سازمانی ادغام خواهد شد.
+              </p>
+              <p>
+                <span class="me-2 d-inline-block">⚠️</span>
+
+                کد ورود را به خاطر بسپارید یا یادداشت کنید. در صورت فراموشی به
+                هیچ عنوان قابل بازیابی نخواهد بود.
+              </p>
+              <p>
+                <span class="me-2 d-inline-block">❗</span>
+
+                تمام داده‌های ارائه‌شده و چت‌ها در صورتی که توسط خودتان حذف
+                نشوند، پس از ۷ روز از آخرین ورود به سامانه حذف خواهند شد.
+              </p>
+              <p>
+                <strong>🚨 هشدار:</strong> با توجه به آزمایشی بودن سامانه، از
+                بارگذاری داده‌های طبقه‌بندی‌شده و حساس خودداری فرمایید.
+              </p>
             </div>
           </div>
         </div>
       </div>
+      <span id="loading"><div></div></span>
     </div>
-  </div>
 
-  <script src="js/bootstrap.bundle.min.js"></script>
-  <script>
-    const userKeyInput = document.getElementById("userKey");
-    const togglePass = document.getElementById("togglePass");
-    const eyeIcon = document.getElementById("eyeIcon");
-    const generateBtn = document.getElementById("generateBtn");
-    const enterBtn = document.getElementById("enterBtn");
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <script src="js/md5.min.js"></script>
+    <script src="js/common.js"></script>
+    <script>
+      const userKeyInput = document.getElementById("userKey");
+      const togglePass = document.getElementById("togglePass");
+      const eyeIcon = document.getElementById("eyeIcon");
+      const generateBtn = document.getElementById("generateBtn");
+      const enterBtn = document.getElementById("enterBtn");
+      const loading = document.getElementById("loading");
 
-    let isVisible = false;
+      let isVisible = false;
 
-    togglePass.addEventListener("click", () => {
-      isVisible = !isVisible;
-      userKeyInput.type = isVisible ? "text" : "password";
-      eyeIcon.className = isVisible ? "bi bi-eye-slash" : "bi bi-eye";
-    });
+      togglePass.addEventListener("click", () => {
+        isVisible = !isVisible;
+        userKeyInput.type = isVisible ? "text" : "password";
+        eyeIcon.className = isVisible ? "bi bi-eye-slash" : "bi bi-eye";
+      });
 
-    generateBtn.addEventListener("click", () => {
-      const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-      let key = "";
-      for (let i = 0; i < 24; i++) {
-        key += chars.charAt(Math.floor(Math.random() * chars.length));
+      generateBtn.addEventListener("click", () => {
+        const chars =
+          "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@!~%$";
+        let key = "";
+        for (let i = 0; i < 24; i++) {
+          key += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        userKeyInput.value = key;
+        userKeyInput.type = "text";
+        isVisible = true;
+        eyeIcon.className = "bi bi-eye-slash";
+      });
+
+      enterBtn.addEventListener("click", () => {
+        const key = userKeyInput.value.trim();
+        if (key.length < 16) {
+          showError("کلید باید حداقل ۱۶ کاراکتر باشد!");
+          return;
+        }
+
+        login(key);
+      });
+
+      userKeyInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") enterBtn.click();
+      });
+
+      const savedKey = sessionStorage.getItem("user_key");
+      if (savedKey && savedKey.length === 32)
+        window.location.href = "/rag.html";
+
+      async function login(user_raw_key) {
+        loading.style.display = "inline-block";
+        enterBtn.disabled = true;
+
+        try {
+          const hashed_key = md5(user_raw_key);
+          const res = await fetch("/api/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ user_key: hashed_key }),
+          });
+
+          const data = await res.json();
+
+          if (data.success) {
+            sessionStorage.setItem("user_key", hashed_key);
+            userKeyInput.value = "";
+            window.location.href = "/rag.html";
+          } else {
+            showError(data.error || "خطا در ورود. کلید نامعتبر است.");
+          }
+        } catch (err) {
+          showError("خطا در ارتباط با سرور. لطفاً دوباره تلاش کنید.");
+          console.error(err);
+        } finally {
+          loading.style.display = "none";
+          enterBtn.disabled = false;
+          enterBtn.textContent = "ورود به چت";
+        }
       }
-      userKeyInput.value = key;
-      userKeyInput.type = "text";
-      isVisible = true;
-      eyeIcon.className = "bi bi-eye-slash";
-    });
-
-    enterBtn.addEventListener("click", () => {
-      const key = userKeyInput.value.trim();
-      if (key.length < 16) {
-        alert("کلید باید حداقل ۱۶ کاراکتر باشد!");
-        return;
-      }
-      localStorage.setItem("user_key", key);
-      window.location.href = `/rag.html?key=${encodeURIComponent(key)}`;
-    });
-
-    userKeyInput.addEventListener("keypress", (e) => {
-      if (e.key === "Enter") enterBtn.click();
-    });
-
-    const savedKey = localStorage.getItem("user_key");
-    if (savedKey && savedKey.length >= 16) {
-      userKeyInput.value = savedKey;
-      userKeyInput.type = "text";
-      isVisible = true;
-      eyeIcon.className = "bi bi-eye-slash";
-    }
-  </script>
-</body>
+    </script>
+  </body>
 </html>
