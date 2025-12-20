@@ -2,12 +2,34 @@ version: '3.9'
 
 services:
   vllm:
-    image: vllm/vllm-openai:latest
-    container_name: vllm-aya
+    image: vllm:25.11-py3
     restart: unless-stopped
+    environment:
+      - HF_HUB_OFFLINE=1
+      - TRANSFORMERS_OFFLINE=1
+      - HF_HUB_ENABLE_HF_TRANSFER=0
+      - VLLM_SKIP_WARMUP=true
     volumes:
       - ./models:/models:ro
-      - ./cache:/root/.cache/huggingface
+    command: >
+      python -m vllm.entrypoints.openai.api_server
+      --model /models/aya-expanse-8b
+      --served-model-name aya
+      --tensor-parallel-size 4
+      --dtype auto
+      --max-model-len 8192
+      --gpu-memory-utilization 0.85
+      --block-size 16
+      --enable-chunked-prefill
+      --max-num-batched-tokens 16384
+      --port 8000
+    shm_size: '32gb'
+    ipc: host
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/v1/models"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
     deploy:
       resources:
         reservations:
@@ -15,32 +37,48 @@ services:
             - driver: nvidia
               device_ids: ['0', '1']
               capabilities: [gpu]
+    networks:
+      - net
+
+  embedding:
+    image: vllm:25.11-py3
+    restart: unless-stopped
+    environment:
+      - HF_HUB_OFFLINE=1
+      - TRANSFORMERS_OFFLINE=1
+      - HF_HUB_ENABLE_HF_TRANSFER=0
+      - VLLM_SKIP_WARMUP=true
+    volumes:
+      - ./models:/models:ro
     command: >
       python -m vllm.entrypoints.openai.api_server
-      --model /models/aya-expanse-8b
-      --served-model-name aya
-      --tensor-parallel-size 4
-      --dtype auto
-      --max-model-len 16384
-      --gpu-memory-utilization 0.90
-      --block-size 16
-      --enable-chunked-prefill
-      --max-num-batched-tokens 32768
-      --port 8000
-    shm_size: '16gb'
+      --model /models/multilingual-e5-large-instruct
+      --served-model-name multilingual-e5-large-instruct
+      --port 8001
+      --tensor-parallel-size 1
+      --dtype half
+      --max-model-len 512
+      --enforce-eager
+      --gpu-memory-utilization 0.85
+    shm_size: '32gb'
     ipc: host
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/v1/models"]
+      test: ["CMD", "curl", "-f", "http://localhost:8001/v1/models"]
       interval: 30s
       timeout: 10s
       retries: 5
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ['2']
+              capabilities: [gpu]
     networks:
-      - vdja
-
+      - net
 
   qdrant:
     image: qdrant/qdrant:latest
-    container_name: qdrant
     restart: unless-stopped
     volumes:
       - ./qdrant_storage:/qdrant/storage
@@ -50,25 +88,29 @@ services:
           devices:
             - driver: nvidia
               device_ids: ['2']
-              capabilities: [gpu]      
+              capabilities: [gpu]
     networks:
-      - vdja
+      - net
 
   ui:
-    image: vdja-ui:latest
-    container_name: rag-ui
-    restart: always
+    image: vdja-ui:1.0   
+    container_name: vdja-ui
+    restart: unless-stopped
     ports:
-      - "127.0.0.1:3000:3000"
-    working_dir: /app
+      - "127.0.0.1:3300:3000"   
+    volumes:
+      - ./db:/app/db
+      - ./env:/app/.env
     depends_on:
       vllm:
+        condition: service_healthy
+      embedding:
         condition: service_healthy
       qdrant:
         condition: service_started
     networks:
-      - vdja
-      
+      - net
+
 networks:
-  vdja:
+  net:
     driver: bridge
