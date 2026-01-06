@@ -55,13 +55,14 @@ router.post("/upload-text", upload.single("file"), async (req, res) => {
       } else if (type.ext === "txt") {
         text = buffer.toString("utf8");
       }
-    } else {
+    } else 
       throw new Error("فرمت فایل پشتیبانی نمی‌شود");
-    }
+    
 
-    if (!text || text.length < 10) {
+    if (!text || text.length < 10) 
       throw new Error("متن استخراج‌شده بسیار کوتاه یا خالی است");
-    }
+    
+    await db.logAction(req.body.user_key || 'anonymous', 'upload_text', `Type: ${type.ext}`);
   } catch (err) {
     console.error("Upload text error:", err);
     return res.status(400).json({
@@ -69,9 +70,9 @@ router.post("/upload-text", upload.single("file"), async (req, res) => {
         "خطا در استخراج متن از فایل. این فایل ممکن است اسکن‌شده، تصویرمحور یا دارای فونت‌های خاص باشد که استخراج متن از آن دشوار است. برای PDFهای فارسی، پیشنهاد می‌شود فایل را به صورت متنی (Text-based) ذخیره کنید.",
     });
   } finally {
-    if (req.file && fs.existsSync(req.file.path)) {
+    if (req.file && fs.existsSync(req.file.path)) 
       fs.unlinkSync(req.file.path); // immediate delete
-    }
+    
   }
 
   res.json({ text });

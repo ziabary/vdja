@@ -72,6 +72,7 @@ Strict rules:
             if (done) {
               res.write("data: [DONE]\n\n");
               res.end();
+              await db.logAction(req.body.user_key || 'anonymous', 'summarize', `Max words: ${max_words}`);
               break;
             }
 

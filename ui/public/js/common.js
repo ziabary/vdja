@@ -70,10 +70,8 @@ function toast(message = "عملیات موفق", type = "success", delay = 4000
   toastEl.addEventListener("hidden.bs.toast", () => toastEl.remove());
 }
 
-// تابع Confirm Dialog — تأیید عملیات مهم
 function confirmDialog(options = {}) {
   return new Promise((resolve) => {
-    // تنظیمات پیش‌فرض
     const config = {
       title: "تأیید عملیات",
       message: "آیا از انجام این کار مطمئن هستید؟",
@@ -84,7 +82,6 @@ function confirmDialog(options = {}) {
       ...options
     };
 
-    // ساخت مودال اگر وجود نداشته باشه
     let modalEl = document.getElementById("globalConfirmModal");
     if (!modalEl) {
       modalEl = document.createElement("div");
@@ -107,7 +104,6 @@ function confirmDialog(options = {}) {
       document.body.appendChild(modalEl);
     }
 
-    // پر کردن محتوا
     modalEl.querySelector("#confirmModalTitle").textContent = config.title;
     modalEl.querySelector("#confirmModalMessage").textContent = config.message;
 
@@ -120,13 +116,11 @@ function confirmDialog(options = {}) {
     const modal = new bootstrap.Modal(modalEl);
     modal.show();
 
-    // دکمه تأیید
     document.getElementById("confirmYesBtn").onclick = () => {
       modal.hide();
       resolve(true);
     };
 
-    // دکمه لغو یا بستن مودال
     modalEl.addEventListener("hidden.bs.modal", () => {
       resolve(false);
     }, { once: true });
@@ -163,10 +157,8 @@ function showError(message) {
 
    const modal = new bootstrap.Modal(modalEl, { backdrop: "static", keyboard: false });
    modal.show();
-   return modal; // برمی‌گردونه تا بتونیم hide کنیم
- }
+   return modal; 
 
- // تابع برای بستن modal loading
  function hideLoadingModal() {
    const modalEl = document.getElementById("globalLoadingModal");
    if (modalEl) {
@@ -174,3 +166,7 @@ function showError(message) {
      if (modal) modal.hide();
    }
  }
+
+ document.getElementById("openidLogin").addEventListener("click", () => {
+  window.location.href = "/api/auth/openid";
+});

@@ -1,31 +1,20 @@
 require("dotenv").config();
-
-const Database = require('better-sqlite3');
-const db = new Database('db/vdja.db', { timeout: 5000 });
+const db = require("./services/db");
 const { deleteAllByUser } = require("./services/qdrant");
 
-const INACTIVE_DAYS = 7; 
+const INACTIVE_DAYS = 7;
 
 async function cleanupInactiveUsers() {
-  console.log(`شروع پاکسازی کاربرانی که بیش از ${INACTIVE_DAYS} روز لاگین نکردند...`);
+  console.log(`Starting cleanup for users inactive > ${INACTIVE_DAYS} days...`);
 
-  const cutoffDate = new Date();
-  cutoffDate.setDate(cutoffDate.getDate() - INACTIVE_DAYS);
-  const cutoffISO = cutoffDate.toISOString();
-
-  const inactiveUsers = db
-    .prepare(`
-      SELECT user_key FROM users 
-      WHERE last_login_at < ?
-    `)
-    .all(cutoffISO);
+  const inactiveUsers = await db.getInactiveUsers(INACTIVE_DAYS);
 
   if (inactiveUsers.length === 0) {
-    console.log("هیچ کاربر غیرفعالی یافت نشد.");
+    console.log("No inactive users found.");
     return;
   }
 
-  console.log(`${inactiveUsers.length} کاربر غیرفعال یافت شد.`);
+  console.log(`${inactiveUsers.length} inactive users found.`);
 
   let totalDeletedChunks = 0;
 
@@ -33,25 +22,19 @@ async function cleanupInactiveUsers() {
     try {
       const deletedChunks = await deleteAllByUser(user_key);
       totalDeletedChunks += deletedChunks;
-
-      // حذف همه داده‌های کاربر از SQLite
-      db.prepare("DELETE FROM files WHERE user_key = ?").run(user_key);
-      db.prepare("DELETE FROM chats WHERE user_key = ?").run(user_key);
-      db.prepare("DELETE FROM messages WHERE chat_id IN (SELECT chat_id FROM chats WHERE user_key = ?)").run(user_key);
-      db.prepare("DELETE FROM users WHERE user_key = ?").run(user_key);
-
-      console.log(`کاربر ${user_key.slice(0, 8)}... حذف شد (${deletedChunks} چانک)`);
+      await db.deleteUserData(user_key);
+      console.log(`User ${user_key.slice(0, 8)}... deleted (${deletedChunks} chunks)`);
     } catch (err) {
-      console.error(`خطا در حذف کاربر ${user_key.slice(0, 8)}...:`, err.message);
+      console.error(`Error deleting user ${user_key.slice(0, 8)}...:`, err.message);
     }
   }
 
-  console.log(`پاکسازی کامل شد. مجموع ${totalDeletedChunks} چانک از Qdrant حذف شد.`);
+  console.log(`Cleanup complete. Total ${totalDeletedChunks} chunks deleted from Qdrant.`);
 }
 
 cleanupInactiveUsers()
   .then(() => process.exit(0))
   .catch(err => {
-    console.error("خطا در پاکسازی:", err);
+    console.error("Cleanup error:", err);
     process.exit(1);
   });

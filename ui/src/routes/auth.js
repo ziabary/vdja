@@ -4,27 +4,24 @@ const db = require("../services/db");
 
 const router = express.Router();
 
-router.post("/login", (req, res) => {
+router.post("/login", async (req, res) => {
   try {
     let user_key = req.body.user_key || uuidv4();
-
-    const existingUser = db.prepare("SELECT user_key FROM users WHERE user_key = ?").get(user_key);
-
+    if (req.body.user_key && req.body.user_key.length < 16) {
+      return res.status(400).json({ error: "کلید نامعتبر" });
+    }
+    const existingUser = await db.getUser(user_key);
     if (!existingUser) {
-      db.prepare(`
-        INSERT INTO users (user_key, created_at, last_login_at)
-        VALUES (?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-      `).run(user_key);
-      console.log(`کاربر جدید ثبت شد: ${user_key.slice(0, 8)}...`);
+      await db.insertUser(user_key);
+      console.log(`New user added: ${user_key.slice(0, 8)}...`);
     } else {
-      db.prepare("UPDATE users SET last_login_at = CURRENT_TIMESTAMP WHERE user_key = ?")
-        .run(user_key);
-      console.log(`کاربر وارد شد: ${user_key.slice(0, 8)}...`);
+      await db.updateUserLogin(user_key);
+      console.log(`User logged in: ${user_key.slice(0, 8)}...`);
     }
 
     res.json({ success: true, user_key });
   } catch (err) {
-    console.error("خطا در لاگین:", err);
+    console.error("Error in login:", err);
     res.status(500).json({ error: "خطا در ورود" });
   }
 });

@@ -10,7 +10,8 @@ RUN apk add --no-cache \
     make \
     g++ \
     git \
-    openssh-client
+    vim \
+    openssh-client 
 
 RUN ln -sf /usr/bin/python3 /usr/bin/python || true
 

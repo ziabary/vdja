@@ -27,7 +27,7 @@ When translating to Persian:
 - Use Persian guillemets «» instead of ".
 - Use Persian numerals in normal text, but keep English numerals in formulas, dates, or technical values.`;
 
-  const userPrompt = `Translate from ${source_lang} to ${target_lang}: ${text.trim()}`;
+  const userPrompt = `Translate from "${source_lang}" into "${target_lang}": ${text.trim()}`;
 
   console.log(
     `[Translate] Source: ${source_lang} → Target: ${target_lang} | Text: "${shortText(
@@ -67,6 +67,7 @@ When translating to Persian:
             if (done) {
               res.write("data: [DONE]\n\n");
               res.end();
+              await db.logAction(req.body.user_key || 'anonymous', 'translate', `From: ${source_lang} To: ${target_lang}`);
               break;
             }
 
