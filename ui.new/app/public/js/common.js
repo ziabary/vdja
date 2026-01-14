@@ -168,9 +168,11 @@ function showError(message) {
 
  // تابع برای بستن modal loading
  function hideLoadingModal() {
+  setTimeout(()=>{
    const modalEl = document.getElementById("globalLoadingModal");
    if (modalEl) {
      const modal = bootstrap.Modal.getInstance(modalEl);
      if (modal) modal.hide();
    }
+  }, 500)
  }

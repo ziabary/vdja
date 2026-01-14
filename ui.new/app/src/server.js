@@ -19,6 +19,7 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 app.use(express.json({ trustXFF: true }));
+app.set('trust proxy', true);
 
 const limiter = rateLimit({
   windowMs: 1  * 60 * 1000, // 15 minutes
@@ -76,3 +77,4 @@ app.listen(PORT, "0.0.0.0", () => {
 
   console.log(`UI running at http://localhost:${PORT}`);
 });
+

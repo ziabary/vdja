@@ -9,17 +9,19 @@ const db = require("../services/db");
 const { date2Jalali } = require("../utils/i18n");
 const { fileTypeFromBuffer } = require("file-type");
 const { chunkText } = require("../services/embedding");
+const { getEmbedding } = require("../services/embedding");
 const {
   initCollection,
   upsertChunks,
   searchChunks,
   deleteByFileId,
   deleteAllByUser,
-  retrieveChunks,
 } = require("../services/qdrant");
-const { getEmbedding } = require("../services/embedding");
 const { callVLLMStream } = require("../utils/vllmUtils");
-const summarizePrompt = "درخواست خودکار به جای کاربر: مکالمه قبلی رو کامل خلاصه کن به نحوی که بشه مکالمه رو با این خلاصه ادامه داد."
+const SUMMARIZE_PROMPT = `درخواست خودکار به جای کاربر: مکالمه قبلی رو کامل خلاصه کن به نحوی که بشه مکالمه رو با این خلاصه ادامه داد.
+- علاوه بر خلاصه‌سازی ۵ عبارت کلیدی از متن استخراج کن و با الگوی زیر بدون بولت و در یک سطر بده:
+  عبارات کلیدی: عبارت کلیدی, عبارت کلیدی, عبارت کلیدی, عبارت کلیدی, عبارت کلیدی
+`
 
 const router = express.Router();
 const upload = multer({
@@ -28,20 +30,19 @@ const upload = multer({
 });
 const VLLM_URL = process.env.VLLM_URL || "http://localhost:8000";
 const VLLM_MODEL = process.env.VLLM_MODEL || "targoman";
+GLOBAL_USER = process.env.GLOBAL_USER 
+NEWS_USER = process.env.NEWS_USER 
+SPECIAL_USERS = process.env.SPECIAL_USERS 
 
-initCollection();
+function mustLimitFiles(user_key) {
+  console.log({debugMode: process.env.DEBUG_MODE, special: SPECIAL_USERS }) 
 
-function shortText(text, len = 50) {
-  return text?.length > len ? text.slice(0, len) + "..." : text || "";
+  return process.env.DEBUG_MODE != 1
+      && ![NEWS_USER, GLOBAL_USER, ...(SPECIAL_USERS||"").split(',')].includes(user_key)
 }
 
-function fixPersianName(name) {
-  if (!name) return name;
-  try {
-    return Buffer.from(name, "latin1").toString("utf8");
-  } catch {
-    return name;
-  }
+function shortenText(text, len = 50) {
+  return text?.length > len ? text.slice(0, len) + "..." : text || "";
 }
 
 async function getLLMResponse(
@@ -126,22 +127,17 @@ router.post("/rag/upload", upload.single("file"), async (req, res) => {
     return res.status(400).json({ error: "کلید نامعتبر" });
 
   const file = req.file;
-  const originalName = Buffer.from(file.originalname, "latin1").toString(
-    "utf8"
-  );
+  const originalName = Buffer.from(file.originalname, "latin1").toString("utf8");
 
   let oldFile = db.getFile(user_key, originalName, file.size);
-  if (oldFile)
-    return res.status(400).json({ error: "این فایل قبلا بارگذاری شده است" });
+  if (oldFile) return res.status(400).json({ error: `فایل  ${originalName} قبلا بارگذاری شده است` });
 
   let userStats = db.getUser(user_key) || db.addUser(user_key);
-
-  const GlobalUserKey = process.env.GLOBAL_USER;
-  if (user_key != GlobalUserKey) {
-    if (userStats.file_count >= 100)
-      return res.status(400).json({ error: "حداکثر ۱۰۰ فایل مجاز است" });
-    if (userStats.total_storage + req.file.size > 10 * 1024 * 1024 * 1024)
-      return res.status(400).json({ error: "حجم کل بیش از ۱۰ گیگابایت است" });
+  if (mustLimitFiles(user_key)) {
+    if (userStats.file_count >= 10)
+      return res.status(400).json({ error: "در نسخه رایگان،‌ حداکثر ۱۰ سند فعال مجاز است" });
+    if (userStats.total_storage + req.file.size > 500 * 1024 * 1024)
+      return res.status(400).json({ error: "در نسخه رایگان، حداکثر حجم مجموع مجاز ۵۰۰ مگابایت است" });
   }
 
   let text = "";
@@ -173,14 +169,15 @@ router.post("/rag/upload", upload.single("file"), async (req, res) => {
         .status(400)
         .json({ error: "متن استخراج‌شده خالی یا بسیار کوتاه است" });
 
+    await initCollection(user_key)
     const fileId = uuidv4();
     const chunks = await chunkText(text, 550);
     const numChunks = await upsertChunks(
       user_key,
-      fileId,
+      fileId, 
       originalName,
       chunks
-    );
+    ); 
 
     db.addUploadedFile(user_key, fileId, originalName, file.size, numChunks);
 
@@ -213,10 +210,13 @@ router.delete("/rag/file/:fileId", async (req, res) => {
   const { fileId } = req.params;
   if (!user_key || !fileId)
     return res.status(400).json({ error: "پارامترها نامعتبر" });
-
-  const deletedChunks = await deleteByFileId(user_key, fileId);
-  db.deleteFile(user_key, fileId);
-  res.json({ success: true, deleted_chunks: deletedChunks });
+  try{
+    const deletedChunks = await deleteByFileId(user_key, fileId);
+    db.deleteFile(user_key, fileId);
+    res.json({ success: true, deleted_chunks: deletedChunks });
+  } catch (e) {
+    res.json({ success: false, deleted_chunks: 0 });
+  }
 });
 
 router.delete("/rag/files", async (req, res) => {
@@ -224,10 +224,14 @@ router.delete("/rag/files", async (req, res) => {
   if (!user_key) return res.status(400).json({ error: "کلید نامعتبر" });
 
   const user = db.getUser(user_key);
-  const deletedChunks = await deleteAllByUser(user_key);
-  db.deleteAllFiles(user_key);
+  try{
+    const deletedChunks = await deleteAllByUser(user_key);
+    db.deleteAllFiles(user_key);
 
-  res.json({ success: true, deleted_chunks: deletedChunks });
+    res.json({ success: true, deleted_chunks: deletedChunks });
+  } catch (e) {
+    res.json({ success: false, deleted_chunks: 0 });
+  }
 });
 
 router.get("/rag/chats", (req, res) => {
@@ -297,12 +301,10 @@ router.post("/rag/chat-message", async (req, res) => {
     return res.status(400).json({ error: "پارامترها نامعتبر" });
 
   const chat = db.getChat(user_key, chat_id);
-  if (!chat)
-    return res.status(403).json({ error: "چت نامعتبر یا دسترسی ندارید" });
+  if (!chat) return res.status(403).json({ error: "چت نامعتبر یا دسترسی ندارید" });
 
-  try {
-    db.updateChatTiming(user_key, chat_id);
-    const history = db.getMessages(chat_id, 21);
+  async function retrieveChatHistory(max_items) {
+    const history = db.getMessages(chat_id, max_items);
     let filteredHistory = [];
     let lastRole = null;
 
@@ -310,108 +312,88 @@ router.post("/rag/chat-message", async (req, res) => {
       if (msg.role !== lastRole) {
         filteredHistory.push({ role: msg.role, content: msg.content });
         lastRole = msg.role;
-        
       } 
       
-      if(msg.role === "user" && msg.content === summarizePrompt) 
+      if(msg.role === "user" && msg.content === SUMMARIZE_PROMPT) 
         filteredHistory = [{ role: msg.role, content: msg.content }]
     }
 
     if(filteredHistory.length && filteredHistory[0].role === "assistant")
       filteredHistory = filteredHistory.slice(1)
+    return filteredHistory
+  }
 
-    //if(filter)
-
-    let retrievedContextFromFiles = "";
-    let ragResults = []
-    const sources = db.getUserFiles(user_key).map(r=>r.file_name)
-
-    const queryEmbedding = await getEmbedding(user_message);
-    if (!queryEmbedding)
-        return res.status(500).json({ error: "خطا در تولید embedding" });
-
-    if (use_files) {
-      ragResults = await searchChunks(user_key, queryEmbedding, 16);
-      const uniqueSources = [];
-      for (let source of ragResults)
-        if (uniqueSources.includes(source.file_name) === false)
-          uniqueSources.push(source.file_name);
-
-      retrievedContextFromFiles = ragResults.map((r) => r.text).join("\n\n");
+  async function embedUserMessage(user_message, history) {
+    //@TODO our model supports [category: ], [brand: ], etc. use it
+    //@TODO preprocess user_message or history in order to add guides to VectorDB in brackets
+    let keywords = []
+    for (const h of history) {
+      const matched = h.content.match(/\n\*?\*?عبارات کلیدی:\*?\*?[\n ](.*,?)+\n/)
+      if(matched && matched.length > 1)
+        keywords = [...keywords, ...matched[1].split(', ')]
     }
-    let globalContext = undefined;
-    let newsContext = undefined;
+    keywords = [...new Set(keywords)]
+    const embedded_query = await getEmbedding((keywords ? `[keywords: ${keywords.join(',')}]`:'') + user_message);
+    if (!embedded_query) 
+      throw Error("Unable to generate embedding")
+    return embedded_query
+  }
 
-    if (!ragResults || ragResults.length < 3) {
-      const globalSearchResults = await searchChunks(
-        process.env.GLOBAL_USER,
-        queryEmbedding,
-        8
-      );
-      globalContext = globalSearchResults.map((r) => r.text).join("\n\n");
-      const newsResults = await searchChunks(
-        process.env.NEWS_USER,
-        queryEmbedding,
-        8
-      );
-      //console.log({newsResults})
-      newsContext = newsResults.map((r) => r.text).join("\n\n");
-    }
+  async function getMatchingContexts(user_key, embedded_query, reportSource = false, max_items = 8){
+    const vectorDBResults = await searchChunks(user_key, embedded_query, max_items);
+    const uniqueActiveSources = [];
+    for (let source of vectorDBResults)
+      if (uniqueActiveSources.includes(source.file_name) === false)
+        uniqueActiveSources.push(source.file_name);
+
+      return {
+        text: vectorDBResults?.length ? vectorDBResults.map((r) => 
+            (reportSource ? `[مرجع: ${r.file_name}] `:'') + r.text).join("\n\n").trim() : "",
+        from: uniqueActiveSources,
+        count: vectorDBResults?.length
+      }
+  }
+
+  try {
+    const filteredHistory = await retrieveChatHistory(21)
+    const allSources = db.getUserFiles(user_key).map(r=>r.file_name)
+    const embeddedQuery = await embedUserMessage(user_message, filteredHistory)
+    const userContext = use_files ? await getMatchingContexts(user_key, embeddedQuery, true, 16) : {}
+    const globalContext = userContext.count && userContext.count > 3 ? {} : await getMatchingContexts(GLOBAL_USER, embeddedQuery, false, 8)
+    const newsContext = userContext.count ? {} : await getMatchingContexts(NEWS_USER, embeddedQuery, false, 8)
 
     /************************************************************** */
     const systemPrompt = `شما یک دستیار هوش مصنوعی فارسی‌زبان هستید که توسط شرکت پردازش هوشمند ترگمان توسعه داده شده است.
 
-### قوانین اجباری — حتماً دقیقاً رعایت کنید:
-- همیشه به زبان فارسی روان، رسمی و طبیعی پاسخ دهید.
+## قوانین اجباری — حتماً دقیقاً رعایت کنید:
+- همیشه به زبان فارسی روان، رسمی و طبیعی پاسخ دهید. 
 - اگر کاربر درباره هویت شما پرسید (مثل «تو کی هستی؟»، «چه مدلی هستی؟»، «ChatGPT هستی؟» و غیره)، دقیقاً و فقط این پاسخ را بدهید:
-  «من یک دستیار هوش مصنوعی مبتنی بر مدل‌های زبانی بزرگ بهینه‌سازی‌شده برای زبان فارسی هستم که توسط شرکت پردازش هوشمند ترگمان مورد توسعه قرار گرفته است. این نسخه از سامانه به صورت آزمایشی در اختیار شما قرار گرفته و در آینده وابسته به نیاز سازمان به‌روز خواهد شد.»
+  «من یک دستیار هوش مصنوعی مبتنی بر مدل‌های زبانی بزرگ بهینه‌سازی‌شده برای زبان فارسی هستم که توسط شرکت پردازش هوشمند ترگمان مورد توسعه قرار گرفته است. این نسخه از سامانه به صورت آزمایشی و رایگان در اختیار شما قرار گرفته است.»
 - اطلاعات تو تا اسفند ۱۴۰۳ و مبتنی بر کلان‌پیکره ترگمان که در آدرس (https://oss.targoman.ir/TLPC) در دسترس است به‌روز شده. اما اخبار ایران رو به صورت لحظه‌ای در حال دریافت هستی.
-
-- اگر کاربر سوال سیاسی یا مذهبی پرسید. دقیقا و فقط این پاسخ را بدهید و هیچ پاسخ اضافه‌ای ندهید:
-  من یک دستیار هوش مصنوعی هستم و فعلا اجازه اظار نظر در خصوص مسایل سیاسی و مذهبی ندارم. 
-${retrievedContextFromFiles.trim() ? `
-- در غیر این صورت:
-  • **ویژه:** اگر سؤال کاربر درباره محتوای فایل آپلودشده، سند، مدرک، یا چیزی شبیه این بود (مثل "این فایل چی هست؟"، "محتوای فایل چیه؟"، "فایل آپلود شده در مورد چیه؟"، "خلاصه سند رو بگو" و غیره)، حتماً و بدون استثنا از محتوای فایل‌های آپلودشده استفاده کنید و خلاصه یا توضیح مناسب بدهید.
-  • اگر اطلاعات کافی در متن‌های مرجع نبود یا مرتبط نبود، صادقانه بگویید: «این اطلاعات در فایل‌های آپلودشده موجود نیست» یا «نمی‌دانم».
-  • پاسخ را کاملاً طبیعی، مفید و مختصر بنویسید.
-` : ''}
-
-- قواعد متن‌های markdown رو رعایت کن و برای فرمول‌ها از MathJax  استفاده کن
+- اگر کاربر سوال سیاسی یا ضد مذهبی پرسید. دقیقا و فقط این پاسخ را بدهید و هیچ پاسخ اضافه‌ای ندهید:
+  من یک دستیار هوش مصنوعی هستم و فعلا اجازه اظهار نظر در خصوص مسایل سیاسی و مذهبی ندارم. 
+- قواعد متن‌های markdown رو رعایت کن و برای فرمول‌ها از MathJax  استفاده کن و حتما دوطرف فرمول و متغیرهای همیشه از $$ استفاده کن. در فرمول‌ها متغیر یا توضیحات همیشه انگلیسی باشند.
 - اگر کاربر درخواست کد کرد یا در جواب خواستی کد بدی حتما از الکوی کدنویسی markdown استفاده کن
-
 - جواب‌ها به کاربر معمولا کمتر از ۵۰۰ کلمه باشد مگر اینکه کاربر خودش متن طولانی‌تر، کامل یا تشریح درخواست کند
-
 - هر زمان کاربر گفت «اسراییل» یا در مورد اسرائیل پرسید، در پاسخ از کلمه رژیم اشغالگر صهیونیستی استفاده کن
-
 - تاریخ حال حاضر به شمسی ${date2Jalali()} و به میلادی ${new Date().toDateString()}
+${userContext.count ? `\n- ** خیلی مهم **: فقط بر مبنای متن‌های مرجع و نام فایل‌های آپلودشده کاربر پاسخ بده و اگر متن مرجع مناسب نیست بگو: در مراجع ارایه شده محتوای مرتبط یافت نشد.` : ''}
+${userContext.count  ? "\n- متن‌های مرجع:\n" + userContext.text: ""}
+${allSources.length ? "\n- فایل‌های آپلود شده کاربر:\n"+ allSources.map((s, i) => `    ${i + 1}. ${s}`).join("\n") : ""}
+${globalContext.count ? "\n- دانش عمومی داخلی:\n" + globalContext.text: ""}
+${newsContext.count ? "\n- اخبار مرتبط (در صورت استفاده، منبع رو اخبار اعلام کن و حتما لینک خبر رو به عنوان منبع بده):\n" + newsContext.text: ""}
 
-${sources.length ? "- فایل‌های آپلود شده توسط کاربر\n"+ sources.map((s, i) => `${i + 1}. ${s}`).join("\n") : ""}
-${
-  retrievedContextFromFiles.trim()
-    ? "متن‌های مرجع (فقط از این متن‌ها برای پاسخ به سؤال استفاده کنید):\n" +
-      retrievedContextFromFiles
-    : "- با توجه به اینکه پاسخ مرتبط با سوال کاربر در هیچ کدام از اسناد آپلود‌شده یافت نشد به او بگو که متاسفانه امکان پاسخگویی وجود ندارد. اگر مایل به چت بدون در نظر گرفتن فایل‌ها است می‌تواند گزینه استفاده از فایل‌ها را غیرفعال کند یا فایل‌ها را حذف کند"
-}
-${
-  globalContext?.trim()
-    ? "\nدانش عمومی داخلی که می‌تونی استفاده کنی:\n" + globalContext
-    : ""
-}
-${
-  newsContext?.trim()
-    ? "\nاخبار مرتبط که می‌تونی استفاده کنی (در صورت استفاده، منبع رو اخبار اعلام کن و حتما لینک خبر رو به عنوان منبع بده):\n" +
-      newsContext
-    : ""
-}
-
+- علاوه بر پاسخ، ۵ عبارت کلیدی از متن استخراج کن و با الگوی زیر بدون بولت و در یک سطر بده:
+  عبارات کلیدی: عبارت کلیدی, عبارت کلیدی, عبارت کلیدی, عبارت کلیدی, عبارت کلیدی
 - در انتهای پاسخ، منبع استفاده‌شده را دقیقاً به یکی از این سه روش زیر در یک خط جداگانه بنویسید (این آخرین خط پاسخ باشد):
-  • اگر از فایل‌ها استفاده کردید:  
-    منابع: منبع ۱، منبع ۲ منبع ۳
-  • اگر از اخبار مرتبط استفاده شد:  
+  1. اگر از متن‌های مرجع استفاده کردید مطابق الگوی زیر:  
+    منابع: 1. [نام مرجع]، 2. [نام مرجع]، 3. [نام مرجع]
+  2. اگر از اخبار مرتبط استفاده شد:  
     منبع: اخبار خزش‌شده 
-  • اگر هیچ اطلاعاتی از فایل‌ها استفاده نشد و از اخبار مرتبط هم استفاده نشد یا هیچ فایلی آپلود نشده:  
+  3. اگر هیچ اطلاعاتی از مراجع استفاده نشد و از اخبار مرتبط هم استفاده نشد  
     منبع: دانش داخلی مدل 
     `;
+
 
     /************************************************************** */
 
@@ -433,7 +415,7 @@ ${
     let attempt = 0;
     let lastError;
     db.log("rag", chat_id, user_message.length, user_message);
-    console.log(`[RAG Chat] ${chat_id} | use files: ${use_files ? true : false} | chunks: ${searchChunks.length} -> ${shortText(user_message)}`);
+    console.log(`[RAG Chat] ${chat_id} | use files: ${use_files ? true : false} | chunks: ${searchChunks.length} -> ${shortenText(user_message)}`);
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Cache-Control", "no-cache");
     res.setHeader("Connection", "keep-alive");
@@ -442,7 +424,8 @@ ${
     while (attempt < maxRetries) {
       attempt++;
       try {
-        console.log({roles: messages.map(a=>({r:a.role, t: a.content.substring(0, 50) + "..."}))})
+        if(process.env.DEBUG_MODE)
+          console.log({roles: messages.map(a=>({r:a.role, t: a.content.substring(0, 50) + "..."}))})
         const vllmRes = await callVLLMStream(VLLM_URL, VLLM_MODEL, messages, {
           max_tokens: 2000,
           temperature: 0.5,
@@ -465,6 +448,7 @@ ${
                     db.prepare(
                       "INSERT INTO messages (chat_id, role, content) VALUES (?, ?, ?)"
                     ).run(chat_id, "assistant", botResponse.trim())
+                    db.updateChatTiming(user_key, chat_id);
                   })()
                 }
                 res.write("data: [DONE]\n\n");
@@ -504,22 +488,24 @@ ${
         console.error(`[RAG Chat] Attempt ${attempt} failed:`, err.message || err);
         if (attempt < maxRetries) 
           await new Promise((r) => setTimeout(r, 1000 * attempt));
+        else 
+          throw Error("خطای غیر قابلبازیابی در تولید محتوا. لطفا چت جدیدی باز کنید.")
         
         if(err.message?.startsWith(`vLLM error 400: {"error":{"message":"'max_tokens' or 'max_completion_tokens' is too large:`)) {
           /************************** */
           if(messages.length  === 2 
-            || (messages.length === 4 && messages[messages.length - 3].content === summarizePrompt))
+            || (messages.length === 4 && messages[messages.length - 3].content === SUMMARIZE_PROMPT))
             throw Error("حجم سوال ورودی زیاد است آن را کاهش دهید یا مکالمه جدیدی شروع کنید")
 
           const toSummarize = messages.slice(1, messages.length > 4 ? messages.length-3 : messages.length - 1)
           res.write("data: [summarizing]");
-          toSummarize.push({role:"user", content: summarizePrompt})
+          toSummarize.push({role:"user", content: SUMMARIZE_PROMPT})
           const summary = (await getLLMResponse(undefined, toSummarize, 1000, 0.5, false))?.content
           if(summary) {
             db.transaction(()=>{
               db.prepare(
                 "INSERT INTO messages (chat_id, role, content) VALUES (?, ?, ?)"
-              ).run(chat_id, "user", summarizePrompt)
+              ).run(chat_id, "user", SUMMARIZE_PROMPT)
               db.prepare(
                 "INSERT INTO messages (chat_id, role, content) VALUES (?, ?, ?)"
               ).run(chat_id, "assistant", summary)
@@ -527,7 +513,7 @@ ${
             res.write("data: [re-thinking]");
             messages = [
               messages[0], 
-              {role:"user", content:summarizePrompt},
+              {role:"user", content:SUMMARIZE_PROMPT},
               {role:"assistant", content:summary},
               ...messages.slice(messages.length > 4 ? messages.length-3 : messages.length - 1)
             ]
@@ -542,6 +528,9 @@ ${
     console.error("[RAG Chat] Error:", err);
     if (!res.headersSent) {
       res.status(500).json({ error: "خطا در ارتباط با مدل" });
+    } else {
+      res.write("[RAG ERROR]: " + err)
+      res.end()
     }
   }
 });

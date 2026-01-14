@@ -17,12 +17,10 @@ async function getEmbedding(text) {
 
     if (!res.ok) {
       const errorText = await res.text();
-      console.error(
-        `Error embedding on LLM: ${res.status} → ${errorText}`
-      );
+      console.error(`Error embedding: ${res.status} → ${errorText}`);
       try{
-       errJson = JSON.parse(errorText)
-       return errJson.error.message
+        errJson = JSON.parse(errorText)
+        return errJson.error.message
       } catch(e){void e}
       return null;
     }

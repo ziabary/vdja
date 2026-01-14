@@ -13,15 +13,17 @@ services:
       - ./models:/models:ro
     command: >
       python -m vllm.entrypoints.openai.api_server
-      --model /models/aya-expanse-8b
+#      --model /models/aya-expanse-8b
+      --model /models/aya-expanse-32b-AWQ
       --served-model-name aya
-      --tensor-parallel-size 4
+      --served-model-name targoman
+      --tensor-parallel-size 2
       --dtype auto
       --max-model-len 8192
       --gpu-memory-utilization 0.85
       --block-size 16
       --enable-chunked-prefill
-      --max-num-batched-tokens 16384
+      --max-num-batched-tokens 32768
       --port 8000
     shm_size: '32gb'
     ipc: host
@@ -53,13 +55,13 @@ services:
     command: >
       python -m vllm.entrypoints.openai.api_server
       --model /models/multilingual-e5-large-instruct
-      --served-model-name multilingual-e5-large-instruct #try  to use BAAI/bge-m3
+      --served-model-name multilingual-e5-large-instruct
       --port 8001
       --tensor-parallel-size 1
       --dtype half
       --max-model-len 512
       --enforce-eager
-      --gpu-memory-utilization 0.85
+      --gpu-memory-utilization 0.65
     shm_size: '32gb'
     ipc: host
     healthcheck:
@@ -93,11 +95,10 @@ services:
       - net
 
   ui:
-    image: vdja-ui:1.0   
-    container_name: vdja-ui
+    image: vdja-ui:1.0
     restart: unless-stopped
     ports:
-      - "127.0.0.1:3300:3000"   
+      - "127.0.0.1:3300:3000"
     volumes:
       - ./db:/app/db
       - ./env:/app/.env
@@ -110,6 +111,26 @@ services:
         condition: service_started
     networks:
       - net
+
+  ui-dev:
+    image: vdja-ui:dev
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3301:3000"
+    volumes:
+      - ./app:/app/
+      - ./env.dev:/app/.env
+    command: yarn dev
+    depends_on:
+      vllm:
+        condition: service_healthy
+      embedding:
+        condition: service_healthy
+      qdrant:
+        condition: service_started
+    networks:
+      - net
+
 
 networks:
   net:

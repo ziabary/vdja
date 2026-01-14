@@ -56,3 +56,8 @@ nav .btn{
 .ltr {
   text-align: left;
 }
+
+mjx-container.MathJax {
+    font-size: 1.3em;
+    font-weight: 900;
+}

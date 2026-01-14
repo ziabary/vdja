@@ -4,39 +4,28 @@ const { getEmbedding } = require("./embedding");
 
 const QDRANT_URL = process.env.QDRANT_URL || "http://localhost:6333";
 const client = new QdrantClient({ url: QDRANT_URL });
+const COLLECTION_PREFIX = "ragdb_";
+ 
+function collectionName(user_key) {return COLLECTION_PREFIX + user_key}
+async function colExists(user_key) {return (await client.collectionExists(collectionName(user_key))).exists}
 
-async function initCollection() {
-  const collectionName = "rag_collection";
+async function initCollection(user_key, high_demand = false) {
+  if(await colExists(user_key)) 
+    return
+
   try {
-    const collections = await client.getCollections();
-    const exists = collections.collections.some(
-      (c) => c.name === collectionName
-    );
-
-    if (exists) {
-      console.log("Qdrant collection was initialized previously");
-      return;
-    }
-
-    await client.createCollection(collectionName, {
-      vectors: { size: 1024, distance: "Cosine" },
-    });
-    console.log("Qdrant collection built successfully");
+      await client.createCollection(collectionName(user_key), {
+          vectors: { size: 1024, distance: "Cosine" },
+          hnsw: { m: 24, ef_construction: 200},
+          on_disk_payload: true,
+      });
+    console.log(`VectorDB collection for ${user_key} built successfully`);
   } catch (err) {
-    if (
-      err.status === 409 ||
-      err.message?.toLowerCase().includes("already exists") ||
-      err.message?.includes("Conflict")
-    ) {
-      console.log("Qdrant collection was initialized previously");
-    } else {
       console.error("Error initializing RAG-DB:", err.message || err);
-    }
   }
 }
 
-
-async function upsertChunks(userKey, fileId, fileName, chunks) {
+async function upsertChunks(user_key, fileId, fileName, chunks) {
   const points = [];
   for (let i = 0; i < chunks.length; i++) {
     let text = ""
@@ -54,7 +43,7 @@ async function upsertChunks(userKey, fileId, fileName, chunks) {
         console.error({embedding, text, l: text.length})
         continue
       } else {
-        console.warn(`Empty embedding for chunk ${i} of user ${userKey} — discarded`);
+        console.warn(`Empty embedding for chunk ${i} of user ${user_key} — discarded`);
         continue;
       }
     }
@@ -63,7 +52,7 @@ async function upsertChunks(userKey, fileId, fileName, chunks) {
       id: uuidv4(),
       vector: embedding,
       payload: {
-        user_key: userKey,
+        user_key: user_key,
         file_id: fileId,
         file_name: fileName,
         chunk_time: time, 
@@ -72,99 +61,106 @@ async function upsertChunks(userKey, fileId, fileName, chunks) {
       },
     });
 
-    if (points.length > 0) await client.upsert("rag_collection", { points });
+    if (points.length > 0) {
+      const batchSize = 100;
+      for (let i = 0; i < points.length; i += batchSize) {
+        const batch = points.slice(i, i + batchSize);
+        try {
+          await client.upsert(collectionName(user_key), { points: batch });
+        } catch (error) {
+          console.error("Upsert failed:", error);
+          throw error
+        }
+      }
+    }
   }
   return points.length;
 }
 
-async function searchChunks(userKey, queryEmbedding, limit = 8) {
-  if (!userKey || !queryEmbedding || queryEmbedding.length === 0) {
-    return [];
-  }
+async function searchChunks(user_key, embedded_query, limit = 8) {
+  if (!user_key || !embedded_query || embedded_query.length === 0 || !await colExists(user_key)) 
+    return []
 
   try {
-    const results = await client.search("rag_collection", {
-      vector: queryEmbedding,
+    //@TODO maybe replaced with recommend to positive/negative matching. 
+    const results = await client.search(collectionName(user_key), {
+      vector: embedded_query,
       limit: limit,
-      params: {
-        hnsw_ef: 256,
-        exact: false,
-      },
-      filter: {
-        must: [
-          {
-            key: "user_key",
-            match: {
-              value: userKey,
-            },
-          },
-        ],
-      },
-      sort: [{ key: "time", order: "desc" }],
+      params: {hnsw_ef: 512, exact: false},
+      // filter: {
+      //   must: [
+      //      { key: "user_key", match: {value: user_key},
+      //      { key: "text", match_text: { value: "keyword" } } 
+      //   }],
+      // },
+      sort: [{ key: "chunk_time", order: "desc" }],
       with_payload: true,
       with_vector: false,
     });
 
-    let chunks =  results
-      .filter((r) => r.payload && r.payload.user_key === userKey)
-      .map((r) => r.payload);
 
-    return chunks
+    let filteredChunks =  results
+      .filter((r) => r.payload && r.payload.user_key === user_key && r.score > 0.8)
+      
+
+    if(process.env.DEBUG_MODE)
+      console.log({
+        chunks: filteredChunks.map(r=>({file:r.payload.file_name, score: r.score, p: r.payload.text})), 
+        filtered: results.length- filteredChunks.length
+      })
+
+    /*
+    const resultsByFile = {};
+    for (const result of results) {
+      const fileId = result.payload.file_id;
+      if (!resultsByFile[fileId]) resultsByFile[fileId] = [];
+      resultsByFile[fileId].push(result);
+    }
+    // Select top 1 result per file
+    const finalResults = Object.values(resultsByFile).map(fileResults => 
+      fileResults.sort((a, b) => b.score - a.score)[0]
+    );
+    */
+
+    return filteredChunks.map((r) => r.payload);
   } catch (err) {
-    console.error("Error searching Qdrant:", err.message);
     if (err.status === 400) {
       console.error("Maybe the filter is buggy. New syntax needed");
-    }
+      console.error(err)
+    } else 
+      console.error("Error searching VectorDB:", err.message);
     return [];
   }
 }
 
-async function deleteByFileId(userKey, fileId) {
-  const results = await client.scroll("rag_collection", {
-    filter: {
-      must: [
-        { key: "user_key", match: { value: userKey } },
-        { key: "file_id", match: { value: fileId } },
-      ],
-    },
-    limit: 1000,
-  });
-  const pointIds = results.points.map((p) => p.id);
-  if (pointIds.length > 0) {
-    await client.delete("rag_collection", { points: pointIds });
-  }
-  return pointIds.length;
+async function deleteByFileId(user_key, fileId) {
+  if (!await colExists(user_key))
+    throw Error("there is no vector collection for: " + user_key)
+
+  let offset = null;
+  let removed = 0
+  do {
+    const { points, next_page_offset } = await client.scroll(collectionName(user_key), {
+        limit: 1000, 
+        offset: offset,
+        with_vector: false,
+        with_payload: false,
+        filter: {must: [{ key: "file_id", match: { value: fileId } }]},
+    });
+    const pointIds = points.map((p) => p.id);
+    if (pointIds.length > 0) 
+      await client.delete(collectionName(user_key), { points: pointIds });
+    removed += pointIds.length
+    offset = next_page_offset
+  } while (offset);
+  
+  return removed;
 }
 
-async function deleteAllByUser(userKey) {
-  let deletedCount = 0;
-  let offset = null;
-  const batchSize = 500; // Increased limit
-
-  do {
-    const scrollRes = await client.scroll("rag_collection", {
-      limit: batchSize,      offset,
-      with_payload: true,
-      filter: {
-        must: [
-          {
-            key: "user_key",
-            match: { value: userKey },
-          },
-        ],
-      },
-    });
-
-    const points = scrollRes.points || [];
-    if (points.length === 0) break;
-
-    const ids = points.map((p) => p.id);
-    await client.delete("rag_collection", { points: ids });
-    deletedCount += ids.length;
-    offset = scrollRes.next_page_offset || null;
-  } while (offset);
-
-  return deletedCount;
+async function deleteAllByUser(user_key) {
+  if (!await colExists(user_key))
+    throw Error("There is no vector collection for: " + user_key)
+  return await client.deleteCollection(collectionName(user_key))
 }
 
 module.exports = {

@@ -5,6 +5,7 @@ async function callVLLMStream(url, model, messages, params = {}) {
     stream: true,
     ...params,
   };
+  console.log(`Calling LLM for [${defaultParams.stream ? "stream":"flush"}] ${(typeof messages === "string" ? messages : messages[messages.length - 1].content).substring(0, 50)+"..."}`)
 
   const response = await fetch(`${url}v1/chat/completions`, {
     method: "POST",

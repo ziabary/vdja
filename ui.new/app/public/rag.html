@@ -370,6 +370,11 @@
 
     <script src="js/bootstrap.bundle.min.js"></script>
     <script src="js/common.js"></script>
+    <!-- MathJax -->
+    <script src="js/mathjax/config.js"></script>
+    <script src="js/polyfill.min.js?features=es6"></script>
+    <script src="js/mathjax/es5/tex-mml-chtml.js"></script>
+
     <script>
       const userKey = sessionStorage.getItem("user_key");
       if (!userKey || userKey.length < 16) {
@@ -453,6 +458,7 @@
         }`;
         if (role === "user") {
           msgDiv.innerHTML = content.replace(/\r?\n/g, "<br/>");
+          setTimeout(()=>window.MathJax.typesetPromise([msgDiv]))
         } else {
           prettyShowResponse(content, msgDiv)
           updateDirection(msgDiv, content);
@@ -642,6 +648,7 @@
       async function loadChat(chatId, chatTitle) {
         currentChatId = chatId;
         currentChatTitle.innerHTML = "در حال لود...";
+        chatContainer.innerHTML = ""
 
         try {
           const res = await fetch(
@@ -662,7 +669,7 @@
             role: m.role,
             content: m.content,
           }));
-          messages.forEach((m) => appendMessage(m.role, m.content));
+          messages.forEach((m) => appendMessage(m.role, m.content.startsWith('درخواست خودکار به جای کاربر:') ? 'خلاصه مکالمات قبلی' : m.content));
           chatContainer.scrollTop = chatContainer.scrollHeight;
           currentChatTitle.innerHTML = chatTitle + editHelp
           location.hash = chatId
@@ -683,19 +690,19 @@
           sourceEl.style.display = "none";
           botMessageWrapper.appendChild(sourceEl);
 
-          let mainAnswer = fullResponse.trim();
-          let sourceText = "";
+          let mainAnswer = fullResponse.trim().replace(/\n\*?\*?عبارات کلیدی:\*?\*?[\n ](.*,?)+\n/, '')
 
+          let sourceText = "";
           const patterns = [
-            /\n\n?\*\*?منابع?\*\*?[:：]\s*([\s\S]*)$/i,
-            /\n\n?\*\*?منابع[:：]?\*\*?\s*([\s\S]*)$/i,
-            /\n\n?منابع[:：]\s*([\s\S]*)$/i,
+            /\n\n?\*?\*?منا?بع?\*?\*?[:：]\n?\s*([\s\S]*)$/i,
+            /\n\n?\*?\*?منا?بع[:：]?\*?\*?\n?\s*([\s\S]*)$/i,
+            /\n\n?منابع[:：]\n?\s*([\s\S]*)$/i,
             /\n---\n[\s\S]*$/i,
-            /\n\nمنا?بع[:؛]\s*([\s\S]*)$/i,
-            /\n\*\*منا?بع\*\*[:؛]\s*([\s\S]*)$/i,
-            /منا?بع[:؛]\s*دانش داخلی مدل\s*$/i,
-            /منا?بع\s*:\s*دانش داخلی مدل\s*$/i,
-            /منا?بع\s*:\s*دانش داخلی مدل\s*$/i,
+            /\n\nمنا?بع[:؛]\n?\s*([\s\S]*)$/i,
+            /\n\*\*منا?بع\*\*[:؛]\n?\s*([\s\S]*)$/i,
+            /منا?بع[:؛]\n?\s*دانش داخلی مدل\s*$/i,
+            /منا?بع\s*:\n?\s*دانش داخلی مدل\s*$/i,
+            /منا?بع\s*:\n?\s*دانش داخلی مدل\s*$/i,
           ];
 
           let matched = false;
@@ -722,10 +729,8 @@
               .join("، ");
           }
 
-          const finalSafe = mainAnswer
-            //.replace(/</g, "&lt;")
-            //.replace(/>/g, "&gt;");
-          botMsg.innerHTML = marked.parse(finalSafe || fullResponse);
+          botMsg.innerHTML = marked.parse(mainAnswer);
+          window.MathJax.typesetPromise([botMsg])
 
           if (sourceText === "دانش داخلی مدل") {
             sourceEl.innerHTML = `<em style="color:#94a3b8;">منبع: دانش داخلی مدل</em>`;
@@ -832,6 +837,7 @@
                 .filter((l) => l.startsWith("data: "));
 
               for (const line of lines) {
+                if (line.startsWith("[RAG ERROR]: ")){toast(line.replace("[RAG ERROR]: ", ""), "danger")}
                 if (line === "data: [DONE]") continue;
                 if (line === "data: [summarizing]") {document.querySelector(".bot-text .thinking").innerText = "در حال خلاصه‌سازی مکالمات"; continue};
                 if (line === "data: [re-thinking]") {document.querySelector(".bot-text .thinking").innerText = "در حال فکر کردن مجدد"; continue};
@@ -844,6 +850,7 @@
 //                    .replace(/</g, "&lt;")
 //                    .replace(/>/g, "&gt;");
                   botMsg.innerHTML = marked.parse(safeResponse);
+                  window.MathJax.typesetPromise([botMsg])
                   updateDirection(botMsg, fullResponse);
                   chatContainer.scrollTop = chatContainer.scrollHeight;
                 } catch (e) {
@@ -938,7 +945,7 @@
         if (files.length === 0) { hideLoadingModal(); return; }
 
         const loadingModal = showLoadingModal(
-          "در حال بارگذاری و پردازش فایل‌ها... لطفاً صبر کنید"
+          "در حال بارگذاری و پردازش فایل‌ها...\n لطفاً صبر کنید"
         );
 
         for (const file of files) {
@@ -972,7 +979,6 @@
           } catch (err) {
             console.error(err);
             toast(`خطا در ارتباط با سرور برای ${file.name}`, "danger");
-            hideLoadingModal();
             return;
           }
           // Simple batching: small delay to avoid overload
@@ -1179,7 +1185,7 @@
       
         
 
-      if (currentChatId) loadChat(currentChatId);
+      if (currentChatId) setTimeout(()=>loadChat(currentChatId), 100);
       else updateAppState(enuStates.newChat); 
     </script>
   </body>

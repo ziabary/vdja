@@ -1,8 +1,29 @@
 process.env.SQLITE_UTF8 = '1';
-const Database = require('better-sqlite3');
+
+// const getConfigs = require('./config');
+// const mysql2 = require('mysql2');
+// const mssql = require('mssql');
+// const betterSqlite3 = require('better-sqlite3');
+
+// function getDB() {
+//   switch (getConfigs().dbType) {
+//     case 'sqlite':
+//       return new betterSqlite3(getConfigs().sqlite.path, { timeout: sqlite.timeout });
+//     case 'mysql':
+//       return mysql2.createConnection(getConfigs().mysql);
+//     case 'mssql':
+//       return mssql.connect(getConfigs().mssql);
+//     default:
+//       throw new Error('Unsupported database type');
+//   }
+// }
+
+// module.exports = { getDB };
+
+const betterSqlite3 = require('better-sqlite3');
 
 function initDB(path, tables){
-  const db = new Database(path, { timeout: 5000 });
+  const db = new betterSqlite3(path, { timeout: 5000 });
   db.pragma('journal_mode = WAL');
   db.pragma('busy_timeout = 5000');
   db.pragma('encoding = "UTF-8"');
