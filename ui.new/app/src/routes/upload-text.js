@@ -52,7 +52,7 @@ router.post("/upload-text", upload.single("file"), async (req, res) => {
       } else if (type.ext === "docx") {
         const result = await mammoth.extractRawText({ buffer });
         text = result.value;
-      } else if (type.ext === "txt") {
+      } else if (type.ext === "txt" || type.ext === "md") {
         text = buffer.toString("utf8");
       }
     } else {

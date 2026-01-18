@@ -239,13 +239,21 @@
         navigator.clipboard.writeText(outputText.textContent);
       });
 
+      const MAX_CHARS = 2000
+
       translateBtn.addEventListener("click", async () => {
         const text = inputText.value.trim();
         if (!text) return;
-
+        
         if(targetSelect.value !== 'fa' && sourceSelect.value === 'auto') {
           toast("زبان مبدا را تعیین کنید", "danger")
           return
+        }
+
+
+        if(text.length > MAX_CHARS) {
+          toast(`طول متن از حد مجاز بیشتر است و تنها ${MAX_CHARS} ابتدایی آن ترجمه خواهد شد`, "warning")
+          text = tex.slice(0, MAX_CHARS)
         }
 
         translateBtn.disabled = true;
@@ -304,12 +312,6 @@
                   e=>Object.keys(json.antonyms[e]).map(
                     k=>`<strong>${e}<small><i> (${k})</i></small>: </strong>${makeLinks(json.antonyms[e][k]).join(", ")}`).join("<br/>"))
                   .join("</li><li>")}</li>`
-/*              if(json['related words'])
-                dicResult += `<h4>کلمات مرتبط:</h4><ul><li>${Object.keys(json['related words']).map(
-                  e=>Object.keys(json['related words'][e]).map(
-                    k=>`<strong>${e}<small><i>(${k})</i></small>: </strong>${json['related words'][e][k].join(", ")}`).join("<br/>"))
-                  .join("</li><li>")}</li>`
-                */
               outputText.innerHTML = dicResult
 
               } catch(e) {
@@ -340,6 +342,7 @@
           outputText.classList.remove("streaming");
         }
       });
+
       const RTL_LANGS = ["fa", "ar", "he"];
 
       fileInput.addEventListener("change", async () => {
@@ -372,10 +375,10 @@
 
           const data = await res.json();
           const fullText = data.text;
-          if (fullText.length > 10000) {  // assuming same limit
+          if (fullText.length > MAX_CHARS) {  // assuming same limit
             toast("متن فایل بیش از حد مجاز است و بریده شد.", "warning");
           }
-          inputText.value = fullText.slice(0, 1000);
+          inputText.value = fullText.slice(0, MAX_CHARS - 1);
 
           progressBar.style.width = "100%";
           setTimeout(() => {

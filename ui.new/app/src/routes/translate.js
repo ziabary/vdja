@@ -44,12 +44,14 @@ fs.readFile('/app/db/dic.json', 'utf8', (err, data) => {
   dictionary = JSON.parse(data);
 });
 
+const MAX_LEN = 2000
+
 router.post("/translate", async (req, res) => {
   const { text, source_lang, target_lang } = req.body;
 
-  if (!text?.trim()) {
+  if (!text?.trim()) 
     return res.status(400).json({ error: "متن خالی است" });
-  }
+  
 
   if (source_lang === target_lang) {
     return res
@@ -61,14 +63,14 @@ router.post("/translate", async (req, res) => {
   if(promptSource === 'auto')
     promptSource = "auto-detect based on provided text"
 
-  const trimmed_text = text.trim()
-  const shortenedText = shortText(      trimmed_text    )
+  const trimmed_text = text.trim().slice(0, MAX_LEN)
+  const shortenedText = shortText(trimmed_text)
 
   const dicResult = dictionary[shortenedText.toLowerCase()]
 
   let systemPrompt = `You are a professional and accurate translator. 
 Strict rules:
-  - Output only the translation, no extra text or explanation.
+  - Just translate in plain text format do not give any extra text or any explanation.
   - Absolutely do not summarize or skip any part.
   - Do not change order of text and translate in the same order as input
   - Forget any past translation or summarization and give a new translation.
@@ -76,7 +78,8 @@ Strict rules:
   - If user prompt is less than 3 words or it is not a complete sentence response similar to a professional dictionary which provides meanings in diverse areas
   - When translating to Persian:
      - Use Persian guillemots «» instead of ".
-     - Use Persian numerals in normal text, but keep English numerals in formulas, dates, or technical values.`;
+     - Use Persian numerals in normal text, but keep English numerals in formulas, dates, or technical values.
+  `;
 
   let userPrompt = `Translate from ${source_lang} to ${target_lang}: ${trimmed_text}`;
   if (dicResult && ((['en', 'auto'].includes(source_lang) && target_lang === 'fa') || (['fa', 'auto'].includes(source_lang) && target_lang == 'en'))) {
@@ -115,7 +118,7 @@ Strict rules:
       ];
 
       const vllmRes = await callVLLMStream(VLLM_URL, VLLM_MODEL, messages, {
-        max_tokens: 1500,
+        max_tokens: 2000,
         temperature: 0.3,
       });
 

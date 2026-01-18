@@ -1,6 +1,8 @@
 require("dotenv").config();
 const { v4: uuidv4 } = require("uuid");
 const { initCollection, upsertChunks } = require("../services/qdrant");
+const https = require('https');
+const agent = new https.Agent({ rejectUnauthorized: false });
 
 process.env.SQLITE_UTF8 = "1";
 const Database = require("better-sqlite3");
@@ -25,11 +27,67 @@ const NEWS_USER = process.env.NEWS_USER || "";
 
 if (!NEWS_USER) throw "Now NEWS_USER defined";
 
+function fetchWithHttps(url, maxRedirects = 10) {
+  return new Promise((resolve, reject) => {
+    function doRequest(currentUrl, redirectCount) {
+      if (redirectCount > maxRedirects) {
+        return reject(new Error('Too many redirects'));
+      }
+
+      const currentUrlObj = new URL(currentUrl);
+      const options = {
+        host: currentUrlObj.hostname,
+        port: currentUrlObj.port || 443,
+        path: currentUrlObj.pathname + currentUrlObj.search,
+        method: 'GET',
+        agent, // Use the custom agent
+      };
+
+      const req = https.get(options, (res) => {
+        let data = '';
+
+        res.on('data', (chunk) => {
+          data += chunk;
+        });
+
+        res.on('end', () => {
+          if (res.statusCode === 301 || res.statusCode === 302) {
+            const location = res.headers.location;
+            if (location) {
+              // Resolve relative URL
+              const newUrl = new URL(location, currentUrl).href;
+              // Follow the redirect
+              doRequest(newUrl, redirectCount + 1);
+            } else {
+              reject(new Error('Redirect without location header'));
+            }
+          } else {
+            // Not a redirect, return the result
+            resolve({
+              status: res.statusCode,
+              headers: res.headers,
+              data: data,
+            });
+          }
+        });
+      });
+
+      req.on('error', (err) => {
+        reject(err);
+      });
+    }
+
+    doRequest(url, 0);
+  });
+}
+
+let totalAdded = 0
 async function addFeedToDB(url) {
   console.log("==================================================");
   console.log(`Trying ${url} on ${new Date().toLocaleString("fa-IR")}`);
-  console.log("==================================================");
-  const res = await fetch(url).then((r) => r.text());
+  const res = await fetchWithHttps(url).then(r=>r.data)
+  //console.log(res)
+  //const res = await fetch(url).then((r) => r.text());
   const xml = res.replace(/\r?\n[ \t]*/g, "");
   const matched = xml.match(/<item>(.*?)<\/item>/g);
   const tobeAdded = [];
@@ -54,7 +112,12 @@ async function addFeedToDB(url) {
 شرح: ${desc[1]}`;
 
       if (tobeAdded.some((v) => v.link == link)) continue;
-      tobeAdded.push({ link, time: time.length ? time[1] : undefined, text });
+      let chunkTimeSeconds = undefined
+      if(time.length) {
+        const chunkTime = new Date(time[1]);
+        chunkTimeSeconds = Math.floor(chunkTime.getTime() / 1000);
+      }
+      tobeAdded.push({ link, time: chunkTimeSeconds, text });
     }
   }
   if (tobeAdded.length) {
@@ -66,6 +129,9 @@ async function addFeedToDB(url) {
         .run(item.link, fileId)
     );
   }
+  totalAdded += tobeAdded.length
+  console.log(`===> ${tobeAdded.length} news added`)
+  console.log("==================================================");
 }
 
 // deleteAllByUser(NEWS_USER).then((deleted)=>{
@@ -73,7 +139,41 @@ async function addFeedToDB(url) {
 
 async function start() {
   await initCollection(NEWS_USER);
-
+  await addFeedToDB("https://www.khabarfoori.com/fa/feeds/?p=ZGF0ZVJhbmdlJTVCc3RhcnQlNUQ9LTQzMjAw")
+  await addFeedToDB("https://www.khabarfoori.com/fa/feeds/?p=ZGF0ZVJhbmdlJTVCc3RhcnQlNUQ9LTYwNDgwMCZwb3NpdGlvbkZyb250PTI%2C")
+  await addFeedToDB("https://www.khabarfoori.com/fa/feeds/?p=ZGF0ZVJhbmdlJTVCc3RhcnQlNUQ9LTYwNDgwMCZwb3NpdGlvbkZyb250PTM%2C")
+  await addFeedToDB("https://www.khabarfoori.com/fa/feeds/?p=ZGF0ZVJhbmdlJTVCc3RhcnQlNUQ9LTIxNjAwJm9yZGVyPWhpdHM%2C")
+  await addFeedToDB("https://www.khabarfoori.com/fa/feeds/?p=Y2F0ZWdvcmllcz01OSZkYXRlUmFuZ2UlNUJzdGFydCU1RD0tNjA0ODAwJnBvc2l0aW9uRnJvbnQ9NA%2C%2C")
+  await addFeedToDB("https://www.khabarfoori.com/fa/feeds/?p=Y2F0ZWdvcmllcz0xNDUmZGF0ZVJhbmdlJTVCc3RhcnQlNUQ9LTYwNDgwMCZwb3NpdGlvbkZyb250PTQ%2C")
+  await addFeedToDB("https://www.khabarfoori.com/fa/feeds/?p=Y2F0ZWdvcmllcz02OSZkYXRlUmFuZ2UlNUJzdGFydCU1RD0tNjA0ODAwJnBvc2l0aW9uRnJvbnQ9NA%2C%2C")
+  await addFeedToDB("https://www.khabarfoori.com/fa/feeds/?p=Y2F0ZWdvcmllcz0xNzMmZGF0ZVJhbmdlJTVCc3RhcnQlNUQ9LTYwNDgwMCZwb3NpdGlvbkZyb250PTQ%2C")
+  await addFeedToDB("https://www.khabarfoori.com/fa/feeds/?p=Y2F0ZWdvcmllcz05JmRhdGVSYW5nZSU1QnN0YXJ0JTVEPS02MDQ4MDAmcG9zaXRpb25Gcm9udD00")
+  await addFeedToDB("https://www.khabarfoori.com/fa/feeds/?p=Y2F0ZWdvcmllcz0zOSZkYXRlUmFuZ2UlNUJzdGFydCU1RD0tNjA0ODAwJnBvc2l0aW9uRnJvbnQ9NA%2C%2C")
+  await addFeedToDB("https://www.khabarfoori.com/fa/feeds/?p=Y2F0ZWdvcmllcz0zMiZkYXRlUmFuZ2UlNUJzdGFydCU1RD0tNzc3NjAwMCZwb3NpdGlvbkNhdGVnb3J5PTI%2C")
+  await addFeedToDB("https://www.khabarfoori.com/fa/feeds/?p=Y2F0ZWdvcmllcz0yMiZkYXRlUmFuZ2UlNUJzdGFydCU1RD0tNzc3NjAwMCZwb3NpdGlvbkNhdGVnb3J5PTI%2C")
+  await addFeedToDB("https://www.khabarfoori.com/fa/feeds/?p=Y2F0ZWdvcmllcz04OCZkYXRlUmFuZ2UlNUJzdGFydCU1RD0tNzc3NjAwMCZwb3NpdGlvbkNhdGVnb3J5PTI%2C")
+  await addFeedToDB("https://www.khabarfoori.com/fa/feeds/?p=Y2F0ZWdvcmllcz04NyZkYXRlUmFuZ2UlNUJzdGFydCU1RD0tNzc3NjAwMCZwb3NpdGlvbkNhdGVnb3J5PTI%2C")
+  await addFeedToDB("https://www.khabarfoori.com/fa/feeds/?p=Y2F0ZWdvcmllcz0xNzEmZGF0ZVJhbmdlJTVCc3RhcnQlNUQ9LTc3NzYwMDAmcG9zaXRpb25DYXRlZ29yeT0y")
+  await addFeedToDB("https://www.khabarfoori.com/fa/feeds/?p=Y2F0ZWdvcmllcz05NCZkYXRlUmFuZ2UlNUJzdGFydCU1RD0tNzc3NjAwMCZwb3NpdGlvbkNhdGVnb3J5PTI%2C")
+  await addFeedToDB("https://www.tasnimnews.ir/fa/rss/feed/0/0/8/1/TopStories")
+  await addFeedToDB("https://www.tasnimnews.ir/fa/rss/feed/8/0/7/0")
+  await addFeedToDB("https://www.tasnimnews.ir/fa/rss/feed/3/0/7/0")
+  await addFeedToDB("https://www.tasnimnews.ir/fa/rss/feed/1486/0/7/0")
+  await addFeedToDB("https://www.tasnimnews.ir/fa/rss/feed/7/0/7/0")
+  await addFeedToDB("https://www.tasnimnews.ir/fa/rss/feed/2/0/7/0")
+  await addFeedToDB("https://www.tasnimnews.ir/fa/rss/feed/6/0/7/0")
+  
+  await addFeedToDB("https://images.khabaronline.ir/rss/tp/1");
+  await addFeedToDB("https://images.khabaronline.ir/rss/tp/2");
+  await addFeedToDB("https://images.khabaronline.ir/rss/tp/3");
+  await addFeedToDB("https://images.khabaronline.ir/rss/tp/4");
+  await addFeedToDB("https://images.khabaronline.ir/rss/tp/5");
+  await addFeedToDB("https://images.khabaronline.ir/rss/tp/6");
+  await addFeedToDB("https://images.khabaronline.ir/rss/tp/7");
+  await addFeedToDB("https://images.khabaronline.ir/rss/tp/8");
+  await addFeedToDB("https://images.khabaronline.ir/rss/tp/9");
+  await addFeedToDB("https://images.khabaronline.ir/rss/tp/10");
+  
   await addFeedToDB("https://isna.ir/rss");
   await addFeedToDB("https://www.irna.ir/rss");
   await addFeedToDB("https://snn.ir/fa/rss/allnews");
@@ -228,6 +328,6 @@ async function start() {
   await addFeedToDB("https://www.isna.ir/rss/tp/292");
   await addFeedToDB("https://www.isna.ir/rss/tp/294");
 
-  console.log("FINISHED!");
+  console.log("FINISHED! total news added: ", totalAdded);
 }
 start();

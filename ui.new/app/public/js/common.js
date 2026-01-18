@@ -24,6 +24,18 @@ function updateOutputDirection(text, obj) {
   }
 }
 
+function isMobileDevice() {
+  // Check user agent
+  const ua = navigator.userAgent;
+  const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+
+  // Check window width
+  const isMobileWidth = window.innerWidth <= 768;
+
+  // Return true if either condition is met
+  return isMobileUA || isMobileWidth;
+}
+
 function toast(message = "عملیات موفق", type = "success", delay = 4000) {
   const icons = {
     success: "check-circle-fill",

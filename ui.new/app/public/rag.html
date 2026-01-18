@@ -40,7 +40,7 @@
       }
       .sidebar {
         position: fixed;
-        right: 0;
+        right: 0; 
         top: 0;
         width: 350px;
         height: 100vh;
@@ -48,6 +48,12 @@
         box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
         overflow-y: auto;
         z-index: 1000;
+      }
+      div#userInfo {
+          text-align: center;
+          font-size: 2em;
+          font-weight: 900;
+          padding: 1em;
       }
       .main-chat {
         margin-right: 350px;
@@ -107,11 +113,15 @@
         opacity: 0.8;
         font-style: italic;
       }
-
-      .dots {
-        display: inline-block;
-        width: 20px;
-        text-align: left;
+      stopped{
+        color: darkorange;
+        font-size: 90%;
+        padding: 0 1em;
+      }
+      error{
+        color: darkred;
+        font-size: 90%;
+        padding: 0 1em;
       }
 
       .navbar, .close-sidebar-cross {
@@ -132,6 +142,30 @@
         color: gray;
         padding: .5rem;
       }
+      .bot_buttons_row {
+        display: flex;
+        gap: 24px
+      }
+
+      .bot_buttons_row span:hover{
+            filter: drop-shadow(2px 4px 6px black);
+            cursor: pointer; 
+      }
+
+      .bot_buttons_row .copy span {
+        font-size: 80%;
+        color:gray;
+        border: 1px solid gray;
+        border-radius: 2px;
+        padding: 0 4px;
+      }
+      .bot_buttons_row .copy:hover span{
+        filter: none
+      }
+
+      .bot_buttons_row .up{color: darkgreen}
+      .bot_buttons_row .down{color:darkred}
+      .bot_buttons_row .warn{color: darkorange}
 
       .new-chat .chat-header, 
       .new-chat .chat-container{
@@ -141,7 +175,7 @@
       .chat-helper h5 {line-height: 1.5em;}
       .new-chat .chat-helper {display: block;}
 
-      #messageInput{resize: none; z-index: 0;}
+      #messageInput{resize: none; z-index: 0; padding-left: 4em;}
 
       .new-chat #messageInput{
         border-radius: 5em;
@@ -215,6 +249,43 @@
           width: calc(100% - 2em);
         }
       }
+
+
+    .loader {
+      display: inline-flex;
+      gap: 8px;
+    }
+
+    .dot {
+      width: 4px;
+      height: 4px;
+      background: gray;
+      border-radius: 50%;
+      animation: bounce 1.4s infinite ease-in-out;
+    }
+
+    .dot:nth-child(1) {
+      animation-delay: -0.3s;
+    }
+
+    .dot:nth-child(2) {
+      animation-delay: 0s;
+    }
+
+    .dot:nth-child(3) {
+      animation-delay: 0.3s;
+    }
+
+    @keyframes bounce {
+      0%, 100% {
+        transform: translateY(0);
+        opacity: 1;
+      }
+      50% {
+        transform: translateY(-5px);
+        opacity: 0.5;
+      }
+    }
     </style>
   </head>
   <body class="new-chat">
@@ -234,20 +305,21 @@
 
       <h5 class="mb-3 mt-2">
         چت‌های شما
-        <button id="btnNewChat" disabled class="btn btn-outline-primary btn-sm float-end" title="ایجاد چت جدید"><i class="fa fa-edit"></i></button>
-        <button id="btnDeleteAllChats" class="btn btn-sm btn-outline-danger float-start float-end mx-1" title="حذف همه چت‌ها"><i class="fa fa-trash-can"></i></button>
+        <button id="btnNewChat" disabled class="btn btn-outline-primary btn-sm float-end" title="ایجاد چت جدید"><i class="fa fa-edit"></i> جدید</button>
+        <button id="btnDeleteAllChats" class="btn btn-sm btn-outline-danger float-start float-end mx-1" title="حذف همه چت‌ها"><i class="fa fa-trash-can"></i> حذف همه</button>
       </h5>
       <div id="chatsList" class="mb-4" style="max-height: calc(100vh / 2 - 8em); overflow: auto"></div>
 
       <h5 class="mb-3 mt-2">
         اسناد شما
-        <button id="btnBanUsingFiles" class="btn btn-sm btn-outline-primary float-start float-end" title="متوقف‌کردن چت با اسناد"><i class="fa fa-ban-bug"></i></button>
-        <button id="btnDeleteAllFiles" class="btn btn-sm btn-outline-danger float-start float-end mx-1" title="حذف همه اسناد"><i class="fa fa-trash-can"></i></button>
+         <button id="btnBanUsingFiles" class="btn btn-sm btn-outline-primary float-start float-end" title="متوقف‌کردن چت با اسناد"><i class="fa fa-ban-bug"></i> بدون فایل‌ها</button>
+        <button id="btnDeleteAllFiles" class="btn btn-sm btn-outline-danger float-start float-end mx-1" title="حذف همه اسناد"><i class="fa fa-trash-can"></i> حذف همه</button>
       </h5>
       <div id="filesList" class="mb-3" style="max-height: calc(100vh / 2 - 8em); overflow: auto">هنوز هیچ سندی بارگذاری نکردید</div>
-      <label for="inpUpload" class="btn btn-outline-primary btn-sm"><i class="fa fa-upload"></i> آپلود سند جدید</label>
-      <input type="file" id="inpUpload" accept=".pdf,.docx,.txt" multiple />
+      <label for="inpUpload" class="btn btn-outline-primary btn-sm"><i class="fa fa-paperclip-vertical"></i> آپلود سند جدید</label>
+      <input type="file" id="inpUpload" accept=".pdf,.docx,.txt, .md" multiple />
       <div id="backToLogin" class="push-top"><button class="btn btn-outline-secondary" title="خروج"><i  class="fa fa-door-open"></i></button></div>
+      <div id="userInfo"></div>
     </div>
 
     <!-- Main Chat -->
@@ -260,6 +332,7 @@
         >
           چت عمومی با ترگمان
         </h4>
+
 
       </div>
       <div
@@ -278,8 +351,9 @@
           placeholder="هر چی می‌خوای بپرس&hellip;"
         ></textarea>
         <div class="message-buttons">
-          <label for="inpUpload" class="btn btn-text px-2"><i class="fa fa-upload"></i></label>
-          <button id="sendBtn" class="btn btn-text" title="ارسال"><i class="fa fa-send fa-reverse"></i></button>
+          <label for="inpUpload" class="btn btn-text px-2"><i class="fa fa-paperclip-vertical"></i></label>
+          <button id="btnSend" class="btn btn-text" title="ارسال"><i class="fa fa-send fa-reverse"></i></button>
+          <button id="btnStop" class="btn btn-text hidden" title="توقف"><i class="fa fa-stop fa-reverse"></i></button>
         </div>
       </div>
       <div id="chat-helper-container" class="chat-helper mt-3 px-2">
@@ -368,6 +442,31 @@
       </div>
     </div>
 
+    <style>
+      .banner{position: fixed; background-color: rgba(0, 0, 0, 0.4);top:0;left:0; width: 100vw;height: 100vh;z-index: 1000;}
+      .banner .container{
+        background-color:white; 
+        max-width:  400px;
+        position:absolute;
+        top:50%; 
+        left:50%;
+        transform: translate(-50%,-50%);
+        padding: 2em;
+        border-radius: 2em;
+        text-align: justify;
+      }
+      .banner .close{position: relative; top:0; left:0; pointer-events: all; cursor: pointer;}
+    </style>
+    <div class="banner">
+      <div class="container">
+      <h2 class="mb-4">هموطن گرامی سلام</h2>
+      <p>از این که در شرایط جاری و نبود اینترنت می‌توانیم کمکی باشیم خرسندیم. ضمن تشکر از حسن توجه و استقبال هموطنان گرامی به اطلاع می‌رسانیم که متاسفانه به دلیل برخی سو‌ءاستفاده‌ها و محدودیت‌های سخت‌افزاری در شرایط جاری مجبور به اعمال محدودیت‌هایی در سامانه شدیم که از این بابت پوزش می‌طلبیم.</p>
+      <p>امیدواریم شرایط هرچه زودتر به شرایط عادی بازگشته و اینترنت برقرار شود.</p>
+      <div class="text-center mt-4"><button class="btn btn-primary" onclick="closeBanner()">متوجه شدم</button></div>
+      </div>
+    </div>
+
+
     <script src="js/bootstrap.bundle.min.js"></script>
     <script src="js/common.js"></script>
     <!-- MathJax -->
@@ -376,22 +475,35 @@
     <script src="js/mathjax/es5/tex-mml-chtml.js"></script>
 
     <script>
+      function closeBanner() {
+          document.querySelector('.banner').classList.add('hidden')
+          localStorage.setItem("tgmn-banner-shown", true)
+      }
+
       const userKey = sessionStorage.getItem("user_key");
       if (!userKey || userKey.length < 16) {
         showError("لطفاً ابتدا وارد شوید.");
         window.location.href = "/login.html";
         throw new Error("No user key");
       }
+      const userContainer = document.getElementById("userInfo")
+
+      if(userKey.startsWith('0a9d21ab428f4a458cd44f7587'))
+        userContainer.innerHTML = "عمومی"
+      else if(userKey.startsWith('c12df826d72950c8658e7b1'))
+        userContainer.innerHTML = "اخبار"
       let currentChatId = location.hash.replace("#",'') || undefined;
       let chatHistory = [];
       let useFiles = true;
+      let activeReqID = null; 
 
       const editHelp = `<small class="text-muted ms-2" style="font-size: 0.5em;">(برای ویرایش کلیک کنید)</small>`
       const chatsList = document.getElementById("chatsList");
       const filesList = document.getElementById("filesList");
       const chatContainer = document.getElementById("chatContainer");
       const messageInput = document.getElementById("messageInput");
-      const sendBtn = document.getElementById("sendBtn");
+      const btnSend = document.getElementById("btnSend");
+      const btnStop = document.getElementById("btnStop");
       const currentChatTitle = document.getElementById("currentChatTitle");
       const btnNewChat = document.getElementById("btnNewChat");
       const inpUpload = document.getElementById("inpUpload");
@@ -401,25 +513,62 @@
       const chatHelper = document.getElementById("chat-helper-container")
       const btnBanUsingFiles = document.getElementById("btnBanUsingFiles")
       const titleCache = new Map();
+
+
+      if(localStorage.getItem("tgmn-banner-shown")) document.querySelector('.banner').classList.add('hidden')
       
+      if(!isMobileDevice()) messageInput.placeholder += " (برای سطر بعدی Shift+Enter)"
       const sampleMessages = [
         "امروز چه روزیه؟",
         "خسته‌شدم کی پس اینترنت درست می‌شه؟",
         "این فایلی که بهت دادم در مورد چیه؟",
-        "می‌تونی یه جوک بگی؟",
         "یه کد بنویس به زبان پایتون که چاپ کنه سلام",
         "می‌تونی یه جوک بگی؟",
-        "یه برنامه کوچیک به زبان c++ بنویس.",
         "تو به کدوم هوش مصنوعی وصلی؟",
         "تو به کجا وصلی؟ چجوری کار میکنی؟ چقدر اشتراک بهم میدی؟",
         "این فایل رو برام خلاصه می‌کنی؟",
         "می تونی این تمرینا رو حل کنی؟",
         "مدل زبانیت چیه؟",
         "تهران چه خبره",
-        "کدوم شهرها مدرسه تعطیله؟",
-        "از کوپونی که دولت داده چیزی می دونی؟",
+        "اصفهان چه خبره",
+        "تبریز چه خبره",
+        "بوشهر چه خبره",
+        "مشهد چه خبره",
+        "قم چه خبره",
+        "همدان چه خبره",
+        "کردستان چه خبره",
+        "ارومیه چه خبره",
+        "رشت چه خبره",
+        "کرمان چه خبره",
+        "زاهدان چه خبره",
+        "بندر چه خبره",
+        "بوشهر چه خبره",
         "تفاوت موشک بالستیک و کروز",
-        "دستور پخت قرمه‌سبزی"
+        "دستور پخت قرمه‌سبزی",
+        "آیا افرادی که قبلاً یارانه نقدی دریافت نمی‌کردند هم واجد شرایط کالابرگ هستند؟",
+        "عوامل خطر ابتلا به گرفتگی عروق مغز کدامند؟",
+        "فلج همی پلژی چیست؟",
+        "علایم اصلی سکته مغزی",
+        "الان که اینترنت قطعه چه جوری جستجو کنم؟",
+        "لیست سایت‌های دولتی رو داری؟",
+        "کلان‌پیکره متنی چیه دیگه!",
+        "علایم رایج دردهای عصبی",
+        "بی‌خوابی زده به سرم چه کار کنم؟",
+        "صرع چیه؟",
+        "چیزی در مورد اسکیزوفرنی می‌دونی؟",
+        "از کجا بفهمم وسواس گرفتم؟ ",
+        "سرماخوردگی همون کروناست؟",
+        "فرق ویروس زنده با ویروس کامپیوتری",
+        "فوبیا چیه؟",
+        "اضطراب دارم",
+        "یوگا بلدی؟",
+        "آب حیات دیگه چیه؟!",
+        "در مورد خیار تدلیس چیزی می‌دونی؟",
+        "انواع خیارات رو نام ببر",
+        "این خیار غبن که می‌گن چه؟",
+        "دلار چند شده؟",
+        "حق ما از زندگی چیه پس",
+        "معنی ترگمان چیه؟"
       ]
 
       /*********************************/
@@ -439,6 +588,18 @@
         return rtlChars / totalNonWhitespaceChars >= 0.2;
       }
 
+      let isUserScrolling = false;
+
+      // Listen for scroll event
+      chatContainer.addEventListener('scroll', function () {
+        // If the user is at the bottom, set a flag
+        if (chatContainer.scrollTop + chatContainer.clientHeight >= chatContainer.scrollHeight - 10) {
+          isUserScrolling = false;
+        } else {
+          isUserScrolling = true;
+        }
+      });
+
       /*********************************/
       function updateDirection(element, text) {
         if (isRTL(text)) {
@@ -451,7 +612,7 @@
       }
 
       /*********************************/
-      function appendMessage(role, content) {
+      function appendMessage(role, content, msgId, opinion) {
         const msgDiv = document.createElement("div");
         msgDiv.className = `message ${
           role === "user" ? "user-message" : "bot-message"
@@ -460,7 +621,7 @@
           msgDiv.innerHTML = content.replace(/\r?\n/g, "<br/>");
           setTimeout(()=>window.MathJax.typesetPromise([msgDiv]))
         } else {
-          prettyShowResponse(content, msgDiv)
+          prettyShowResponse(content, msgDiv, msgId, opinion)
           updateDirection(msgDiv, content);
         }
         chatContainer.appendChild(msgDiv);
@@ -488,7 +649,7 @@
           addHelpItem("این سند راجع به چی بود؟")
         } else {
           sampleMessages.sort((a,b)=>Math.random()>.5 ? -1 : 1).slice(0, 5).forEach(addHelpItem)
-          addHelpItem("دیگه چه خبر؟")
+          addHelpItem("اخبار تازه بگو")
         }
       }
 
@@ -496,6 +657,7 @@
       function setCurrChatId(chatId) {
             location.hash = chatId
             currentChatId = chatId;
+            btnStop.setAttribute
       }
       /*********************************/
       let titleEditModal = null;
@@ -544,7 +706,8 @@
       /*********************************/
       function disableInputs(state)   {
         messageInput.disabled = state;
-        sendBtn.disabled = state;
+        if(state)btnSend.classList.add('hidden'); else btnSend.classList.remove('hidden');
+        if(state)btnStop.classList.remove('hidden'); else btnStop.classList.add('hidden');
         inpUpload.disabled = state;
         document.querySelectorAll('label[for="inpUpload"]').forEach(el=>state ? el.classList.add('disabled') : el.classList.remove('disabled')) 
       }
@@ -669,7 +832,14 @@
             role: m.role,
             content: m.content,
           }));
-          messages.forEach((m) => appendMessage(m.role, m.content.startsWith('درخواست خودکار به جای کاربر:') ? 'خلاصه مکالمات قبلی' : m.content));
+
+          messages.forEach((m) => appendMessage(m.role, 
+           (m.content.startsWith('درخواست خودکار به جای کاربر:') 
+            || m.content.startsWith("AUTO_SUMMARY: ")
+             ? 'خلاصه مکالمات قبلی' : m.content)
+             , m.id, 
+             m.opinion
+          ));
           chatContainer.scrollTop = chatContainer.scrollHeight;
           currentChatTitle.innerHTML = chatTitle + editHelp
           location.hash = chatId
@@ -680,7 +850,7 @@
         }
       }
       /*************************************/
-      function prettyShowResponse(fullResponse, botMessageWrapper){
+      function prettyShowResponse(fullResponse, botMessageWrapper, msgId, opinion){
           botMessageWrapper.innerHTML = ''
           const botMsg = document.createElement("div"); botMsg.className = "bot-text";
           botMessageWrapper.appendChild(botMsg);
@@ -728,24 +898,89 @@
               .filter((s) => s && !/دانش داخلی/i.test(s))
               .join("، ");
           }
+          mainAnswer = mainAnswer.replace(/(^|\n\n)LLM_GEN_CANCELLED$/, "<stopped>(ادامه تولید محتوا متوقف شد)</stopped>")
+
+          const buttons_row = document.createElement("div")
+          buttons_row.classList.add("bot_buttons_row")
+          buttons_row.markdown = mainAnswer
+          buttons_row.setAttribute("msg_id", msgId)
+          buttons_row.innerHTML = `
+            <span class="copy" title="تهیه رونوشت"><i class="fa fa-thin fa-copy"></i><span class=hidden>کپی شد</span></span>
+            <span class="down" title="پاسخ مناسب نیست"><i class="fa fa-${opinion == 'd' ? 'solid' :'thin'} fa-thumbs-down"></i></span>
+            <span class="up" title="پاسخ خوب است"><i class="fa fa-${opinion == 'u' ? 'solid' :'thin'} fa-thumbs-up"></i></span>
+            <span class="warn" title="پاسخ توهین‌آمیز است"><i class="fa fa-${opinion == 'w' ? 'solid' :'thin'} fa-warning"></i></span>
+            `
+          botMessageWrapper.append(buttons_row)
+          setTimeout(()=>{
+            buttons_row.querySelector("span.copy i").onclick = (ev)=>{
+              const el = ev.target
+              let elp = el.parentElement
+              if(!elp.parentElement.markdown) el.classList.add("hidden")
+              navigator.clipboard.writeText(elp.parentElement.markdown).then(() =>{
+                el.classList.add("hidden"); 
+                elp.querySelector("span").classList.remove("hidden")
+                setTimeout(()=>{
+                  el.classList.remove("hidden"); 
+                  elp.querySelector("span").classList.add("hidden")
+                }, 2000)
+              })
+            }
+            const setMessageState=  (ev) =>{
+              const el = ev.target
+              const elp = el.parentElement
+              const msgId = elp.parentElement.getAttribute("msg_id")
+              fetch(`/api/rag/opinion/${msgId}?user_key=${userKey}&opinion=${elp.classList}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" }
+              })
+              .then(()=>{
+                elp.parentElement.querySelectorAll("span").forEach(el=>{
+                  if(["up","down","warn"].includes(el.className)) {
+                    const icon = el.querySelector("i")
+                    icon.classList.remove("fa-solid")
+                    icon.classList.add("fa-thin")
+                  }
+                });
+                el.classList.remove("fa-thin"),el.classList.add("fa-solid")
+              }).catch((e)=>toast(e.message, "danger"))
+            }
+            buttons_row.querySelector("span.down").onclick = (ev)=>setMessageState(ev)
+            buttons_row.querySelector("span.up").onclick = (ev)=>setMessageState(ev)
+            buttons_row.querySelector("span.warn").onclick = (ev)=>setMessageState(ev)
+          })
 
           botMsg.innerHTML = marked.parse(mainAnswer);
-          window.MathJax.typesetPromise([botMsg])
+          setTimeout(()=>window.MathJax.typesetPromise([botMsg]))
 
           if (sourceText === "دانش داخلی مدل") {
             sourceEl.innerHTML = `<em style="color:#94a3b8;">منبع: دانش داخلی مدل</em>`;
           } else if (sourceText) {
             sourceEl.innerHTML = `
         <div style="margin-top:8px;padding:8px 12px;background:#f1f5f9;border-radius:8px;font-size:0.9em;color:#475569;">
-          <strong>منابع:</strong> ${escapeHtml(sourceText)}
+          <strong>منابع:</strong> ${marked.parse(sourceText)}
         </div>`;
           }
+
+
+          if(mainAnswer.startsWith("<error>") || mainAnswer.endsWith("<stopped>"))
+            return
           sourceEl.style.display = "block";
       }
       /*************************************/
       async function sendMessage() {
+        isUserScrolling = false
+        function uuidv4() {
+          return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            const r = Math.random() * 16 | 0; 
+            return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); 
+          });
+        }
         const message = messageInput.value.trim();
         if (!message) return;
+        if (message.length > 2000) {
+              toast("طول درخواست بیش از ۲۰۰۰ کاراکتر است. لطفا کاهش دهید", "danger");
+              return;
+        }
 
         if (!currentChatId) {
           try {
@@ -768,7 +1003,7 @@
           }
         }
         await updateAppState(enuStates.chatContinues)
-        appendMessage("user", message);
+        appendMessage("user", message, -1);
 
         const botMessageWrapper = document.createElement("div");
         botMessageWrapper.className = "message bot-message";
@@ -778,20 +1013,13 @@
 
         botMsg.innerHTML = `
           <span class="thinking">در حال فکر کردن</span>
-          <span class="dots">...</span>
+          <span class="loader"><div class="dot"></div><div class="dot"></div><div class="dot"></div></span>
         `;
 
         botMessageWrapper.appendChild(botMsg);
 
         chatContainer.appendChild(botMessageWrapper);
         chatContainer.scrollTop = chatContainer.scrollHeight;
-
-        let dotCount = 0;
-        let dotInterval = setInterval(() => {
-          dotCount = (dotCount + 1) % 4;
-          const dotsEl = botMsg.querySelector(".dots");
-          if (dotsEl) dotsEl.textContent = ".".repeat(dotCount);
-        }, 400);
 
         messageInput.value = "";
 
@@ -802,6 +1030,8 @@
         disableInputs(true)
         while (attempts < maxAttempts) {
           attempts++;
+          activeReqID = uuidv4()
+          btnStop.setAttribute("msg-id", activeReqID)
           try {
             const res = await fetch("/api/rag/chat-message", {
               method: "POST",
@@ -810,6 +1040,7 @@
                 user_key: userKey,
                 message,
                 chat_id: currentChatId,
+                msg_id: activeReqID,
                 use_files : useFiles
               }),
             });
@@ -822,6 +1053,7 @@
             const reader = res.body.getReader();
             const decoder = new TextDecoder();
             fullResponse = "";
+            msgId = 0
 
             let streamCompleted = false;
             while (true) {
@@ -837,22 +1069,27 @@
                 .filter((l) => l.startsWith("data: "));
 
               for (const line of lines) {
-                if (line.startsWith("[RAG ERROR]: ")){toast(line.replace("[RAG ERROR]: ", ""), "danger")}
-                if (line === "data: [DONE]") continue;
+                if (line.startsWith("data: [RAG ERROR]: ")){
+                  const err=line.replace("data: [RAG ERROR]: ", "")
+                  toast(err, "danger")
+                  fullResponse += `<error>${err}</error>`
+                }
+                if (line.startsWith("data: [DONE:")) {msgId = line.split(":")[2]; continue};
                 if (line === "data: [summarizing]") {document.querySelector(".bot-text .thinking").innerText = "در حال خلاصه‌سازی مکالمات"; continue};
-                if (line === "data: [re-thinking]") {document.querySelector(".bot-text .thinking").innerText = "در حال فکر کردن مجدد"; continue};
+                if (line === "data: [re-thinking]") {document.querySelector(".bot-text .thinking").innerText = "در حال تفکر مجدد"; continue};
+                if (line.startsWith("data: [CANCELLED:")) {fullResponse += "\n\nLLM_GEN_CANCELLED"; msgId = line.split(":")[2]}
                 try {
                   const json = JSON.parse(line.slice(6));
-                  const token = json.choices[0].delta.content || "";
+                  const token = json.delta || "";
                   fullResponse += token;
 
-                  const safeResponse = fullResponse
-//                    .replace(/</g, "&lt;")
-//                    .replace(/>/g, "&gt;");
-                  botMsg.innerHTML = marked.parse(safeResponse);
+                  botMsg.innerHTML = marked.parse(fullResponse) 
+                    + `<span class="loader"><div class="dot"></div><div class="dot"></div><div class="dot"></div></span>`
+                  //@todo create stop button and update link to cid
                   window.MathJax.typesetPromise([botMsg])
                   updateDirection(botMsg, fullResponse);
-                  chatContainer.scrollTop = chatContainer.scrollHeight;
+                  if (!isUserScrolling) 
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
                 } catch (e) {
                   // نادیده گرفتن خطاهای جزئی JSON
                 }
@@ -860,7 +1097,7 @@
             }
 
             if (streamCompleted) {
-              prettyShowResponse(fullResponse, botMessageWrapper)
+              prettyShowResponse(fullResponse, botMessageWrapper, msgId)
 
               chatHistory.push({ role: "user", content: message });
               chatHistory.push({
@@ -872,7 +1109,7 @@
                 await generateChatTitle(chatHistory);
 
               if (currentChatId) {
-                fetch("/api/rag/chat", {
+                await fetch("/api/rag/chat", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({
@@ -881,45 +1118,53 @@
                   }),
                 });
               }
-              clearInterval(dotInterval);
               disableInputs(false)
               messageInput.focus()
               return;
             }
           } catch (err) {
-            console.warn(`تلاش ${attempts} ناموفق:`, err);
-            if (attempts < maxAttempts) {
-              toast(
-                `اتصال قطع شد، تلاش مجدد ${attempts + 1} از ${maxAttempts}...`,
-                "warning"
-              );
-              fullResponse = "";
-              botMsg.innerHTML = "";
-              botMsg.innerHTML = `
-                <span class="thinking">در حال تلاش مجدد</span>
-                <span class="dots">...</span>
-              `;
-              // ری‌استارت انیمیشن
-              dotCount = 0;
-              clearInterval(dotInterval);
-              dotInterval = setInterval(() => {
-                dotCount = (dotCount + 1) % 4;
-                const dotsEl = botMsg.querySelector(".dots");
-                if (dotsEl) dotsEl.textContent = ".".repeat(dotCount);
-              }, 400);
-              await new Promise((resolve) => setTimeout(resolve, 1500));
+            console.warn(`تلاش ${attempts} ناموفق:`, err.message);
+            if(err.message === "SERVER_DISCONNECTED") {
+              if (attempts < maxAttempts) {
+                toast( 
+                  `اتصال قطع شد، تلاش مجدد ${attempts + 1} از ${maxAttempts}...`,
+                  "warning"
+                );
+                fullResponse = "";
+                botMsg.innerHTML = "";
+                botMsg.innerHTML = `
+                  <span class="thinking">در حال تلاش مجدد</span>
+                  <span class="loader"><div class="dot"></div><div class="dot"></div><div class="dot"></div></span>
+                `;
+                await new Promise((resolve) => setTimeout(resolve, 1500));
+              } else {
+                botMsg.innerHTML = marked.parse(
+                  "خطا در دریافت پاسخ پس از چند تلاش. لطفاً پس از چند لحظه دوباره امتحان کنید."
+                );
+                toast("خطا در ارتباط با سرور", "danger");
+              }
+            } else {
+               toast(
+                  err.message,
+                  "danger"
+                );
+                botMsg.innerHTML = marked.parse(err.message)
             }
           }
         }
 
-        clearInterval(dotInterval);
-        botMsg.innerHTML = marked.parse(
-          "خطا در دریافت پاسخ پس از چند تلاش. لطفاً دوباره امتحان کنید."
-        );
-        toast("خطا در ارتباط با سرور", "danger");
         disableInputs(false)
       }
 
+      /*************************************/
+      btnStop.addEventListener("click", async ()=>{
+        const msg_id = btnStop.getAttribute("msg-id")
+        if(!msg_id) return
+        await fetch(`/api/rag/stop/${msg_id}?user_key=${userKey}`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+        })
+      })
       /*************************************/
       inpUpload.addEventListener("change", async (e) => {
         let files = Array.from(e.target.files);
@@ -930,11 +1175,12 @@
           "application/pdf",
           "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
           "text/plain",
+          "text/markdown",
         ];
         files = files.filter((file) => {
           if (!allowedTypes.includes(file.type)) {
             toast(
-              `فایل "${file.name}" نوع مجاز نیست (فقط PDF, DOCX, TXT)`,
+              `فایل «${file.name} ${file.type}» نوع مجاز نیست (فقط PDF, DOCX, TXT, MD)`,
               "danger"
             );
             return false;
@@ -975,7 +1221,7 @@
             if(questions.length) 
               updateQuestions(questions, true)
 
-            toast(`فایل "${file.name}" با موفقیت بارگذاری شد`, "success");
+            toast(`فایل «${file.name}» با موفقیت بارگذاری شد`, "success");
           } catch (err) {
             console.error(err);
             toast(`خطا در ارتباط با سرور برای ${file.name}`, "danger");
@@ -1135,7 +1381,7 @@
       });
 
       /*************************************/
-      sendBtn.addEventListener("click", sendMessage);
+      btnSend.addEventListener("click", sendMessage);
       btnBanUsingFiles.addEventListener("click", async ()=>{
         if(useFiles) {
           const confirmed = await confirmDialog({
@@ -1166,7 +1412,7 @@
         updateQuestions(questions, useFiles)
       })
       messageInput.addEventListener("keypress", (e) => {
-        if (e.key === "Enter" && e.shiftKey == false && e.ctrlKey == false && e.altKey == false) sendMessage();
+        if (e.key === "Enter" && !isMobileDevice() && e.shiftKey == false && e.ctrlKey == false && e.altKey == false) sendMessage();
       });
       backToLogin.addEventListener("click",async () => {
         const confirmed = await confirmDialog({
@@ -1181,9 +1427,6 @@
           window.location.href = "/";
         }
       } );
-
-      
-        
 
       if (currentChatId) setTimeout(()=>loadChat(currentChatId), 100);
       else updateAppState(enuStates.newChat); 

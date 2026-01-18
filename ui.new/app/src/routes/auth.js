@@ -15,7 +15,6 @@ router.post("/login", (req, res) => {
         INSERT INTO users (user_key, created_at, last_login_at)
         VALUES (?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
       `).run(user_key);
-      console.log(`New user registered: ${user_key.slice(0, 8)}...`);
     } else {
       db.prepare("UPDATE users SET last_login_at = CURRENT_TIMESTAMP WHERE user_key = ?")
         .run(user_key);

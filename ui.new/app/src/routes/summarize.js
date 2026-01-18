@@ -14,9 +14,10 @@ function shortText(text, len = 50) {
 router.post("/summarize", async (req, res) => {
   const { text, max_words, force_persian = true } = req.body;
 
-  if (!text?.trim()) {
+  if (!text?.trim()) 
     return res.status(400).json({ error: "متن خالی است" });
-  }
+  
+  const fixedText = text.slice(0, 20000)
 
   let systemPrompt = `You are a highly accurate summarization expert.
 Strict rules:
@@ -31,17 +32,17 @@ Strict rules:
   }
 
   const userPrompt = force_persian
-    ? `Summarize the following text in Persian in at most ${max_words} words:\n\n${text.trim()}`
+    ? `Summarize the following text in Persian in at most ${max_words} words:\n\n${fixedText.trim()}`
     : `Summarize the following text in its original language in at most ${max_words} words:\n\n${text.trim()}`;
 
   console.log(
-    `[Summarize] Max words: ${max_words} | Force Persian: ${force_persian} | Lenght: ${text.length} | Text: "${shortText(text)}"`
+    `[Summarize] Max words: ${max_words} | Force Persian: ${force_persian} | Lenght: ${fixedText.length} | Text: "${shortText(fixedText)}"`
   );
   
 
-  const looksPersian = /[\u0600-\u06FF]/.test(text.slice(0, 500));
+  const looksPersian = /[\u0600-\u06FF]/.test(fixedText.slice(0, 500));
   console.log(`[Summarize] Detected Persian chars: ${looksPersian} | Force Persian: ${force_persian}`);
-  db.log('sm', `${force_persian ? 'fp': 'nr'}:${max_words}`, text.length, shortText(text))
+  db.log('sm', `${force_persian ? 'fp': 'nr'}:${max_words}`, fixedText.length, shortText(fixedText))
 
   const maxRetries = 3;
   let attempt = 0;

@@ -66,8 +66,32 @@ router.get("/admin/migrate", (req, res) => {
 
 router.get("/admin/log-stats", (req, res) => {
   try {
-    const { logs, totalCounts } = db.getLogs(req.query.action);
-    res.json({ logs, totals: totalCounts || { total_len: 0 } });
+    if(req.query.user != process.env.GLOBAL_USER)
+      throw Error("Unauthorized User")
+    
+    const { logs, totalCounts, activeCounts } = db.getLogs(req.query.action);
+    res.json({ logs, totals: totalCounts || { total_len: 0 }, activeCounts });
+  } catch (err) {
+    console.error("Admin stats error:", err);
+    res.status(500).json({ error: "خطا در دریافت آمار" });
+  }
+});
+
+router.get("/admin/get-conv", (req, res) => {
+  try {
+    if(req.query.user != process.env.GLOBAL_USER)
+      throw Error("Unauthorized User")
+    
+    const msgs = db
+      .prepare(`
+        SELECT datetime(created_at, '+210 minutes') AS Jdate, * 
+          FROM messages
+        WHERE chat_id=?
+        ORDER BY messages.created_at ASC
+        LIMIT 100
+      `).all(req.query.id); 
+
+    res.json({ msgs });
   } catch (err) {
     console.error("Admin stats error:", err);
     res.status(500).json({ error: "خطا در دریافت آمار" });

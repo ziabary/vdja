@@ -17,11 +17,15 @@ const {
   deleteByFileId,
   deleteAllByUser,
 } = require("../services/qdrant");
-const { callVLLMStream } = require("../utils/vllmUtils");
-const SUMMARIZE_PROMPT = `درخواست خودکار به جای کاربر: مکالمه قبلی رو کامل خلاصه کن به نحوی که بشه مکالمه رو با این خلاصه ادامه داد.
-- علاوه بر خلاصه‌سازی ۵ عبارت کلیدی از متن استخراج کن و با الگوی زیر بدون بولت و در یک سطر بده:
-  عبارات کلیدی: عبارت کلیدی, عبارت کلیدی, عبارت کلیدی, عبارت کلیدی, عبارت کلیدی
+const { newCallVLLMStream, checkRequestState, removeActiveRequest , stopRequest} = require("../utils/vllmUtils");
+async function sleep(ms) {
+  await new Promise((r) => setTimeout(r, ms));  
+}
+
+const SUMMARIZE_SYSTEM_PROMPT = `تو یک سیستم خلاصه ساز هستی که گفتگو رو برای ادامه خلاصه می‌کنی
+- پس از خلاصه‌سازی، ۵ عبارت کلیدی از متن استخراج کن و در انتهای خلاصه، در یک سطر به صورت متن ساده با جداسازی مبتنی بر "," ارایه کن  
 `
+SUMMARIZE_PROMPT = `درخواست خودکار به جای کاربر: مکالمات قبلی رو خلاصه کن\n`
 
 const router = express.Router();
 const upload = multer({
@@ -32,25 +36,53 @@ const VLLM_URL = process.env.VLLM_URL || "http://localhost:8000";
 const VLLM_MODEL = process.env.VLLM_MODEL || "targoman";
 GLOBAL_USER = process.env.GLOBAL_USER 
 NEWS_USER = process.env.NEWS_USER 
-SPECIAL_USERS = process.env.SPECIAL_USERS 
+SPECIAL_USERS = process.env.SPECIAL_USERS  
+BALE_GW_ID = process.env.BALE_GW_ID
+BALE_GW_SECRET = process.env.BALE_GW_SECRET
+
 
 function mustLimitFiles(user_key) {
-  console.log({debugMode: process.env.DEBUG_MODE, special: SPECIAL_USERS }) 
 
-  return process.env.DEBUG_MODE != 1
+  const res = process.env.DEBUG_MODE != 1
       && ![NEWS_USER, GLOBAL_USER, ...(SPECIAL_USERS||"").split(',')].includes(user_key)
+    
+  // console.log({debugMode: process.env.DEBUG_MODE, 
+  //              SPECIAL_USERS, 
+  //              GLOBAL_USER,
+  //              NEWS_USER,
+  //              user_key, res }) 
+  return res
 }
 
 function shortenText(text, len = 50) {
   return text?.length > len ? text.slice(0, len) + "..." : text || "";
 }
 
-async function getLLMResponse(
+const readWithTimeout = async (reader, timeout, reqId) => {
+  let isCancelled = false
+
+  const timeoutId = setTimeout(async () => {
+    const state = await checkRequestState(VLLM_URL, reqId);
+    if (state === "cancelled") {
+      isCancelled = true
+      reader.cancel()
+    } 
+  }, timeout);
+
+  try {
+    const result = await reader.read();
+    clearTimeout(timeoutId);
+    return {...result, cancelled: isCancelled};
+  } catch (err) {
+    return { done: true, cancelled: isCancelled };
+  }
+};
+
+async function getDirectLLMResponse(
   systemPrompt,
   userPrompt,
   max_tokens,
-  temperature,
-  stream
+  temperature
 ) {
   prompts = [];
   if (systemPrompt) prompts.push({ role: "system", content: systemPrompt });
@@ -59,17 +91,40 @@ async function getLLMResponse(
   else 
     prompts = userPrompt
 
-  const vllmRes = await callVLLMStream(VLLM_URL, VLLM_MODEL, prompts, {
+  const request_id = uuidv4()
+
+  const vllmRes = await newCallVLLMStream(VLLM_URL, VLLM_MODEL, request_id, prompts, {
     max_tokens: max_tokens,
     temperature: temperature,
     top_p: 0.9,
-    stream,
+    stream: true, 
   });
-  return {
-    content:
-      !stream && (await vllmRes.json()).choices?.[0]?.message?.content?.trim(),
-    vllmRes,
-  };
+
+  const reader = vllmRes.body.getReader();
+  const decoder = new TextDecoder();
+  let response = ""
+  while (true) {
+    const { done, value, cancelled } = await readWithTimeout(reader, 1000, request_id)
+    const chunk = decoder.decode(value, { stream: true });
+    if (done) {
+      response = response + (cancelled ? "\n\nLLM_GEN_CANCELLED" : "")
+      if(cancelled)
+        response = "LLM_GEN_CANCELLED"
+      break
+    }
+
+    chunk.split("\n").forEach(async (line) => {
+      if (line.startsWith("data: ")) {
+        try {
+          const data = JSON.parse(line.slice(6));
+          if(data.text)
+            response += data.text;
+        } catch {/*ignore json error*/}
+      }
+    });  
+  }
+  removeActiveRequest(VLLM_URL, request_id)
+  return response 
 }
 
 router.get("/rag/chat/:chat_id/messages", (req, res) => {
@@ -84,16 +139,16 @@ router.get("/rag/chat/:chat_id/messages", (req, res) => {
   res.json({ messages, chatTitle: chat.title });
 });
 
-async function generateQuestions(user_id, file_id, chunks) {
+async function generateQuestions(user_key, file_id, chunks) {
   try {
     if (chunks < 2) {
       console.log("Small file content");
       return;
     }
 
-    const partOfChunks = chunks.join("\n\n").substring(0, 7000);
+    const partOfChunks = chunks.join("\n\n").substring(0, 3000);
 
-    const { content } = await getLLMResponse(
+    const content  = await getDirectLLMResponse(
       "بر اساس محتوای ارایه‌شده ۵ سوال کوتاه حداکثر ۱۰ کلمه‌ای طرح کن." +
         "- سوالات متنوع با درجه پیچیدگی متفاوت" +
         "- سوالات به صورت متن ساده بدون پرانتز یا ستاره یا سایر علایم تولید شوند" +
@@ -101,8 +156,7 @@ async function generateQuestions(user_id, file_id, chunks) {
         "- حتما در ابتدای هر سوال شماره سوال رو به صورت 1. و 2. بذار",
       partOfChunks,
       500,
-      0.8,
-      false
+      0.8
     );
 
     qTexts = [];
@@ -110,7 +164,7 @@ async function generateQuestions(user_id, file_id, chunks) {
       const matches = line.match(/\d\.(.*)/);
       if (matches && matches.length > 1) {
         const question = matches[1].replace(/[\*#]/g, "");
-        db.addSampleQuestion(user_id, file_id, question);
+        db.addSampleQuestion(user_key, file_id, question);
         qTexts.push(question);
       }
     }
@@ -121,10 +175,32 @@ async function generateQuestions(user_id, file_id, chunks) {
   }
 }
 
+async function getAccessToken() {
+  const { URLSearchParams } = require('url');
+
+  // Create the form data
+  const params = new URLSearchParams();
+  params.append('grant_type', "client_credentials");
+  params.append('client_id', BALE_GW_ID);
+  params.append('client_secret', BALE_GW_SECRET);
+
+  const resp = await fetch(`https://safir.bale.ai/api/v2/auth/token`, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: params
+  }).then(resp=>resp.json());
+
+  console.log({resp})
+}
+
 router.post("/rag/upload", upload.single("file"), async (req, res) => {
   const { user_key } = req.body;
   if (!user_key || user_key.length < 16)
     return res.status(400).json({ error: "کلید نامعتبر" });
+
+
+  //@TODO check User phone number
+  //getAccessToken()
 
   const file = req.file;
   const originalName = Buffer.from(file.originalname, "latin1").toString("utf8");
@@ -144,12 +220,13 @@ router.post("/rag/upload", upload.single("file"), async (req, res) => {
   try {
     const buffer = fs.readFileSync(file.path);
     const type = (await fileTypeFromBuffer(buffer)) || {
-      ext: file.originalname.endsWith("txt") ? "txt" : undefined,
+      ext: file.originalname.endsWith(".txt") || file.originalname.endsWith(".md") ? "txt" : undefined,
     };
     const allowedTypes = {
       pdf: "application/pdf",
       docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
       txt: "text/plain",
+      md: "text/markdown",
     };
 
     if (type && allowedTypes[type.ext]) {
@@ -159,7 +236,7 @@ router.post("/rag/upload", upload.single("file"), async (req, res) => {
       } else if (type.ext === "docx") {
         const result = await mammoth.extractRawText({ buffer });
         text = result.value.trim();
-      } else if (type.ext === "txt") {
+      } else if (type.ext === "txt" || type.ext === "md") {
         text = buffer.toString("utf8").trim();
       }
     } else return res.status(400).json({ error: "فرمت فایل پشتیبانی نمی‌شود" });
@@ -181,7 +258,10 @@ router.post("/rag/upload", upload.single("file"), async (req, res) => {
 
     db.addUploadedFile(user_key, fileId, originalName, file.size, numChunks);
 
-    const questions = await generateQuestions(user_key, fileId, chunks);
+    let questions = []
+    if(mustLimitFiles(user_key))
+       questions = await generateQuestions(user_key, fileId, chunks);
+
     res.json({ success: true, chunks: numChunks, questions });
   } catch (err) {
     console.error(err);
@@ -250,7 +330,7 @@ router.post("/rag/chat", (req, res) => {
 
   if (!chat_id) {
     // چت جدید
-    const newChatId = uuidv4();
+    const newChatId = uuidv4()+"_"+user_key.substring(0,6);
     db.addNewChat(user_key, newChatId, title || "چت جدید");
     res.json({ chat_id: newChatId });
   } else {
@@ -294,11 +374,14 @@ router.put("/rag/chat/title", (req, res) => {
 });
 
 router.post("/rag/chat-message", async (req, res) => {
-  const { user_key, message, chat_id, use_files } = req.body;
+  const { user_key, message, chat_id, msg_id, use_files } = req.body;
   const user_message = message
 
-  if (!user_key || !user_message || !chat_id)
+  if (!user_key || !user_message || !chat_id || !msg_id )
     return res.status(400).json({ error: "پارامترها نامعتبر" });
+
+  if(user_message.length > 2000)
+    res.status(400).json({error: "طول درخواست زیاد است لطفا کاهش دهید"})
 
   const chat = db.getChat(user_key, chat_id);
   if (!chat) return res.status(403).json({ error: "چت نامعتبر یا دسترسی ندارید" });
@@ -339,8 +422,8 @@ router.post("/rag/chat-message", async (req, res) => {
     return embedded_query
   }
 
-  async function getMatchingContexts(user_key, embedded_query, reportSource = false, max_items = 8){
-    const vectorDBResults = await searchChunks(user_key, embedded_query, max_items);
+  async function getMatchingContexts(user_key, embedded_query, reportSource = false, max_items = 8, mustNew =false){
+    const vectorDBResults = await searchChunks(user_key, embedded_query, max_items, mustNew);
     const uniqueActiveSources = [];
     for (let source of vectorDBResults)
       if (uniqueActiveSources.includes(source.file_name) === false)
@@ -360,22 +443,27 @@ router.post("/rag/chat-message", async (req, res) => {
     const embeddedQuery = await embedUserMessage(user_message, filteredHistory)
     const userContext = use_files ? await getMatchingContexts(user_key, embeddedQuery, true, 16) : {}
     const globalContext = userContext.count && userContext.count > 3 ? {} : await getMatchingContexts(GLOBAL_USER, embeddedQuery, false, 8)
-    const newsContext = userContext.count ? {} : await getMatchingContexts(NEWS_USER, embeddedQuery, false, 8)
+    const newsContext = userContext.count ? {} : await getMatchingContexts(NEWS_USER, embeddedQuery, false, 8,(
+         user_message.startsWith("اخبار تازه") 
+      || user_message.endsWith(" چه خبره")
+      ))
 
     /************************************************************** */
     const systemPrompt = `شما یک دستیار هوش مصنوعی فارسی‌زبان هستید که توسط شرکت پردازش هوشمند ترگمان توسعه داده شده است.
 
 ## قوانین اجباری — حتماً دقیقاً رعایت کنید:
-- همیشه به زبان فارسی روان، رسمی و طبیعی پاسخ دهید. 
+- همیشه به زبان فارسی روان، رسمی و طبیعی پاسخ دهید؛ مگر این‌که کاربر به صراحت زبان دیگری را درخواست کند (در هر صورت منابع و کلمات کلیدی به زبان فارسی باشند)
 - اگر کاربر درباره هویت شما پرسید (مثل «تو کی هستی؟»، «چه مدلی هستی؟»، «ChatGPT هستی؟» و غیره)، دقیقاً و فقط این پاسخ را بدهید:
   «من یک دستیار هوش مصنوعی مبتنی بر مدل‌های زبانی بزرگ بهینه‌سازی‌شده برای زبان فارسی هستم که توسط شرکت پردازش هوشمند ترگمان مورد توسعه قرار گرفته است. این نسخه از سامانه به صورت آزمایشی و رایگان در اختیار شما قرار گرفته است.»
 - اطلاعات تو تا اسفند ۱۴۰۳ و مبتنی بر کلان‌پیکره ترگمان که در آدرس (https://oss.targoman.ir/TLPC) در دسترس است به‌روز شده. اما اخبار ایران رو به صورت لحظه‌ای در حال دریافت هستی.
-- اگر کاربر سوال سیاسی یا ضد مذهبی پرسید. دقیقا و فقط این پاسخ را بدهید و هیچ پاسخ اضافه‌ای ندهید:
+- اگر کاربر سوال سیاسی یا ضدمذهبی پرسید. دقیقا و فقط این پاسخ را بدهید و هیچ پاسخ اضافه‌ای ندهید:
   من یک دستیار هوش مصنوعی هستم و فعلا اجازه اظهار نظر در خصوص مسایل سیاسی و مذهبی ندارم. 
-- قواعد متن‌های markdown رو رعایت کن و برای فرمول‌ها از MathJax  استفاده کن و حتما دوطرف فرمول و متغیرهای همیشه از $$ استفاده کن. در فرمول‌ها متغیر یا توضیحات همیشه انگلیسی باشند.
+- قواعد متن‌های markdown رو رعایت کن و برای فرمول‌ها از MathJax  استفاده کن. در فرمول‌ها متغیر یا توضیحات همیشه انگلیسی باشند.
 - اگر کاربر درخواست کد کرد یا در جواب خواستی کد بدی حتما از الکوی کدنویسی markdown استفاده کن
-- جواب‌ها به کاربر معمولا کمتر از ۵۰۰ کلمه باشد مگر اینکه کاربر خودش متن طولانی‌تر، کامل یا تشریح درخواست کند
-- هر زمان کاربر گفت «اسراییل» یا در مورد اسرائیل پرسید، در پاسخ از کلمه رژیم اشغالگر صهیونیستی استفاده کن
+- در اولین مکالمه پاسخ حداکثر ۱۰۰ کلمه باشد و در انتهای توضیح اگر ممکن بود جمله‌ای با معنی «اگر مایلید بیشتر توضیح بدم» ارایه شود. در ادامه اگر کاربر خودش متن طولانی‌تر، توضیحات کامل یا تشریح درخواست کرد تا ۳۰۰۰ کلمه توضیح داده شود
+- هر زمان کاربر گفت «اسراییل» یا در پاسخ خواستی بگی اسرائیل به جاش از کلمه رژیم اشغالگر صهیونیستی استفاده کن
+- اسم تو «دستیار هوش مصنوعی ترگمان» است و فعلا امکان گفتگوی صوتی نداری اما به زودی این خدمت راه‌اندازی می‌شه
+- مواردی که به عنوان «دانش عمومی داخلی» ارایه می‌شوند مستقل از هم هستند و نباید با هم ترکیب شوند 
 - تاریخ حال حاضر به شمسی ${date2Jalali()} و به میلادی ${new Date().toDateString()}
 ${userContext.count ? `\n- ** خیلی مهم **: فقط بر مبنای متن‌های مرجع و نام فایل‌های آپلودشده کاربر پاسخ بده و اگر متن مرجع مناسب نیست بگو: در مراجع ارایه شده محتوای مرتبط یافت نشد.` : ''}
 ${userContext.count  ? "\n- متن‌های مرجع:\n" + userContext.text: ""}
@@ -383,9 +471,7 @@ ${allSources.length ? "\n- فایل‌های آپلود شده کاربر:\n"+ a
 ${globalContext.count ? "\n- دانش عمومی داخلی:\n" + globalContext.text: ""}
 ${newsContext.count ? "\n- اخبار مرتبط (در صورت استفاده، منبع رو اخبار اعلام کن و حتما لینک خبر رو به عنوان منبع بده):\n" + newsContext.text: ""}
 
-- علاوه بر پاسخ، ۵ عبارت کلیدی از متن استخراج کن و با الگوی زیر بدون بولت و در یک سطر بده:
-  عبارات کلیدی: عبارت کلیدی, عبارت کلیدی, عبارت کلیدی, عبارت کلیدی, عبارت کلیدی
-- در انتهای پاسخ، منبع استفاده‌شده را دقیقاً به یکی از این سه روش زیر در یک خط جداگانه بنویسید (این آخرین خط پاسخ باشد):
+- در آخرین سطر پیام همیشه منبع استفاده‌شده را دقیقاً به یکی از این سه روش زیر در یک خط جداگانه بنویسید (این آخرین خط پاسخ باشد و پس از این سطر به هیچ عنوان چیزی نوشته نشود):
   1. اگر از متن‌های مرجع استفاده کردید مطابق الگوی زیر:  
     منابع: 1. [نام مرجع]، 2. [نام مرجع]، 3. [نام مرجع]
   2. اگر از اخبار مرتبط استفاده شد:  
@@ -393,7 +479,6 @@ ${newsContext.count ? "\n- اخبار مرتبط (در صورت استفاده،
   3. اگر هیچ اطلاعاتی از مراجع استفاده نشد و از اخبار مرتبط هم استفاده نشد  
     منبع: دانش داخلی مدل 
     `;
-
 
     /************************************************************** */
 
@@ -415,31 +500,37 @@ ${newsContext.count ? "\n- اخبار مرتبط (در صورت استفاده،
     let attempt = 0;
     let lastError;
     db.log("rag", chat_id, user_message.length, user_message);
-    console.log(`[RAG Chat] ${chat_id} | use files: ${use_files ? true : false} | chunks: ${searchChunks.length} -> ${shortenText(user_message)}`);
-    res.setHeader("Content-Type", "text/event-stream");
-    res.setHeader("Cache-Control", "no-cache");
-    res.setHeader("Connection", "keep-alive");
-    res.flushHeaders();
+    if(process.env.DEBUG_MODE)
+      console.log(`[RAG Chat] ${chat_id} | use_files: ${use_files ? true : false} | ${shortenText(user_message)}`);
 
     while (attempt < maxRetries) {
       attempt++;
+      wasSummarized = false
       try {
         if(process.env.DEBUG_MODE)
-          console.log({roles: messages.map(a=>({r:a.role, t: a.content.substring(0, 50) + "..."}))})
-        const vllmRes = await callVLLMStream(VLLM_URL, VLLM_MODEL, messages, {
+          console.log({roles: messages.map(a=>({msg_id, r:a.role, t: a.content.substring(0, 50) + "..."}))})
+
+        const vllmRes = await newCallVLLMStream(VLLM_URL, VLLM_MODEL, msg_id, messages, {
           max_tokens: 2000,
           temperature: 0.5,
+          stream: true
         });
 
-        let botResponse = "";
-        const reader = vllmRes.body.getReader();
-        const decoder = new TextDecoder();
-
         const processStream = async () => {
+          let botResponse = "";
+              
+          const reader = vllmRes.body.getReader();
+          const decoder = new TextDecoder();
           try {
+            let isDraining = false;
             while (true) {
-              const { done, value } = await reader.read();
+              const { done, value,  cancelled } = await readWithTimeout(reader, 1000, msg_id)
+              const chunk = decoder.decode(value, { stream: true });
+              
               if (done) {
+                botResponse = botResponse + (cancelled ? "\n\nLLM_GEN_CANCELLED" : "")
+
+                let msg_id = 0
                 if (botResponse.trim()) {
                   db.transaction(()=>{
                     db.prepare(
@@ -449,58 +540,83 @@ ${newsContext.count ? "\n- اخبار مرتبط (در صورت استفاده،
                       "INSERT INTO messages (chat_id, role, content) VALUES (?, ?, ?)"
                     ).run(chat_id, "assistant", botResponse.trim())
                     db.updateChatTiming(user_key, chat_id);
+                    msg_id = db.prepare("SELECT last_insert_rowid() AS lir").get()?.lir || 0
                   })()
                 }
-                res.write("data: [DONE]\n\n");
+
+                if(cancelled)
+                  res.write(`\ndata: [CANCELLED:${msg_id}]\n\n`)
+                res.write(`data: [DONE:${msg_id}]\n\n`);
                 res.end();
                 break;
               }
-
-              const chunk = decoder.decode(value, { stream: true });
-
-              chunk.split("\n").forEach((line) => {
-                if (line.startsWith("data: ") && !line.includes("[DONE]")) {
+              chunk.split("\n").forEach(async (line) => {
+                if (line.startsWith("data: ")) {
                   try {
                     const data = JSON.parse(line.slice(6));
-                    if (data.choices?.[0]?.delta?.content) {
-                      botResponse += data.choices[0].delta.content;
+                    if (data.delta) {
+                      if (!res.write("data: "+JSON.stringify({delta: data.delta, cid: msg_id}) + "\n")) {
+                        if (!isDraining) {
+                          isDraining = true
+                          res.on("drain", ()=>{isDraining = false})
+                        }
+                        await new Promise((resolve) => {res.once("drain", resolve);}); 
+                      }
+                      botResponse += data.delta;
                     }
-                  } catch {}
+                  } catch(e) {
+                    console.log(e)
+                  }
                 }
-              });
-
-              if (!res.write(chunk)) {
-                await new Promise((resolve) => res.once("drain", resolve));
-              }
+              });  
             }
           } catch (err) {
             console.error("[RAG Chat] Stream error:", err);
-            if (!res.headersSent) {
-              res.status(500).json({ error: "خطا در استریم" });
-            }
+            throw Error("خطا در هنگام پردازش استریم: " + err.message );
+          } finally {
+            reader.cancel()
           }
         };
 
-        processStream();
-        return;
-      } catch (err) {
+        if (!res.headersSent) {
+          res.setHeader("Content-Type", "text/event-stream");
+          res.setHeader("Cache-Control", "no-cache");
+          res.setHeader("Connection", "keep-alive");
+          res.flushHeaders();
+        }
+
+        await processStream();
+        // if(isCanceled) {
+        //   res.write("data: [CANCELLED]\n\n");
+        //   res.end();
+        // }
+        removeActiveRequest(VLLM_URL, msg_id)
+        return
+      } catch (err) {  
         lastError = err;
-        console.error(`[RAG Chat] Attempt ${attempt} failed:`, err.message || err);
-        if (attempt < maxRetries) 
-          await new Promise((r) => setTimeout(r, 1000 * attempt));
-        else 
-          throw Error("خطای غیر قابلبازیابی در تولید محتوا. لطفا چت جدیدی باز کنید.")
-        
-        if(err.message?.startsWith(`vLLM error 400: {"error":{"message":"'max_tokens' or 'max_completion_tokens' is too large:`)) {
-          /************************** */
+        if(process.env.DEBUG_MODE)
+            console.log("================================>", {msg: err.message})
+        if(err.message === "fetch failed" || err.message === "Failed to fetch") {
+          if (attempt < maxRetries) {
+            await sleep(attempt * 1000)
+            continue
+          } else {
+             if(process.env.DEBUG_MODE)
+                console.error(`[RAG Chat Error] Attempt ${attempt} failed:`, err.message || err);
+            throw Error("SERVER_DISCONNECTED")
+          }
+        }
+        if(err.message?.startsWith(`vLLM error 400: {"error":{"message":"'max_tokens' or 'max_completion_tokens' is too large:`) 
+          || err.message?.startsWith(`vLLM error 400: {"error":{"message":"This model's maximum context length is`)
+        ) {
           if(messages.length  === 2 
             || (messages.length === 4 && messages[messages.length - 3].content === SUMMARIZE_PROMPT))
-            throw Error("حجم سوال ورودی زیاد است آن را کاهش دهید یا مکالمه جدیدی شروع کنید")
+            throw Error("<error>پرامپت ورودی بسیار طولانی است آن را کاهش دهید</error>")
 
           const toSummarize = messages.slice(1, messages.length > 4 ? messages.length-3 : messages.length - 1)
           res.write("data: [summarizing]");
           toSummarize.push({role:"user", content: SUMMARIZE_PROMPT})
-          const summary = (await getLLMResponse(undefined, toSummarize, 1000, 0.5, false))?.content
+          const summary = await getDirectLLMResponse(SUMMARIZE_SYSTEM_PROMPT, toSummarize, 1000, 0.5, false)
           if(summary) {
             db.transaction(()=>{
               db.prepare(
@@ -517,23 +633,50 @@ ${newsContext.count ? "\n- اخبار مرتبط (در صورت استفاده،
               {role:"assistant", content:summary},
               ...messages.slice(messages.length > 4 ? messages.length-3 : messages.length - 1)
             ]
+            wasSummarized = true
           } else 
-            throw Error("خطا در خلاصه‌سازی مکالمات قبلی.")
-        }
+            throw Error("خطا در خلاصه‌سازی مکالمات قبلی. لطفا مجددا درخواست دهید یا چت جدیدی باز کنید")
+        } else 
+          throw Error("UNKNOWN_ERROR")
       }
     }
 
     throw lastError;
   } catch (err) {
-    console.error("[RAG Chat] Error:", err);
+    if(msg_id)
+      removeActiveRequest(VLLM_URL, msg_id)
+
+    console.error("[RAG Chat Final Error]: ", err);
     if (!res.headersSent) {
-      res.status(500).json({ error: "خطا در ارتباط با مدل" });
+      res.status(500).json({ error: err.message });
     } else {
-      res.write("[RAG ERROR]: " + err)
+      res.write("data: [RAG ERROR]: " + err.message)
       res.end()
     }
-  }
+  } 
 });
+
+router.post("/rag/opinion/:msg_id", async(req, res)=>{
+  const {msg_id} = req.params
+  const { user_key, opinion } = req.query;
+  if(!user_key || !msg_id) res.status(400).json({error: "Invalid Params"})
+
+  const ou= db.getMessageUser(msg_id)?.user_key
+  if(user_key != ou)
+    return res.status(403).json({error: "شما مجاز به این کار نیستید"})
+
+
+  db.addUserOpinion(msg_id, opinion) 
+  res.json({msg_id, res:"ok"})
+}) 
+
+router.post("/rag/stop/:msg_id", async(req, res)=>{
+  const { chat_id: msg_id } = req.params;
+  if(!msg_id) res.status(400).json({error: "Invalid params"})
+
+  const response = await stopRequest(VLLM_URL, req.params.msg_id)
+  res.status(200).json({status:response})
+})
 
 router.post("/rag/generate-title", async (req, res) => {
   const { user_key, chat_id, first_message } = req.body;
@@ -543,9 +686,7 @@ router.post("/rag/generate-title", async (req, res) => {
   const prompt = `از این مکالمه، یک عنوان خیلی کوتاه و جذاب به فارسی بدون دونقطه بساز در حداکثر ۵ کلمه، بدون هیچ عبارت اضافی: "${first_message.trim()}"`;
 
   try {
-    let title =
-      (await getLLMResponse(undefined, prompt, 20, 0.7, false))?.content ||
-      "بی‌نام";
+    let title = await getDirectLLMResponse(undefined, prompt, 20, 0.7, false)||"بی‌نام";
 
     title = title
       .replace(/^["'«»](.*)["'«»]$/, "$1")

@@ -4,6 +4,7 @@ const path = require("path");
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 const VLLM_URL = process.env.VLLM_URL || "http://localhost:8000";
@@ -59,6 +60,7 @@ const translateRoutes = require("./routes/translate");
 const summarizeRoutes = require("./routes/summarize");
 const upload_text = require("./routes/upload-text");
 const ragRoutes = require("./routes/rag");
+const thinkRoutes = require("./routes/think");
 const authRouter = require("./routes/auth");
 const statsRouter = require("./routes/stats");
 
@@ -66,6 +68,7 @@ app.use("/api/auth", authRouter);
 app.use("/api", translateRoutes);
 app.use("/api", summarizeRoutes);
 app.use("/api", ragRoutes);
+app.use("/api", thinkRoutes);
 app.use("/api", upload_text);
 app.use("/api", statsRouter);
 
@@ -78,3 +81,5 @@ app.listen(PORT, "0.0.0.0", () => {
   console.log(`UI running at http://localhost:${PORT}`);
 });
 
+const {installMonitor} = require ("./utils/vllmUtils")
+installMonitor(VLLM_URL, VLLM_MODEL)

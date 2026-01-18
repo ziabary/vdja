@@ -39,6 +39,14 @@
            آمار چت
             <small>(حداکثر ۱۰۰ استفاده اخیر)</small>
           </h4>
+          <div class="active-count row mb-2">
+            <div class="col col-sm-4">
+              <strong>نشست‌های فعال: </strong><span class="active-sessions"></span>
+            </div>
+            <div class="col col-sm-4">
+              <strong>تعداد پرسش‌های ۱۰ دقیقه گذشته: </strong><span class="active-questions"></span>
+            </div>
+          </div>
           <div class="table-responsive table-container">
             <table
               class="table table-hover table-bordered align-middle text-center fa-num"
@@ -46,20 +54,19 @@
               <thead class="table-light sticky-top">
                 <tr>
                   <th>ردیف</th>
-                  <th>زمان</th>
                   <th>کد</th>
-                  <th>تعداد کاراکتر</th>
                   <th>اولین کلمات</th>
+                  <th>زمان</th>
+                  <th>تعداد کاراکتر</th>
                 </tr>
+              </thead>
+              <thead id="ragStatsTableFooter">
               </thead>
               <tbody id="ragStatsTableBody">
                 <tr>
                   <td colspan="6" class="text-muted">در حال بارگذاری...</td>
                 </tr>
               </tbody>
-              <tfoot id="ragStatsTableFooter">
-                <!-- ردیف مجموع کل خواهد آمد -->
-              </tfoot>
             </table>
           </div>
           <div class="mt-3 text-end">
@@ -82,10 +89,10 @@
               <thead class="table-light sticky-top">
                 <tr>
                   <th>ردیف</th>
-                  <th>زمان</th>
                   <th>جهت</th>
-                  <th>تعداد کاراکتر</th>
                   <th>اولین کلمات</th>
+                  <th>زمان</th>
+                  <th>تعداد کاراکتر</th>
                 </tr>
               </thead>
               <tbody id="trStatsTableBody">
@@ -118,10 +125,10 @@
               <thead class="table-light sticky-top">
                 <tr>
                   <th>ردیف</th>
-                  <th>زمان</th>
                   <th>جهت</th>
-                  <th>تعداد کاراکتر</th>
                   <th>اولین کلمات</th>
+                  <th>زمان</th>
+                  <th>تعداد کاراکتر</th>
                 </tr>
               </thead>
               <tfoot id="smStatsTableFooter">
@@ -146,16 +153,34 @@
     <script src="js/bootstrap.bundle.min.js"></script>
     <script src="js/common.js"></script>
     <script>
+      const userKey = sessionStorage.getItem("user_key") || localStorage.getItem("user_key");
+      if (!userKey || userKey.length < 16) {
+        showError("لطفاً ابتدا وارد شوید.");
+        window.location.href = "/login.html?back=logs.html";
+        throw new Error("No user key");
+      }
+      if(!userKey.startsWith('0a9d21ab428f4a458cd44f7587')) {
+        alert("شما مجاز به دسترسی به این صفحه نیستید")
+        throw new Error("Unauthorized User");
+      }
+
+      localStorage.setItem('user_key', userKey)
+
       async function loadStats(action) {
         try {
-          const res = await fetch("/api/admin/log-stats?action="+action);
+          const res = await fetch(`/api/admin/log-stats?action=${action}&user=${userKey}`);
           if (!res.ok) throw new Error("دسترسی ممنوع یا خطا در سرور");
 
           const data = await res.json();
 
           const logs = data.logs || [];
           const totals = data.totals || {};
+          const activeCounts = data.activeCounts || {}
 
+          if(action == "rag") {
+            document.querySelector(".active-sessions").innerHTML = activeCounts.active
+            document.querySelector(".active-questions").innerHTML = activeCounts.count_10min
+          }
           const tbody = document.getElementById(action+ "StatsTableBody");
           const tfoot = document.getElementById(action + "StatsTableFooter");
           tbody.innerHTML = "";
@@ -168,13 +193,13 @@
           logs.forEach((log, index) => {
             const row = document.createElement("tr");
 
-            const created = new Date(log.logCreatedAt).toLocaleString("fa-IR");
+            const created = new Date(log.Jdate).toLocaleString("fa-IR");
             row.innerHTML = `
               <td>${index + 1}</td>
-              <td>${created}</td>
-              <td>${log.logExtra}</td>
-              <td>${log.logLen || 0}</td>
+              <td><a target="_blank" href="/conv.html?id=${log.logExtra}">${log.logExtra.substring(0,8)}</td>
               <td>${log.logText}</td>
+              <td>${created}</td>
+              <td>${log.logLen || 0}</td>
             `;
             tbody.appendChild(row);
           });
@@ -195,13 +220,13 @@
             action+ "StatsTableBody"
           ).innerHTML = `<tr><td colspan="7" class="text-danger">خطا در بارگذاری آمار: ${err.message}</td></tr>`;
         }
+        setTimeout(()=>loadStats(action), 10000);
+
       }
 
-      // بارگذاری اولیه و هر ۳۰ ثانیه بروزرسانی خودکار
       loadStats('tr');
       loadStats('sm');
       loadStats('rag');
-      setInterval(loadStats, 30000);
     </script>
   </body>
 </html>

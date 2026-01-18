@@ -1,4 +1,4 @@
-const { QdrantClient } = require("@qdrant/js-client-rest");
+const { QdrantClient, FieldCondition,  Filter, Range } = require("@qdrant/js-client-rest");
 const { v4: uuidv4 } = require("uuid");
 const { getEmbedding } = require("./embedding");
 
@@ -77,22 +77,33 @@ async function upsertChunks(user_key, fileId, fileName, chunks) {
   return points.length;
 }
 
-async function searchChunks(user_key, embedded_query, limit = 8) {
+async function searchChunks(user_key, embedded_query, limit = 8, mustBeNew = false) {
   if (!user_key || !embedded_query || embedded_query.length === 0 || !await colExists(user_key)) 
     return []
+
+  let filter = undefined
+  if(mustBeNew) {
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const sevenDaysAgoTimestamp = Math.floor(sevenDaysAgo.getTime() / 1000);
+    filter = {
+        must: [{
+            key: "chunk_time",
+            range: {
+              gt: sevenDaysAgoTimestamp, // "gt" means "greater than"
+            },
+        }
+      ]
+    }
+  }
 
   try {
     //@TODO maybe replaced with recommend to positive/negative matching. 
     const results = await client.search(collectionName(user_key), {
       vector: embedded_query,
       limit: limit,
+      filter,
       params: {hnsw_ef: 512, exact: false},
-      // filter: {
-      //   must: [
-      //      { key: "user_key", match: {value: user_key},
-      //      { key: "text", match_text: { value: "keyword" } } 
-      //   }],
-      // },
       sort: [{ key: "chunk_time", order: "desc" }],
       with_payload: true,
       with_vector: false,
@@ -103,11 +114,14 @@ async function searchChunks(user_key, embedded_query, limit = 8) {
       .filter((r) => r.payload && r.payload.user_key === user_key && r.score > 0.8)
       
 
-    if(process.env.DEBUG_MODE)
+    if(process.env.DEBUG_MODE) 
       console.log({
-        chunks: filteredChunks.map(r=>({file:r.payload.file_name, score: r.score, p: r.payload.text})), 
-        filtered: results.length- filteredChunks.length
+        chunks: filteredChunks.map(r=>({file:r.payload.file_name, chunk_time: r.payload.chunk_time, score: r.score, p: r.payload.text})), 
+        filtered: results.length- filteredChunks.length,
+        user_key
       })
+
+    
 
     /*
     const resultsByFile = {};

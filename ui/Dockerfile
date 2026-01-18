@@ -16,8 +16,8 @@ RUN apk add --no-cache \
 RUN ln -sf /usr/bin/python3 /usr/bin/python || true
 
 RUN yarn config set registry https://mirror-npm.runflare.com && \
-    yarn config set disturl hthttps://mirror-npm.runflare.com/dist && \
-    yarn config set sass_binary_site hhttps://mirror-npm.runflare.com/mirrors/node-sass/
+    yarn config set disturl https://mirror-npm.runflare.com/dist && \
+    yarn config set sass_binary_site https://mirror-npm.runflare.com/mirrors/node-sass/
 
 COPY package*.json ./
 RUN yarn install 

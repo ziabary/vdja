@@ -232,7 +232,7 @@
           if (data.success) {
             sessionStorage.setItem("user_key", hashed_key);
             userKeyInput.value = "";
-            window.location.href = "/rag.html";
+            window.location.href = window.location.search ? window.location.search.replace("?back=", "/"): "/rag.html";
           } else {
             showError(data.error || "خطا در ورود. کلید نامعتبر است.");
           }
