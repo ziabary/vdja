@@ -1,116 +1,80 @@
 const express = require("express");
+const fs = require('fs');
+
+const atDB = require("../db/atDB")
+const { startNewChat, stopRequest, genReqId } = require("../utils/chatUtils");
+const configManager = require('../utils/configManager');
+const { stripText, getAuthToken } = require("../utils/common");
+
 const router = express.Router();
-const db = require("../services/db");
-
-const { callVLLMStream } = require("../utils/vllmUtils"); // <-- utility جدید
-
-const VLLM_URL = process.env.VLLM_URL || "http://localhost:8000";
-const VLLM_MODEL = process.env.VLLM_MODEL || "aya";
-
-function shortText(text, len = 50) {
-  return text?.length > len ? text.slice(0, len) + "..." : text || "";
-}
-
-router.post("/summarize", async (req, res) => {
-  const { text, max_words, force_persian = true } = req.body;
-
-  if (!text?.trim()) 
-    return res.status(400).json({ error: "متن خالی است" });
-  
-  const fixedText = text.slice(0, 20000)
-
-  let systemPrompt = `You are a highly accurate summarization expert.
+const SYSTEM_PROMPT = `You are a highly accurate summarization expert.
 Strict rules:
 - Output ONLY the summary, no introduction, explanation, or extra text.
-- Summary must be fluent and natural.`;
+- Summary must be fluent and natural.
+`;
 
-  if (force_persian) {
-    systemPrompt += `\n- When summarizing in Persian: use Persian guillemets «» (never " or ""), use Persian numerals in normal text (۰۱۲۳۴۵۶۷۸۹), keep English numerals in formulas, code, dates, or technical values.`;
-    systemPrompt += `\nAlways summarize in Persian, regardless of input language.`;
-  } else {
-    systemPrompt += `\nSummarize in the original language of the input text and follow its typographic rules.`;
+router.post("/summarize", async (apiReq, apiRes) => {
+  const { userToken, request_id, text, max_words, force_persian } = apiReq.body;
+  const configs = configManager.active()
+  const summaryServer = configs.llm.SummaryServer
+
+  if (!text?.trim()) 
+    return apiRes.status(400).json({ error: "متن خالی است" });
+  
+  if(userToken) {
+    //@TODO handle users in special increase count of words
   }
 
-  const userPrompt = force_persian
-    ? `Summarize the following text in Persian in at most ${max_words} words:\n\n${fixedText.trim()}`
-    : `Summarize the following text in its original language in at most ${max_words} words:\n\n${text.trim()}`;
+  const trimmed_text = text.slice(0, summaryServer.maxInputChars).trim()
+  const strippedText = stripText(trimmed_text)
 
-  console.log(
-    `[Summarize] Max words: ${max_words} | Force Persian: ${force_persian} | Lenght: ${fixedText.length} | Text: "${shortText(fixedText)}"`
-  );
-  
+  if(configs.isDebugging)
+    console.log(
+    `[Summarize] Max words: ${max_words} | Force Persian: ${force_persian} | Lenght: ${strippedText.length} | Text: "${strippedText}"`
+    );
+  try{
 
-  const looksPersian = /[\u0600-\u06FF]/.test(fixedText.slice(0, 500));
-  console.log(`[Summarize] Detected Persian chars: ${looksPersian} | Force Persian: ${force_persian}`);
-  db.log('sm', `${force_persian ? 'fp': 'nr'}:${max_words}`, fixedText.length, shortText(fixedText))
-
-  const maxRetries = 3;
-  let attempt = 0;
-  let lastError;
-
-  while (attempt < maxRetries) {
-    attempt++;
-    try {
-      const messages = [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt },
-      ];
-
-      const vllmRes = await callVLLMStream(VLLM_URL, VLLM_MODEL, messages, {
-        max_tokens: 2000,
-        temperature: 0.4,
-      });
-
-      res.setHeader("Content-Type", "text/event-stream");
-      res.setHeader("Cache-Control", "no-cache");
-      res.setHeader("Connection", "keep-alive");
-      res.flushHeaders();
-
-      const reader = vllmRes.body.getReader();
-      const decoder = new TextDecoder();
-
-      const processStream = async () => {
-        try {
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) {
-              res.write("data: [DONE]\n\n");
-              res.end();
-              break;
-            }
-
-            const chunk = decoder.decode(value, { stream: true });
-            if (!res.write(chunk)) {
-              await new Promise((resolve) => res.once("drain", resolve));
-            }
-          }
-        } catch (err) {
-          console.error("[Summarize] Stream processing error:", err);
-          if (!res.headersSent) {
-            res.status(500).json({ error: "خطا در پردازش استریم" });
-          }
-        }
-      };
-
-      processStream();
-      return; 
-    } catch (err) {
-      lastError = err;
-      console.error(`[Summarize] Attempt ${attempt} failed:`, err.message || err);
-
-      if (attempt < maxRetries) {
-        const delay = 1000 * attempt; // exponential backoff ساده
-        console.log(`[Summarize] Retrying in ${delay}ms...`);
-        await new Promise((resolve) => setTimeout(resolve, delay));
-      }
+    let systemPrompt = SYSTEM_PROMPT
+    if (force_persian) {
+      systemPrompt += `\n- When summarizing in Persian: use Persian guillemets «» (never " or ""), use Persian numerals in normal text (۰۱۲۳۴۵۶۷۸۹), keep English numerals in formulas, code, dates, or technical values.`;
+      systemPrompt += `\n- Always summarize in Persian, regardless of input language.`;
+    } else {
+      systemPrompt += `\n- Summarize in the original language of the input text and follow its typographic rules.`;
     }
-  }
 
-  
-  console.error("[Summarize] All attempts failed:", lastError);
-  if (!res.headersSent) {
-    res.status(500).json({ error: "خطا در خلاصه‌سازی پس از چندین تلاش" });
+    const userPrompt = force_persian
+      ? `Summarize the following text in Persian for at most ${max_words} words:\n\n${trimmed_text}`
+      : `Summarize the following text in its original language for at most ${max_words} words:\n\n${trimmed_text}`;
+
+    const messages = [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: userPrompt },
+    ];
+
+    startNewChat(apiRes, summaryServer, request_id || genReqId(userToken), messages, {
+        onDone: async (cancelled)=>{
+          atDB.log.add(userToken, 'sum', {force_persian, max_words, strippedText}, trimmed_text.length, cancelled ? 409 : 200, "llm")
+          return false
+        },
+    })
+  } catch(ex){
+        atDB.log.add(userToken, 'sum', {force_persian, max_words, strippedText}, trimmed_text.length, 500, ex.message)
+        throw ex
+    
   }
 });
 
-module.exports = router;
+router.post("/summarize/:reqId/stop", async (apiReq, apiRes) => {
+  const {userID} = getAuthToken(apiReq)
+  const {reqId} = apiReq.params
+  const response = await stopRequest(configManager.active().llm.SummaryServer, reqId)
+  apiRes.status(200).json({status:response})
+})
+
+
+async function init() {
+  return router
+}
+
+module.exports = init;
+

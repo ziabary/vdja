@@ -97,7 +97,7 @@
         <div class="col-md-6">
           <div class="card">
             <div class="card-body p-3 pb-1 text-center">
-              <a href="/"><img src="img/defard.png" alt="لوگو" class="logo" /></a>
+              <a href="/"><img src="img/logo.png" alt="لوگو" class="logo" /></a>
               <h3 class="mb-4">چت با داده‌های شما</h3>
               <div class="mb-4">
                 <label class="form-label fw-bold"
@@ -106,7 +106,7 @@
                 <div class="input-group">
                   <input
                     type="password"
-                    id="userKey"
+                    id="userToken"
                     class="form-control form-control-lg"
                     placeholder="کلید خود را وارد کنید یا تولید کنید..."
                   />
@@ -169,7 +169,7 @@
     <script src="js/md5.min.js"></script>
     <script src="js/common.js"></script>
     <script>
-      const userKeyInput = document.getElementById("userKey");
+      const userTokenInput = document.getElementById("userToken");
       const togglePass = document.getElementById("togglePass");
       const eyeIcon = document.getElementById("eyeIcon");
       const generateBtn = document.getElementById("generateBtn");
@@ -180,7 +180,7 @@
 
       togglePass.addEventListener("click", () => {
         isVisible = !isVisible;
-        userKeyInput.type = isVisible ? "text" : "password";
+        userTokenInput.type = isVisible ? "text" : "password";
         eyeIcon.className = isVisible ? "bi bi-eye-slash" : "bi bi-eye";
       });
 
@@ -191,14 +191,14 @@
         for (let i = 0; i < 24; i++) {
           key += chars.charAt(Math.floor(Math.random() * chars.length));
         }
-        userKeyInput.value = key;
-        userKeyInput.type = "text";
+        userTokenInput.value = key;
+        userTokenInput.type = "text";
         isVisible = true;
         eyeIcon.className = "bi bi-eye-slash";
       });
 
       enterBtn.addEventListener("click", () => {
-        const key = userKeyInput.value.trim();
+        const key = userTokenInput.value.trim();
         if (key.length < 16) {
           showError("کلید باید حداقل ۱۶ کاراکتر باشد!");
           return;
@@ -207,11 +207,11 @@
         login(key);
       });
 
-      userKeyInput.addEventListener("keypress", (e) => {
+      userTokenInput.addEventListener("keypress", (e) => {
         if (e.key === "Enter") enterBtn.click();
       });
 
-      const savedKey = sessionStorage.getItem("user_key");
+      const savedKey = sessionStorage.getItem("userToken");
       if (savedKey && savedKey.length === 32)
         window.location.href = "/rag.html";
 
@@ -224,14 +224,14 @@
           const res = await fetch("/api/auth/login", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ user_key: hashed_key }),
+            body: JSON.stringify({ userToken: hashed_key }),
           });
 
           const data = await res.json();
 
           if (data.success) {
-            sessionStorage.setItem("user_key", hashed_key);
-            userKeyInput.value = "";
+            sessionStorage.setItem("userToken", hashed_key);
+            userTokenInput.value = "";
             window.location.href = window.location.search ? window.location.search.replace("?back=", "/"): "/rag.html";
           } else {
             showError(data.error || "خطا در ورود. کلید نامعتبر است.");

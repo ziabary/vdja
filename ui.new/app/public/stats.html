@@ -21,12 +21,17 @@
         max-height: 80vh;
         overflow-y: auto;
       }
+      @media (max-width: 640px) {
+        #txtInput {
+          min-height: 200px;
+        }
+      }
     </style>
   </head>
   <body>
     <nav class="navbar navbar-light bg-white shadow-sm">
       <div class="container">
-        <img src="/img/defard.png" alt="لوگو" />
+        <img src="/img/logo.png" alt="لوگو" />
         <span class="navbar-brand mx-auto h4 mb-0">آمار نشست‌ها</span>
         <a href="/" class="btn btn-outline-primary">← بازگشت به خانه</a>
       </div>
@@ -66,7 +71,7 @@
             </table>
           </div>
           <div id="hiddenCountInfo" class="hidden-count text-muted text-center fa-num"></div>
-          <div class="mt-3 text-end">
+          <div class="mt-3 text-end"> 
             <small class="text-muted"
               >به‌روزرسانی: <span id="lastUpdate">-</span></small
             >
@@ -76,7 +81,14 @@
     </div>
 
     <script src="js/bootstrap.bundle.min.js"></script>
+    <script src="js/marked.min.js"></script>
+    <script src="js/md5.min.js"></script>
     <script src="js/common.js"></script>
+    <!-- MathJax -->
+    <script src="js/mathjax/config.js"></script>
+    <script src="js/polyfill.min.js?features=es6"></script>
+    <script src="js/mathjax/es5/tex-mml-chtml.js"></script>
+
     <script>
       async function loadStats() {
         try {
@@ -112,7 +124,7 @@
 
             row.innerHTML = `
               <td>${index + 1}</td>
-              <td><code>${user.short_user_key.slice(0, 12)}...</code></td>
+              <td><code>${user.short_userToken.slice(0, 12)}...</code></td>
               <td>${created}</td>
               <td>${lastLogin}</td>
               <td>${user.total_chats || 0}</td>

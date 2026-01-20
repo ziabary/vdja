@@ -5,7 +5,7 @@ const os = require("os");
 const { v4: uuidv4 } = require("uuid");
 const pdf = require("pdf-parse");
 const mammoth = require("mammoth");
-const db = require("../services/db");
+const {db} = require("../services/db");
 const { date2Jalali } = require("../utils/i18n");
 const { fileTypeFromBuffer } = require("file-type");
 const { chunkText } = require("../services/embedding");
@@ -174,7 +174,7 @@ router.post("/think/chat-message", async (req, res) => {
     keywords = [...new Set(keywords)]
     const embedded_query = await getEmbedding((keywords ? `[keywords: ${keywords.join(',')}]`:'') + user_message);
     if (!embedded_query) 
-      throw Error("Unable to generate embedding")
+      throw new Error("Unable to generate embedding")
     return embedded_query
   }
 
@@ -283,13 +283,13 @@ IMPORTANT RULES:
         if (attempt < maxRetries) 
           await new Promise((r) => setTimeout(r, 1000 * attempt));
         else 
-          throw Error("خطای غیر قابلبازیابی در تولید محتوا. لطفا چت جدیدی باز کنید.")
+          throw new Error("خطای غیر قابلبازیابی در تولید محتوا. لطفا چت جدیدی باز کنید.")
         
         if(err.message?.startsWith(`vLLM error 400: {"error":{"message":"'max_tokens' or 'max_completion_tokens' is too large:`)) {
           /************************** */
           if(messages.length  === 2 
             || (messages.length === 4 && messages[messages.length - 3].content === SUMMARIZE_PROMPT))
-            throw Error("حجم سوال ورودی زیاد است آن را کاهش دهید یا مکالمه جدیدی شروع کنید")
+            throw new Error("حجم سوال ورودی زیاد است آن را کاهش دهید یا مکالمه جدیدی شروع کنید")
 
           const toSummarize = messages.slice(1, messages.length > 4 ? messages.length-3 : messages.length - 1)
           res.write("data: [summarizing]");
@@ -312,7 +312,7 @@ IMPORTANT RULES:
               ...messages.slice(messages.length > 4 ? messages.length-3 : messages.length - 1)
             ]
           } else 
-            throw Error("خطا در خلاصه‌سازی مکالمات قبلی.")
+            throw new Error("خطا در خلاصه‌سازی مکالمات قبلی.")
         }
       }
     }

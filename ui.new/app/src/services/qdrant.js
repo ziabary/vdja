@@ -69,7 +69,7 @@ async function upsertChunks(user_key, fileId, fileName, chunks) {
           await client.upsert(collectionName(user_key), { points: batch });
         } catch (error) {
           console.error("Upsert failed:", error);
-          throw error
+          throw new Error
         }
       }
     }
@@ -149,7 +149,7 @@ async function searchChunks(user_key, embedded_query, limit = 8, mustBeNew = fal
 
 async function deleteByFileId(user_key, fileId) {
   if (!await colExists(user_key))
-    throw Error("there is no vector collection for: " + user_key)
+    throw new Error("there is no vector collection for: " + user_key)
 
   let offset = null;
   let removed = 0
@@ -173,7 +173,7 @@ async function deleteByFileId(user_key, fileId) {
 
 async function deleteAllByUser(user_key) {
   if (!await colExists(user_key))
-    throw Error("There is no vector collection for: " + user_key)
+    throw new Error("There is no vector collection for: " + user_key)
   return await client.deleteCollection(collectionName(user_key))
 }
 

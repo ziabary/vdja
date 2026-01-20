@@ -1,85 +1,89 @@
 require("dotenv").config();
 const express = require("express");
 const path = require("path");
-const cors = require('cors');
-const rateLimit = require('express-rate-limit');
+const cors = require("cors");
+const rateLimit = require("express-rate-limit");
+const configManager = require("./utils/configManager");
+const db = require("./db");
+const { installMonitor } = require("./utils/chatUtils");
+const mountRoutes = require("./utils/asyncRouter");
 
+DEFAULT_CONFIG_FILE = "./.config.json";
 
-const app = express();
-const PORT = process.env.PORT || 3000;
-const VLLM_URL = process.env.VLLM_URL || "http://localhost:8000";
-const QDRANT_URL = process.env.QDRANT_URL || "http://localhost:8002";
-const EMBEDDING_URL = process.env.EMBEDDING_URL || "http://localhost:8001";
-const VLLM_MODEL = process.env.VLLM_MODEL || "aya";
+async function init() {
+  configManager.init(DEFAULT_CONFIG_FILE);
+  db.init();
 
-
-const corsOptions = {
-  origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
-  credentials: true,
-  optionsSuccessStatus: 200
-};
-app.use(cors(corsOptions));
-app.use(express.json({ trustXFF: true }));
-app.set('trust proxy', true);
-
-const limiter = rateLimit({
-  windowMs: 1  * 60 * 1000, // 15 minutes
-  max: 10000, // limit each IP to 100 requests per windowMs
-  message: 'تعداد درخواست‌های وارد از این IP بیش از حد مجاز بوده. اندکی صبر و مجددا تلاش کند'
-});
-app.use(limiter);
-
-// Middleware
-app.use(express.json({ limit: '50mb' }));
-app.use((req, res, next) => {
-  const originalJson = res.json;
-  res.json = function (data) {
-    res.setHeader('Content-Type', 'application/json; charset=utf-8');
-    originalJson.call(this, data);
+  const configs = configManager.active();
+  const app = express();
+  const corsOptions = {
+    origin: configs.app.corsOrigin || "http://localhost:3000",
+    credentials: true,
+    optionsSuccessStatus: 200,
   };
-  next();
-});
-app.use(express.static("public"));
 
-// Routes
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "../public", "index.html"));
-});
+  app.use(cors(corsOptions));
+  app.use(express.json({ trustXFF: true }));
+  app.set("trust proxy", "172.17.0.0/16");
 
-// Static pages
-app.get("/login.html", (req, res) => {
-  res.sendFile(path.join(__dirname, "../login.html"));
-});
+  const limiter = rateLimit({
+    windowMs: configs.app.limiter.window,
+    max: configs.app.limiter.maxReq,
+    message: configs.app.limiter.errorMessage,
+  });
+  app.use(limiter);
+  app.use(express.json({ limit: configs.app.maxJson }));
+  app.use(express.static("public"));
 
-app.get("/rag.html", (req, res) => {
-  res.sendFile(path.join(__dirname, "rag.html"));
-});
+  // Middleware
+  app.use((_, res, next) => {
+    const originalJson = res.json;
+    res.json = function (data) {
+      res.setHeader("Content-Type", "application/json; charset=utf-8");
+      originalJson.call(this, data);
+    };
+    next();
+  });
 
-// Import routes
-const translateRoutes = require("./routes/translate");
-const summarizeRoutes = require("./routes/summarize");
-const upload_text = require("./routes/upload-text");
-const ragRoutes = require("./routes/rag");
-const thinkRoutes = require("./routes/think");
-const authRouter = require("./routes/auth");
-const statsRouter = require("./routes/stats");
+  ///////////////////////////////////////////////////////////////////////
+  // Routes
+  ///////////////////////////////////////////////////////////////////////
+  app.get("/", (req, res) => res.sendFile(path.join(__dirname, "../public", "index.html")));
+  const activeRoutes = await mountRoutes([ 
+    require("./routes/translate"),
+    require("./routes/summarize"),
+    require("./routes/file-to-text"),
+    // require("./routes/auth")(),
+    // require("./routes/rag")(),
+    // require("./routes/think")(),
+    // require("./routes/stats")(),
+  ])
 
-app.use("/api/auth", authRouter);
-app.use("/api", translateRoutes);
-app.use("/api", summarizeRoutes);
-app.use("/api", ragRoutes);
-app.use("/api", thinkRoutes);
-app.use("/api", upload_text);
-app.use("/api", statsRouter);
+  app.use("/api", activeRoutes)
 
-/********************************************************* */
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Using vLLM at: ${VLLM_URL} (model: ${VLLM_MODEL})`);
-  console.log(`Using QDrant at: ${QDRANT_URL}`);
-  console.log(`Using Embedding at: ${EMBEDDING_URL}`);
+  app.use((err, req, res, next) => {
+    console.error("🔥 Route error:", err);
 
-  console.log(`UI running at http://localhost:${PORT}`);
-});
+    if (res.headersSent) {
+      res.write("data: [ERROR]: " + err.message);
+      return res.done()
+    }
 
-const {installMonitor} = require ("./utils/vllmUtils")
-installMonitor(VLLM_URL, VLLM_MODEL)
+    const status = err.status || err.statusCode || 500;
+
+    res.status(status).json({error:{status, message: err.message || "Internal Server Error"}});
+  });
+
+  app.listen(configs.app.listen.port, configs.app.listen.ip, () => {
+    console.info(`Using LLMServer at: ${configs.llm.RAGServer.url} (model: ${configs.llm.RAGServer.model})`);
+    console.info(`Using ThinkServer at: ${configs.llm.ThinkServer.url} (model: ${configs.llm.ThinkServer.model})`);
+    console.info(`Using RAGDB at: ${configs.llm.RAGDB.url}`);
+    console.info(`Using Embedding at: ${configs.llm.Embedding.url} (model: ${configs.llm.Embedding.model})`);
+
+    console.info(`UI running at http://${configs.app.listen.ip}:${configs.app.listen.port}`);
+  });
+
+  Object.keys(configs.llm).forEach((k) => installMonitor(configs.llm[k]));
+}
+
+init();

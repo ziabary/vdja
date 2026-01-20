@@ -6,7 +6,7 @@ const agent = new https.Agent({ rejectUnauthorized: false });
 
 process.env.SQLITE_UTF8 = "1";
 const Database = require("better-sqlite3");
-const db = new Database("db/news.db", { timeout: 5000 });
+const {db} = new Database("db/news.db", { timeout: 5000 });
 db.pragma("journal_mode = WAL");
 db.pragma("busy_timeout = 5000");
 db.pragma('encoding = "UTF-8"');

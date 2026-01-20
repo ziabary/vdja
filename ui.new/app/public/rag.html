@@ -251,47 +251,12 @@
       }
 
 
-    .loader {
-      display: inline-flex;
-      gap: 8px;
-    }
-
-    .dot {
-      width: 4px;
-      height: 4px;
-      background: gray;
-      border-radius: 50%;
-      animation: bounce 1.4s infinite ease-in-out;
-    }
-
-    .dot:nth-child(1) {
-      animation-delay: -0.3s;
-    }
-
-    .dot:nth-child(2) {
-      animation-delay: 0s;
-    }
-
-    .dot:nth-child(3) {
-      animation-delay: 0.3s;
-    }
-
-    @keyframes bounce {
-      0%, 100% {
-        transform: translateY(0);
-        opacity: 1;
-      }
-      50% {
-        transform: translateY(-5px);
-        opacity: 0.5;
-      }
-    }
     </style>
   </head>
   <body class="new-chat">
     <nav class="navbar navbar-light bg-white shadow-sm">
       <div class="container">
-        <img src="/img/defard.png" alt="لوگو"/>
+        <img src="/img/logo.png" alt="لوگو"/>
         <span class="navbar-brand mx-auto h4 mb-0">چت با داده‌ها</span>
         <span class="burger" onclick="document.body.classList.add('side-open')"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="--color: inherit; --transform: none;"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"></path></svg></span>
         <span class="close-sidebar-cross" onclick="document.body.classList.remove('side-open')"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="--color: inherit; --transform: none;"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></svg></span>
@@ -300,7 +265,7 @@
     <div class="sidebar p-3">
       <span class="close-sidebar-cross" onclick="document.body.classList.remove('side-open')"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="--color: inherit; --transform: none;"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></svg></span>
       <div class="logo">
-        <a href="/"><img alt="targoman-logo" src="img/defard.png" /></a>
+        <a href="/"><img alt="targoman-logo" src="img/logo.png" /></a>
       </div>
 
       <h5 class="mb-3 mt-2">
@@ -386,7 +351,7 @@
             <button
               type="button"
               class="btn btn-danger"
-              onclick="sessionStorage.removeItem('user_key'); window.location.href='/login.html'"
+              onclick="sessionStorage.removeItem('userToken'); window.location.href='/login.html'"
             >
               بله، خارج شو
             </button>
@@ -480,17 +445,17 @@
           localStorage.setItem("tgmn-banner-shown", true)
       }
 
-      const userKey = sessionStorage.getItem("user_key");
-      if (!userKey || userKey.length < 16) {
+      const userToken = sessionStorage.getItem("userToken");
+      if (!userToken || userToken.length < 16) {
         showError("لطفاً ابتدا وارد شوید.");
         window.location.href = "/login.html";
         throw new Error("No user key");
       }
       const userContainer = document.getElementById("userInfo")
 
-      if(userKey.startsWith('0a9d21ab428f4a458cd44f7587'))
+      if(userToken.startsWith('0a9d21ab428f4a458cd44f7587'))
         userContainer.innerHTML = "عمومی"
-      else if(userKey.startsWith('c12df826d72950c8658e7b1'))
+      else if(userToken.startsWith('c12df826d72950c8658e7b1'))
         userContainer.innerHTML = "اخبار"
       let currentChatId = location.hash.replace("#",'') || undefined;
       let chatHistory = [];
@@ -685,7 +650,7 @@
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              user_key: userKey,
+              userToken: userToken,
               chat_id: currentChatId,
               title: newTitle,
             }),
@@ -753,7 +718,7 @@
 
       /*********************************/
       async function loadChats() {
-        const res = await fetch(`/api/rag/chats?user_key=${userKey}`);
+        const res = await fetch(`/api/rag/chats?userToken=${userToken}`);
         const { chats, questions } = await res.json();
         chatsList.innerHTML = chats
           .map(
@@ -781,7 +746,7 @@
 
       /*********************************/
       async function loadFiles() {
-        const res = await fetch(`/api/rag/files?user_key=${userKey}`);
+        const res = await fetch(`/api/rag/files?userToken=${userToken}`);
         const { files } = await res.json();
         filesList.innerHTML = files
           .map(
@@ -815,7 +780,7 @@
 
         try {
           const res = await fetch(
-            `/api/rag/chat/${chatId}/messages?user_key=${userKey}`
+            `/api/rag/chat/${chatId}/messages?userToken=${userToken}`
           );
           if (!res.ok) {
             if(res.status == 403) 
@@ -929,7 +894,7 @@
               const el = ev.target
               const elp = el.parentElement
               const msgId = elp.parentElement.getAttribute("msg_id")
-              fetch(`/api/rag/opinion/${msgId}?user_key=${userKey}&opinion=${elp.classList}`, {
+              fetch(`/api/rag/opinion/${msgId}?userToken=${userToken}&opinion=${elp.classList}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" }
               })
@@ -987,7 +952,7 @@
             const res = await fetch("/api/rag/chat", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ user_key: userKey }),
+              body: JSON.stringify({ userToken: userToken }),
             });
             if (!res.ok) {
               toast("خطا در ساخت چت جدید", "danger");
@@ -1037,7 +1002,7 @@
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
-                user_key: userKey,
+                userToken: userToken,
                 message,
                 chat_id: currentChatId,
                 msg_id: activeReqID,
@@ -1113,7 +1078,7 @@
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({
-                    user_key: userKey,
+                    userToken: userToken,
                     chat_id: currentChatId,
                   }),
                 });
@@ -1160,7 +1125,7 @@
       btnStop.addEventListener("click", async ()=>{
         const msg_id = btnStop.getAttribute("msg-id")
         if(!msg_id) return
-        await fetch(`/api/rag/stop/${msg_id}?user_key=${userKey}`, {
+        await fetch(`/api/rag/stop/${msg_id}?userToken=${userToken}`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
         })
@@ -1202,7 +1167,7 @@
 
           const formData = new FormData();
           formData.append("file", file);
-          formData.append("user_key", userKey);
+          formData.append("userToken", userToken);
 
           try {
             const res = await fetch("/api/rag/upload", {
@@ -1253,7 +1218,7 @@
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              user_key: userKey,
+              userToken: userToken,
               chat_id: currentChatId,
               first_message: firstDialog,
             }),
@@ -1289,7 +1254,7 @@
         const res = await fetch(`/api/rag/file/${fileId}`, {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ user_key: userKey }),
+          body: JSON.stringify({ userToken: userToken }),
         });
 
         if (res.ok) {
@@ -1315,7 +1280,7 @@
         const res = await fetch("/api/rag/files", {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ user_key: userKey }),
+          body: JSON.stringify({ userToken: userToken }),
         });
 
         if (res.ok) {
@@ -1341,7 +1306,7 @@
         const res = await fetch(`/api/rag/chat/${chatId}`, {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ user_key: userKey }),
+          body: JSON.stringify({ userToken: userToken }),
         });
 
         if (res.ok) {
@@ -1365,7 +1330,7 @@
         const res = await fetch("/api/rag/chats", {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ user_key: userKey }),
+          body: JSON.stringify({ userToken: userToken }),
         });
 
         if (res.ok) {
@@ -1423,7 +1388,7 @@
         });
 
         if (confirmed) {
-          sessionStorage.removeItem("user_key");
+          sessionStorage.removeItem("userToken");
           window.location.href = "/";
         }
       } );

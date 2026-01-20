@@ -25,20 +25,20 @@ async function migrate() {
         offset = next_page_offset;
     } while (offset);
 
-    // Group points by user_key
-    const userKeyToPoints = {};
+    // Group points by userToken
+    const userTokenToPoints = {};
     for (const point of allPoints) {
-        const userKey = point.payload.user_key;
-        if (!userKeyToPoints[userKey]) 
-            userKeyToPoints[userKey] = [];
-        userKeyToPoints[userKey].push(point);
+        const userToken = point.payload.userToken;
+        if (!userTokenToPoints[userToken]) 
+            userTokenToPoints[userToken] = [];
+        userTokenToPoints[userToken].push(point);
     }
 
-    console.log(`found ${Object.keys(userKeyToPoints).length}`)
+    console.log(`found ${Object.keys(userTokenToPoints).length}`)
 
-    // Create new collections for each user_key
-    for (const [userKey, points] of Object.entries(userKeyToPoints)) {
-        const newCollectionName = `ragdb_${userKey}`;
+    // Create new collections for each userToken
+    for (const [userToken, points] of Object.entries(userTokenToPoints)) {
+        const newCollectionName = `ragdb_${userToken}`;
         try {
             console.log(`creating collection: ${newCollectionName} with ${points.length} points`)
             await client.createCollection(newCollectionName, {
@@ -58,12 +58,12 @@ async function migrate() {
 
 
     // Migrate points to the new collections
-    for (const [userKey, points] of Object.entries(userKeyToPoints)) {
-        const newCollectionName = `ragdb_${userKey}`;
+    for (const [userToken, points] of Object.entries(userTokenToPoints)) {
+        const newCollectionName = `ragdb_${userToken}`;
         const batch = points.map(point => ({
             id: point.id,
             vector: point.vector,
-            payload: point.payload,  // Includes user_key, file_id, etc.
+            payload: point.payload,  // Includes userToken, file_id, etc.
         }));
 
         console.log(`inserting ${batch.length} points for ${newCollectionName}`)

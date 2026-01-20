@@ -5,7 +5,7 @@ const os = require("os");
 const { v4: uuidv4 } = require("uuid");
 const pdf = require("pdf-parse");
 const mammoth = require("mammoth");
-const db = require("../services/db");
+const {db} = require("../services/db");
 const { date2Jalali } = require("../utils/i18n");
 const { fileTypeFromBuffer } = require("file-type");
 const { chunkText } = require("../services/embedding");
@@ -418,7 +418,7 @@ router.post("/rag/chat-message", async (req, res) => {
     keywords = [...new Set(keywords)]
     const embedded_query = await getEmbedding((keywords ? `[keywords: ${keywords.join(',')}]`:'') + user_message);
     if (!embedded_query) 
-      throw Error("Unable to generate embedding")
+      throw new Error("Unable to generate embedding")
     return embedded_query
   }
 
@@ -572,7 +572,7 @@ ${newsContext.count ? "\n- اخبار مرتبط (در صورت استفاده،
             }
           } catch (err) {
             console.error("[RAG Chat] Stream error:", err);
-            throw Error("خطا در هنگام پردازش استریم: " + err.message );
+            throw new Error("خطا در هنگام پردازش استریم: " + err.message );
           } finally {
             reader.cancel()
           }
@@ -603,7 +603,7 @@ ${newsContext.count ? "\n- اخبار مرتبط (در صورت استفاده،
           } else {
              if(process.env.DEBUG_MODE)
                 console.error(`[RAG Chat Error] Attempt ${attempt} failed:`, err.message || err);
-            throw Error("SERVER_DISCONNECTED")
+            throw new Error("SERVER_DISCONNECTED")
           }
         }
         if(err.message?.startsWith(`vLLM error 400: {"error":{"message":"'max_tokens' or 'max_completion_tokens' is too large:`) 
@@ -611,7 +611,7 @@ ${newsContext.count ? "\n- اخبار مرتبط (در صورت استفاده،
         ) {
           if(messages.length  === 2 
             || (messages.length === 4 && messages[messages.length - 3].content === SUMMARIZE_PROMPT))
-            throw Error("<error>پرامپت ورودی بسیار طولانی است آن را کاهش دهید</error>")
+            throw new Error("<error>پرامپت ورودی بسیار طولانی است آن را کاهش دهید</error>")
 
           const toSummarize = messages.slice(1, messages.length > 4 ? messages.length-3 : messages.length - 1)
           res.write("data: [summarizing]");
@@ -635,9 +635,9 @@ ${newsContext.count ? "\n- اخبار مرتبط (در صورت استفاده،
             ]
             wasSummarized = true
           } else 
-            throw Error("خطا در خلاصه‌سازی مکالمات قبلی. لطفا مجددا درخواست دهید یا چت جدیدی باز کنید")
+            throw new Error("خطا در خلاصه‌سازی مکالمات قبلی. لطفا مجددا درخواست دهید یا چت جدیدی باز کنید")
         } else 
-          throw Error("UNKNOWN_ERROR")
+          throw new Error("UNKNOWN_ERROR")
       }
     }
 

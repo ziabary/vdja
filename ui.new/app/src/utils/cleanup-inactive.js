@@ -1,7 +1,7 @@
 require("dotenv").config();
 
 const Database = require('better-sqlite3');
-const db = new Database('db/vdja.db', { timeout: 5000 });
+const {db} = new Database('db/vdja.db', { timeout: 5000 });
 const { deleteAllByUser } = require("./services/qdrant");
 
 const INACTIVE_DAYS = 7; 

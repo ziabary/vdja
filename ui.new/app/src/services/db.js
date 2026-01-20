@@ -1,30 +1,6 @@
-process.env.SQLITE_UTF8 = '1';
-/*
-const getConfigs = require('./config');
 const betterSqlite3 = require('better-sqlite3');
-const pgsql = require('pgsql');
-const mssql = require('mssql');
-const mysql2 = require('mysql2');
 
-function getDB() {
-  switch (getConfigs().dbType) {
-    case 'sqlite':
-      return new betterSqlite3(getConfigs().sqlite.path, { timeout: sqlite.timeout });
-    case 'mysql':
-      return mysql2.createConnection(getConfigs().mysql);
-    case 'mssql':
-      return mssql.connect(getConfigs().mssql);
-    case 'pgsql':
-      return pgsql.connect(getConfigs().mssql);
-    default:
-      throw new Error('Unsupported database type');
-  }
-}
-
-module.exports = { getDB };*/
-
- const betterSqlite3 = require('better-sqlite3');
- function initDB(path, tables){
+function initDB(path, tables){
    const db = new betterSqlite3(path, { timeout: 5000 });
    db.pragma('journal_mode = WAL');
    db.pragma('busy_timeout = 5000');
@@ -276,4 +252,4 @@ db.migrateLogs = () =>{
   }
 }
 
-module.exports = db;
+module.exports = {db, getDB};

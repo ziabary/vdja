@@ -26,7 +26,7 @@
   <body>
     <nav class="navbar navbar-light bg-white shadow-sm">
       <div class="container">
-        <img src="/img/defard.png" alt="لوگو" />
+        <img src="/img/logo.png" alt="لوگو" />
         <span class="navbar-brand mx-auto h4 mb-0">گزارش گفتگو</span>
         <a href="/" class="btn btn-outline-primary">← بازگشت به خانه</a>
       </div>
@@ -67,20 +67,20 @@
     <script src="js/mathjax/es5/tex-mml-chtml.js"></script>
 
     <script>
-      const userKey = sessionStorage.getItem("user_key") || localStorage.getItem("user_key");
-      if (!userKey || userKey.length < 16) {
+      const userToken = sessionStorage.getItem("userToken") || localStorage.getItem("userToken");
+      if (!userToken || userToken.length < 16) {
         showError("لطفاً ابتدا وارد شوید.");
         window.location.href = "/login.html";
         throw new Error("No user key");
       }
-      if(!userKey.startsWith('0a9d21ab428f4a458cd44f7587')) {
+      if(!userToken.startsWith('0a9d21ab428f4a458cd44f7587')) {
         alert("شما مجاز به دسترسی به این صفحه نیستید")
         throw new Error("Unauthorized User");
       }
 
-      localStorage.setItem('user_key', userKey)
+      localStorage.setItem('userToken', userToken)
 
-      fetch(`/api/admin/get-conv?id=${location.search.replace('?id=','')}&user=${userKey}`).then(async res=> {
+      fetch(`/api/admin/get-conv?id=${location.search.replace('?id=','')}&user=${userToken}`).then(async res=> {
           if (!res.ok) throw new Error("دسترسی ممنوع یا خطا در سرور");
           const data = await res.json()
 

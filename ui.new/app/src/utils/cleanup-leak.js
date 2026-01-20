@@ -5,7 +5,7 @@ const { QdrantClient } = require('@qdrant/js-client-rest');
 const client = new QdrantClient({ url: QDRANT_URL });
 
 async function cleanLeakedPoints() {
-  console.log("در حال پاکسازی پوینت‌های بدون user_key ...");
+  console.log("در حال پاکسازی پوینت‌های بدون userToken ...");
 
   let offset = null;
   let deletedCount = 0;
@@ -16,7 +16,7 @@ async function cleanLeakedPoints() {
       with_payload: true,
       filter: {
         must_not: [
-          { key: "user_key", match: { exists: true } }  
+          { key: "userToken", match: { exists: true } }  
         ]
       },
       offset
@@ -24,8 +24,8 @@ async function cleanLeakedPoints() {
 
     const badPoints = response.points.filter(point => 
       !point.payload || 
-      !point.payload.user_key || 
-      point.payload.user_key === "" ||
+      !point.payload.userToken || 
+      point.payload.userToken === "" ||
       point.payload.user_key === null
     );
 

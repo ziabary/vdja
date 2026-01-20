@@ -1,15 +1,12 @@
 const express = require("express");
-const router = express.Router();
-const db = require("../services/db");
-const { callVLLMStream } = require("../utils/vllmUtils");
 const fs = require('fs');
 
-const VLLM_URL = process.env.VLLM_URL || "http://localhost:8000";
-const VLLM_MODEL = process.env.VLLM_MODEL || "aya";
+const atDB = require("../db/atDB")
+const { startNewChat, stopRequest, genReqId } = require("../utils/chatUtils");
+const configManager = require('../utils/configManager');
+const { stripText, getAuthToken } = require("../utils/common");
 
-function shortText(text, len = 50) {
-  return text?.length > len ? text.slice(0, len) + "..." : text || "";
-}
+const router = express.Router();
 const languagesMap2En = {
   auto: "auto",
   en: "English",
@@ -36,144 +33,79 @@ const languagesMap2En = {
   zh: "Chinese",
 };
 
-
-let dictionary = {}
-fs.readFile('/app/db/dic.json', 'utf8', (err, data) => {
-  if (err) {  console.error(err); return; }
-
-  dictionary = JSON.parse(data);
-});
-
-const MAX_LEN = 2000
-
-router.post("/translate", async (req, res) => {
-  const { text, source_lang, target_lang } = req.body;
-
-  if (!text?.trim()) 
-    return res.status(400).json({ error: "متن خالی است" });
-  
-
-  if (source_lang === target_lang) {
-    return res
-      .status(400)
-      .json({ error: "زبان مبدا و مقصد نمی‌توانند یکسان باشند" });
-  }
-
-  let promptSource = languagesMap2En[source_lang]
-  if(promptSource === 'auto')
-    promptSource = "auto-detect based on provided text"
-
-  const trimmed_text = text.trim().slice(0, MAX_LEN)
-  const shortenedText = shortText(trimmed_text)
-
-  const dicResult = dictionary[shortenedText.toLowerCase()]
-
-  let systemPrompt = `You are a professional and accurate translator. 
+const SYSTEM_PROMPT = `You are a professional and accurate translator. 
 Strict rules:
-  - Just translate in plain text format do not give any extra text or any explanation.
+  - Just translate in plain text format do not give any extra text, explanation or even summarization.
   - Absolutely do not summarize or skip any part.
   - Do not change order of text and translate in the same order as input
   - Forget any past translation or summarization and give a new translation.
-  - Exactly translate from ${source_lang} to ${target_lang} even if are the same.
   - If user prompt is less than 3 words or it is not a complete sentence response similar to a professional dictionary which provides meanings in diverse areas
   - When translating to Persian:
      - Use Persian guillemots «» instead of ".
      - Use Persian numerals in normal text, but keep English numerals in formulas, dates, or technical values.
-  `;
+  `; 
 
-  let userPrompt = `Translate from ${source_lang} to ${target_lang}: ${trimmed_text}`;
-  if (dicResult && ((['en', 'auto'].includes(source_lang) && target_lang === 'fa') || (['fa', 'auto'].includes(source_lang) && target_lang == 'en'))) {
-    res.send(dicResult)
-     return
+router.post("/translate", async (apiReq, apiRes) => {
+    const { userToken, request_id, text, source_lang, target_lang } = apiReq.body;
+    const configs = configManager.active()
+    const translServer = configs.llm.TranslServer 
 
-  //   systemPrompt = `You are a dictionary entry generator.
-  // Strict rules: 
-  //   - Just use provided JSON to extract entry information do not generate anything. just extract from JSON and do not translate anything
-  //   - base translation for the entry is provided in translations array of the json
-  //   - synonyms for the entry is provided in synonyms object of the json
-  //   - discard all other information
-  // `
-  //   userPrompt = `give me  a pretty dictionary entry in markdown format for the phrase "${shortenedText}" using following json: 
-  //   ${dicResult}
-  // `
-  }
-  
+    if (!text?.trim()) 
+      return apiRes.status(400).json({ error: "متن خالی است" }); 
+    
+    if (source_lang === target_lang) 
+      return apiRes.status(400).json({ error: "زبان مبدا و مقصد نمی‌توانند یکسان باشند" });
 
-  console.log(
-    `[Translate] Source: ${source_lang} → Target: ${target_lang} | Length: ${trimmed_text.length}| Text: "${shortenedText}"`
-  );
+    if(userToken) {
+      //@TODO handle users in special increase count of words
+    }
 
-  db.log('tr', `${source_lang}2${target_lang}`, trimmed_text.length, shortenedText)
+    let promptSource = languagesMap2En[source_lang]
+    if(promptSource === 'auto') promptSource = "auto-detect based on provided text"
 
-  const maxRetries = 3;
-  let attempt = 0;
-  let lastError;
+    const trimmed_text = text.trim().slice(0, translServer.maxInputChars)
+    const strippedText = stripText(trimmed_text)
 
-  while (attempt < maxRetries) {
-    attempt++;
-    try {
-      const messages = [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt },
-      ];
+  try{
+    const dicResult = await atDB.dic.lookup(trimmed_text.toLowerCase())
+    if (dicResult && ((['en', 'auto'].includes(source_lang) && target_lang === 'fa') || (['fa', 'auto'].includes(source_lang) && target_lang == 'en'))) {
+      atDB.log.add(userToken, 'tr', {dir: `${source_lang}2${target_lang}`, strippedText}, trimmed_text.length, 200, "dic")
+      apiRes.send(dicResult)
+      return
+    }
 
-      const vllmRes = await callVLLMStream(VLLM_URL, VLLM_MODEL, messages, {
-        max_tokens: 2000,
-        temperature: 0.3,
-      });
-
-      res.setHeader("Content-Type", "text/event-stream");
-      res.setHeader("Cache-Control", "no-cache");
-      res.setHeader("Connection", "keep-alive");  
-      res.flushHeaders();
-
-      const reader = vllmRes.body.getReader();
-      const decoder = new TextDecoder();
-
-      const processStream = async () => {
-        try {
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) {
-              res.write("data: [DONE]\n\n");
-              res.end();
-              break;
-            }
-
-            const chunk = decoder.decode(value, { stream: true });
-            if (!res.write(chunk)) {
-              await new Promise((resolve) => res.once("drain", resolve));
-            }
-          }
-        } catch (err) {
-          console.error("[Translate] Stream processing error:", err);
-          if (!res.headersSent) {
-            res.status(500).json({ error: "خطا در پردازش استریم" });
-          }
-        }
-      };
-
-      processStream();
-      return;
-    } catch (err) {
-      lastError = err;
-      console.error(
-        `[Translate] Attempt ${attempt} failed:`,
-        err.message || err
+    if(configs.isDebugging) 
+      console.log(
+        `[Translate] Source: ${source_lang} → Target: ${target_lang} | Length: ${trimmed_text.length}| Text: "${strippedText}"`
       );
 
-      if (attempt < maxRetries) {
-        const delay = 1000 * attempt;
-        console.log(`[Translate] Retrying in ${delay}ms...`);
-        await new Promise((resolve) => setTimeout(resolve, delay));
-      }
-    }
-  }
+    const messages = [
+      { role: "system", content: SYSTEM_PROMPT.replace("$$source_lang$$", source_lang).replace("$$target_lang$$", target_lang) },
+      { role: "user", content: `Translate from ${source_lang} to ${target_lang}: ${trimmed_text}` },
+    ];
 
-  console.error("[Translate] All attempts failed:", lastError);
-  if (!res.headersSent) {
-    res.status(500).json({ error: "خطا در ترجمه پس از چندین تلاش" });
+    await startNewChat(apiRes, translServer, request_id || genReqId(userToken), messages, {
+      onDone: async (cancelled)=>{
+        atDB.log.add(userToken, 'tr', {dir: `${source_lang}2${target_lang}`, strippedText}, trimmed_text.length, cancelled ? 409 : 200, "llm")
+        return false
+      },
+    })
+  } catch(ex) {
+    atDB.log.add(userToken, 'tr', {dir: `${source_lang}2${target_lang}`, strippedText}, trimmed_text.length, 500, ex.message)
+    throw ex
   }
 });
 
-module.exports = router;
+router.post("/translate/:reqId/stop", async (apiReq, apiRes) => {
+  const {userID} = getAuthToken(apiReq)
+  const {reqId} = apiReq.params
+  const response = await stopRequest(configManager.active().llm.TranslServer, reqId)
+  apiRes.status(200).json({status:response})
+})
+
+async function init() {
+  console.info(`Dictionary loaded with ${await atDB.dic.count()} entries`)
+  return router
+}
+
+module.exports = init;

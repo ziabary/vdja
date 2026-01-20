@@ -1,5 +1,5 @@
 const express = require("express");
-const db = require("../services/db");
+const {db} = require("../services/db");
 
 const router = express.Router();
 
@@ -67,7 +67,7 @@ router.get("/admin/migrate", (req, res) => {
 router.get("/admin/log-stats", (req, res) => {
   try {
     if(req.query.user != process.env.GLOBAL_USER)
-      throw Error("Unauthorized User")
+      throw new Error("Unauthorized User")
     
     const { logs, totalCounts, activeCounts } = db.getLogs(req.query.action);
     res.json({ logs, totals: totalCounts || { total_len: 0 }, activeCounts });
@@ -80,7 +80,7 @@ router.get("/admin/log-stats", (req, res) => {
 router.get("/admin/get-conv", (req, res) => {
   try {
     if(req.query.user != process.env.GLOBAL_USER)
-      throw Error("Unauthorized User")
+      throw new Error("Unauthorized User")
     
     const msgs = db
       .prepare(`
