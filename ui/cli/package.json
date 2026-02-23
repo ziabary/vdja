@@ -1,0 +1,10 @@
+{
+  "name": "vadja-cli",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "CLI tools for vadja project",
+  "dependencies": {
+    "yargs": "^18.0.0"
+  }
+}

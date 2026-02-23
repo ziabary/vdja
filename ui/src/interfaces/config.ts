@@ -1,0 +1,102 @@
+export interface IntfAppConfig {
+  listen: {
+    port: number;
+    ip: string;
+  };
+  corsOrigin: string;
+  maxJson: string;
+  limiter: {
+    window: number;
+    maxReq: number;
+    errorMessage: string;
+  };
+  watchdogMaxTrigger: number;
+  softDelete?: boolean;
+}
+
+export interface IntfLLMServerConfig {
+  url: string;
+  model?: string;
+  temperature?: number;
+  maxInputChars?: number;
+  maxTokens?: number;
+  maxDelayed?: number;
+}
+
+export interface IntfDBConfig {
+  activeType: 'mysql' | 'mssql' | 'pgsql' | 'sqlite';
+  sqlite: {
+    paths: {
+      base: string;
+      news: string;
+      logs: string;
+    };
+    timeout: number;
+  };
+  mysql: {
+    host: string;
+    user: string;
+    password: string;
+    database: string;
+  };
+  mssql: {
+    server: string;
+    user: string;
+    password: string;
+    database: string;
+    options: {
+      encrypt: boolean;
+    };
+  };
+  pgsql: {
+    host: string;
+    user: string;
+    password: string;
+    database: string;
+    port: number;
+  };
+}
+
+export enum enuLLMServices {
+  RAG = "rag",
+  Translate = "translate",
+  Summarize = "summarize",
+  Think = "think",
+}
+
+export interface IntfConfigs {
+  app: IntfAppConfig; 
+  OIDC: {
+    active: boolean
+    issuer: string
+    clientId: string
+    clientSecret: string
+    redirectUri: string 
+  };
+  llmServers: {
+    [key in enuLLMServices]: IntfLLMServerConfig
+  };
+
+  embedding: {
+    server : IntfLLMServerConfig;
+    modelPath: string,
+    maxTokens: number
+  }
+
+  RAGDB: { url: string };
+  specialCollections: {
+    global: string
+    news: string
+  };
+  jwt: {
+    baseSecret: string
+    refreshSecret: string
+    accessTTL: number | string
+    refreshTTL: number | string
+  }
+  db: IntfDBConfig;
+  logDb?: boolean | IntfDBConfig;
+  isDebugging?: boolean;
+  noMonitor?: boolean
+}
+

@@ -1,4 +1,0 @@
-npm install --registry="https://mirror-npm.runflare.com" knex sqlite3 mysql2 pg tedious
-
-sed -i 's|http://dl-cdn.alpinelinux.org|https://mirror.arvancloud.ir/alpine/|g' /etc/apk/repositories
-apk add --no-cache python3 make g++ gcc alpine-sdk 

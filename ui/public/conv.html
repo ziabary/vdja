@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>بررسی گفتگوی کاربر - دستیار هوشمند فارسی</title>
+    <link rel="stylesheet" href="css/bootstrap.rtl.min.css" />
+    <link rel="stylesheet" href="fonts/IranSansX/fontiran.css" />
+    <link rel="stylesheet" href="css/style.css" />
+    <style>
+      body {
+        background: #f8f9fa;
+      }
+      .table th {
+        background: #e9ecef;
+      }
+      .logo {
+        width: 80px;
+      }
+      .table-container {
+        max-height: 80vh;
+        overflow-y: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar navbar-light bg-white shadow-sm">
+      <div class="container">
+        <img src="/img/logo.png" alt="لوگو" />
+        <span class="navbar-brand mx-auto h4 mb-0">گزارش گفتگو</span>
+        <a href="/" class="btn btn-outline-primary">← بازگشت به خانه</a>
+      </div>
+    </nav>
+
+    <div class="container mt-4">
+      <div class="card shadow">
+        <div class="card-body p-4">
+          <div class="table-responsive table-container">
+            <table
+              class="table table-hover table-bordered align-middle text-center fa-num"
+            >
+              <thead class="table-light sticky-top">
+                <tr>
+                  <th>ردیف</th>
+                  <th>زمان</th>
+                  <th>نظر</th>
+                  <th>اپراتور</th>
+                  <th>پیام</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td colspan="4" class="text-muted">در حال بارگذاری...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="js/vendors/marked.min.js"></script>
+    <script src="js/vendors/bootstrap.bundle.min.js"></script>
+    <script src="js/vendors/mathjax/config.js"></script>
+    <script src="js/vendors/polyfill.min.js?features=es6"></script>
+    <script src="js/vendors/mathjax/es5/tex-mml-chtml.js"></script>
+    <script src="js/common.js"></script>
+
+    <script>
+      const userToken = sessionStorage.getItem("userToken") || localStorage.getItem("userToken");
+      if (!userToken || userToken.length < 16) {
+        showError("لطفاً ابتدا وارد شوید.");
+        window.location.href = "/login.html";
+        throw new Error("No user key");
+      }
+      if(!userToken.startsWith('0a9d21ab428f4a458cd44f7587')) {
+        alert("شما مجاز به دسترسی به این صفحه نیستید")
+        throw new Error("Unauthorized User");
+      }
+
+      localStorage.setItem('userToken', userToken)
+
+      apiFetch(`/api/admin/get-conv?id=${location.search.replace('?id=','')}&user=${userToken}`)
+        .then(async res=> {
+          if (!res.ok) throw new Error("دسترسی ممنوع یا خطا در سرور");
+          const data = await res.json()
+
+          const tbody = document.querySelector("tbody")
+          tbody.innerHTML = ""
+          data.msgs.forEach((msg, index)=>{
+            const created = new Date(msg.Jdate).toLocaleString("fa-IR");
+            const opinion = `<i class="fa fa-solid fa-${msg.opinion === 'u' ? 'thumbs-up' : msg.opinion === 'd' ? 'thumbs-down' : msg.opinion = 'w' ? 'warn' : '-' }"></i>`
+            tbody.innerHTML += `
+              <td>${index}</td>
+              <td style="text-align: right">${marked.parse(msg.content)}</td>
+              <td>${opinion}</td>
+              <td>${created}</td>
+              <td>${msg.role}</td>
+            `
+          })
+          setTimeout(()=>window.MathJax.typesetPromise([tbody]))
+      });
+
+    </script>
+  </body>
+</html>

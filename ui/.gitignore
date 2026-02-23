@@ -1,2 +1,6 @@
-.env
 node_modules
+.*
+Old
+dist
+logs
+package-lock.json

@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>ورود به چت خصوصی</title>
     <link rel="stylesheet" href="css/bootstrap.rtl.min.css" />
-    <link rel="stylesheet" href="css/bootstrap-icons.min.css" />
     <link rel="stylesheet" href="fonts/IranSansX/fontiran.css" />
+    <link rel="stylesheet" href="fonts/fontawesome/active/all.css" />
     <link rel="stylesheet" href="css/style.css" />
 
     <style>
@@ -21,10 +21,9 @@
       }
       .input-group-text {
         cursor: pointer;
-        background: #f8f9fa;
       }
       .logo {
-        width: 80px;
+        width: 140px;
         margin-bottom: 20px;
       }
       #loading {
@@ -42,6 +41,9 @@
         border-radius: 50%;
         display: inline-block;
         position: relative;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
         border: 3px solid;
         border-color: #fff #fff transparent transparent;
         box-sizing: border-box;
@@ -96,9 +98,9 @@
       <div class="row justify-content-center">
         <div class="col-md-6">
           <div class="card">
-            <div class="card-body p-5 pb-1 text-center">
-              <img src="img/defard.png" alt="لوگو" class="logo" />
-              <h3 class="mb-4">چت با داده‌های خصوصی شما</h3>
+            <div class="card-body p-3 pb-1 text-center">
+              <a href="/"><img src="img/logo-light.png" alt="لوگو" class="logo" id="logo" /></a>
+              <h3 class="mb-4">چت با داده‌های شما</h3>
               <div class="mb-4">
                 <label class="form-label fw-bold"
                   >کلید اختصاصی (حداقل ۱۶ کاراکتر)</label
@@ -106,12 +108,12 @@
                 <div class="input-group">
                   <input
                     type="password"
-                    id="userKey"
+                    id="userToken"
                     class="form-control form-control-lg"
                     placeholder="کلید خود را وارد کنید یا تولید کنید..."
                   />
                   <span class="input-group-text" id="togglePass">
-                    <i class="bi bi-eye" id="eyeIcon"></i>
+                    <i class="fa fa-thin fa-eye" id="eyeIcon"></i>
                   </span>
                 </div>
                 <small class="text-muted d-block mt-1"
@@ -120,31 +122,81 @@
                 >
               </div>
               <div class="d-flex gap-2 mb-3">
-                <button
-                  id="generateBtn"
-                  class="btn btn-outline-primary flex-fill"
-                >
+                <button id="generateBtn" class="btn btn-outline-primary flex-fill">
                   تولید کلید جدید
                 </button>
                 <button id="enterBtn" class="btn btn-primary flex-fill">
                   ورود به چت
                 </button>
               </div>
-              <div class="mt-4">
-                <p class="text-center text-muted mb-3">یا</p>
-                <a
-                  href="/api/auth/openid"
-                  class="btn btn-outline-primary w-100"
-                >
-                  ورود با حساب سازمانی (OpenID)
-                </a>
+              <div class="d-flex mb-3">
+                <style>
+.faded-line-container {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* space between the elements */
+  width: 100%;
+  max-width: 400px; /* adjust as needed */
+  margin: 0 auto;
+}
+
+.faded-line {
+  flex: 1; /* auto-growing */
+  height: 1px;
+  background: linear-gradient(to right, transparent, #222, transparent);
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  position: relative;
+}
+
+.faded-line::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  background: linear-gradient(to right, rgba(0,0,0,0.2), rgba(0,0,0,0.6), rgba(0,0,0,0.2));
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  z-index: 1;
+}
+
+.faded-line::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  background: linear-gradient(to right, transparent, #222, transparent);
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  z-index: 0;
+}
+
+.or-by {
+  font-size: 14px;
+  font-weight: normal;
+}
+                </style>
+                <div class="faded-line-container">
+                  <span class="faded-line"></span>
+                  <span class="or-by">و یا</span>
+                  <span class="faded-line"></span>
+                </div>
+              </div>
+              <div class="d-flex mb-3">
+                <button id="oidcBtn" class="btn btn-light w-100 mb-2">
+                  ورود با حساب سازمانی
+                </button>
               </div>
             </div>
             <div class="alert alert-warning guidelines text-start m-4 mt-0 rtl">
               <p>
                 <span class="me-2 d-inline-block">ℹ️</span>
                 کد ورود به‌عنوان جایگزین موقت نام کاربری و رمز عبور مورد استفاده
-                است و در آینده با روش احراز هویت سازمانی ادغام خواهد شد.
+                است 
               </p>
               <p>
                 <span class="me-2 d-inline-block">⚠️</span>
@@ -168,24 +220,37 @@
       </div>
       <span id="loading"><div></div></span>
     </div>
+        <!-- <div class="text-center mb-2" style="color:white"><small>قدرت‌گرفته از GPUهای <a target=blank style="color:white" href="https://afranet.ir/fa/services/gpu">افرانت</a></small></div> -->
+    <div class="text-center mb-3" style="color:white"><small>کلیه حقوق برای <a style="color:white" target="blank" href="https://tip.co.ir">
+      شرکت پردازش هوشمند ترگمان 
+       </a> محفوظ است</small>
+    </div>
 
-    <script src="js/bootstrap.bundle.min.js"></script>
-    <script src="js/md5.min.js"></script>
+    <script src="js/vendors/bootstrap.bundle.min.js"></script>
+    <script src="js/vendors/md5.min.js"></script>
+
     <script src="js/common.js"></script>
+    <script src="js/auth.js"></script>
+    <script>let auth; setupAuth("translate", false).then(r=>auth=r)</script>
+
     <script>
-      const userKeyInput = document.getElementById("userKey");
+      const userTokenInput = document.getElementById("userToken");
       const togglePass = document.getElementById("togglePass");
       const eyeIcon = document.getElementById("eyeIcon");
       const generateBtn = document.getElementById("generateBtn");
       const enterBtn = document.getElementById("enterBtn");
       const loading = document.getElementById("loading");
+      const oidcBtn = document.getElementById("oidcBtn");
+
+      if (auth.token())
+        window.location.search ? window.location.search.replace("?back=", "/"): "/rag";
 
       let isVisible = false;
 
       togglePass.addEventListener("click", () => {
         isVisible = !isVisible;
-        userKeyInput.type = isVisible ? "text" : "password";
-        eyeIcon.className = isVisible ? "bi bi-eye-slash" : "bi bi-eye";
+        userTokenInput.type = isVisible ? "text" : "password";
+        eyeIcon.className = isVisible ? "fa fa-thin fa-eye-slash" : "fa fa-thin fa-eye";
       });
 
       generateBtn.addEventListener("click", () => {
@@ -195,14 +260,18 @@
         for (let i = 0; i < 24; i++) {
           key += chars.charAt(Math.floor(Math.random() * chars.length));
         }
-        userKeyInput.value = key;
-        userKeyInput.type = "text";
+        userTokenInput.value = key;
+        userTokenInput.type = "text";
         isVisible = true;
-        eyeIcon.className = "bi bi-eye-slash";
+        eyeIcon.className = "fa fa-thin  fa-eye-slash";
       });
 
+      oidcBtn.addEventListener("click", () => {
+        window.location.href = "/api/auth/oidc/login";
+      });      
+
       enterBtn.addEventListener("click", () => {
-        const key = userKeyInput.value.trim();
+        const key = userTokenInput.value.trim();
         if (key.length < 16) {
           showError("کلید باید حداقل ۱۶ کاراکتر باشد!");
           return;
@@ -211,32 +280,29 @@
         login(key);
       });
 
-      userKeyInput.addEventListener("keypress", (e) => {
+      userTokenInput.addEventListener("keypress", (e) => {
         if (e.key === "Enter") enterBtn.click();
       });
 
-      const savedKey = sessionStorage.getItem("user_key");
-      if (savedKey && savedKey.length === 32)
-        window.location.href = "/rag.html";
-
-      async function login(user_raw_key) {
+      async function login(userRawKey) {
         loading.style.display = "inline-block";
         enterBtn.disabled = true;
 
         try {
-          const hashed_key = md5(user_raw_key);
-          const res = await fetch("/api/auth/login", {
+          const hashedKey = md5(userRawKey);
+          const service = window.location.search ? window.location.search.replace("?back=", ""): "rag";
+          const res = await fetch("/api/auth/loginByKey", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ user_key: hashed_key }),
+            body: JSON.stringify({ userKeyMD5: hashedKey, service }),
           });
 
           const data = await res.json();
 
-          if (data.success) {
-            sessionStorage.setItem("user_key", hashed_key);
-            userKeyInput.value = "";
-            window.location.href = "/rag.html";
+          if (data.accessToken) {
+            auth.setAccessToken(data.accessToken);
+            userTokenInput.value = "";
+            window.location.href = "/"+ service
           } else {
             showError(data.error || "خطا در ورود. کلید نامعتبر است.");
           }

@@ -1,8 +1,8 @@
-# Dockerfile.ui – مخصوص node:23-alpine
+# Dockerfile.ui 
 FROM node:20-alpine AS builder
 WORKDIR /app
 
-RUN sed -i 's|http://dl-cdn.alpinelinux.org|https://mirror.arvancloud.ir/alpine/|g' /etc/apk/repositories
+RUN sed -i 's|https://dl-cdn.alpinelinux.org/alpine/v3.23|https://mirror.arvancloud.ir/alpine/v3.21|g' /etc/apk/repositories
 
 RUN apk add --no-cache \
     python3 \
@@ -11,31 +11,45 @@ RUN apk add --no-cache \
     g++ \
     git \
     vim \
-    openssh-client 
+    openssh-client
 
 RUN ln -sf /usr/bin/python3 /usr/bin/python || true
-
-RUN yarn config set registry https://mirror-npm.runflare.com && \
-    yarn config set disturl https://mirror-npm.runflare.com/dist && \
-    yarn config set sass_binary_site https://mirror-npm.runflare.com/mirrors/node-sass/
+RUN npm config set registry https://mirror-npm.runflare.com 
 
 COPY package*.json ./
-RUN yarn install 
+RUN npm install
 
-# مرحله دوم: ایمیج نهایی خیلی سبک
 FROM node:20-alpine
 WORKDIR /app
 
-# فقط runtime dependencies (git و ssh فقط برای نصب لازم بود، ولی بعضی وقتا هنوز نیازه)
-RUN apk add --no-cache git openssh-client
+RUN sed -i 's|https://dl-cdn.alpinelinux.org/alpine/v3.23|https://mirror.arvancloud.ir/alpine/v3.21|g' /etc/apk/repositories
+
+RUN apk add --no-cache \
+    git \
+    openssh-client \
+    poppler-utils \
+    tesseract-ocr \
+    pandoc \
+    font-noto \
+    font-noto-arabic \
+    font-noto-hebrew     
 
 COPY --from=builder /app/node_modules ./node_modules
 COPY src/ src/
-COPY public/ public/ 
+COPY public/ public/
 COPY package.json ./
 
-VOLUME [ "/app/db", "/app/.env" ]
+# VOLUME [ "/app/.config.json" ]
 
 EXPOSE 3000
+ENV SHELL=/bin/sh
 
 CMD ["node", "src/server.js"]
+
+#    "concurrently": "^7.0.0",
+#    "eslint": "^8.0.0",
+#    "typescript": "^4.0.0",
+#    "ts-node": "^10.0.0",
+#    "@types/node": "^18.0.0",
+#    "@typescript-eslint/eslint-plugin": "^5.0.0",
+#    "@typescript-eslint/parser": "^5.0.0"
