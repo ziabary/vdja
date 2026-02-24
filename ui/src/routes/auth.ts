@@ -4,7 +4,7 @@ import type { Request, Response, Router } from "express";
 import { type CookieSerializeOptions } from 'cookie';
 import { randomUUID } from "crypto";
 import md5 from "md5";
-import ms from 'ms';
+import ms, { type StringValue } from 'ms';
 import * as oidc from "openid-client";
 
 import atDB from "../db/atDB";
@@ -13,165 +13,195 @@ import configManager from "../utils/configManager"
 import { exHttpAccessDenied, exHttpInternalServerError, exHttpInvalidParams, exHttpUnauthorized, type IntfExHttp } from "../interfaces/exHttp";
 import { createAccessToken, createRefreshToken, verifyRefreshToken } from "../services/authService";
 import type { IntfUser } from "../db/tables/tblUser";
+import { parseQueryToString } from "../utils/common";
 
 const router: Router = express.Router();
-let openIDClient: oidc.Client;
+let openIDClient: oidc.Configuration;
 
 interface AuthRequestBody {
   userKeyMD5: string;
+  [key: string]: string
 }
 
 router.post("/auth/loginByKey", async (apiReq: Request<{}, {}, AuthRequestBody>, apiRes: Response) => {
-    const { userKeyMD5, service } = apiReq.body;
+  const { userKeyMD5, service } = apiReq.body;
   try {
-    if(!userKeyMD5.match(/^[a-fA-F0-9]{32}$/))
+    if (!userKeyMD5.match(/^[a-fA-F0-9]{32}$/))
       throw new exHttpInvalidParams("Invalid Key")
 
-    let user : Partial<IntfUser> = await atDB.user.getDigesting(userKeyMD5, false, true);
+    let user: Partial<IntfUser> = await atDB.user.getDigesting(userKeyMD5, false, true);
     if (!user) {
       await atDB.user.addUser(userKeyMD5),
-      user = await atDB.user.getDigesting(userKeyMD5, false, true);
-      if(!user)
+        user = await atDB.user.getDigesting(userKeyMD5, false, true);
+      if (!user)
         throw new exHttpInternalServerError("امکان ایجاد کاربر جدید به دلایل فنی وجود ندارد")
-      await atDB.perUserStats.initialize(service, user.usrID!)
-    }else 
+      await atDB.perUserStats.initialize(service || "no service", user.usrID!)
+    } else
       await atDB.user.updateLastLogin(userKeyMD5);
-    
-    if(!user.privs?.services?.hasOwnProperty(service))
+
+    if (!user.privs?.services?.hasOwnProperty(service || "no service"))
       throw new exHttpAccessDenied("شما به این سرویس دسترسی ندارید")
 
-    atDB.log.add(userKeyMD5, "login", {service}, 0, 200)
+    atDB.log.add(userKeyMD5, "login", { service }, 0, 200)
     await sendJWT(user, apiRes)
   } catch (err) {
-    atDB.log.add(userKeyMD5, "login", {service}, 0, (err as IntfExHttp).status, (err as IntfExHttp).message)
+    atDB.log.add(userKeyMD5, "login", { service }, 0, (err as IntfExHttp).status, (err as IntfExHttp).message)
     logger.error("Error in login:", err);
     apiRes.status(500).json({ error: "خطا در ورود" });
   }
 });
 
-router.post("/auth/logout", async( apiReq: Request, apiRes: Response)=> {
+router.post("/auth/logout", async (apiReq: Request, apiRes: Response) => {
   const { refreshToken } = apiReq.cookies;
-  try{
+  try {
     const payload = verifyRefreshToken(refreshToken);
     atDB.log.add(payload.key, "login", null, 0, 200)
     await atDB.user.logoutByToken(payload.key)
-  }catch{}
-  apiRes.send({success: "ok"})
+  } catch { }
+  apiRes.send({ success: "ok" })
 })
 
-router.get("/auth/oidc/login", (apiReq: Request, apiRes: Response) => {
-  const codeVerifier = oidc.generators.codeVerifier();
-  const codeChallenge = oidc.generators.codeChallenge(codeVerifier);
+router.get("/auth/oidc/login", async (apiReq: Request, apiRes: Response) => {
+  const codeVerifier = oidc.randomPKCECodeVerifier();
+  const codeChallenge = await oidc.calculatePKCECodeChallenge(codeVerifier);
   const { service } = apiReq.query;
 
-  const state = randomUUID();
+  const nonce = oidc.randomNonce()
+  const state = oidc.randomState();
 
   const payload = Buffer.from(
-    JSON.stringify({ codeVerifier, state })
-  ).toString("base64");
+    JSON.stringify({ codeVerifier, state, nonce, service })
+  ).toString("base64url");
 
 
-  apiRes.cookie("oidc_tmp", payload, {
+  apiRes.cookie("oidc_state", payload, {
     httpOnly: true,
     secure: true,
     sameSite: "lax",
-    service,
     maxAge: 5 * 60 * 1000
   });
 
   const url = oidc.buildAuthorizationUrl(openIDClient, {
-    scope: "openid profile email",
+    client_id: configManager.active().OIDC.clientId,
+    redirect_uri: configManager.active().OIDC.callbackUri,
+    response_type: "code",
+    scope: configManager.active().OIDC.scope,
     state,
     code_challenge: codeChallenge,
-    code_challenge_method: "S256"
+    code_challenge_method: "S256",
+    response_mode: "query",
+    nonce,
   });
 
-  apiRes.redirect(url);
+  apiRes.redirect(url.toString());
 });
 
 router.get("/auth/oidc/callback", async (apiReq: Request, apiRes: Response) => {
-    const OIDC = configManager.active().OIDC
-    const cookie = apiReq.cookies.oidc_tmp;
-    if (!cookie) 
-      throw new exHttpUnauthorized("کوکی حذف شده. مجدد تلاش کنید");
+  const OIDC = configManager.active().OIDC
+  const cookie = apiReq.cookies.oidc_flow;
+  if (!cookie)
+    return apiRes.redirect("/login.html?error=missing_flow");
 
-    const { codeVerifier, state, service } = JSON.parse(Buffer.from(cookie, "base64").toString());
-
+  let flow: { codeVerifier: string; state: string; nonce: string; service?: string };
   try {
-    if (apiReq.query.state !== state) 
-      throw new exHttpUnauthorized("خطا در شناسایی کاربر");
-        
-    const params = oidc.getAuthorizationCodeGrantParameters(apiReq);
+    flow = JSON.parse(Buffer.from(cookie, "base64url").toString());
+  } catch {
+    apiRes.clearCookie("oidc_flow");
+    return apiRes.redirect("/login.html?error=invalid_flow_state");
+  }
 
-    const tokenSet = await oidc.authorizationCodeGrant(
-        openIDClient,
-        new URL(OIDC.redirectUri),
-        params,
-        { codeVerifier }
-      );
+  const { codeVerifier, state: savedState, nonce: savedNonce, service } = flow;
 
-    apiRes.clearCookie("oidc_tmp");
+  if (!service) {
+    return apiRes.redirect("/login.html?error=missing_service");
+  }
+  try {
+    apiRes.clearCookie("oidc_flow");
 
-    const userInfo = await oidc.fetchUserInfo(
-      openIDClient,
-      tokenSet.access_token!
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const params = new URLSearchParams(apiReq.query as any);
+    const currentUrl = new URL(
+      `${apiReq.protocol}://${apiReq.get("host")}${apiReq.originalUrl}`
     );
-    // example fields: sub, email, name
-    const openId = userInfo.sub;
 
-    let user: Partial<IntfUser>| undefined = await atDB.user.getDigesting(openId, true);
+    const tokenSet = await oidc.authorizationCodeGrant(openIDClient, currentUrl, {
+      pkceCodeVerifier: codeVerifier,
+      expectedState: savedState,
+      expectedNonce: savedNonce,
+      // idTokenExpected: true,   // optional if you always expect id_token
+      // maxAge: 300,        // optional
+    });
+
+    // Optional: access claims directly (id_token is already validated)
+    const claims = tokenSet.claims();
+    const openId = claims?.sub;
+    if (!openId)
+      throw new exHttpAccessDenied("امکان ارتباط با سرور احراز هویت وجود ندارد")
+
+    // You can also read email/name from claims instead of separate userinfo call
+    const email = typeof claims.email === 'string' ? claims.email : undefined;
+    const name = typeof claims.name === 'string' ? claims.name : undefined;
+
+    let user: Partial<IntfUser> | undefined = await atDB.user.getDigesting(openId, true);
     if (!user) {
-      await atDB.user.addUser(md5(randomUUID()), userInfo.email, undefined, openId, userInfo.name),
-      user = await atDB.user.getDigesting(openId, true);
-      if(!user)
+      await atDB.user.addUser(md5(randomUUID()), email, undefined, openId, name),
+        user = await atDB.user.getDigesting(openId, true);
+      if (!user)
         throw new exHttpInternalServerError("امکان ایجاد کاربر جدید به دلایل فنی وجود ندارد")
       await atDB.perUserStats.initialize(service, user.usrID!)
-    } else 
+    } else
       await atDB.user.updateLastLogin(openId);
 
-    if(!user.privs?.services?.hasOwnProperty(service))
+    if (!user.privs?.services?.hasOwnProperty(service))
       throw new exHttpAccessDenied("شما به این سرویس دسترسی ندارید")
 
-    atDB.log.add(user.usrKey!, "login", {service, oidc_token: codeVerifier}, 0, 200)
+    atDB.log.add(user.usrKey!, "login", { service, oidc_flow: "success" }, 0, 200)
 
     await sendJWT(user, apiRes)
   } catch (err) {
-    atDB.log.add("", "login", {service, verifier: codeVerifier}, 0, (err as IntfExHttp).status, (err as IntfExHttp).message)
-    logger.error({oidc:err});
-    apiRes.redirect("/login.html?error=oidc");
+    atDB.log.add("", "oidc_callback_error", { service, error: String(err) }, 0, 401, String(err))
+    logger.error({ oidc: err });
+    apiRes.redirect(`/login.html?error=oidc&msg=${encodeURIComponent((err as Error)?.message || "خطای احراز هویت")}`);
   }
 });
 
 async function sendJWT(user: Partial<IntfUser>, apiRes: Response) {
-    const accessToken = createAccessToken(user);
-    const refreshToken = await createRefreshToken(user);
+  const accessToken = createAccessToken(user);
+  const refreshToken = await createRefreshToken(user);
 
-    const refreshTTL = ms(configManager.active().jwt.refreshTTL)
-    const cookieOptions : CookieSerializeOptions = {
-      httpOnly: true,
-      secure: true,
-      sameSite: "strict",
-      path: "/api/"
-    }
+  const ttlRaw = configManager.active().jwt.refreshTTL
+  const expiresInSeconds = (typeof ttlRaw === 'number' ? ttlRaw : ms(ttlRaw as StringValue)) / 1000;
 
-    if (refreshTTL) 
-      cookieOptions.maxAge = refreshTTL
-  
-    
-    apiRes.cookie("refreshToken", refreshToken, cookieOptions);
-    apiRes.json({ accessToken });
+  const cookieOptions: CookieSerializeOptions = {
+    httpOnly: true,
+    secure: true,
+    sameSite: "strict",
+    path: "/api/"
+  }
+
+  if (expiresInSeconds)
+    cookieOptions.maxAge = expiresInSeconds
+
+  apiRes.cookie("refreshToken", refreshToken, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "strict",
+    path: "/api/",
+    ...(expiresInSeconds ? { maxAge: expiresInSeconds } : {}),
+  });
+  apiRes.json({ accessToken });
 }
 
 router.post("/auth/refresh", async (apiReq: Request, apiRes: Response) => {
   const { refreshToken } = apiReq.cookies;
   const { service } = apiReq.query
-  
+
   const payload = verifyRefreshToken(refreshToken);
 
   const user = await atDB.user.verifyRefreshToken(payload.key, refreshToken);
   if (!user) throw new exHttpUnauthorized("کاربر یافت نشد یا متوقف شده");
 
-  if(!user.privs?.services?.hasOwnProperty(service))
+  if (!user.privs?.services?.hasOwnProperty(parseQueryToString(service) || "not set"))
     throw new exHttpAccessDenied("شما به این سرویس دسترسی ندارید")
 
   await sendJWT(user, apiRes)
@@ -199,15 +229,30 @@ router.post("/auth/refresh", async (apiReq: Request, apiRes: Response) => {
 
 async function initOpenID() {
   const OIDC = configManager.active().OIDC
-  if(!OIDC?.active) return 
+  if (!OIDC?.active) return
 
-  const issuer = await oidc.discover(OIDC.issuer);
+  openIDClient = await oidc.discovery(
+    new URL(OIDC.issuer),
+    OIDC.clientId,
+    OIDC.clientSecret,
+    // optional client auth method (default is ClientSecretPost if secret present)
+    OIDC.clientSecret ? oidc.ClientSecretPost(OIDC.clientSecret) : undefined,
+    // optional options object
+    {
+      // algorithm: 'oidc',           // default, can be 'oauth2' for plain OAuth
+      timeout: 30,                    // seconds
+      // execute: [allowInsecureRequests], // only if testing with http
+    }
+  );
+  logger.info(`OIDC discovered issuer: ${openIDClient.serverMetadata().issuer}`);
+
+  /*const issuer = await oidc.discovery(OIDC.issuer);
   openIDClient = new oidc.Client({
     client_id: OIDC.clientId,
     client_secret: OIDC.clientSecret,
-    redirect_uris: [OIDC.redirectUri],
+    redirect_uris: [OIDC.callbackUri],
     response_types: ["code"],
-  });
+  });*/
 }
 
 export default async function init(): Promise<Router> {

@@ -1,13 +1,13 @@
 import type { Request } from "express"
 
 import jwt from "jsonwebtoken";
-import ms, { type StringValue } from 'ms'; 
+import ms, { type StringValue } from 'ms';
 import { exHttpUnauthorized } from "../interfaces/exHttp";
 import configManager from "../utils/configManager";
 import type { IntfAuth, IntfRefreshTokenPayload } from "../interfaces/auth";
 import type { IntfUser } from "../db/tables/tblUser";
 import atDB from "../db/atDB";
-
+import { JsonWebTokenError, TokenExpiredError } from "jsonwebtoken";
 
 /* -------------------------------------------------- */
 /*                    Token creation                  */
@@ -49,7 +49,7 @@ export function getAccessTokenPayload(token: string): IntfAuth {
 }
 
 export function verifyRefreshToken(token: string): IntfRefreshTokenPayload {
-  const payload = jwt.verify(token, configManager.active().jwt.refreshSecret) as IntfRefreshTokenPayload;
+  const payload = jwt.verify(token, configManager.active().jwt.refreshSecret, { algorithms: ["HS256"] }) as IntfRefreshTokenPayload;
 
   if (payload.type !== "refresh")
     throw new exHttpUnauthorized("توکن معتبر نیست");
@@ -60,35 +60,38 @@ export function verifyRefreshToken(token: string): IntfRefreshTokenPayload {
 /* -------------------------------------------------- */
 /*                       AuthInfo                     */
 /* -------------------------------------------------- */
-export async function getAuthInfo(req: Request,required:boolean = true): Promise<IntfAuth>{
+export async function getAuthInfo(req: Request, required: boolean = true): Promise<IntfAuth> {
   const auth = req.headers["authorization"]
   const ANONYMOUS_USER = {
-        uid: 1,
-        key: "undefined",
-        name: "undefined",
-        privs: null
-      }
+    uid: 1,
+    key: "undefined",
+    name: "undefined",
+    privs: null
+  }
 
-  if (!auth || !auth.startsWith("Bearer ")){
+  if (!auth || !auth.startsWith("Bearer ")) {
     if (required)
       throw new exHttpUnauthorized("توکن ورود یافت نشد");
-    else 
+    else
       return ANONYMOUS_USER
   } else {
     const token = auth.replace("Bearer ", "").trim();
-    if(!token || token === "null") { 
-      if(required)
+    if (!token || token === "null" || token.length < 10) {
+      if (required)
         throw new exHttpUnauthorized("توکن ورود یافت نشد");
-      else 
+      else
         return ANONYMOUS_USER
-    } 
+    }
 
-    try{
+    try {
       return getAccessTokenPayload(token);
-    }catch(ex) {
-      if ((ex as Error).name === "TokenExpiredError") 
+    } catch (ex) {
+      if (ex instanceof TokenExpiredError)
         throw new exHttpUnauthorized("توکن منقضی شده است")
-      else throw ex
-    }      
+      else if (ex instanceof JsonWebTokenError)
+        throw new exHttpUnauthorized(`توکن نامعتبر است: ${ex.message}`)
+      else
+        throw ex
+    }
   }
 } 

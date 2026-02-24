@@ -23,7 +23,8 @@ const DEFAULT_CONFIGS: IntfConfigs = {
     issuer: "sampl-issuer",
     clientId: "my-client-id",
     clientSecret: "my-secret",
-    redirectUri: "http://localhost:3000/api/auth/oidc/callback"
+    scope: "openid profile TargomanApi UserManagementApi",
+    callbackUri: "http://localhost:3000/api/auth/oidc/callback"
   },
   llmServers: {
     rag: {

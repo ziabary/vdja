@@ -72,7 +72,8 @@ export interface IntfConfigs {
     issuer: string
     clientId: string
     clientSecret: string
-    redirectUri: string 
+    scope: string,
+    callbackUri: string 
   };
   llmServers: {
     [key in enuLLMServices]: IntfLLMServerConfig
