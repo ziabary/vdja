@@ -1,12 +1,13 @@
 import { execFile } from "child_process";
-import fs from "fs/promises";
-import path from "path";
-import { normalizeRTL } from "../i18n";
+import * as fs from "fs/promises";
+import * as path from "path";
+import { normalizePersianText } from "../i18n";
 import { createTempDir, removeTempDir } from "../common";
-import { type IntfUploadedMeta } from "../../interfaces/file";
+import { type IntfFileMeta, type IntfTextExtractResult } from "../../interfaces/file";
 
 interface IntfPandocBlock {
   t: string;        // block type, e.g., "Para", "Header"
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   c?: any
 }
 
@@ -16,6 +17,7 @@ interface IntfVirtualSection {
 }
 
 // --- Helper: Strip attributes recursively ---
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function stripPandocAttributes(node: any): any {
   if (Array.isArray(node)) {
     // Attribute triple exactly: [string, array, array]
@@ -24,9 +26,8 @@ function stripPandocAttributes(node: any): any {
       typeof node[0] === "string" &&
       Array.isArray(node[1]) &&
       Array.isArray(node[2]) &&
-      node[2].every(
-        (x: any) => Array.isArray(x) && x.length === 2
-      )
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      node[2].every((x: any) => Array.isArray(x) && x.length === 2)
     ) {
       // This is an attr triple → zero it
       return ["", [], []];
@@ -37,6 +38,7 @@ function stripPandocAttributes(node: any): any {
   }
 
   if (node && typeof node === "object") {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const out: any = {};
     for (const k in node) {
       out[k] = stripPandocAttributes(node[k]);
@@ -89,10 +91,8 @@ function splitToSections(blocks: IntfPandocBlock[], avgFontSize: number) {
     if ((b.t === "Header" && b.c[0] === 1) || score >= 3) {
       // New section detected
       if (currentSection.blocks.length) sections.push(currentSection);
-
-      const titleText =
-        b.t === "Header"
-          ? b.c[1].map((r: any) => r.c).join("").trim()
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const titleText = b.t === "Header" ? b.c[1].map((r: any) => r.c).join("").trim()
           : b.c.map((r: { c: unknown }) => r.c).join(" ").trim() || "Untitled Section";
 
       currentSection = { title: titleText, blocks: [] };
@@ -131,13 +131,13 @@ async function sectionText(section:IntfVirtualSection, i:number, tmpFolder:strin
 
   const md = await fs.readFile(tmpMd, "utf-8");
   let txt = ""
-  if (section.title) txt += `\n\n${normalizeRTL(section.title)}\n\n`;
-  txt += normalizeRTL(md.replace(/([^\n])\n([^\n])/g, "$1 $2")) + "\n\n";
+  if (section.title) txt += `\n\n${normalizePersianText(section.title)}\n\n`;
+  txt += normalizePersianText(md.replace(/([^\n])\n([^\n])/g, "$1 $2")) + "\n\n";
 
   return txt
 }
 
-async function getFileSections(file: IntfUploadedMeta) {
+async function getFileSections(file: IntfFileMeta) {
   const ext = path.extname(file.originalname).toLowerCase();
   await fs.rename(file.path, file.path+ext)
   file.path=file.path+ext
@@ -155,12 +155,12 @@ async function getFileSections(file: IntfUploadedMeta) {
 }
 
 
-export default async function extractFromDoc(
-  file: IntfUploadedMeta,
+export async function extractFromDoc(
+  file: IntfFileMeta,
   fromPage = 0,
   toPage: number | undefined = undefined,
   maxChars = Infinity
-): Promise<{ meta: { pageCount: number; title?: string }; text: string; stripped: boolean }> {
+): Promise<IntfTextExtractResult> {
 
   const tmpFolder = await createTempDir("doc-extract");
   try {
@@ -176,7 +176,7 @@ export default async function extractFromDoc(
     for (let i = start; i < end; i++) {
       if (i >= sections.length) continue;
 
-      finalText += await sectionText(sections[i], i, tmpFolder)
+      finalText += await sectionText(sections[i]!, i, tmpFolder)
 
       if (finalText.length >= maxChars) {
         finalText = finalText.substring(0, Math.min(finalText.length, maxChars - 6)) + " [...]";
@@ -186,7 +186,7 @@ export default async function extractFromDoc(
     }
 
     return {
-      meta: { pageCount: sections.length, title: sections.length ? sections[0].title: "" },
+      meta: { pageCount: sections.length, title: sections.length ? sections[0]!.title: "" },
       stripped,
       text: finalText,
     };
@@ -196,14 +196,14 @@ export default async function extractFromDoc(
 }
 
 export async function extractFromDocInteractive(
-  file: IntfUploadedMeta,
+  file: IntfFileMeta,
   onSection?: (sectionIndex: number, sectionText: string, totalSections: number) => Promise<void>
 ) {
   const tmpFolder = await createTempDir("doc-extract");
   try {
     const sections = await  getFileSections(file)
     for (let i = 0; i < sections.length; i++) {
-      const text = await sectionText(sections[i], i, tmpFolder)
+      const text = await sectionText(sections[i]!, i, tmpFolder)
       if (onSection) await onSection(i + 1, text, sections.length);
     }
 

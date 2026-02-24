@@ -1,4 +1,4 @@
-import fs from "fs/promises";
+import * as fs from "fs/promises";
 import * as pdfjs from 'pdfjs-dist/legacy/build/pdf.mjs';
 import type { IntfPDFDoc } from "./interfaces";
 import logger from "../../logger";

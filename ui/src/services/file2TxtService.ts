@@ -1,12 +1,14 @@
-import fs from "fs/promises";
-import path from "path";
+import * as fs from "fs/promises";
+import * as path from "path";
 import { extractFromPDFInteractive } from "../utils/fileProcessors/pdf";
+import { extractFromPDFInteractive as simpleExtractFromPDFInteractive } from "../utils/fileProcessors/pdf-simple"
 import { extractFromDocInteractive } from "../utils/fileProcessors/doc";
 
 import type { IntfChunk, IntfChunkMeta, IntfFileMeta } from "../interfaces/file";
 import { exHttpInvalidParams } from "../interfaces/exHttp";
 import { sleep } from "../utils/common";
 import logger from "../utils/logger";
+import configManager from "../utils/configManager";
 
 function splitSentences(text: string): string[] {
   return text
@@ -136,7 +138,8 @@ export default async function file2DB(
   let totalPoints = 0
 
   if (ext === ".pdf") {
-    await extractFromPDFInteractive(file, async (pageNum, pageText, pageCount) => {
+    const pdfParser = configManager.active().app.legacyPDFParser ? simpleExtractFromPDFInteractive :extractFromPDFInteractive  
+    await pdfParser(file, async (pageNum, pageText, pageCount) => {
       totalContent += pageText.length
       const chunks = semanticChunker(pageText, {
         fileKey,

@@ -1,5 +1,3 @@
-import type { Request } from "express";
-
 interface IntfServiceAccess {
   forbidden?: boolean
   files?: {
@@ -14,13 +12,6 @@ interface IntfServiceAccess {
 
 export interface IntfPrivileges {
   services: {[service:string]: IntfServiceAccess}
-}
-
-export interface IntfApiRequest extends Request {
-  headers: {
-    authorization?: string;
-    [key: string]: unknown;
-  };
 }
 
 export interface IntfAuth {

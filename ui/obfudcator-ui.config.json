@@ -1,0 +1,20 @@
+{
+  "compact": true,
+  "controlFlowFlattening": false,         
+  "controlFlowFlatteningThreshold": 0,
+  "deadCodeInjection": false,
+  "debugProtection": false,
+  "identifierNamesGenerator": "mangled",
+  "numbersToExpressions": true,
+  "renameGlobals": false,
+  "selfDefending": false,
+  "simplify": true,
+  "splitStrings": true,
+  "splitStringsChunkLength": 5,
+  "stringArray": true,
+  "stringArrayEncoding": ["base64"],      
+  "stringArrayThreshold": 0.6,
+  "stringArrayWrappersCount": 1,
+  "transformObjectKeys": true,
+  "unicodeEscapeSequence": false
+}

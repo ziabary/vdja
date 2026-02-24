@@ -3,11 +3,12 @@ import knex from 'knex';
 import type { Knex } from 'knex';
 import configManager from '../utils/configManager';
 import logger from '../utils/logger';
+import type { IntfDBConfig } from '../interfaces/config';
 
 let mainDB: Knex | null = null;
 let logDB: Knex | null = null;
 
-function createKnexInstance(dbConfig: any): Knex {
+function createKnexInstance(dbConfig: IntfDBConfig): Knex {
   const { activeType } = dbConfig;
 
   const clientMap  = {
@@ -23,7 +24,8 @@ function createKnexInstance(dbConfig: any): Knex {
 
   const config: Knex.Config = {
     client,
-    connection: dbConfig[activeType],
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    connection: dbConfig[activeType] as any,
     log: {
       warn: (message: string) => {
         // Filter out the specific warning
@@ -70,8 +72,8 @@ export async function getDB(): Promise<Knex> {
  */
 export async function getLogDB(): Promise<Knex> {
   if (logDB) return logDB;
-  const dbConfig = configManager.active().logDb ? configManager.active().logDb : configManager.active().db;
-  logDB = await createWithRetry(() => createKnexInstance(dbConfig));
+  const dbConfig = configManager.active().logDb &&  configManager.active().logDb !== true ? configManager.active().logDb : configManager.active().db;
+  logDB = await createWithRetry(() => createKnexInstance(dbConfig as IntfDBConfig));
   return logDB;
 }
 

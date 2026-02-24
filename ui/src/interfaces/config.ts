@@ -12,6 +12,7 @@ export interface IntfAppConfig {
   };
   watchdogMaxTrigger: number;
   softDelete?: boolean;
+  legacyPDFParser?: boolean
 }
 
 export interface IntfLLMServerConfig {

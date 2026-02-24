@@ -36,7 +36,9 @@ export type IntfDBChat = {
   : string;
 };
 
-export type TypChatListItem = Select<IntfDBChat, typeof cols.id | typeof cols.title | typeof cols.last_msgID | typeof cols.createdAt>;
+export type TypChatListItem = Pick<IntfDBChat, 
+  typeof cols.id | typeof cols.title | typeof cols.last_msgID | typeof cols.createdAt
+>;
 
 export interface IntfChatListResult {
   totalChats: number
@@ -84,26 +86,28 @@ export default {
   get: async (service: string, userID: number, chatId: string | number): Promise<TypChatListItem | null> => {
     const db = await getDB();
 
-    return db<IntfDBChat>(tblName)
+    const row = await db<IntfDBChat>(tblName)
       .select(cols.id, cols.title, cols.last_msgID, cols.createdAt)
       .where(cols.owner_usrID, userID)
-      .andWhere((qb: Knex.QueryBuilder) => qb.where(cols.key, chatId || null).orWhere(cols.id, chatId || null))
+      .andWhere(qb => qb.where(cols.key, chatId || null).orWhere(cols.id, chatId || null))
       .andWhere(cols.status, enuGenericStatus.active)
       .andWhere(cols.service, service)
       .first();
+
+    return row ?? null
   },
 
-  new: async(service:string, userID: number, chatKey: string): Promise<number> => {
+  new: async(service:string, userID: number, chatKey: string): Promise<number | undefined> => {
     const db = await getDB();
 
-    const res =  db<IntfDBChat>(tblName)
+    const [row] = await db<IntfDBChat>(tblName)
       .insert({
         chtService: service,
         chtOwner_usrID: userID,
         chtKey: chatKey
       }).returning(cols.id);
 
-    return (Array.isArray(res)) ? res[0]?.[cols.id as keyof typeof res[0]] ?? res[0] : res
+    return row?.[cols.id];
   },
 
   /** Delete a chat */

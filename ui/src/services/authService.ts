@@ -1,7 +1,7 @@
 import type { Request } from "express"
 
 import jwt from "jsonwebtoken";
-import ms from 'ms';
+import ms, { type StringValue } from 'ms'; 
 import { exHttpUnauthorized } from "../interfaces/exHttp";
 import configManager from "../utils/configManager";
 import type { IntfAuth, IntfRefreshTokenPayload } from "../interfaces/auth";
@@ -20,10 +20,10 @@ export function createAccessToken(user: Partial<IntfUser>) {
     name: user.usrName!,
     privs: user.privs || null
   };
+  const ttlRaw = configManager.active().jwt.accessTTL
+  const expiresInSeconds = (typeof ttlRaw === 'number' ? ttlRaw : ms(ttlRaw as StringValue)) / 1000;
 
-  return jwt.sign(payload, configManager.active().jwt.baseSecret, { 
-    expiresIn: ms(configManager.active().jwt.accessTTL) / 1000 
-  });
+  return jwt.sign(payload, configManager.active().jwt.baseSecret, { expiresIn: expiresInSeconds });
 }
 
 export async function createRefreshToken(user: Partial<IntfUser>) {
@@ -32,10 +32,9 @@ export async function createRefreshToken(user: Partial<IntfUser>) {
     type: "refresh",
   };
 
-  const token = jwt.sign(payload, configManager.active().jwt.refreshSecret, {
-    expiresIn: configManager.active().jwt.refreshTTL,
-  });
-
+  const ttlRaw = configManager.active().jwt.refreshTTL
+  const expiresInSeconds = (typeof ttlRaw === 'number' ? ttlRaw : ms(ttlRaw as StringValue)) / 1000;
+  const token = jwt.sign(payload, configManager.active().jwt.refreshSecret, { expiresIn: expiresInSeconds });
   await atDB.user.updateRefreshHash(user.usrKey!, token)
 
   return token;

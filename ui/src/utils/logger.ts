@@ -44,8 +44,8 @@ const sourceFileFormat = winston.format((info) => {
     
     if (match) {
       // match[1] or match[4] will contain the file path
-      const filePath = match[1] || match[4];
-      const lineNo = match[2] || match[5];
+      const filePath = match[1]! || match[4]!;
+      const lineNo = match[2]! || match[5]!;
       
       info.sourceFile = path.basename(filePath);
       info.lineNumber = lineNo;
@@ -94,6 +94,7 @@ logger.deepDebug = (obj: Object): void => {
 };
 
 logger.raw = (message: string) => {
+  // eslint-disable-next-line no-console
   console.log(message)
 };
 

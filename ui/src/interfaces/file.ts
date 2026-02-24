@@ -6,12 +6,8 @@ export interface IntfFileMeta {
 };
 
 export interface IntfTextExtractResult {
-  meta: {
-    pageCount: number
-    currPage: number
-    title: string | undefined
-  };
-  stripped: boolean
+  meta: { pageCount: number; title?: string|undefined };
+  stripped: boolean;
   text: string;
 }
 

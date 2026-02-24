@@ -1,31 +1,25 @@
 import { DEFAULT_STRIP_OPTIONS } from "./pdf/configs";
 import loadPdfDocument from "./pdf/loadPDF";
-import type { IntfFileMeta } from "../../interfaces/file";
+import type { IntfFileMeta, IntfTextExtractResult } from "../../interfaces/file";
 import processPage from "./pdf/processPage";
 import type { IntfTextBlock } from "./pdf/interfaces";
 
-interface ExtractResult {
-  meta: { pageCount: number; title?: string|undefined };
-  stripped: boolean;
-  blocks: IntfTextBlock[];
-  text: string;
-}
 
 export async function extractFromPDF(
   file: IntfFileMeta,
+  fromPage: number,
+  toPage: number | undefined,
+  maxChars = Infinity,
   options: {
-    fromPage?: number;
-    toPage?: number;
-    maxChars?: number;
     headerRatio?: number;
     footerRatio?: number;
     autoHeader?: boolean;
   } = {}
-): Promise<ExtractResult> {
+): Promise<IntfTextExtractResult> {
   const { pdfRaw, pageCount, title } = await loadPdfDocument(file.path, true);
 
-  const start = (options.fromPage ?? 0) + 1;
-  const end = options.toPage ? Math.min(options.toPage + 1, pageCount) : pageCount;
+  const start = (fromPage ?? 0) + 1;
+  const end = toPage ? Math.min(toPage + 1, pageCount) : pageCount;
 
   let text = "";
   let allBlocks: IntfTextBlock[] = [];
@@ -35,7 +29,7 @@ export async function extractFromPDF(
     const { markdown, blocks, reachedLimit } = await processPage(
       pageNo,
       pdfRaw,
-      options.maxChars,
+      maxChars,
       {
         ...DEFAULT_STRIP_OPTIONS,
         headerRatio: options.headerRatio,
@@ -49,7 +43,7 @@ export async function extractFromPDF(
     allBlocks.push(...blocks);
 
     if (reachedLimit) {
-      text = text.slice(0, options.maxChars! - 6) + " [...]";
+      text = text.slice(0, maxChars! - 6) + " [...]";
       stripped = true;
       break;
     }
@@ -58,7 +52,6 @@ export async function extractFromPDF(
   return {
     meta: { pageCount, title },
     stripped,
-    blocks: allBlocks,
     text,
   };
 }

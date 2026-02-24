@@ -28,12 +28,21 @@ type  TypActiveRequest = {
 type TypVirtualResponse = {
   write: (chunk: string) => boolean;
   end: () => void;
-  on: (event: string, cb: unknown) => unknown;
+  on: (event: string, cb: unknown) => unknown;   
   once: (event: string, cb: unknown) => unknown;
-  status: (code: number) => unknown;
+
+  // Chainable methods – return this (the response itself)
+  status: (code: number) => TypVirtualResponse;
+  json: (body: unknown) => TypVirtualResponse;
+
+  // Optional / commonly used
   headersSent?: boolean;
-  setHeader?: (k: string, v: string) => void;
+  setHeader?: (key: string, value: string | number | string[]) => TypVirtualResponse;
   flushHeaders?: () => void;
+
+  // If you also need send / sendStatus / etc.
+  send?: (body?: unknown) => TypVirtualResponse;
+  sendStatus?: (code: number) => TypVirtualResponse;
 };
 
 interface IntfReaderWithTimeout {
@@ -49,6 +58,10 @@ const totalRequests = new Map<string, number>();
 const stoppedRequests = new Map<string, number>();
 
 /* ------------------ Public API ------------------ */
+/**
+ * Simulates a streaming LLM response using a virtual Express-like Response object.
+ * Collects markdown chunks and returns the full response or an error message.
+ */
 export async function generate(
   action: string,
   service: enuLLMServices,
@@ -56,39 +69,74 @@ export async function generate(
   userPrompt: string,
   maxTokens: number,
   temperature: number
-) {
+): Promise<string> {
   let fullRespMarkdown = "";
-  let errorString: string | undefined;
-  let finished = false;
+  let errorMessage: string | undefined;
+  let isFinished = false;
 
+  // Better typed virtual response that supports chaining like real Express res
   const virtualAPIRes: TypVirtualResponse = {
-    write: (chunk: string) => {
-      if (chunk.startsWith("data: [CANCELLED:"))
-        errorString = `${action} متوقف شد. مجدد تلاش کنید`;
-      if (chunk.startsWith("data: [ERROR:"))
-        errorString = `${action} با خطا مواجه شد. مجدد تلاش کنید`;
-      if (chunk.startsWith("data: [DONE:")) return true;
-
-      try {
-        const json = JSON.parse(chunk.slice(6));
-        const token = json.delta || "";
-        fullRespMarkdown += token;
-      } catch (ex) {
-        logger.error({ generate: ex });
+    write: (chunk: string): boolean => {
+      // Handle special control messages
+      if (chunk.startsWith("data: [CANCELLED:")) {
+        errorMessage = `${action} متوقف شد. مجدد تلاش کنید`;
+        return true;
       }
+      if (chunk.startsWith("data: [ERROR:")) {
+        errorMessage = `${action} با خطا مواجه شد. مجدد تلاش کنید`;
+        return true;
+      }
+      if (chunk.startsWith("data: [DONE:")) {
+        isFinished = true;
+        return true;
+      }
+
+      // Parse normal SSE data chunk
+      if (chunk.startsWith("data: ")) {
+        try {
+          const json = JSON.parse(chunk.slice(6).trim());
+          // Most common formats: delta / content / text / choices[0].delta.content
+          const token =
+            json.delta?.content ||
+            json.content ||
+            json.text ||
+            json.choices?.[0]?.delta?.content ||
+            "";
+          
+          if (typeof token === "string") {
+            fullRespMarkdown += token;
+          }
+        } catch (err) {
+          logger.error("Failed to parse chunk:", err, { chunk });
+        }
+      }
+
       return true;
     },
-    end: () => {
-      finished = true;
+
+    end: (): void => {
+      isFinished = true;
     },
-    on: () => true,
-    once: () => true,
-    status: () =>
-      new Promise(() => ({
-        json: () => {
-          errorString = `${action} با خطا مواجه شد. مجدد تلاش کنید`;
-        },
-      })),
+
+    on: (_event: string, _cb: unknown): unknown => true,   // stub
+    once: (_event: string, _cb: unknown): unknown => true, // stub
+
+    // Make status chainable (returns self)
+    status: function (this: TypVirtualResponse, code: number): TypVirtualResponse {
+      if (code >= 400) {
+        errorMessage = `${action} با خطا مواجه شد (کد ${code}). مجدد تلاش کنید`;
+      }
+      return this;
+    },
+
+    // Make json chainable too (though rarely needed after status in this context)
+    json: function (this: TypVirtualResponse, _body: unknown): TypVirtualResponse {
+      return this;
+    },
+
+    headersSent: false,
+    setHeader: (_key: string, _value: string | number | string[]) => virtualAPIRes,
+    flushHeaders: () => undefined,
   };
 
   const messages: IntfLLMMessage[] = [
@@ -96,16 +144,27 @@ export async function generate(
     {role: enuRoles.user, content: userPrompt}
   ];
 
-  await startNewChat(
-    virtualAPIRes,
-    service,
-    genReqId(action),
-    messages,
-    {},
-    { temperature, maxTokens }
-  );
+  try {
+    await startNewChat(
+      virtualAPIRes,
+      service,
+      genReqId(action),
+      messages,
+      {}, // options / context?
+      { temperature, maxTokens }
+    );
 
-  return finished ? fullRespMarkdown : errorString;
+    // Wait until streaming is done (in case startNewChat is async but doesn't await write/end)
+    // This is a simple polling fallback — ideally startNewChat should return when done
+    while (!isFinished && !errorMessage) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+
+    return errorMessage ?? fullRespMarkdown.trim();
+  } catch (err) {
+    logger.error(`generate failed for action "${action}":`, err);
+    return `${action} با خطای سیستمی مواجه شد.`;
+  }
 }
 
 /* ------------------ Core ------------------ */
@@ -225,7 +284,8 @@ export async function checkRequestState(
   }
 }
 
-export async function stopRequest(service: enuLLMServices, reqID: string) {
+export async function stopRequest(service: enuLLMServices, reqID: string|undefined) {
+  if(!reqID) return "NO_REQ_ID"
   const server = configManager.active().llmServers[service]
 
   try {
@@ -254,7 +314,7 @@ export async function stopRequest(service: enuLLMServices, reqID: string) {
 
 /* ------------------ Streaming ------------------ */
 
-export function sendStreamHeadersIfNeeded(apiRes: Response) {
+export function sendStreamHeadersIfNeeded(apiRes: Response| TypVirtualResponse) {
   if (apiRes.headersSent) return;
   apiRes.setHeader?.("Content-Type", "text/event-stream");
   apiRes.setHeader?.("Cache-Control", "no-cache");
@@ -264,7 +324,7 @@ export function sendStreamHeadersIfNeeded(apiRes: Response) {
 
 async function processChatStream(
   chatReader: () => Promise<IntfReaderWithTimeout>,
-  apiRes: Response,
+  apiRes: Response | TypVirtualResponse,
   requestId: string,
   { onChunk, onChunkDelta, onDone, onError }:  TypStreamHandlers
 ) {

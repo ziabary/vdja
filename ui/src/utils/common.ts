@@ -1,9 +1,48 @@
-import os from "os"
-import path from "path";
-import fs from "fs/promises";
+import type { ParsedQs } from 'qs';
+import * as os from "os"
+import * as path from "path";
+import * as fs from "fs/promises";
 import { randomUUID } from "crypto";
 import { cwd } from "node:process";
 import logger from "./logger";
+
+export function parseQueryToNumber(
+  value: string | ParsedQs | (string | ParsedQs)[] | undefined
+): number | undefined {
+  if (value === undefined || value === null) {
+    return undefined;
+  }
+
+  if (typeof value === 'string') {
+    const num = parseInt(value);     
+    return isNaN(num) ? undefined : num;
+  }
+
+  // ?ids=1,2,3 → array, but we want single number → treat as invalid
+  if (Array.isArray(value)) {
+    return undefined; 
+  }
+
+  // Nested object ?filter[page]=3 → very rare in simple APIs, usually invalid here
+  if (typeof value === 'object') {
+    return undefined;
+  }
+
+  return undefined;
+}
+
+export function parseQueryToString(
+  value: string | ParsedQs | (string | ParsedQs)[] | undefined
+): string | undefined {
+  if (value === undefined || value === null) {
+    return undefined;
+  }
+
+  if (typeof value === 'string') 
+    return value
+  else 
+    return undefined
+}
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export function deepMerge<T extends Record<string, any>>(

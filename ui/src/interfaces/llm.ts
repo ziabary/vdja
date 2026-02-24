@@ -16,4 +16,6 @@ export interface IntfChunkPayload {
   file_name: string;
   chunk_time: number | undefined;
   chunk_index: number;
+
+  [key: string]: unknown;
 }

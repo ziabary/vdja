@@ -88,34 +88,12 @@ export default {
     if (!relatedChat) throw new exHttpAccessDenied('چت درخواستی وجود ندارد یا به آن دسترسی ندارید');
 
     const count = await db<IntfMessage>(tblName)
-      .update({ msgOpinion: singleCharOpinion })
+      .update({ msgOpinion: singleCharOpinion as 'u' | 'd' | 'w' })
       .where(cols.related_chtID, relatedChat.chtID)
-      .andWhere((qb: Knex.QueryBuilder) => {qb.where(cols.key, msgId).orWhere(cols.key, msgId);});
+      .andWhere(qb => {qb.where(cols.key, msgId).orWhere(cols.key, msgId);});
 
     return count;
   },
-
-  // /** Add a single message */
-  // add: async (
-  //   chatSpecs: TypChatListItem,
-  //   requestId: string,
-  //   role: string,
-  //   content: string,
-  //   status: enuMsgStatus
-  // ): Promise<number> => {
-  //   const db = await getDB();
-  //   const res = await db<IntfMessage>(tblName)
-  //     .insert({
-  //       msgKey: requestId,
-  //       msgRelated_chtID: chatSpecs.chtID,
-  //       role: role,
-  //       content,
-  //       msgStatus: status
-  //     })
-  //     .returning(cols.id);
-
-  //   return (Array.isArray(res)) ? res[0]?.[cols.id as keyof typeof res[0]] ?? res[0] : res
-  // },
 
   /** Add a dialogue (user + bot messages) */
   addDialogue: async (
@@ -131,7 +109,9 @@ export default {
     ];
 
     const db = await getDB();
-    const res = await db<IntfMessage>(tblName).insert(dialogue).returning(cols.id);
-    return res.map((item: IntfMessage) => (typeof item === 'object' ? item[cols.id] : item)) as number[];
+    const rows = await db<IntfMessage>(tblName)
+      .insert(dialogue)
+      .returning(cols.id);
+    return rows.map(row => row[cols.id]);
   },
 };

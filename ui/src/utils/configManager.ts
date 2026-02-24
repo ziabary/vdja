@@ -16,6 +16,7 @@ const DEFAULT_CONFIGS: IntfConfigs = {
     },
     watchdogMaxTrigger: 3,
     softDelete: true,
+    legacyPDFParser: true
   },
   OIDC: {
     active: false,

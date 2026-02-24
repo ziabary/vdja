@@ -76,7 +76,7 @@ export default {
       .select(cols.id, cols.name, cols.owner_usrID, cols.key, cols.size, cols.uploadedAt)
       .where(cols.owner_usrID, userID)
       .andWhere(cols.service, service)
-      .andWhere((qb: Knex.QueryBuilder) => {qb.where(cols.status, enuFileStatus.active).orWhere(cols.status, enuFileStatus.processing);})
+      .andWhere(qb => {qb.where(cols.status, enuFileStatus.active).orWhere(cols.status, enuFileStatus.processing);})
       .limit(Math.min(limit, 1000))
       .orderBy(cols.id, ascending ? 'asc' : 'desc')
       .offset(from);
@@ -90,16 +90,17 @@ export default {
   },
 
   /** Get single file by key or ID */
-  get: async (service:string, userID: number, fileKey: string | number): Promise<IntfFile> => {
+  get: async (service:string, userID: number, fileKey: string | number): Promise<IntfFile | null> => {
     const db = await getDB();
 
-    return await db<IntfFile>(tblName)
+    const row = await db<IntfFile>(tblName)
       .select('*')
       .where(cols.owner_usrID, userID)
       .andWhere(cols.service, service)
-      .andWhere((qb: Knex.QueryBuilder) => {qb.where(cols.key, fileKey || null).orWhere(cols.id, fileKey || null);})
-      .andWhere((qb: Knex.QueryBuilder) => {qb.where(cols.status, enuFileStatus.active).orWhere(cols.status, enuFileStatus.processing);})
+      .andWhere(qb => {qb.where(cols.key, fileKey || null).orWhere(cols.id, fileKey || null);})
+      .andWhere(qb => {qb.where(cols.status, enuFileStatus.active).orWhere(cols.status, enuFileStatus.processing);})
       .first();
+    return row ?? null
   },
 
   /** Delete a file */

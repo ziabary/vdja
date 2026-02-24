@@ -1,12 +1,10 @@
 import 'dotenv/config';
-import express, {Router} from 'express';
+import express from 'express';
 import type { Request, Response, NextFunction } from "express";
 
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
-import session from "express-session";
-import morgan from 'morgan';
-import fs from "fs"
+import { access } from 'fs/promises';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
 import cookieParser from "cookie-parser";
@@ -45,7 +43,6 @@ async function init() {
 
   app.use(cors(corsOptions));
   app.use(cookieParser());
-  app.use(express.json({ trustXFF: true }));
   app.set("trust proxy", "172.17.0.0/16");
 
   const limiter = rateLimit({
@@ -64,28 +61,27 @@ async function init() {
 
   app.use(express.json({ limit: configs.app.maxJson }));
   app.use(express.static("public"));
-  app.use((req:Request, res: Response, next: NextFunction) => {
-    const htmlPath = path.join(__dirname, '..', 'public', req.path + '.html');
-    fs.access(htmlPath, fs.F_OK, (err: Error) => {
-      if (!err) res.sendFile(htmlPath);
-      else next();
-    });
-  });
-  app.use(session({
-    secret: "super-secret",
-    resave: false,
-    saveUninitialized: false
-  }));
+app.use(async (req: Request, res: Response, next: NextFunction) => {
+  const htmlPath = path.join(__dirname, '..', 'public', `${req.path}.html`);
+
+  try {
+    await access(htmlPath);
+    res.sendFile(htmlPath);
+  } catch {
+    next();
+  }
+});
 
   // Middleware
   app.use((_: Request, res: Response, next: NextFunction) => {
-    const originalJson = res.json;
-    res.json = function (data:unknown) {
+    const originalJson = res.json.bind(res); 
+    res.json = function (data: unknown) {
       if (!res.headersSent) 
         res.setHeader("Content-Type", "application/json; charset=utf-8");
-      originalJson.call(this, data);
-    };
-    next(); 
+      return originalJson(data);
+    } as typeof res.json; 
+
+    next();
   });
 
 

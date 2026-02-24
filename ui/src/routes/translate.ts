@@ -3,7 +3,7 @@ import type { Request, Response, Router } from "express";
 
 import { startNewChat, stopRequest, genReqId } from "../services/chatService";
 import configManager from "../utils/configManager";
-import { stripText, safeJsonParse } from "../utils/common";
+import { stripText, safeJsonParse, parseQueryToString } from "../utils/common";
 import atDB from "../db/atDB";
 import type { IntfLog } from "../db/tables/tblLog";
 import type { IntfDictionary } from "../db/tables/tblDic";
@@ -193,7 +193,7 @@ router.post(
 
     const response = await stopRequest(
       enuLLMServices.Translate,
-      reqId
+      parseQueryToString(reqId)
     );
     apiRes.json({ status: response });
   }

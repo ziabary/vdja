@@ -5,9 +5,12 @@ import type {
   Response,
   NextFunction,
   RequestHandler,
-  Layer,
-  RouteLayer
 } from "express";
+import type {
+  ILayer as ExpressLayer, 
+  IRoute as ExpressRouter,  
+} from "express-serve-static-core";
+
 import logger from "./logger";
 
 /** Wrap async handlers so errors go to next() */
@@ -23,20 +26,17 @@ const isExpressRouter = (obj: unknown): obj is Router =>
 
 /** Recursively wrap all handlers inside a router */
 const wrapRouter = (router: Router): void => {
-  router.stack.forEach((layer: Layer) => {
+  router.stack.forEach((layer: ExpressLayer) => {
     // Routes like router.get/post
-    if (layer.route) {
-      layer.route.stack.forEach((routeLayer: RouteLayer) => {
-        routeLayer.handle = asyncWrapper(routeLayer.handle);
-      });
-    }
+    if ("route" in layer && layer.route) 
+      layer.route.stack.forEach(routeLayer => {routeLayer.handle = asyncWrapper(routeLayer.handle);});
 
     // Nested routers
-    if (layer.name === "router" && layer.handle?.stack) {
-      wrapRouter(layer.handle);
-    }
+    if (layer.name === "router" && "handle" in layer && layer.handle) 
+      wrapRouter(layer.handle as Router);
 
-    logger.deepDebug(layer.route.path)
+    if (layer.route?.path) 
+      logger.deepDebug(`Wrapped route: ${layer.route.path}`);  
   });
 };
 
@@ -70,7 +70,8 @@ export default async function mountRoutes(
 
     if (Array.isArray(routeModule)) {
       routeModule.forEach((r) => {
-        router[r.method](r.path, asyncWrapper(r.handler));
+        const method = r.method as "get" | "post" | "put" | "delete" | "patch" | "options" | "head";
+        router[method](r.path, asyncWrapper(r.handler));
       });
       continue;
     }

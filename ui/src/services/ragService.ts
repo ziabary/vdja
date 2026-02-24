@@ -6,15 +6,15 @@ import md5 from "md5";
 import os from "os";
 
 import atDB from "../db/atDB";
-import { exHttpAccessDenied, exHttpInternalServerError, exHttpInvalidParams, exHttpPayloadTooLarge, exHttpPreconditionFailed, type IntfExHttp } from "../interfaces/exHttp";
+import { exHttpAccessDenied, exHttpInvalidParams, exHttpPayloadTooLarge, exHttpPreconditionFailed, type IntfExHttp } from "../interfaces/exHttp";
 import { startNewChat, generate, stopRequest, sendStreamHeadersIfNeeded } from "./chatService";
 import { getEmbedding } from './embedService'
 import { getDB } from '../db/index';
-import { toMegaByte, stripText } from "../utils/common";
+import { toMegaByte, stripText, parseQueryToNumber, parseQueryToString } from "../utils/common";
 import vectorDB, { approximateTokenCount } from "./vectorDB";
 import file2DB from "./file2TxtService";
 import logger from "../utils/logger"
-import { date2Jalali } from "../utils/i18n"
+import { date2Jalali, normalizePersianText } from "../utils/i18n"
 import type { TypFileListItem } from "../db/tables/tblFiles";
 import type { IntfLog } from "../db/tables/tblLog";
 import configManager from "../utils/configManager";
@@ -24,8 +24,8 @@ import type { IntfChunk, IntfFileMeta } from "../interfaces/file";
 import type { IntfAuth } from "../interfaces/auth";
 import { enuRoles, type IntfChunkPayload, type IntfLLMMessage } from "../interfaces/llm";
 import { randomUUID } from "crypto";
-import type { IntfChatListResult, TypChatListItem } from "../db/tables/tblChats";
-import { enuMsgStatus, type IntfMessage } from "../db/tables/tblMessages";
+import type { TypChatListItem } from "../db/tables/tblChats";
+import { enuMsgStatus } from "../db/tables/tblMessages";
 
 /**************************************************/
 /*                    HELPERS                     */
@@ -126,7 +126,7 @@ export default function ragService(
     const auth = await getAuthInfo(apiReq);
 
     const { maxItems, from } = apiReq.query;
-    apiRes.json(await atDB.chats.list(service, auth.uid, maxItems, from));
+    apiRes.json(await atDB.chats.list(service, auth.uid, parseQueryToNumber(maxItems), parseQueryToNumber(from)));
   });
 
   //-----------------------------------------------------
@@ -135,9 +135,9 @@ export default function ragService(
 
     const { maxItems, from, fileId } = apiReq.query;
     if(fileId)
-      apiRes.json(await atDB.sampleQuestions.listByFileId(service, auth.uid, fileId, maxItems, from));
+      apiRes.json(await atDB.sampleQuestions.listByFileId(service, auth.uid, parseQueryToString(fileId)!, parseQueryToNumber(maxItems), parseQueryToNumber(from)));
     else 
-      apiRes.json(await atDB.sampleQuestions.listByUser(service, auth.uid, maxItems, from));
+      apiRes.json(await atDB.sampleQuestions.listByUser(service, auth.uid, parseQueryToNumber(maxItems), parseQueryToNumber(from)));
   });
 
   //-----------------------------------------------------
@@ -151,9 +151,9 @@ export default function ragService(
   //-----------------------------------------------------
   router.delete(`/${service}/chat/:chatId`, async (apiReq: Request, apiRes: Response) => {
     const auth = await getAuthInfo(apiReq);
-    const { chatId } = apiReq.params;
-    if(chatId.length != 32) throw new exHttpInvalidParams("Invalid chat ID")
-
+    const { chatIdParam } = apiReq.params;
+    const chatId = parseQueryToString(chatIdParam)
+    if(chatId?.length != 32) throw new exHttpInvalidParams("Invalid chat ID")
 
     const chatSpec = await atDB.chats.get(service, auth.uid, chatId);
     if (!chatSpec) throw new exHttpAccessDenied("چت مورد نظر یافت نشد یا شما دسترسی ندارید")
@@ -170,9 +170,10 @@ export default function ragService(
   //-----------------------------------------------------
   router.put(`/${service}/chat/:chatId/title`, async (apiReq: Request, apiRes: Response) => {
     const auth = await getAuthInfo(apiReq);
-    const {chatId} = apiReq.params
     const { title } = apiReq.body;
-    if(chatId.length != 32) throw new exHttpInvalidParams("Invalid chat ID")
+    const { chatIdParam } = apiReq.params;
+    const chatId = parseQueryToString(chatIdParam)
+    if(chatId?.length != 32) throw new exHttpInvalidParams("Invalid chat ID")
 
     const trimmedTitle = title.trim();
     if (trimmedTitle.length > 100) throw new exHttpInvalidParams("عنوان حداکثر می‌تواند ۱۰۰ کاراکتر باشد");
@@ -190,17 +191,18 @@ export default function ragService(
     const auth = await getAuthInfo(apiReq);
     const { chatKey } = apiReq.params;
     const { maxItems, from } = apiReq.query;
-    apiRes.json(await atDB.messages.listByChatID(service, auth.uid, chatKey, maxItems, from));
+    apiRes.json(await atDB.messages.listByChatID(service, auth.uid, parseQueryToString(chatKey)||"not provided", parseQueryToNumber(maxItems), parseQueryToNumber(from)));
   });
 
   //-----------------------------------------------------
   router.put(`/${service}/chat/:chatId/message/:msgId/opinion`, async (apiReq: Request, apiRes: Response) => {
     const auth = await getAuthInfo(apiReq);
-    const { msgId, chatId } = apiReq.params;
+    const { msgId, chatIdParam } = apiReq.params;
     const { opinion } = apiReq.body;
-    if(chatId.length != 32) throw new exHttpInvalidParams("Invalid chat ID")
+    const chatId = parseQueryToString(chatIdParam)
+    if(chatId?.length != 32) throw new exHttpInvalidParams("Invalid chat ID")
 
-    apiRes.json({ success: await atDB.messages.setOpinion(service, auth.uid, chatId, msgId, opinion) ? true : false })
+    apiRes.json({ success: await atDB.messages.setOpinion(service, auth.uid, chatId, parseQueryToString(msgId)||"not provided", opinion) ? true : false })
   });
 
   /**************************************************/
@@ -211,7 +213,7 @@ export default function ragService(
       const auth = await getAuthInfo(apiReq);
       const { maxItems, from } = apiReq.query;
 
-      apiRes.json(await atDB.files.list(service, auth.uid, maxItems, from))
+      apiRes.json(await atDB.files.list(service, auth.uid, parseQueryToNumber(maxItems), parseQueryToNumber(from)))
     });
     //-----------------------------------------------------
     async function _deleteFileInternal(
@@ -236,7 +238,7 @@ export default function ragService(
     router.delete(`/${service}/file/:fileId`, async (apiReq: Request, apiRes: Response) => {
       const auth = await getAuthInfo(apiReq);
       const { fileId } = apiReq.params;
-      const fileSpec = await atDB.files.get(service, auth.uid, fileId)
+      const fileSpec = await atDB.files.get(service, auth.uid, parseQueryToString(fileId)||"not provided")
       if (!fileSpec) throw new exHttpAccessDenied("فایل مورد نظر یافت نشد یا شما دسترسی ندارید")
       apiRes.json(await _deleteFileInternal(auth.key, fileSpec));
     });
@@ -325,6 +327,8 @@ export default function ragService(
       const { fileId } = apiReq.body 
 
       const fileSpecs = await atDB.files.get(service, auth.uid, fileId);
+      if(!fileSpecs)
+        throw new exHttpInvalidParams("فایل مورد نظر یافت نشد")
       const randomChunks = await vectorDB().getRandomChunks(
         `${service}_${auth.key}`,
         fileId,
@@ -370,7 +374,7 @@ export default function ragService(
   router.post(`/${service}/:reqId/stop`, async (apiReq: Request, apiRes: Response) => {
     const auth = await getAuthInfo(apiReq);
     const { reqId } = apiReq.params
-    const response = await stopRequest(service, reqId)
+    const response = await stopRequest(service, parseQueryToString(reqId)||"not provided")
     apiRes.json({ status: response })
   })
 
@@ -501,14 +505,13 @@ export default function ragService(
     globalContext,
     newsContext,
   }: IntfSystemPromptParams): string {
-    return `${systemPromptPrefix}
+    return normalizePersianText(`${systemPromptPrefix}
 ${userContext?.chunks?.length ? `\n- ** خیلی مهم **: فقط بر مبنای متن‌های مرجع و نام فایل‌های آپلودشده کاربر پاسخ بده و اگر متن مرجع مناسب نیست بگو: در مراجع ارایه شده محتوای مرتبط یافت نشد.` : ""}
 ${userContext?.chunks?.length ? "\n- متن‌های مرجع:\n" + cntx2Text(userContext) : ""}
 ${allSources?.files?.length ? `\n- آخرین فایل‌های آپلود شده کاربر از مجموع ${allSources.count} فایل:\n` + allSources.files.map((s, i) => `    ${i + 1}. ${s}`).join("\n") : ""}
 ${globalContext?.chunks?.length ? "\n- دانش عمومی داخلی:\n" + cntx2Text(globalContext) : ""}
 ${newsContext?.chunks?.length ? "\n- اخبار مرتبط (در صورت استفاده، منبع رو اخبار اعلام کن و حتما لینک خبر رو به عنوان منبع بده):\n" + cntx2Text(newsContext) : ""}
-${systemPromptPostfix}`
-
+${systemPromptPostfix}`)
   }
 
 
@@ -577,21 +580,15 @@ ${systemPromptPostfix}`
           if(countMessageTokens(filteredHistory) > 0.5 * fullMessageTokens) 
             throw new exHttpPayloadTooLarge("حجم محتوای مکالمه بسیار زیاد شده چت جدیدی باز کنید یا این مکالمه خلاصه شود")
 
-          if(userContext.chunks?.length) {
-            console.log("POP from User")
+          if(userContext.chunks?.length) 
             userContext.chunks.pop()
-          }
 
           const globalTokens = countContextTokens(globalContext)
           const newsTokens = countContextTokens(newsContext)
-          if(globalTokens > newsTokens) {
-            console.log("POP from Global")
-
+          if (globalTokens > newsTokens && globalContext.chunks?.length) 
             globalContext.chunks.pop()
-          } else {
-            console.log("POP from News")
+          else if (newsContext.chunks.length)
             newsContext.chunks.pop()
-          }
 
           return generateAdequateLenghtMessages()
         }
@@ -601,9 +598,9 @@ ${systemPromptPostfix}`
 
       const messages = generateAdequateLenghtMessages()
 
-      if(configManager.active().isDebugging)
-        logger.deepDebug({matchedContextPostFilter: {userContext, globalContext, newsContext}})
-
+      if (configManager.active().isDebugging) 
+        logger.deepDebug({ matchedContextPostFilter: { userContext, globalContext, newsContext, messages } })
+      
       const logInfo: { [key: string]: any } = {
         historyLen: filteredHistory.length,
         question: api_question
@@ -685,7 +682,6 @@ ${systemPromptPostfix}`
 
   return router;
 }
-
 
 function countMessageTokens(messages: IntfLLMMessage[] | undefined) {
   if(!messages) return 0

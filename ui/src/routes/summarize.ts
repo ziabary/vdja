@@ -4,7 +4,7 @@ import type { Request, Response, Router } from "express";
 import atDB from "../db/atDB";
 import { startNewChat, stopRequest, genReqId } from "../services/chatService";
 import configManager from "../utils/configManager";
-import { stripText } from "../utils/common";
+import { parseQueryToString, stripText } from "../utils/common";
 import logger from "../utils/logger";
 import type { IntfLog } from "../db/tables/tblLog";
 import { getAuthInfo } from "../services/authService";
@@ -119,7 +119,7 @@ router.post("/summarize/:reqId/stop", async (apiReq: Request, apiRes: Response) 
   const { reqId } = apiReq.params;
 
   // TODO: check if user has access
-  const response = await stopRequest(enuLLMServices.Summarize, reqId);
+  const response = await stopRequest(enuLLMServices.Summarize, parseQueryToString(reqId));
   apiRes.json({ status: response });
 });
 
