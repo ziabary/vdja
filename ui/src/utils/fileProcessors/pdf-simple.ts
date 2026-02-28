@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import * as pdfjs from "pdfjs-dist/legacy/build/pdf.js";
+import * as pdfjs from "pdfjs-dist/legacy/build/pdf.mjs";
 import * as fs from "fs/promises";
 import * as crypto from "crypto";
 import { normalizePersianText} from "../i18n";

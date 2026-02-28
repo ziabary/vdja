@@ -151,7 +151,7 @@ export default function ragService(
   //-----------------------------------------------------
   router.delete(`/${service}/chat/:chatId`, async (apiReq: Request, apiRes: Response) => {
     const auth = await getAuthInfo(apiReq);
-    const { chatIdParam } = apiReq.params;
+    const { chatID: chatIdParam } = apiReq.params;
     const chatId = parseQueryToString(chatIdParam)
     if(chatId?.length != 32) throw new exHttpInvalidParams("Invalid chat ID")
 
@@ -171,7 +171,7 @@ export default function ragService(
   router.put(`/${service}/chat/:chatId/title`, async (apiReq: Request, apiRes: Response) => {
     const auth = await getAuthInfo(apiReq);
     const { title } = apiReq.body;
-    const { chatIdParam } = apiReq.params;
+    const { chatID: chatIdParam } = apiReq.params;
     const chatId = parseQueryToString(chatIdParam)
     if(chatId?.length != 32) throw new exHttpInvalidParams("Invalid chat ID")
 
@@ -197,7 +197,7 @@ export default function ragService(
   //-----------------------------------------------------
   router.put(`/${service}/chat/:chatId/message/:msgId/opinion`, async (apiReq: Request, apiRes: Response) => {
     const auth = await getAuthInfo(apiReq);
-    const { msgId, chatIdParam } = apiReq.params;
+    const { msgId, chatID: chatIdParam } = apiReq.params;
     const { opinion } = apiReq.body;
     const chatId = parseQueryToString(chatIdParam)
     if(chatId?.length != 32) throw new exHttpInvalidParams("Invalid chat ID")
@@ -601,7 +601,7 @@ ${systemPromptPostfix}`)
       if (configManager.active().isDebugging) 
         logger.deepDebug({ matchedContextPostFilter: { userContext, globalContext, newsContext, messages } })
       
-      const logInfo: { [key: string]: any } = {
+      const logInfo: { [key: string]: unknown } = {
         historyLen: filteredHistory.length,
         question: api_question
       }

@@ -1,7 +1,7 @@
 // migration file example: 20260216_create_tbl_messages.js
 
 exports.up = async function (knex) {
-  const dialect = knex.client.dialect();  // 'mysql', 'postgresql', 'mssql'
+  const dialect = knex.client.config.client;  // 'mysql', 'postgresql', 'mssql'
 
   await knex.schema.createTable('tblMessages', (table) => {
     // ───────────────────────────────────────────────
@@ -13,7 +13,7 @@ exports.up = async function (knex) {
                                              // MSSQL: bigint IDENTITY(1,1)
 
     table
-      .char('msgKey', 32)
+      .string('msgKey', 32)
       .notNullable();
 
     // ───────────────────────────────────────────────
@@ -42,7 +42,7 @@ exports.up = async function (knex) {
       .notNullable();
 
     table
-      .char('msgOpinion', 1)
+      .string('msgOpinion', 1)
       .nullable()
       .defaultTo(null);
 
@@ -102,26 +102,26 @@ exports.up = async function (knex) {
   // ───────────────────────────────────────────────
   if (dialect === 'postgresql' || dialect === 'mssql' || dialect === 'mysql') {
     await knex.raw(`
-      ALTER TABLE "tblMessages"
-      ADD CONSTRAINT "chk_tblMessages_msgRole"
-      CHECK ("msgRole" IN ('user', 'assistant'))
+      ALTER TABLE tblMessages
+      ADD CONSTRAINT chk_tblMessages_msgRole
+      CHECK (msgRole IN ('user', 'assistant'))
     `);
 
     await knex.raw(`
-      ALTER TABLE "tblMessages"
-      ADD CONSTRAINT "chk_tblMessages_msgStatus"
-      CHECK ("msgStatus" IN ('Finished', 'Stopped'))
+      ALTER TABLE tblMessages
+      ADD CONSTRAINT chk_tblMessages_msgStatus
+      CHECK (msgStatus IN ('Finished', 'Stopped'))
     `);
   }
 };
 
 exports.down = async function (knex) {
-  const dialect = knex.client.dialect();
+  const dialect = knex.client.config.client;
 
   // Drop CHECK constraints if they exist
   if (dialect === 'postgresql' || dialect === 'mssql') {
-    await knex.raw(`ALTER TABLE "tblMessages" DROP CONSTRAINT IF EXISTS "chk_tblMessages_msgRole"`);
-    await knex.raw(`ALTER TABLE "tblMessages" DROP CONSTRAINT IF EXISTS "chk_tblMessages_msgStatus"`);
+    await knex.raw(`ALTER TABLE tblMessages DROP CONSTRAINT IF EXISTS "chk_tblMessages_msgRole"`);
+    await knex.raw(`ALTER TABLE tblMessages DROP CONSTRAINT IF EXISTS "chk_tblMessages_msgStatus"`);
   }
 
   return knex.schema.dropTable('tblMessages');

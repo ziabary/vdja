@@ -1,7 +1,7 @@
 // migrations/xxxxxxxxxxxxxx_create_tbl_per_user_stats.js
 
 exports.up = async function (knex) {
-  const dialect = knex.client.dialect();
+  const dialect = knex.client.config.client;
 
   await knex.schema.createTable('tblPerUserStats', (table) => {
     // Primary key – auto-increment
@@ -18,7 +18,7 @@ exports.up = async function (knex) {
 
     // Service identifier
     table
-      .char('pusService', 4)
+      .string('pusService', 4)
       .notNullable();
 
     // Counters – unsigned where possible
@@ -88,8 +88,8 @@ exports.up = async function (knex) {
   // (mostly useful in PostgreSQL and SQL Server; MySQL ≥8.0.16 supports CHECK)
   if (dialect === 'postgresql' || dialect === 'mssql' || dialect === 'mysql') {
     await knex.raw(`
-      ALTER TABLE "tblPerUserStats"
-      ADD CONSTRAINT "chk_tblPerUserStats_non_negative"
+      ALTER TABLE tblPerUserStats
+      ADD CONSTRAINT chk_tblPerUserStats_non_negative
       CHECK (
         "pusTotalFiles" >= 0 AND
         "pusActiveFiles" >= 0 AND
@@ -108,8 +108,8 @@ exports.down = async function (knex) {
   // Optional: drop CHECK constraint first (PG & MSSQL)
   if (dialect === 'postgresql' || dialect === 'mssql') {
     await knex.raw(`
-      ALTER TABLE "tblPerUserStats"
-      DROP CONSTRAINT IF EXISTS "chk_tblPerUserStats_non_negative"
+      ALTER TABLE tblPerUserStats
+      DROP CONSTRAINT IF EXISTS chk_tblPerUserStats_non_negative
     `);
   }
 

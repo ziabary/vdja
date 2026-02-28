@@ -1,7 +1,14 @@
 /* eslint-disable no-console */
 
 import { mad, median } from "./common";
-import type { TypAxis, IntfBlockBox, IntfXYCutOptions, IntfTextBlock, IntfXYCutResult, IntfPageGeometry } from "./interfaces";
+import type {
+  TypAxis,
+  IntfBlockBox,
+  IntfXYCutOptions,
+  IntfTextBlock,
+  IntfXYCutResult,
+  IntfPageGeometry
+} from "./interfaces";
 
 function estimateColumnCount(blocks: IntfTextBlock[]): number {
   const centers = blocks.map(b => b.bbox.x + b.bbox.w / 2)

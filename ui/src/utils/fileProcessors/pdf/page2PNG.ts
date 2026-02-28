@@ -17,6 +17,7 @@ export async function page2PNG(pdfPage: IntfPageInfo,  outputPath: string,  opts
     debug = false,
   } = opts;
 
+  // eslint-disable-next-line no-console
   if (debug) console.log(`[Rasterize] page=${pdfPage.pageNumber} scale=${scale}`);
 
   const {rawPage, viewport} = pdfPage
@@ -38,5 +39,6 @@ export async function page2PNG(pdfPage: IntfPageInfo,  outputPath: string,  opts
   fs.mkdirSync(path.dirname(outputPath), { recursive: true });
   fs.writeFileSync(outputPath, canvas.toBuffer("image/png"));
 
+  // eslint-disable-next-line no-console
   if (debug) console.log(`[Rasterize] saved → ${outputPath}`);
 }

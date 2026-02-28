@@ -1,7 +1,7 @@
 // migrations/xxxxxxxxxxxxxx_create_tbl_sample_questions.js
 
 exports.up = async function (knex) {
-  const dialect = knex.client.dialect();
+  const dialect = knex.client.config.client;
 
   await knex.schema.createTable('tblSampleQuestions', (table) => {
     // Primary key – auto-increment
@@ -45,8 +45,8 @@ exports.up = async function (knex) {
   // (useful in PostgreSQL & SQL Server; MySQL 8.0.16+ supports it)
   if (dialect === 'postgresql' || dialect === 'mssql' || dialect === 'mysql') {
     await knex.raw(`
-      ALTER TABLE "tblSampleQuestions"
-      ADD CONSTRAINT "chk_tblSampleQuestions_question_not_empty"
+      ALTER TABLE tblSampleQuestions
+      ADD CONSTRAINT chk_tblSampleQuestions_question_not_empty
       CHECK (TRIM("smqQuestion") <> '')
     `);
   }
@@ -58,8 +58,8 @@ exports.down = async function (knex) {
   // Drop CHECK constraint if it exists (mainly for PG & MSSQL)
   if (dialect === 'postgresql' || dialect === 'mssql') {
     await knex.raw(`
-      ALTER TABLE "tblSampleQuestions"
-      DROP CONSTRAINT IF EXISTS "chk_tblSampleQuestions_question_not_empty"
+      ALTER TABLE tblSampleQuestions
+      DROP CONSTRAINT IF EXISTS chk_tblSampleQuestions_question_not_empty
     `);
   }
 

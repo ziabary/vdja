@@ -1,7 +1,7 @@
 // migration file example: 20260216_create_tbl_files.js
 
 exports.up = async function (knex) {
-  const dialect = knex.client.dialect();  // 'mysql', 'postgresql', 'mssql'
+  const dialect = knex.client.config.client;  // 'mysql', 'postgresql', 'mssql'
 
   await knex.schema.createTable('tblFiles', (table) => {
     // ───────────────────────────────────────────────
@@ -18,13 +18,13 @@ exports.up = async function (knex) {
       .notNullable();
 
     table
-      .char('filKey', 32)
+      .string('filKey', 32)
       .notNullable()
       .defaultTo('')
       .comment('UUID');              // comment is supported in MySQL & PostgreSQL
 
     table
-      .char('filService', 4)
+      .string('filService', 4)
       .notNullable();
 
     table
@@ -97,9 +97,9 @@ exports.up = async function (knex) {
   // ───────────────────────────────────────────────
   if (dialect === 'postgresql' || dialect === 'mssql' || dialect === 'mysql') {
     await knex.raw(`
-      ALTER TABLE "tblFiles"
-      ADD CONSTRAINT "chk_tblFiles_filStatus"
-      CHECK ("filStatus" IN ('Active', 'Removed', 'Processing'))
+      ALTER TABLE tblFiles
+      ADD CONSTRAINT chk_tblFiles_filStatus
+      CHECK (filStatus IN ('Active', 'Removed', 'Processing'))
     `);
   }
 
@@ -114,11 +114,11 @@ exports.up = async function (knex) {
 };
 
 exports.down = async function (knex) {
-  const dialect = knex.client.dialect();
+  const dialect = knex.client.config.client;
 
   // Drop CHECK if exists (PG & MSSQL mostly need it)
   if (dialect === 'postgresql' || dialect === 'mssql') {
-    await knex.raw(`ALTER TABLE "tblFiles" DROP CONSTRAINT IF EXISTS "chk_tblFiles_filStatus"`);
+    await knex.raw(`ALTER TABLE tblFiles DROP CONSTRAINT IF EXISTS "chk_tblFiles_filStatus"`);
   }
 
   return knex.schema.dropTable('tblFiles');

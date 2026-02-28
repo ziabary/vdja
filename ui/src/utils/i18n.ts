@@ -101,6 +101,7 @@ export function normalizePersianText(text: string): string {
   try {
     t = PersianShaper.convertArabic(t);
   } catch (err) {
+    // eslint-disable-next-line no-console
     console.warn('PersianShaper failed:', err);
     // fallback — at least keep what we have
   }

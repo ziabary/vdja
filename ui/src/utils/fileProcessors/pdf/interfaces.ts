@@ -1,24 +1,26 @@
 import * as pdfjs from 'pdfjs-dist/legacy/build/pdf.mjs';
 
-export interface IntfPDFDoc {
-  pdfRaw: pdfjs.PDFDocumentProxy;
-  pageCount: number;
-  title: string | undefined;
-}
 
 export type IntfPDFRawPage = pdfjs.PDFPageProxy
 export type IntfPDFTextContent = pdfjs.TextContent
 export type IntfPDFOperatorList = pdfjs.OperatorList
 export type IntfPDFRender = pdfjs.RenderTask
 export type IntfPDFViewPort = pdfjs.PageViewport
+export type IntfPDFRaw = pdfjs.PDFDocumentProxy
+
+export interface IntfPDFDoc {
+  pdfRaw: IntfPDFRaw;
+  pageCount: number;
+  title: string | undefined;
+}
 
 export interface IntfPageInfo {
   pageNumber: number,
   width: number
   height: number
   rawPage: IntfPDFRawPage,
-  textContent: IntfPDFTextContent
-  operatorList: IntfPDFOperatorList
+  textContent?: IntfPDFTextContent
+  operatorList?: IntfPDFOperatorList
   viewport: IntfPDFViewPort
   fonts: Record<string, string>,
   fontDetails: unknown[],  // can extend later with ascent/bold flags if needed

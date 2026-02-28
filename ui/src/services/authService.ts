@@ -7,8 +7,8 @@ import configManager from "../utils/configManager";
 import type { IntfAuth, IntfRefreshTokenPayload } from "../interfaces/auth";
 import type { IntfUser } from "../db/tables/tblUser";
 import atDB from "../db/atDB";
-import { JsonWebTokenError, TokenExpiredError } from "jsonwebtoken";
 
+const { JsonWebTokenError, TokenExpiredError } = jwt;
 /* -------------------------------------------------- */
 /*                    Token creation                  */
 /* -------------------------------------------------- */

@@ -32,7 +32,7 @@ function applyMatrix(m: number[], x: number, y: number) {
 export default function extractPageGeometry(
   pageInfo: IntfPageInfo
 ): IntfPageGeometry {
-  const operatorList: IntfPDFOperatorList = pageInfo.operatorList;
+  const operatorList: IntfPDFOperatorList = pageInfo.operatorList!;
 
   const textPrimitives: IntfGlyph[] = [];
   const imagePrimitives: IntfImagePrimitive[] = [];
@@ -40,10 +40,10 @@ export default function extractPageGeometry(
   const vectorBoxes: IntfBlockBox[] = [];
 
   // Text primitives (already transformed in extractNativeTextBlocks path)
-  for (const item of pageInfo.textContent.items) {
+  for (const item of pageInfo.textContent?.items || []) {
     const tx = pageInfo.viewport.convertToViewportPoint(
-      item.transform[4],
-      item.transform[5]
+      item.transform[4]!,
+      item.transform[5]!
     );
 
     const glyph: IntfGlyph = {
@@ -70,7 +70,7 @@ export default function extractPageGeometry(
 
   for (let i = 0; i < fnArray.length; i++) {
     const fn = fnArray[i];
-    const args = argsArray[i];
+    const args = argsArray[i]!;
 
     switch (fn) {
       case pdfjs.OPS.save: // save

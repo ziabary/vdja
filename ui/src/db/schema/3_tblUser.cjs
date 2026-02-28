@@ -1,7 +1,7 @@
 // migrations/YYYYMMDDHHMMSS_create_tbl_user.js
 
 exports.up = async function (knex) {
-  const dialect = knex.client.dialect();
+  const dialect = knex.client.config.client;
 
   await knex.schema.createTable('tblUser', (table) => {
     // Primary key
@@ -11,7 +11,7 @@ exports.up = async function (knex) {
     // MSSQL   → bigint IDENTITY(1,1)
 
     table.string('usrName', 50).nullable();
-    table.char('usrKey', 32).nullable();
+    table.string('usrKey', 32).nullable();
 
     table.string('usrEmail', 50).nullable();
     table.string('usrMobile', 10).nullable();
@@ -90,15 +90,15 @@ exports.up = async function (knex) {
       .references('grpID')
       .inTable('tblGroup')
       .onUpdate('CASCADE')
-      .onDelete('RESTRICT');           // ← matches your RESTRICT (not CASCADE)
+      .onDelete(dialect === 'mssql'? 'NO ACTION' : 'RESTRICT');          
   });
 
   // Optional CHECK constraint for status (PG, MSSQL, MySQL 8+)
   if (dialect === 'postgresql' || dialect === 'mssql' || dialect === 'mysql') {
     await knex.raw(`
-      ALTER TABLE "tblUser"
-      ADD CONSTRAINT "chk_tblUser_usrStatus"
-      CHECK ("usrStatus" IN ('Active', 'Removed', 'Banned'))
+      ALTER TABLE tblUser
+      ADD CONSTRAINT chk_tblUser_usrStatus
+      CHECK (usrStatus IN ('Active', 'Removed', 'Banned'))
     `);
   }
 
@@ -106,7 +106,6 @@ exports.up = async function (knex) {
   // Insert the initial "unknown" user with explicit ID = 1
   // ───────────────────────────────────────────────
   await knex('tblUser').insert({
-    usrID: 1,
     usrName: 'unknown',
     usrKey: null,
     usrEmail: null,
@@ -126,7 +125,7 @@ exports.up = async function (knex) {
     await knex.raw(`
       SELECT setval(
         pg_get_serial_sequence('tblUser', 'usrID'),
-        (SELECT MAX("usrID") FROM "tblUser")
+        (SELECT MAX(usrID) FROM tblUser)
       )
     `);
   }

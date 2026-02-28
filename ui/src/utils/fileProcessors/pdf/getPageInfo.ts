@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
-import type { IntfPageInfo, IntfPDFRawPage, IntfPDFViewPort } from "./interfaces";
+import type { IntfPageInfo, IntfPDFRaw, IntfPDFRawPage, IntfPDFViewPort } from "./interfaces";
 
-export default async function getPageInfo(pdfRaw: IntfPDFRawPage, pageNumber: number, debug?: boolean) {
+export default async function getPageInfo(pdfRaw: IntfPDFRaw, pageNumber: number, debug?: boolean) {
   const page : IntfPDFRawPage = await pdfRaw.getPage(pageNumber);
   const viewport: IntfPDFViewPort = page.getViewport({ scale: 1 });
 
@@ -10,8 +10,6 @@ export default async function getPageInfo(pdfRaw: IntfPDFRawPage, pageNumber: nu
     width: viewport.width,
     height: viewport.height,
     rawPage: page,
-    textContent: undefined,
-    operatorList: undefined,
     viewport,
     fonts: {} as Record<string, string>,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

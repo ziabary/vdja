@@ -5,7 +5,7 @@ import { DEFAULT_STRIP_OPTIONS } from "./configs";
 import extractNativeTextBlocks from "./extractNativeTextBlocks";
 import { filterHeaderFooter } from "./filterHeaderFooter";
 import getPageInfo from "./getPageInfo";
-import type { IntfPageStripOptions, IntfPDFRawPage, IntfTextBlock } from "./interfaces";
+import type { IntfPageStripOptions, IntfPDFRaw, IntfPDFRawPage, IntfTextBlock } from "./interfaces";
 import mergePageBlocks from "./mergePageBlocks";
 import { ocrMissingBlocks } from "./ocr";
 import { renderDebugPNG } from "./renderDebugPNG";
@@ -16,7 +16,7 @@ import extractPageGeometry from "./extractPageGeometry";
 
 export default async function processPage(
   pageNumber: number,
-  pdfRaw: IntfPDFRawPage,
+  pdfRaw: IntfPDFRaw,
   maxChars?: number,
   stripOptions: IntfPageStripOptions = DEFAULT_STRIP_OPTIONS,
   debug?: boolean
@@ -111,6 +111,7 @@ export default async function processPage(
     sameColumnXDelta: 22,
   });
 
+  // eslint-disable-next-line no-console
   console.log({ pageParagraphs })
   throw new Error()
 

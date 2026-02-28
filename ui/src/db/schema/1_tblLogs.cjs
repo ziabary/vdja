@@ -1,7 +1,7 @@
 // migration file example: 20260216_create_tbl_logs.js
 
 exports.up = async function (knex) {
-  const dialect = knex.client.dialect();  // 'mysql', 'postgresql', 'mssql'
+  const dialect = knex.client.config.client;  // 'mysql', 'postgresql', 'mssql'
 
   await knex.schema.createTable('tblLogs', (table) => {
     // ───────────────────────────────────────────────
@@ -13,13 +13,13 @@ exports.up = async function (knex) {
                                              // MSSQL:  bigint IDENTITY(1,1)
 
     table
-      .char('logBy_usrKey', 32)
+      .string('logBy_usrKey', 32)
       .nullable()
       .defaultTo(null)
       .comment('Intentionally no FK');       // comment supported in MySQL & PostgreSQL
 
     table
-      .char('logAction', 6)
+      .string('logAction', 6)
       .notNullable();
 
     table

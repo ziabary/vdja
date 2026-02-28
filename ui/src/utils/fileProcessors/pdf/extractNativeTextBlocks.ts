@@ -19,7 +19,7 @@ export default async function extractNativeTextBlocks(
   // --------------------------------------------------
   const viewport = pageInfo.viewport;
 
-  for (const item of textContent.items) {
+  for (const item of textContent?.items || []) {
     if (!item.str) continue;
 
 //    const [, , , d, e, f] = item.transform;

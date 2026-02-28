@@ -1,5 +1,18 @@
 -- 1. Create the database (if it doesn't already exist)
 --    Skip this block if TargomanLLM already exists
+
+
+docker run -d \
+   --name sqlserver \
+   -e "ACCEPT_EULA=Y" \
+   -e "MSSQL_SA_PASSWORD=YourStrong@Passw0rd123" \
+   -e "MSSQL_PID=Developer" \
+   -p 1433:1433 \
+   --hostname sqlserver \
+   -v /home/mehran/Desktop/Hoomas/Projects/Sabanoor/TagLoggingSlow/:/TagLoggingSlow \
+    mcr.microsoft.com/mssql/server:2025-latest
+
+
 USE master;
 GO
 

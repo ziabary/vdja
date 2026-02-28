@@ -1,6 +1,16 @@
 /* eslint-disable no-console */
 import { SIGNAL_THRESHOLDS } from "./configs";
-import type { IntfPageGeometry, IntfPageInfo, IntfTextBlock, IntfXYCutResult, IntfXYRegionFeatures, IntfXYRegionSignals, IntfXYRegionStructureScores, TypXYRegionKind } from "./interfaces";
+import type {
+  IntfBlockBox,
+  IntfPageGeometry,
+  IntfPageInfo,
+  IntfTextBlock,
+  IntfXYCutResult,
+  IntfXYRegionFeatures,
+  IntfXYRegionSignals,
+  IntfXYRegionStructureScores,
+  TypXYRegionKind
+} from "./interfaces";
 
 function variance(values: number[]): number {
   if (values.length === 0) return 0
@@ -27,7 +37,7 @@ function extractRegionFeatures(
     return (Math.max(...xe) - Math.min(...xs)) *
       (Math.max(...ye) - Math.min(...ys))
   })
-    // clamp zero-area blocks to avoid artificial variance spikes
+  // clamp zero-area blocks to avoid artificial variance spikes
   const safeBlockAreas = blockAreas.map(a => Math.max(a, 1))
   const totalBlockArea = safeBlockAreas.reduce((a, b) => a + b, 0)
   const avgBlockArea = blockAreas.length
@@ -69,7 +79,7 @@ function extractRegionFeatures(
       w: Math.max(...xe) - Math.min(...xs),
       h: Math.max(...ye) - Math.min(...ys)
     }
-  }).filter(Boolean) as unknown[]
+  }).filter(Boolean) as IntfBlockBox[]
 
   const xStarts = realBoxes.map(b => b.x)
   const xEnds = realBoxes.map(b => b.x + b.w)
@@ -266,7 +276,7 @@ function computeFlowScore(region: IntfXYCutResult): number {
       x: f.xStarts[i]
     }))
     .sort((a, b) =>
-      a.y !== b.y ? a.y - b.y : a.x - b.x
+      a.y !== b.y ? a.y - b.y : a.x! - b.x!
     )
 
   let crossings = 0
@@ -349,7 +359,7 @@ function detectCaptions(
     if (Math.abs((c.bbox.x + c.bbox.w / 2) - (region.bbox.x + region.bbox.w / 2)) < region.bbox.w * 0.1) {
       confidence += 0.1
     }
-    ;c.captionConfidence = Math.min(1, confidence)
+    ; c.captionConfidence = Math.min(1, confidence)
   }
 
   if (debug) console.log(

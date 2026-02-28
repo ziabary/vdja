@@ -1,7 +1,7 @@
 // migration file example: 20260216_create_tbl_group.js
 
 exports.up = async function (knex) {
-  const dialect = knex.client.dialect();  // 'mysql', 'postgresql', 'mssql'
+  const dialect = knex.client.config.client;  // 'mysql', 'postgresql', 'mssql'
 
   await knex.schema.createTable('tblGroup', (table) => {
     // ───────────────────────────────────────────────
@@ -51,13 +51,11 @@ exports.up = async function (knex) {
   // ───────────────────────────────────────────────
   await knex('tblGroup').insert([
     {
-      grpID: 1,
       grpName: 'anonymus',
       grpPrivs: '{}',
       grpStatus: 'Active'
     },
     {
-      grpID: 2,
       grpName: 'public',
       grpPrivs: JSON.stringify({
         services: {
@@ -94,19 +92,19 @@ exports.up = async function (knex) {
   // Optional: CHECK constraint for status (enforced on PG & MSSQL; MySQL ≥8.0.16 enforces)
   if (dialect === 'postgresql' || dialect === 'mssql' || dialect === 'mysql') {
     await knex.raw(`
-      ALTER TABLE "tblGroup"
-      ADD CONSTRAINT "chk_tblGroup_grpStatus"
-      CHECK ("grpStatus" IN ('Active', 'Removed', 'Banned'))
+      ALTER TABLE tblGroup
+      ADD CONSTRAINT chk_tblGroup_grpStatus
+      CHECK (grpStatus IN ('Active', 'Removed', 'Banned'))
     `);
   }
 };
 
 exports.down = async function (knex) {
-  const dialect = knex.client.dialect();
+  const dialect = knex.client.config.client;
 
   // Drop CHECK constraint if exists
   if (dialect === 'postgresql' || dialect === 'mssql') {
-    await knex.raw(`ALTER TABLE "tblGroup" DROP CONSTRAINT IF EXISTS "chk_tblGroup_grpStatus"`);
+    await knex.raw(`ALTER TABLE tblGroup DROP CONSTRAINT IF EXISTS "chk_tblGroup_grpStatus"`);
   }
 
   // Optional: remove seed data on rollback
