@@ -170,19 +170,21 @@ async function sendJWT(user: Partial<IntfUser>, apiRes: Response) {
   const refreshToken = await createRefreshToken(user);
 
   const ttlRaw = configManager.active().jwt.refreshTTL
-  const expiresInSeconds = (typeof ttlRaw === 'number' ? ttlRaw : ms(ttlRaw as StringValue)) / 1000;
-
-  apiRes.cookie("refreshToken", refreshToken, {
+  const expiresInSeconds = (typeof ttlRaw === 'number' ? ttlRaw : ms(ttlRaw as StringValue)) // 1000;
+  const cookieOptions = {
     httpOnly: true,
     secure: true,
     sameSite: "strict",
     path: "/api/",
     ...(expiresInSeconds ? { maxAge: expiresInSeconds } : {}),
-  });
+  }
 
-  console.log({apiRes})
+  apiRes.cookie("refreshToken", refreshToken, cookieOptions);
+
+  console.log({cookieOptions})
   apiRes.json({ accessToken });
 }
+
 
 router.post("/auth/refresh", async (apiReq: Request, apiRes: Response) => {
   const { refreshToken } = apiReq.cookies;
