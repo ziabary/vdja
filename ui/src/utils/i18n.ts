@@ -162,10 +162,34 @@ const MONTH_NAMES_FA: string[] = [
 export function date2Jalali(date?: Date | string): string {
   const gregorian = date ? new Date(date) : new Date();
   const jalali = gregorian.toLocaleDateString("fa-IR").split("/");
+  const dayInPersian = new Intl.DateTimeFormat('fa-IR', {weekday:'long'}).format(gregorian);
 
   const monthIndex = parseInt(persianDigit2English(jalali[1]!), 10) - 1;
-  const jDate = `${jalali[0]} ${MONTH_NAMES_FA[monthIndex]} ${jalali[2]}`;
+  const jDate = `${dayInPersian} ${jalali[0]} ${MONTH_NAMES_FA[monthIndex]} ${jalali[2]}`;
   return jDate;
+}
+
+const MONTH_NAMES_AR: string[] = [
+  'محرم', 'صفر', 'ربيع الأول', 'ربيع الثاني', 'جُمادَى الأول', 'جُمادَى الثاني',
+  'رجب', 'شعبان', 'رمضان', 'شوال', 'ذو القعدة', 'ذو الحجة'
+];
+
+/**
+ * Convert a Date to Hijri (Arabic) date string
+ */
+export function date2Hijri(date?: Date | string): string {
+  const gregorian = date ? new Date(date) : new Date();
+
+  // Check if the environment supports the 'islamic' calendar
+  const options: Intl.DateTimeFormatOptions = {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    calendar: "islamic" as const, // 'islamic' is a valid value in supported environments
+  };
+
+  const formatter = new Intl.DateTimeFormat("ar-EG", options);
+  return formatter.format(gregorian);
 }
 
 /**

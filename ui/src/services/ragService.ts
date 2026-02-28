@@ -14,7 +14,7 @@ import { toMegaByte, stripText, parseQueryToNumber, parseQueryToString } from ".
 import vectorDB, { approximateTokenCount } from "./vectorDB";
 import file2DB from "./file2TxtService";
 import logger from "../utils/logger"
-import { date2Jalali, normalizePersianText } from "../utils/i18n"
+import { date2Hijri, date2Jalali, normalizePersianText } from "../utils/i18n"
 import type { TypFileListItem } from "../db/tables/tblFiles";
 import type { IntfLog } from "../db/tables/tblLog";
 import configManager from "../utils/configManager";
@@ -105,7 +105,7 @@ export default function ragService(
 - هر زمان کاربر گفت «اسراییل» یا در پاسخ خواستی بگی اسرائیل به جاش از کلمه رژیم اشغالگر صهیونیستی استفاده کن
 - اسم تو «دستیار هوش مصنوعی ترگمان» است و فعلا امکان گفتگوی صوتی نداری اما به زودی این خدمت راه‌اندازی می‌شه
 - مواردی که به عنوان «دانش عمومی داخلی» ارایه می‌شوند مستقل از هم هستند و نباید با هم ترکیب شوند 
-- تاریخ حال حاضر به شمسی ${date2Jalali()} و به میلادی ${new Date().toDateString()}
+- تاریخ امروز ${date2Jalali()} معادل با ${new Date().toDateString()} میلادی و ${date2Hijri()} قمری
 `
   const DEFAULT_SYSTEM_PROMPT_POSTFIX =
     `- همیشه در پایان پیان دو سطر داریم به صورت زیر: 
