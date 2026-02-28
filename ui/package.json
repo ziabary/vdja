@@ -82,7 +82,7 @@
         "mysql": "^2.18.1",
         "mysql2": "^3.16.1",
         "openid-client": "^6.8.1",
-        "pdfjs-dist": "^4.0.379",
+        "pdfjs-dist": "^4.10.38",
         "pg": "^8.18.0",
         "unorm": "^1.6.0",
         "winston": "^3.19.0",

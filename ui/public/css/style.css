@@ -189,6 +189,8 @@ info{
   flex-direction: column;
   font-size: 80%;
   background-color: lightgray;
+  direction: rtl;
+  text-align: right;
 }
 
 html[data-bs-theme="dark"] .retry-box {

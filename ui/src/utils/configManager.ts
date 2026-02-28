@@ -114,7 +114,7 @@ const DEFAULT_CONFIGS: IntfConfigs = {
 let activeConfigs: IntfConfigs = DEFAULT_CONFIGS;
 
 /* =======================
-   API
+   API 
 ======================= */
 
 function init(configFile = './.config.json'): void {

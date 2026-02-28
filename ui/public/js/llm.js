@@ -237,7 +237,7 @@ function copy2Clipboard(btn, md, convertHtml) {
 
 async function stopLLMGen(apiPrefix, userToken, reqId) {
   if (!reqId) return;
-  return apiFetch(`${apiPrefix}/${reqId}/stop`, {
+  return auth.apiFetch(`${apiPrefix}/${reqId}/stop`, {
     method: 'POST',
   }).catch((ex) => showError(ex.message));
 }

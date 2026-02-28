@@ -6,7 +6,7 @@ import * as os from "os";
 import * as path from "path";
 import * as fs from "fs/promises";
 import { extractFromPDF } from "../utils/fileProcessors/pdf";
-import { extractFromPDF as simpleExtractFromPDF } from "../utils/fileProcessors/pdf";
+import { extractFromPDF as simpleExtractFromPDF } from "../utils/fileProcessors/pdf-simple";
 import { extractFromDoc } from "../utils/fileProcessors/doc";
 import logger from "../utils/logger";
 import { parseQueryToNumber, parseQueryToString, toMegaByte } from "../utils/common";
@@ -49,6 +49,7 @@ router.post("/file2Text", upload.single("file"), async (apiReq: Request, apiRes:
 
     apiRes.json(result);
   } catch (err: unknown) {
+    console.log(err)
     logger.error({file2text: err});
     throw new exHttpInternalServerError("خطا در استخراج متن");
   } finally {

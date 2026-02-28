@@ -152,7 +152,7 @@
         }
 
         btnSummarize.addEventListener("click", async () => {
-            if(activeReqId) return await stopLLMGen("/api/summarize", userToken, activeReqId).then(()=>setAppStateRunning(false))
+            if(activeReqId) return await stopLLMGen("/api/summarize", auth.info.key, activeReqId).then(()=>setAppStateRunning(false))
 
             const text = txtInput.value.trim();
             if (!text) {

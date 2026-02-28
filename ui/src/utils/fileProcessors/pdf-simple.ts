@@ -33,9 +33,8 @@ async function loadPDF(filePath: string): Promise<{
   raw: unknown;
 }> {
  const buffer = await fs.readFile(filePath);
-
   const loadingTask = pdfjs.getDocument({
-    data: buffer,
+    data: new Uint8Array(buffer),
     // Important for Node.js
     disableFontFace: true,
     useSystemFonts: true,
@@ -47,6 +46,7 @@ async function loadPDF(filePath: string): Promise<{
   let title: string | undefined;
   try {
     const meta = await pdf.getMetadata();
+
     title = meta.info?.Title || meta.metadata?.get("dc:title");
   } catch {
     title = undefined;
@@ -426,7 +426,7 @@ function pageDirection(words: { text: string }[]): "rtl" | "ltr" {
   return rtl >= ltr ? "rtl" : "ltr"; 
 }
 
-export default async function extractFromPDF(
+export async function extractFromPDF(
   file: IntfFileMeta,
   fromPage = 0,
   toPage: number | undefined = undefined,

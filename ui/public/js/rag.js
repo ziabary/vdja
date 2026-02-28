@@ -806,9 +806,9 @@ function setupRAG(page, handlers, options) {
   });
 
   setTimeout(async () => {
+    const toLoadChatKey = currentChatKey
     await handlers.updateAppState(enuStates.newChat, "all");
-    if (currentChatKey) setTimeout(() => loadChat(currentChatKey), 100);
-    
+    if (toLoadChatKey) setTimeout(() => loadChat(toLoadChatKey), 100);
   });
 
   async function logout() {

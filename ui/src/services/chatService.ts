@@ -98,14 +98,15 @@ export async function generate(
           // Most common formats: delta / content / text / choices[0].delta.content
           const token =
             json.delta?.content ||
+            json.delta ||
             json.content ||
             json.text ||
             json.choices?.[0]?.delta?.content ||
             "";
           
-          if (typeof token === "string") {
+          if (typeof token === "string") 
             fullRespMarkdown += token;
-          }
+          
         } catch (err) {
           logger.error("Failed to parse chunk:", err, { chunk });
         }
@@ -313,7 +314,6 @@ export async function stopRequest(service: enuLLMServices, reqID: string|undefin
 }
 
 /* ------------------ Streaming ------------------ */
-
 export function sendStreamHeadersIfNeeded(apiRes: Response| TypVirtualResponse) {
   if (apiRes.headersSent) return;
   apiRes.setHeader?.("Content-Type", "text/event-stream");
@@ -332,6 +332,7 @@ async function processChatStream(
   try {
     let isDraining = false;
     let fullMarkdown: string = ""
+    let prevRemainingChunkStr = ""
 
     while (true) {
       const { done, value, cancelled } = await chatReader();
@@ -347,10 +348,17 @@ async function processChatStream(
         break;
       }
 
-      const chunk = decoder.decode(value, { stream: true });
-      if (onChunk && (await onChunk(chunk))) return;
+      let newChunk = prevRemainingChunkStr + decoder.decode(value, { stream: true });
+      if (onChunk && (await onChunk(newChunk))) return;
 
-      for (const line of chunk.split("\n")) {
+      if(!newChunk.endsWith("\n")) {
+        prevRemainingChunkStr = newChunk.substring(newChunk.lastIndexOf('\n') + 1)
+        newChunk = newChunk.substring(0,newChunk.lastIndexOf('\n'))
+      } else 
+          prevRemainingChunkStr = ''
+
+
+      for (const line of newChunk.split("\n")) {
         if (line.startsWith("data: ")) {
           try {
             const data = JSON.parse(line.slice(6));
@@ -367,7 +375,7 @@ async function processChatStream(
               onChunkDelta?.(data.delta);
             }
           } catch (ex) {
-            logger.deepDebug({ chunkSend: ex });
+            logger.deepDebug({ chunkSend: ex, line });
           }
         }
       }

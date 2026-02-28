@@ -172,16 +172,6 @@ async function sendJWT(user: Partial<IntfUser>, apiRes: Response) {
   const ttlRaw = configManager.active().jwt.refreshTTL
   const expiresInSeconds = (typeof ttlRaw === 'number' ? ttlRaw : ms(ttlRaw as StringValue)) / 1000;
 
-  const cookieOptions: CookieSerializeOptions = {
-    httpOnly: true,
-    secure: true,
-    sameSite: "strict",
-    path: "/api/"
-  }
-
-  if (expiresInSeconds)
-    cookieOptions.maxAge = expiresInSeconds
-
   apiRes.cookie("refreshToken", refreshToken, {
     httpOnly: true,
     secure: true,
@@ -189,6 +179,8 @@ async function sendJWT(user: Partial<IntfUser>, apiRes: Response) {
     path: "/api/",
     ...(expiresInSeconds ? { maxAge: expiresInSeconds } : {}),
   });
+
+  console.log({apiRes})
   apiRes.json({ accessToken });
 }
 
