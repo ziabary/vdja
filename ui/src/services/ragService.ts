@@ -452,11 +452,11 @@ export default function ragService(
         }
 
         if(histItem.msgRole === enuRoles.assistant) {
-          const matched = histItem.msgContent?.match(/\n\*{0,2}عبارات کلیدی:\*{0,2}[\n ]+((?:- .+[\n ]*)+)/s);
+          const matched = histItem.msgContent?.match(/\n\*{0,2}عبارات کلیدی:\*{0,2}[ ]*(.*)[\n$]/);
           if (matched && matched.length > 1) {
             const matchedKeywords = matched[1]
             if (matchedKeywords) 
-              allKeywords = [...allKeywords, ...matchedKeywords.split(", ")];
+              allKeywords = [...allKeywords, ...matchedKeywords.split(/[,،][ ]*/)];
           }
         }
 
@@ -475,6 +475,7 @@ export default function ragService(
       }
       allKeywords = [...new Set(allKeywords)];        
 
+      console.log({filteredHistory, allKeywords})
       return {filteredHistory, allKeywords}
     }
 

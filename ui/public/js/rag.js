@@ -199,7 +199,7 @@ function setupRAG(page, handlers, options) {
     botMessageWrapper.appendChild(sourceEl);
 
     //let mainAnswer = fullResponse.trim().replace(/\n\*?\*?عبارات کلیدی:\*?\*?[\n ](.*,?)+\n/, '');
-    let mainAnswer = fullResponse.trim().replace(/\n\*{0,2}عبارات کلیدی:\*{0,2}[\n ]+((?:- .+[\n ]*)+)/s, '')
+    let mainAnswer = fullResponse.trim().replace(/\n\*{0,2}عبارات کلیدی:\*{0,2}[ ]*(.*)[\n$]/, '')
 
 
     let sourceText = '';
