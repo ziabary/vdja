@@ -29,14 +29,20 @@ const wrapRouter = (router: Router): void => {
   router.stack.forEach((layer: ExpressLayer) => {
     // Routes like router.get/post
     if ("route" in layer && layer.route) 
-      layer.route.stack.forEach(routeLayer => {routeLayer.handle = asyncWrapper(routeLayer.handle);});
+      layer.route.stack.forEach(routeLayer => {
+        routeLayer.handle = asyncWrapper(routeLayer.handle);
+
+        if (routeLayer.method && layer.route?.path) 
+          logger.deepDebug(`Wrapped route: ${routeLayer.method.toUpperCase()} ${layer.route.path}`);
+      });
 
     // Nested routers
     if (layer.name === "router" && "handle" in layer && layer.handle) 
       wrapRouter(layer.handle as Router);
 
-    if (layer.route?.path) 
-      logger.deepDebug(`Wrapped route: ${layer.route.path}`);  
+    // if (layer.route?.path) 
+    //   logger.debug(`Wrapped route: ${routeLayer.method.toUpperCase()} ${layer.route.path}`);  
+    
   });
 };
 

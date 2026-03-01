@@ -376,7 +376,7 @@ export default function ragService(
     const { reqId } = apiReq.params
     const response = await stopRequest(service, parseQueryToString(reqId)||"not provided")
     apiRes.json({ status: response })
-  })
+  }) 
 
   //-------------------------------------------------
   router.post(`/${service}/generate-title`, async (apiReq: Request, apiRes: Response) => {
@@ -528,7 +528,7 @@ ${systemPromptPostfix}`)
         if (uniqueActiveSources.includes(row.file_name) === false)
           uniqueActiveSources.push(row.file_name);
 
-      if(configManager.active().isDebugging)
+      if(false && configManager.active().isDebugging)
         logger.deepDebug({matchedContext: {collection, vectorDBResults, uniqueActiveSources}})
 
       return {
@@ -599,7 +599,7 @@ ${systemPromptPostfix}`)
       const messages = generateAdequateLenghtMessages()
 
       if (configManager.active().isDebugging) 
-        logger.deepDebug({ matchedContextPostFilter: { userContext, globalContext, newsContext, messages } })
+        logger.deepDebug({ matchedContextPostFilter: { userContext, globalContext, newsContext }, messages })
       
       const logInfo: { [key: string]: unknown } = {
         historyLen: filteredHistory.length,

@@ -171,17 +171,14 @@ async function sendJWT(user: Partial<IntfUser>, apiRes: Response) {
 
   const ttlRaw = configManager.active().jwt.refreshTTL
   const expiresInSeconds = (typeof ttlRaw === 'number' ? ttlRaw : ms(ttlRaw as StringValue)) // 1000;
-  const cookieOptions = {
+
+  apiRes.cookie("refreshToken", refreshToken, {
     httpOnly: true,
     secure: true,
     sameSite: "strict",
     path: "/api/",
     ...(expiresInSeconds ? { maxAge: expiresInSeconds } : {}),
-  }
-
-  apiRes.cookie("refreshToken", refreshToken, cookieOptions);
-
-  console.log({cookieOptions})
+  });
   apiRes.json({ accessToken });
 }
 

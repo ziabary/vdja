@@ -525,7 +525,7 @@ function setupRAG(page, handlers, options) {
   page.btnStop.addEventListener('click', async () => {
     const msg_id = page.btnStop.getAttribute('msg-id');
     if (!msg_id) return;
-    await auth.apiFetch(`/api/${page.serviceName}/stop/${msg_id}`, {
+    await auth.apiFetch(`/api/${page.serviceName}/${msg_id}/stop`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
     });

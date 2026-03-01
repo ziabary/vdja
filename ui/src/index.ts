@@ -8,6 +8,7 @@ import { access } from 'fs/promises';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
 import cookieParser from "cookie-parser";
+import morgan from 'morgan'
 
 import configManager from './utils/configManager';
 import db from './db/index';
@@ -53,9 +54,9 @@ async function init() {
   app.use(limiter);
 
   const nginxFormat = ':remote-addr - - [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent"';
-  // app.use(morgan(nginxFormat, {
-  //   stream: process.stdout, 
-  // }));
+  app.use(morgan(nginxFormat, {
+     stream: process.stdout, 
+  }));
 
   //@TODO store logs in access.log
 
