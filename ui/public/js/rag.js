@@ -198,7 +198,9 @@ function setupRAG(page, handlers, options) {
     sourceEl.style.display = 'none';
     botMessageWrapper.appendChild(sourceEl);
 
-    let mainAnswer = fullResponse.trim().replace(/\n\*?\*?عبارات کلیدی:\*?\*?[\n ](.*,?)+\n/, '');
+    //let mainAnswer = fullResponse.trim().replace(/\n\*?\*?عبارات کلیدی:\*?\*?[\n ](.*,?)+\n/, '');
+    let mainAnswer = fullResponse.trim().replace(/\n\*{0,2}عبارات کلیدی:\*{0,2}[\n ]+((?:- .+[\n ]*)+)/s, '')
+
 
     let sourceText = '';
     const patterns = [
@@ -759,7 +761,7 @@ function setupRAG(page, handlers, options) {
   });
 
   /*************************************/
-  page.btnSend.addEventListener('click', sendMessage);
+  page.btnSend.addEventListener('click', ()=>sendMessage(false));
   page.btnBanUsingFiles.addEventListener('click', async () => {
     if (page.useFiles) {
       const result = await confirmDialog({
@@ -792,7 +794,7 @@ function setupRAG(page, handlers, options) {
   });
   page.messageInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter' && !isMobileDevice() && e.shiftKey == false && e.ctrlKey == false && e.altKey == false)
-      sendMessage();
+      sendMessage(false);
   });
   page.backToLogin.addEventListener('click', async () => {
     const result = await confirmDialog({
