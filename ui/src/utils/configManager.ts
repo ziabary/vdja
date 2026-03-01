@@ -16,7 +16,14 @@ const DEFAULT_CONFIGS: IntfConfigs = {
     },
     watchdogMaxTrigger: 3,
     softDelete: true,
-    legacyPDFParser: true
+    legacyPDFParser: true,
+  },
+  log: {
+    accessPath: './logs/access.log',
+    errorsPath: './logs/errors.log',
+    showAPICalls: false,
+    isDebugging: false,
+    noMonitor: false
   },
   OIDC: {
     active: false,
@@ -60,7 +67,7 @@ const DEFAULT_CONFIGS: IntfConfigs = {
     },
   },
   embedding: {
-    server: { url: 'embd-server', model: 'targoman'},
+    server: { url: 'embd-server', model: 'targoman' },
     modelPath: '',
     maxTokens: 480
   },
@@ -103,8 +110,6 @@ const DEFAULT_CONFIGS: IntfConfigs = {
     news: ""
   },
   logDb: false,
-  isDebugging: false,
-  noMonitor: false
 };
 
 /* =======================
@@ -123,8 +128,8 @@ function init(configFile = './.config.json'): void {
       fs.existsSync(configFile)
         ? configFile
         : fs.existsSync(process.cwd() + '/' + configFile)
-        ? process.cwd() + '/' + configFile
-        : undefined;
+          ? process.cwd() + '/' + configFile
+          : undefined;
 
     if (resolvedPath) {
       const data = fs.readFileSync(resolvedPath, 'utf8');
@@ -132,12 +137,12 @@ function init(configFile = './.config.json'): void {
 
       activeConfigs = deepMerge(DEFAULT_CONFIGS, jsonData);
 
-      activeConfigs.isDebugging = process.env.DEBUG_MODE
+      activeConfigs.log.isDebugging = process.env.DEBUG_MODE
         ? true
-        : activeConfigs.isDebugging || false;
+        : activeConfigs.log.isDebugging || false;
     }
 
-    if (activeConfigs.isDebugging) {
+    if (activeConfigs.log.isDebugging) {
       logger.deepDebug({ activeConfigs });
     }
   } catch (err) {

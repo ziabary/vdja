@@ -6,9 +6,9 @@ import cors from 'cors';
 import rateLimit from 'express-rate-limit';
 import { access } from 'fs/promises';
 import * as path from 'path';
+import * as fs from 'fs'
 import { fileURLToPath } from 'url';
 import cookieParser from "cookie-parser";
-import morgan from 'morgan'
 
 import configManager from './utils/configManager';
 import db from './db/index';
@@ -24,6 +24,7 @@ import auth from './routes/auth';
 import rag from './routes/rag';
 import type { IntfExHttp } from './interfaces/exHttp';
 import { enuLLMServices } from './interfaces/config';
+import setupAPICallLogger from './utils/apiCallLog';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -34,7 +35,7 @@ async function init() {
   configManager.init(DEFAULT_CONFIG_FILE);
   db.init();
 
-  const configs = configManager.active(); 
+  const configs = configManager.active();
   const app = express();
   const corsOptions = {
     origin: configs.app.corsOrigin || "http://localhost:3000",
@@ -53,34 +54,31 @@ async function init() {
   });
   app.use(limiter);
 
-  const nginxFormat = ':remote-addr - - [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent"';
-  app.use(morgan(nginxFormat, {
-     stream: process.stdout, 
-  }));
+  setupAPICallLogger(app)
 
   //@TODO store logs in access.log
 
   app.use(express.json({ limit: configs.app.maxJson }));
   app.use(express.static("public"));
-app.use(async (req: Request, res: Response, next: NextFunction) => {
-  const htmlPath = path.join(__dirname, '..', 'public', `${req.path}.html`);
+  app.use(async (req: Request, res: Response, next: NextFunction) => {
+    const htmlPath = path.join(__dirname, '..', 'public', `${req.path}.html`);
 
-  try {
-    await access(htmlPath);
-    res.sendFile(htmlPath);
-  } catch {
-    next();
-  }
-});
+    try {
+      await access(htmlPath);
+      res.sendFile(htmlPath);
+    } catch {
+      next();
+    }
+  });
 
   // Middleware
   app.use((_: Request, res: Response, next: NextFunction) => {
-    const originalJson = res.json.bind(res); 
+    const originalJson = res.json.bind(res);
     res.json = function (data: unknown) {
-      if (!res.headersSent) 
+      if (!res.headersSent)
         res.setHeader("Content-Type", "application/json; charset=utf-8");
       return originalJson(data);
-    } as typeof res.json; 
+    } as typeof res.json;
 
     next();
   });
@@ -89,8 +87,8 @@ app.use(async (req: Request, res: Response, next: NextFunction) => {
   ///////////////////////////////////////////////////////////////////////
   // Routes
   ///////////////////////////////////////////////////////////////////////
-  app.get("/", (_:Request, res:Response) => res.sendFile(path.join(__dirname, "../public", "index.html")));
-  const activeRoutes = await mountRoutes([ 
+  app.get("/", (_: Request, res: Response) => res.sendFile(path.join(__dirname, "../public", "index.html")));
+  const activeRoutes = await mountRoutes([
     translate,
     summarize,
     fileToText,
@@ -99,24 +97,24 @@ app.use(async (req: Request, res: Response, next: NextFunction) => {
     // think,
     // stats,
   ])
- 
-  
+
+
   app.use("/api", activeRoutes)
 
-  app.use((err: IntfExHttp | Error, _ : Request, res: Response, next: NextFunction) => {
-    if((err as IntfExHttp).status && (err as IntfExHttp).status === 401) 
-      return res.status((err as IntfExHttp).status).json({error: err.message})
+  app.use((err: IntfExHttp | Error, _: Request, res: Response, next: NextFunction) => {
+    if ((err as IntfExHttp).status && (err as IntfExHttp).status === 401)
+      return res.status((err as IntfExHttp).status).json({ error: err.message })
 
     logger.error("🔥 Route error:", err);
 
     if (res.headersSent) {
-      res.write("data: [ERROR]: " + err.message); 
+      res.write("data: [ERROR]: " + err.message);
       return res.end()
-    } 
-    
+    }
+
     const status = (err as IntfExHttp).status || 500;
 
-    res.status(status).json({error:{status, message: err.message || "Internal Server Error"}});
+    res.status(status).json({ error: { status, message: err.message || "Internal Server Error" } });
   });
 
   app.use((_: Request, res: Response) => {
@@ -131,7 +129,7 @@ app.use(async (req: Request, res: Response, next: NextFunction) => {
     logger.info(`Using RAGDB at: ${configs.RAGDB?.url}`);
     logger.info(`Using Embedding at: ${configs.embedding.server?.url} (model: ${configs.embedding.server?.model})`);
     logger.info(`UI running at http://${configs.app.listen.ip}:${configs.app.listen.port}`);
-  }); 
+  });
 
   Object.values(enuLLMServices).forEach(installMonitor);
 }

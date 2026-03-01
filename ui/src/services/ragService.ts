@@ -481,7 +481,7 @@ export default function ragService(
     async function embedUserMessage(keywords: string[], question: string) {
       //@TODO our model supports [category: ], [brand: ], etc. use it
       //@TODO preprocess user_message or history in order to add guides to VectorDB in brackets
-      if(configManager.active().isDebugging)
+      if(configManager.active().log.isDebugging)
         logger.deepDebug({embedding: {keywords, question}})
       const embeddedQuery = await getEmbedding((keywords ? `[keywords: ${keywords.join(",")}]` : "") + "\n" + question);
       if (!embeddedQuery) throw new Error("Unable to generate embedding");
@@ -528,7 +528,7 @@ ${systemPromptPostfix}`)
         if (uniqueActiveSources.includes(row.file_name) === false)
           uniqueActiveSources.push(row.file_name);
 
-      if(false && configManager.active().isDebugging)
+      if(false && configManager.active().log.isDebugging)
         logger.deepDebug({matchedContext: {collection, vectorDBResults, uniqueActiveSources}})
 
       return {
@@ -598,7 +598,7 @@ ${systemPromptPostfix}`)
 
       const messages = generateAdequateLenghtMessages()
 
-      if (configManager.active().isDebugging) 
+      if (configManager.active().log.isDebugging) 
         logger.deepDebug({ matchedContextPostFilter: { userContext, globalContext, newsContext }, messages })
       
       const logInfo: { [key: string]: unknown } = {

@@ -14,6 +14,13 @@ export interface IntfAppConfig {
   softDelete?: boolean;
   legacyPDFParser?: boolean
 }
+export interface IntfAppLog {
+    accessPath?: string | null,
+    errorsPath?: string | null,
+    showAPICalls?: boolean
+    isDebugging?: boolean;
+    noMonitor?: boolean
+}
 
 export interface IntfLLMServerConfig {
   url: string;
@@ -67,6 +74,7 @@ export enum enuLLMServices {
 
 export interface IntfConfigs {
   app: IntfAppConfig; 
+  log: IntfAppLog;
   OIDC: {
     active: boolean
     issuer: string
@@ -98,7 +106,5 @@ export interface IntfConfigs {
   }
   db: IntfDBConfig;
   logDb?: boolean | IntfDBConfig;
-  isDebugging?: boolean;
-  noMonitor?: boolean
 }
 

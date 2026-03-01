@@ -100,7 +100,7 @@ function setupRAG(page, handlers, options) {
                 ${chat.chtTitle || "چت جدید"} <small class="d-inline-block">${new Date(chat.chtCreatedAt).toLocaleDateString(
             'fa-IR'
           )}</small>
-                <button class="delete-btn btn btn-outline-danger float-end" onclick="deleteChat('${
+                <button class="delete-btn btn btn-outline-danger float-end" onclick="rag.deleteChat('${
                   chat.chtKey
                 }', event)"><i class="fa fa-remove"></i></button>
               </div>
@@ -823,6 +823,7 @@ function setupRAG(page, handlers, options) {
     loadChat,
     loadQuestions,
     addHelpItem,
-    deleteFile
+    deleteFile,
+    deleteChat
   };
 }

@@ -206,7 +206,7 @@ export async function startNewChat(
     throw new exHttpInternalServerError(`LLM error (${llmResponse.status}): ${errorText}`);
   }
 
-  if (configManager.active().isDebugging)
+  if (configManager.active().log.isDebugging)
     logger.deepDebug({
       startNewChat: {
         server: server.url,
@@ -262,7 +262,7 @@ export async function startNewChat(
 export function removeActiveRequest(service: enuLLMServices, reqID: string) {
   const server = configManager.active().llmServers[service]
 
-  if (configManager.active().isDebugging)
+  if (configManager.active().log.isDebugging)
     logger.deepDebug({ removeActiveRequest: { service, url: server.url, reqID } });
 
   if (activeRequests.has(server.url)) {
@@ -491,7 +491,7 @@ export function installMonitor(service: enuLLMServices) {
         dupMessageStr += `[${v}: ${k.length}] ${stripText(k)}\n`;
       });
 
-      if(!configManager.active().noMonitor) {
+      if(!configManager.active().log.noMonitor) {
       logger.raw(`==========> ${new Date()} <==========
 Monitoring ${server.url}: Started @ ${startTime.toLocaleString("fa-IR")}
      Total: ${totalRequests.get(server.url)}, Stopped: ${stoppedRequests.get(server.url)}, Active: ${uaq.size}
@@ -507,7 +507,7 @@ Monitoring ${server.url}: Started @ ${startTime.toLocaleString("fa-IR")}
       )
         throw new Error("WATCHDOG TRIGGERED");
 
-      if(!configManager.active().noMonitor) 
+      if(!configManager.active().log.noMonitor) 
         await showMetrics(server); 
     }
   }, 1000);

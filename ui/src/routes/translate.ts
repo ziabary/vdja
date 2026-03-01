@@ -125,7 +125,7 @@ router.post("/translate", async (apiReq: Request, apiRes: Response) => {
       return;
     }
 
-    if (configs.isDebugging)
+    if (configs.log.isDebugging)
       logger.debug(
         `[Translate] ${api_sourceLang} → ${api_targetLang} | Length: ${trimmed_text.length} | "${strippedText}"`
       );

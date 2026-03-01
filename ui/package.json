@@ -41,6 +41,7 @@
         "@types/jsonwebtoken": "^9.0.10",
         "@types/knex": "^0.15.2",
         "@types/md5": "^2.3.6",
+        "@types/morgan": "^1.9.10",
         "@types/ms": "^2.1.0",
         "@types/multer": "^2.0.0",
         "@types/node": "^25.0.10",

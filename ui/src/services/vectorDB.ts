@@ -228,7 +228,7 @@ export default function vectorDB() {
 
       const filteredChunks = points.filter((r: QdrantSearchPoint) => r.payload?.col_Key === collectionKey && r.score > 0.8);
 
-      if (configManager.active().isDebugging) {
+      if (configManager.active().log.isDebugging) {
         logger.deepDebug({
           chunks: filteredChunks.map((r: QdrantSearchPoint) => ({
             file: r.payload?.file_name,

@@ -41,7 +41,7 @@ router.post("/summarize", async (apiReq: Request<{}, {}, SummarizeRequestBody>, 
   const trimmed_text = api_text.slice(0, summaryServer?.maxInputChars || 2000).trim();
   const strippedText = stripText(trimmed_text);
 
-  if (configs.isDebugging) {
+  if (configs.log.isDebugging) {
     logger.debug(
       `[Summarize] Max words: ${api_maxWords} | Force Persian: ${api_forcePersian} | Length: ${strippedText.length} | Text: "${strippedText}"`
     );
