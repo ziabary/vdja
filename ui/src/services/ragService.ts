@@ -452,7 +452,7 @@ export default function ragService(
         }
 
         if(histItem.msgRole === enuRoles.assistant) {
-          const matched = histItem.msgContent?.match(/\n\*?\*?عبارات کلیدی:\*?\*?[\n ](.*,?)+\n/);
+          const matched = histItem.msgContent?.match(/\n\*{0,2}عبارات کلیدی:\*{0,2}[\n ]+((?:- .+[\n ]*)+)/s);
           if (matched && matched.length > 1) {
             const matchedKeywords = matched[1]
             if (matchedKeywords) 
