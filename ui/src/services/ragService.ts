@@ -151,11 +151,11 @@ export default function ragService(
   //-----------------------------------------------------
   router.delete(`/${service}/chat/:chatId`, async (apiReq: Request, apiRes: Response) => {
     const auth = await getAuthInfo(apiReq);
-    const { chatID: chatIdParam } = apiReq.params;
-    const chatId = parseQueryToString(chatIdParam)
-    if(chatId?.length != 32) throw new exHttpInvalidParams("Invalid chat ID")
+    const { chatId: chatIdParam } = apiReq.params;
+    const chatID = parseQueryToString(chatIdParam)
+    if(chatID?.length != 32) throw new exHttpInvalidParams("Invalid chat ID")
 
-    const chatSpec = await atDB.chats.get(service, auth.uid, chatId);
+    const chatSpec = await atDB.chats.get(service, auth.uid, chatID);
     if (!chatSpec) throw new exHttpAccessDenied("چت مورد نظر یافت نشد یا شما دسترسی ندارید")
 
     apiRes.json({ deleted: await atDB.chats.delete(service, chatSpec) });
