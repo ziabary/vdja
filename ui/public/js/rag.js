@@ -18,7 +18,7 @@ function setupRAG(page, handlers, options) {
   if (!isMobileDevice()) page.messageInput.placeholder += ' (برای سطر بعدی Shift+Enter)';
 
   
-  setupAuth("rag", true).then(r=>auth=r)
+  setupAuth(page.serviceName, true).then(r=>auth=r)
 
   /*********************************/
   function autoQuery(text) {

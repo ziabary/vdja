@@ -255,3 +255,10 @@
   .main-chat .bg-image img{
     height: 100vh;
   }
+
+  @media (max-width: 640px) {
+    .main-chat .bg-image img{
+      height: auto;
+      width: 100vw;
+    }
+  }
