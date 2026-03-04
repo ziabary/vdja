@@ -36,19 +36,21 @@ interface RagOptions {
   fileUploadAllowed?: boolean;
   useGeneralKnowledge?: boolean;
   useNews?: boolean;
+  specialContextCollection?: string | undefined
 }
 interface IntfContext {
   from?: string[];
   chunks: IntfChunkPayload[]
-  reportSource : boolean
+  reportSource: boolean
 }
 interface IntfSystemPromptParams {
   systemPromptPrefix?: string | undefined;
   systemPromptPostfix?: string | undefined;
   userContext: IntfContext | undefined;
-  allSources: {files: string[], count: number} | undefined;
+  allSources: { files: string[], count: number } | undefined;
   globalContext: IntfContext | undefined;
   newsContext: IntfContext | undefined;
+  specialContext: IntfContext | undefined;
 }
 
 const router: Router = express.Router();
@@ -80,6 +82,7 @@ export default function ragService(
     fileUploadAllowed = false,
     useGeneralKnowledge = false,
     useNews = false,
+    specialContextCollection = undefined
   }: RagOptions
 ): Router {
 
@@ -102,7 +105,7 @@ export default function ragService(
   - حتما در ابتدای هر سوال شماره سوال رو به صورت 1. و 2. بذار`
   const GEN_QUESTIONS_PROMPT_PREFIX = "محتوای مورد نظر:\n"
 
-const DEFAULT_SYSTEM_PROMPT_PREFIX =`${DEFAULT_PERSIAN_SYSTEM_INTRO}
+  const DEFAULT_SYSTEM_PROMPT_PREFIX = `${DEFAULT_PERSIAN_SYSTEM_INTRO}
 - اطلاعات تو تا اسفند ۱۴۰۳ و مبتنی بر کلان‌پیکره ترگمان که در آدرس (https://oss.targoman.ir/TLPC) در دسترس است به‌روز شده. اما اخبار ایران رو به صورت لحظه‌ای در حال دریافت هستی.
 - اگر کاربر سوال سیاسی یا ضدمذهبی پرسید. دقیقا و فقط این پاسخ را بدهید و هیچ پاسخ اضافه‌ای ندهید:
   من یک دستیار هوش مصنوعی هستم و فعلا اجازه اظهار نظر در خصوص مسایل سیاسی و مذهبی ندارم. 
@@ -119,7 +122,7 @@ const DEFAULT_SYSTEM_PROMPT_PREFIX =`${DEFAULT_PERSIAN_SYSTEM_INTRO}
        c. در غیر این صورت «منبع: دانش داخلی مدل»
 `
   const DEFAULT_PROMT_PREFIX = "سؤال کاربر: "
-  
+
 
 
   /**************************************************/
@@ -137,9 +140,9 @@ const DEFAULT_SYSTEM_PROMPT_PREFIX =`${DEFAULT_PERSIAN_SYSTEM_INTRO}
     const auth = await getAuthInfo(apiReq);
 
     const { maxItems, from, fileId } = apiReq.query;
-    if(fileId)
+    if (fileId)
       apiRes.json(await atDB.sampleQuestions.listByFileId(service, auth.uid, parseQueryToString(fileId)!, parseQueryToNumber(maxItems), parseQueryToNumber(from)));
-    else 
+    else
       apiRes.json(await atDB.sampleQuestions.listByUser(service, auth.uid, parseQueryToNumber(maxItems), parseQueryToNumber(from)));
   });
 
@@ -148,7 +151,7 @@ const DEFAULT_SYSTEM_PROMPT_PREFIX =`${DEFAULT_PERSIAN_SYSTEM_INTRO}
     const auth = await getAuthInfo(apiReq);
     const chatKey = md5(randomUUID())
     await atDB.chats.new(service, auth.uid, chatKey)
-    apiRes.json({key: chatKey});
+    apiRes.json({ key: chatKey });
   });
 
   //-----------------------------------------------------
@@ -156,7 +159,7 @@ const DEFAULT_SYSTEM_PROMPT_PREFIX =`${DEFAULT_PERSIAN_SYSTEM_INTRO}
     const auth = await getAuthInfo(apiReq);
     const { chatId: chatIdParam } = apiReq.params;
     const chatID = parseQueryToString(chatIdParam)
-    if(chatID?.length != 32) throw new exHttpInvalidParams("Invalid chat ID")
+    if (chatID?.length != 32) throw new exHttpInvalidParams("Invalid chat ID")
 
     const chatSpec = await atDB.chats.get(service, auth.uid, chatID);
     if (!chatSpec) throw new exHttpAccessDenied("چت مورد نظر یافت نشد یا شما دسترسی ندارید")
@@ -176,7 +179,7 @@ const DEFAULT_SYSTEM_PROMPT_PREFIX =`${DEFAULT_PERSIAN_SYSTEM_INTRO}
     const { title } = apiReq.body;
     const { chatId: chatIdParam } = apiReq.params;
     const chatID = parseQueryToString(chatIdParam)
-    if(chatID?.length != 32) throw new exHttpInvalidParams("Invalid chat ID")
+    if (chatID?.length != 32) throw new exHttpInvalidParams("Invalid chat ID")
 
     const trimmedTitle = title.trim();
     if (trimmedTitle.length > 100) throw new exHttpInvalidParams("عنوان حداکثر می‌تواند ۱۰۰ کاراکتر باشد");
@@ -194,7 +197,7 @@ const DEFAULT_SYSTEM_PROMPT_PREFIX =`${DEFAULT_PERSIAN_SYSTEM_INTRO}
     const auth = await getAuthInfo(apiReq);
     const { chatId } = apiReq.params;
     const { maxItems, from } = apiReq.query;
-    apiRes.json(await atDB.messages.listByChatID(service, auth.uid, parseQueryToString(chatId)||"not provided", parseQueryToNumber(maxItems), parseQueryToNumber(from)));
+    apiRes.json(await atDB.messages.listByChatID(service, auth.uid, parseQueryToString(chatId) || "not provided", parseQueryToNumber(maxItems), parseQueryToNumber(from)));
   });
 
   //-----------------------------------------------------
@@ -203,9 +206,9 @@ const DEFAULT_SYSTEM_PROMPT_PREFIX =`${DEFAULT_PERSIAN_SYSTEM_INTRO}
     const { msgId, chatId: chatIdParam } = apiReq.params;
     const { opinion } = apiReq.body;
     const chatID = parseQueryToString(chatIdParam)
-    if(chatID?.length != 32) throw new exHttpInvalidParams("Invalid chat ID")
+    if (chatID?.length != 32) throw new exHttpInvalidParams("Invalid chat ID")
 
-    apiRes.json({ success: await atDB.messages.setOpinion(service, auth.uid, chatID, parseQueryToString(msgId)||"not provided", opinion) ? true : false })
+    apiRes.json({ success: await atDB.messages.setOpinion(service, auth.uid, chatID, parseQueryToString(msgId) || "not provided", opinion) ? true : false })
   });
 
   /**************************************************/
@@ -231,8 +234,8 @@ const DEFAULT_SYSTEM_PROMPT_PREFIX =`${DEFAULT_PERSIAN_SYSTEM_INTRO}
         await trx.commit()
         return { success: true, countChunks }
       } catch (ex) {
-        logger.error({"_deleteFileInternal": ex})
-        try { trx.rollback() } catch (ex) { logger.error( {"_deleteFileInternal:rollback":ex }) }
+        logger.error({ "_deleteFileInternal": ex })
+        try { trx.rollback() } catch (ex) { logger.error({ "_deleteFileInternal:rollback": ex }) }
         return { success: false, countChunks: 0 }
       }
     }
@@ -241,7 +244,7 @@ const DEFAULT_SYSTEM_PROMPT_PREFIX =`${DEFAULT_PERSIAN_SYSTEM_INTRO}
     router.delete(`/${service}/file/:fileId`, async (apiReq: Request, apiRes: Response) => {
       const auth = await getAuthInfo(apiReq);
       const { fileId } = apiReq.params;
-      const fileSpec = await atDB.files.get(service, auth.uid, parseQueryToString(fileId)||"not provided")
+      const fileSpec = await atDB.files.get(service, auth.uid, parseQueryToString(fileId) || "not provided")
       if (!fileSpec) throw new exHttpAccessDenied("فایل مورد نظر یافت نشد یا شما دسترسی ندارید")
       apiRes.json(await _deleteFileInternal(auth.key, fileSpec));
     });
@@ -273,10 +276,10 @@ const DEFAULT_SYSTEM_PROMPT_PREFIX =`${DEFAULT_PERSIAN_SYSTEM_INTRO}
       async (apiReq: Request, apiRes: Response) => {
         const auth = await getAuthInfo(apiReq);
         const file = apiReq.file as IntfFileMeta;
-        if (!file) throw new exHttpInvalidParams("فایلی انتخاب نشده" );
+        if (!file) throw new exHttpInvalidParams("فایلی انتخاب نشده");
 
-        if(toMegaByte(file.size) > (auth?.privs?.services[service]?.files?.maxSize || 10000))
-          throw new exHttpInvalidParams("حجم فایل بیش از حد تعیین‌شده برای شما می‌باشد" )
+        if (toMegaByte(file.size) > (auth?.privs?.services[service]?.files?.maxSize || 10000))
+          throw new exHttpInvalidParams("حجم فایل بیش از حد تعیین‌شده برای شما می‌باشد")
 
         const fileName = Buffer.from(file.originalname, "latin1").toString("utf8");
         const fileKey = md5(file.originalname + file.size);
@@ -291,44 +294,44 @@ const DEFAULT_SYSTEM_PROMPT_PREFIX =`${DEFAULT_PERSIAN_SYSTEM_INTRO}
             throw new exHttpInvalidParams("حداکثر حجم مجموع را استفاده کرده‌اید. برای آپلود فایل جدید از فایل‌های قبلی حذف کنید")
         }
 
-        const {totalChunks, totalContent, totalPoints} = await file2DB(file, fileKey,
+        const { totalChunks, totalContent, totalPoints } = await file2DB(file, fileKey,
           async (chunks: IntfChunk[]) => vectorDB().addFileText(`${service}_${auth.key}`, fileKey, fileName, chunks),
-          (i, total) => { 
+          (i, total) => {
             sendStreamHeadersIfNeeded(apiRes)
-            apiRes.write("progress: " + JSON.stringify({ fileName, progress: i, total }) + "\n"); 
+            apiRes.write("progress: " + JSON.stringify({ fileName, progress: i, total }) + "\n");
           },
-        ); 
+        );
 
-        if(!totalPoints || totalContent < 10) {
-          if(file.path.endsWith('.pdf'))
+        if (!totalPoints || totalContent < 10) {
+          if (file.path.endsWith('.pdf'))
             throw new exHttpInvalidParams("فایل تصویری بوده یا استخراج محتوا از آن ممکن نیست")
-          else 
+          else
             throw new exHttpInvalidParams("به دلایل فنی، استخراج یا ذخیره داده‌ها در پایگاه داده میسر نشد.")
         }
 
         await atDB.files.add(
-          service, 
-          auth.uid, 
+          service,
+          auth.uid,
           fileKey,
-          fileName, 
+          fileName,
           file.size,
           totalChunks
         );
 
-        if(apiRes.headersSent) {
-          apiRes.write("data: [DONE]: "+ JSON.stringify({fileKey,totalChunks}))
+        if (apiRes.headersSent) {
+          apiRes.write("data: [DONE]: " + JSON.stringify({ fileKey, totalChunks }))
           apiRes.end()
-        }else 
-          apiRes.json({ success: true,fileKey,  chunks: totalChunks });
+        } else
+          apiRes.json({ success: true, fileKey, chunks: totalChunks });
       }
     );
 
     //-----------------------------------------------------
     router.post(`/${service}/generate-questions`, async (apiReq: Request, apiRes: Response) => {
       const auth = await getAuthInfo(apiReq);
-      const { fileId } = apiReq.body 
+      const { fileId } = apiReq.body
       const fileSpecs = await atDB.files.get(service, auth.uid, fileId);
-      if(!fileSpecs)
+      if (!fileSpecs)
         throw new exHttpInvalidParams("فایل مورد نظر یافت نشد")
       const randomChunks = await vectorDB().getRandomChunks(
         `${service}_${auth.key}`,
@@ -338,7 +341,7 @@ const DEFAULT_SYSTEM_PROMPT_PREFIX =`${DEFAULT_PERSIAN_SYSTEM_INTRO}
 
       let partOfChunks = ""
       for (const chunk of randomChunks) {
-        if(partOfChunks.length + chunk.length > 3000) continue
+        if (partOfChunks.length + chunk.length > 3000) continue
         partOfChunks += "\n\n...\n\n" + chunk
       }
 
@@ -375,16 +378,16 @@ const DEFAULT_SYSTEM_PROMPT_PREFIX =`${DEFAULT_PERSIAN_SYSTEM_INTRO}
   router.post(`/${service}/:reqId/stop`, async (apiReq: Request, apiRes: Response) => {
     const auth = await getAuthInfo(apiReq);
     const { reqId } = apiReq.params
-    const response = await stopRequest(service, parseQueryToString(reqId)||"not provided")
+    const response = await stopRequest(service, parseQueryToString(reqId) || "not provided")
     apiRes.json({ status: response })
-  }) 
+  })
 
   //-------------------------------------------------
   router.post(`/${service}/generate-title`, async (apiReq: Request, apiRes: Response) => {
     const auth = await getAuthInfo(apiReq);
     const { chat_id, conversation } = apiReq.body;
-    if(chat_id.length != 32) throw new exHttpInvalidParams("Invalid chat ID")
- 
+    if (chat_id.length != 32) throw new exHttpInvalidParams("Invalid chat ID")
+
     const chatSpec = await atDB.chats.get(service, auth.uid, chat_id)
     if (!chatSpec) throw new exHttpAccessDenied("چت مورد نظر یافت نشد یا شما دسترسی ندارید")
 
@@ -410,7 +413,7 @@ const DEFAULT_SYSTEM_PROMPT_PREFIX =`${DEFAULT_PERSIAN_SYSTEM_INTRO}
     );
 
     await atDB.chats.setTitle(service, auth.uid, chatSpec, title);
-    apiRes.json({title});
+    apiRes.json({ title });
   });
 
   //-------------------------------------------------
@@ -424,12 +427,12 @@ const DEFAULT_SYSTEM_PROMPT_PREFIX =`${DEFAULT_PERSIAN_SYSTEM_INTRO}
     api_initial: boolean,
     ignoreLastHistory: boolean
   ) {
-    if(api_chatId.length != 32) throw new exHttpInvalidParams("Invalid chat ID")
-    if(api_reqId.length != 32) throw new exHttpInvalidParams("Invalid request ID")
+    if (api_chatId.length != 32) throw new exHttpInvalidParams("Invalid chat ID")
+    if (api_reqId.length != 32) throw new exHttpInvalidParams("Invalid request ID")
 
     const isSummarizing = api_question === SUMMARIZE_PROMPT
     let chatSpecs: TypChatListItem | null
-    if(api_initial) 
+    if (api_initial)
       await atDB.chats.new(service, auth.uid, api_chatId)
 
     chatSpecs = await atDB.chats.get(service, auth.uid, api_chatId)
@@ -442,9 +445,9 @@ const DEFAULT_SYSTEM_PROMPT_PREFIX =`${DEFAULT_PERSIAN_SYSTEM_INTRO}
       let allKeywords: string[] = []
       let lastRole = null;
 
-      for (let i=history.messages.length -1; i>=0; i--) {
+      for (let i = history.messages.length - 1; i >= 0; i--) {
         const histItem = history.messages[i]!
-        if(i===history.messages.length -1 && histItem.msgRole != enuRoles.user)
+        if (i === history.messages.length - 1 && histItem.msgRole != enuRoles.user)
           continue;
 
         if (histItem.msgRole !== lastRole) {
@@ -452,16 +455,16 @@ const DEFAULT_SYSTEM_PROMPT_PREFIX =`${DEFAULT_PERSIAN_SYSTEM_INTRO}
           lastRole = histItem.msgRole;
         }
 
-        if(histItem.msgRole === enuRoles.assistant) {
+        if (histItem.msgRole === enuRoles.assistant) {
           const matched = histItem.msgContent?.match(/\n\*{0,2}عبارات کلیدی:\*{0,2}[ ]*(.*)[\n$]/);
           if (matched && matched.length > 1) {
             const matchedKeywords = matched[1]
-            if (matchedKeywords) 
+            if (matchedKeywords)
               allKeywords = [...allKeywords, ...matchedKeywords.split(/[,،][ ]*/)];
           }
         }
 
-        if (histItem.msgRole === enuRoles.user && histItem.msgContent === SUMMARIZE_PROMPT) 
+        if (histItem.msgRole === enuRoles.user && histItem.msgContent === SUMMARIZE_PROMPT)
           filteredHistory = [{ role: histItem.msgRole as enuRoles, content: histItem.msgContent }]
       }
 
@@ -474,17 +477,17 @@ const DEFAULT_SYSTEM_PROMPT_PREFIX =`${DEFAULT_PERSIAN_SYSTEM_INTRO}
         else
           filteredHistory = []
       }
-      allKeywords = [...new Set(allKeywords)];        
+      allKeywords = [...new Set(allKeywords)];
 
-      console.log({filteredHistory, allKeywords})
-      return {filteredHistory, allKeywords}
+      console.log({ filteredHistory, allKeywords })
+      return { filteredHistory, allKeywords }
     }
 
     async function embedUserMessage(keywords: string[], question: string) {
       //@TODO our model supports [category: ], [brand: ], etc. use it
       //@TODO preprocess user_message or history in order to add guides to VectorDB in brackets
-      if(configManager.active().log.isDebugging)
-        logger.deepDebug({embedding: {keywords, question}})
+      if (configManager.active().log.isDebugging)
+        logger.deepDebug({ embedding: { keywords, question } })
       const embeddedQuery = await getEmbedding((keywords ? `[keywords: ${keywords.join(",")}]` : "") + "\n" + question);
       if (!embeddedQuery) throw new Error("Unable to generate embedding");
       return embeddedQuery;
@@ -492,30 +495,31 @@ const DEFAULT_SYSTEM_PROMPT_PREFIX =`${DEFAULT_PERSIAN_SYSTEM_INTRO}
 
     function cntx2Text(context: IntfContext) {
       return context.chunks?.length
-          ? context.chunks
-            .map((r) => (context.reportSource ? `[مرجع: ${r.file_name}] ` : "") + r.text)
-            .join("\n\n")
-            .trim()
-          : ""
+        ? context.chunks
+          .map((r) => (context.reportSource ? `[مرجع: ${r.file_name}] ` : "") + r.text)
+          .join("\n\n")
+          .trim()
+        : ""
     }
 
     function makeSystemPrompt({
-    systemPromptPrefix = DEFAULT_SYSTEM_PROMPT_PREFIX,
-    systemPromptPostfix = DEFAULT_SYSTEM_PROMPT_POSTFIX,
-    userContext,
-    allSources,
-    globalContext,
-    newsContext,
-  }: IntfSystemPromptParams): string {
-    return normalizePersianText(`${systemPromptPrefix}
+      systemPromptPrefix = DEFAULT_SYSTEM_PROMPT_PREFIX,
+      systemPromptPostfix = DEFAULT_SYSTEM_PROMPT_POSTFIX,
+      userContext,
+      allSources,
+      globalContext,
+      newsContext,
+      specialContext,
+    }: IntfSystemPromptParams): string {
+      return normalizePersianText(`${systemPromptPrefix}
 ${userContext?.chunks?.length ? `\n- ** خیلی مهم **: فقط بر مبنای متن‌های مرجع و نام فایل‌های آپلودشده کاربر پاسخ بده و اگر متن مرجع مناسب نیست بگو: در مراجع ارایه شده محتوای مرتبط یافت نشد.` : ""}
 ${userContext?.chunks?.length ? "\n- متن‌های مرجع:\n" + cntx2Text(userContext) : ""}
 ${allSources?.files?.length ? `\n- آخرین فایل‌های آپلود شده کاربر از مجموع ${allSources.count} فایل:\n` + allSources.files.map((s, i) => `    ${i + 1}. ${s}`).join("\n") : ""}
 ${globalContext?.chunks?.length ? "\n- دانش عمومی داخلی:\n" + cntx2Text(globalContext) : ""}
 ${newsContext?.chunks?.length ? "\n- اخبار مرتبط (در صورت استفاده، منبع رو اخبار اعلام کن و حتما لینک خبر رو به عنوان منبع بده):\n" + cntx2Text(newsContext) : ""}
+${specialContext?.chunks?.length ? "\n- محتوای مرجع:\n" + cntx2Text(specialContext) : ""}
 ${systemPromptPostfix}`)
-  }
-
+    }
 
     async function getMatchingContexts(
       collection: string,
@@ -530,8 +534,8 @@ ${systemPromptPostfix}`)
         if (uniqueActiveSources.includes(row.file_name) === false)
           uniqueActiveSources.push(row.file_name);
 
-      if(false && configManager.active().log.isDebugging)
-        logger.deepDebug({matchedContext: {collection, vectorDBResults, uniqueActiveSources}})
+      if (false && configManager.active().log.isDebugging)
+        logger.deepDebug({ matchedContext: { collection, vectorDBResults, uniqueActiveSources } })
 
       return {
         chunks: vectorDBResults,
@@ -542,13 +546,13 @@ ${systemPromptPostfix}`)
 
     let logSpec: Partial<IntfLog> | undefined = undefined
     try {
-      const {filteredHistory, allKeywords}  = await retrieveChatHistory(21);
-      const allFiles = (await atDB.files.list(service, auth.uid,10,0,false))
-      const allSources = !isSummarizing && api_useFiles 
-          ? {files: allFiles.files.map((r) => r[atDB.files.cols.name]), count: allFiles.usrActiveFileCount}
-          : undefined
-        
-      const DEFAULT_EMPTY_CONTEXT : IntfContext= { chunks: [], reportSource: false }
+      const { filteredHistory, allKeywords } = await retrieveChatHistory(21);
+      const allFiles = (await atDB.files.list(service, auth.uid, 10, 0, false))
+      const allSources = !isSummarizing && api_useFiles
+        ? { files: allFiles.files.map((r) => r[atDB.files.cols.name]), count: allFiles.usrActiveFileCount }
+        : undefined
+
+      const DEFAULT_EMPTY_CONTEXT: IntfContext = { chunks: [], reportSource: false }
       const embeddedQuery = await embedUserMessage(allKeywords, api_question);
       const userContext = !isSummarizing && api_useFiles ? await getMatchingContexts(`${service}_${auth.key}`, embeddedQuery, true, 16) : DEFAULT_EMPTY_CONTEXT;
       const globalContext = !isSummarizing && useGeneralKnowledge
@@ -562,6 +566,10 @@ ${systemPromptPostfix}`)
           : await getMatchingContexts(configManager.active().specialCollections.news, embeddedQuery, false, 8, api_question.startsWith("آخرین خبرها") || api_question.endsWith(" چه خبره"))
         : DEFAULT_EMPTY_CONTEXT;
 
+      const specialContext = specialContextCollection
+        ? await getMatchingContexts(specialContextCollection, embeddedQuery, true, 16)
+        : DEFAULT_EMPTY_CONTEXT;
+
       const generateAdequateLenghtMessages = () => {
         const systemPrompt = makeSystemPrompt({
           systemPromptPrefix: isSummarizing ? SUMMARIZE_SYSTEM_PROMPT : serviceSystemPromptPrefix,
@@ -570,6 +578,7 @@ ${systemPromptPostfix}`)
           allSources,
           newsContext,
           globalContext,
+          specialContext,
         })
 
         let currMessages: IntfLLMMessage[] = [
@@ -578,16 +587,19 @@ ${systemPromptPostfix}`)
           { role: enuRoles.user, content: isSummarizing ? SUMMARIZE_PROMPT : `${DEFAULT_PROMT_PREFIX}${api_question.trim()}` }
         ];
         const fullMessageTokens = countMessageTokens(currMessages)
-        if(fullMessageTokens > (configManager.active().llmServers[service].maxTokens || Infinity)) {
-          if(countMessageTokens(filteredHistory) > 0.5 * fullMessageTokens) 
+        if (fullMessageTokens > (configManager.active().llmServers[service].maxTokens || Infinity)) {
+          if (countMessageTokens(filteredHistory) > 0.5 * fullMessageTokens)
             throw new exHttpPayloadTooLarge("حجم محتوای مکالمه بسیار زیاد شده چت جدیدی باز کنید یا این مکالمه خلاصه شود")
 
-          if(userContext.chunks?.length) 
+          if (userContext.chunks?.length)
             userContext.chunks.pop()
+
+          if (specialContext.chunks?.length)
+            specialContext.chunks.pop()
 
           const globalTokens = countContextTokens(globalContext)
           const newsTokens = countContextTokens(newsContext)
-          if (globalTokens > newsTokens && globalContext.chunks?.length) 
+          if (globalTokens > newsTokens && globalContext.chunks?.length)
             globalContext.chunks.pop()
           else if (newsContext.chunks.length)
             newsContext.chunks.pop()
@@ -600,9 +612,9 @@ ${systemPromptPostfix}`)
 
       const messages = generateAdequateLenghtMessages()
 
-      if (configManager.active().log.isDebugging) 
+      if (configManager.active().log.isDebugging)
         logger.deepDebug({ matchedContextPostFilter: { userContext, globalContext, newsContext }, messages })
-      
+
       const logInfo: { [key: string]: unknown } = {
         historyLen: filteredHistory.length,
         question: api_question
@@ -610,12 +622,15 @@ ${systemPromptPostfix}`)
       if (useGeneralKnowledge) logInfo.globalChunks = globalContext?.chunks.length
       if (useNews && newsContext.chunks) logInfo.news = { chunks: newsContext.chunks.length, newest: newsContext.chunks?.at(0)?.chunk_time }
       if (api_useFiles) logInfo.files = { chunks: userContext?.chunks?.length }
+      if (specialContextCollection) logInfo.specialContext = { chunks: specialContext?.chunks?.length }
 
       logSpec = await atDB.log.add(auth.key || auth.uid + '', logName, logInfo, api_question.length)
 
       if (process.env.DEBUG_MODE)
         logger.debug(`[${logName.toUpperCase()} Chat] ${api_chatId} | useFiles: ${api_useFiles ? true : false} | ${stripText(api_question)}`);
 
+      if(specialContextCollection && specialContext.chunks.length === 0) 
+        return apiRes.send(`data: {"delta":"در متن‌های مرجع پاسخ مناسب برای این سوال یافت نشد"}\ndata: [DONE:1]`)
 
       await startNewChat(apiRes, service, api_reqId, messages, {
         onDone: async (fullMarkdown: string, cancelled: boolean | undefined) => {
@@ -628,9 +643,9 @@ ${systemPromptPostfix}`)
       if ((ex as Error).message?.startsWith(`LLM error (400): {"error":{"message":"'max_tokens' or 'max_completion_tokens' is too large:`)
         || (ex as Error).message?.startsWith(`LLM error (400): {"error":{"message":"This model's maximum context length is`)) {
         if (logSpec) await atDB.log.updateResult(logSpec, isSummarizing ? 412 : 413)
-        if(isSummarizing)
+        if (isSummarizing)
           throw new exHttpPreconditionFailed("امکان خلاصه‌سازی این مکالمه وجود ندارد لطفا چت جدیدی باز کنید")
-        else 
+        else
           throw new exHttpPayloadTooLarge("حجم محتوای مکالمه بسیار زیاد شده چت جدیدی باز کنید یا این مکالمه خلاصه شود")
       }
       if (logSpec) await atDB.log.updateResult(logSpec, (ex as IntfExHttp).status || 500, (ex as IntfExHttp).message || (ex as { error: string }).error || ex)
@@ -686,17 +701,17 @@ ${systemPromptPostfix}`)
 }
 
 function countMessageTokens(messages: IntfLLMMessage[] | undefined) {
-  if(!messages) return 0
+  if (!messages) return 0
   let count = 0;
-  for (const msg of messages) 
+  for (const msg of messages)
     count += approximateTokenCount(msg.content)
   return count;
 }
 
 function countContextTokens(context: IntfContext | undefined) {
-  if(!context || !context.chunks.length) return 0
+  if (!context || !context.chunks.length) return 0
   let count = 0;
-  for (const msg of context.chunks) 
+  for (const msg of context.chunks)
     count += approximateTokenCount(msg.text)
   return count;
 }

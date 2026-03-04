@@ -161,6 +161,27 @@ export default function vectorDB() {
     return points.length;
   }
 
+  function weightedSort(data: QdrantSearchPoint[], scoreWeight = 0.6, timeWeight = 0.4) {
+    const now = Date.now() / 1000;
+    const maxChunkTime = Math.max(...data.map(i => (i.payload?.chunk_time ?? 0) as number));
+    const maxTime = now - 0;
+  
+    return data.sort((a, b) => {
+      const aTime = (a.payload?.chunk_time ?? 0) as number;
+      const bTime = (b.payload?.chunk_time ?? 0) as number;
+      const aScore = a.score || 0;
+      const bScore = b.score || 0;
+  
+      const aTimeScore = (now - aTime) / maxTime;
+      const bTimeScore = (now - bTime) / maxTime;
+  
+      const aCombined = (aScore * scoreWeight) + (aTimeScore * timeWeight);
+      const bCombined = (bScore * scoreWeight) + (bTimeScore * timeWeight);
+  
+      return bCombined - aCombined;
+    });
+  }
+
   async function findChunks(
     collectionKey: string,
     embeddedQuery: number[] | Float32Array,
@@ -193,12 +214,13 @@ export default function vectorDB() {
     }
 
     const filter: Filter | undefined = mustConditions.length > 0 ? { must: mustConditions } : undefined;
+    const isNews = collectionKey === configManager.active().specialCollections.news
 
     try {
       const queryBody = {
         query: Array.from(embeddedQuery),
         filter,
-        limit,
+        limit: isNews ? 100 : limit * 2,
         order_by: {
           key: "chunk_time",
           direction: "desc"   // newest first
@@ -224,12 +246,11 @@ export default function vectorDB() {
 
       const { result } = await response.json();
       const points = result.points ?? [];
-      const isNews = collectionKey === configManager.active().specialCollections.news
-      if(isNews)
-        console.log({result, embeddedQuery})
 
-      const filteredChunks = points.filter((r: QdrantSearchPoint) => r.payload?.col_Key === collectionKey && r.score > 0.8);
-
+      const filteredChunks = 
+        weightedSort(points.filter((r: QdrantSearchPoint) => r.payload?.col_Key === collectionKey && r.score > 0.8))
+        .slice(0, limit)
+        
       if (configManager.active().log.isDebugging) {
         logger.deepDebug({
           chunks: filteredChunks.map((r: QdrantSearchPoint) => ({

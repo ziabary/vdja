@@ -17,6 +17,7 @@ export default async () => ragService(
 `,  
     fileUploadAllowed: false,
     useGeneralKnowledge: false,
-    useNews: false
+    useNews: false,
+    specialContextCollection: "rahbari-special-collection"
   }
 );
