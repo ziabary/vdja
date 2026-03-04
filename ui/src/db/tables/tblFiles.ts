@@ -1,8 +1,6 @@
-import * as Knex from 'knex';
 import { getDB } from '../index';
 import configManager from '../../utils/configManager';
 import { enuGenericStatus } from '../../interfaces/db';
-import user, { type IntfUser } from './tblUser';
 import tblPerUserStats from './tblPerUserStats';
 import { exHttpInternalServerError, exHttpUnauthorized } from '../../interfaces/exHttp';
 
@@ -116,9 +114,8 @@ export default {
         .update({ filStatus: enuGenericStatus.removed })
         .where(cols.id, fileSpec[cols.id])
         .andWhere(cols.service, service)
-    }
-
-    delResult = await db(tblName).where(cols.id, fileSpec[cols.id]).del();
+    } else 
+      delResult = await db(tblName).where(cols.id, fileSpec[cols.id]).del();
     tblPerUserStats.removeFile(service, fileSpec[cols.owner_usrID]!, fileSpec[cols.size]!)
     return delResult
   },

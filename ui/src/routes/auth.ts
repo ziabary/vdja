@@ -1,7 +1,6 @@
 import express from "express";
 import type { Request, Response, Router } from "express";
 
-import { type CookieSerializeOptions } from 'cookie';
 import { randomUUID } from "crypto";
 import md5 from "md5";
 import ms, { type StringValue } from 'ms';

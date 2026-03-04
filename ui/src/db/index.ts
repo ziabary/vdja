@@ -7,6 +7,8 @@ import type { IntfDBConfig } from '../interfaces/config';
 
 let mainDB: Knex | null = null;
 let logDB: Knex | null = null;
+let newsDB: Knex | null = null;
+let specialDB: Knex | null = null;
 
 function createKnexInstance(dbConfig: IntfDBConfig): Knex {
   const { activeType } = dbConfig;
@@ -75,6 +77,26 @@ export async function getLogDB(): Promise<Knex> {
   const dbConfig = configManager.active().logDb &&  configManager.active().logDb !== true ? configManager.active().logDb : configManager.active().db;
   logDB = await createWithRetry(() => createKnexInstance(dbConfig as IntfDBConfig));
   return logDB;
+}
+
+/**
+ * Returns news DB or fallback to main DB
+ */
+export async function getNewsDB(): Promise<Knex> {
+  if (newsDB) return newsDB;
+  const dbConfig = configManager.active().newsDb &&  configManager.active().newsDb !== true ? configManager.active().newsDb : configManager.active().db;
+  newsDB = await createWithRetry(() => createKnexInstance(dbConfig as IntfDBConfig));
+  return newsDB;
+}
+
+/**
+ * Returns special DB or fallback to main DB
+ */
+export async function getSpecialDB(): Promise<Knex> {
+  if (specialDB) return specialDB;
+  const dbConfig = configManager.active().specialDb &&  configManager.active().specialDb !== true ? configManager.active().specialDb : configManager.active().db;
+  specialDB = await createWithRetry(() => createKnexInstance(dbConfig as IntfDBConfig));
+  return specialDB;
 }
 
 /**

@@ -1,12 +1,12 @@
 async function setupAuth(service, required) {
   let accessToken = sessionStorage.getItem("accessToken");
-  const DEFAULT_PRIV = { uid:1, name:"anonymous"}
+  const DEFAULT_PRIV = { uid: 1, name: "anonymous" }
   const auth = {
-    setToken: (token) =>{
+    setToken: (token) => {
       accessToken = token;
       sessionStorage.setItem("accessToken", token);
     },
-    getToken:() => accessToken,
+    getToken: () => accessToken,
     getUser: () => {
       if (!accessToken) return null;
       return parseJwt(accessToken);
@@ -27,12 +27,12 @@ async function setupAuth(service, required) {
     const { exp } = parseJwt(token);
     return Date.now() >= exp * 1000;
   }
-  
+
   let isRefreshing = false;
   let refreshSubscribers = [];
   async function _refreshToken() {
-    try{
-      const res = await fetch('/api/auth/refresh?service='+service, {
+    try {
+      const res = await fetch('/api/auth/refresh?service=' + service, {
         method: 'POST',
         credentials: 'include'
       });
@@ -43,14 +43,14 @@ async function setupAuth(service, required) {
       auth.setToken(data.accessToken);
       refreshSubscribers.forEach((cb) => cb(data.accessToken));
       return true;
-    }finally{
+    } finally {
       refreshSubscribers = [];
       isRefreshing = false;
     }
   }
 
   async function refreshToken() {
-    if (isRefreshing) 
+    if (isRefreshing)
       return new Promise((resolve) => { refreshSubscribers.push(resolve); });
 
     isRefreshing = true;
@@ -70,9 +70,9 @@ async function setupAuth(service, required) {
   async function apiFetch(url, options = {}) {
     const token = auth.getToken();
 
-    if (token && isExpired(token)) 
+    if (token && isExpired(token))
       await refreshToken();
-    
+
     const res = await fetch(url, {
       ...options,
       headers: {
@@ -97,17 +97,21 @@ async function setupAuth(service, required) {
 
     return res;
   }
-  
+
   async function ensureAuth() {
-    const token = auth.getToken();
+    try {
+      const token = auth.getToken();
 
-    if (!token && required) {
-      showError('نشست منقضی شده است');
-      window.location.href = `/login?back=${service}`;
-      return null;
+      if (!token && required) {
+        showError('نشست منقضی شده است');
+        window.location.href = `/login?back=${service}`;
+        return null;
+      }
+
+      return auth.getUser();
+    } finally {
+      document.getElementById("loading")?.classList.add("hidden")
     }
-
-    return auth.getUser();
   }
   async function withAuth(fn, options) {
     try {
@@ -120,15 +124,15 @@ async function setupAuth(service, required) {
       throw e;
     }
   }
-  
+
   await ensureAuth()
 
   return {
     apiFetch,
     withAuth,
     setAccessToken: (token) => auth.setToken(token),
-    token: ()=>auth.getToken(),
-    info: async ()=> auth.getUser(),
+    token: () => auth.getToken(),
+    info: async () => auth.getUser(),
     logout
   }
 }

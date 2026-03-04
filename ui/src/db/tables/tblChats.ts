@@ -63,7 +63,12 @@ export default {
   ): Promise<IntfChatListResult> => {
     const db = await getDB();
 
-    const userChatStats = await tblPerUserStats.get(service, userID)
+    
+    let userChatStats = await tblPerUserStats.get(service, userID)
+    if(!userChatStats) {
+      await tblPerUserStats.initialize(service, userID)
+      userChatStats = await tblPerUserStats.get(service, userID)
+    }
     if (!userChatStats) throw new exHttpUnauthorized("نشست شما منقضی شده")
 
     const chats = await db<IntfDBChat>(tblName)

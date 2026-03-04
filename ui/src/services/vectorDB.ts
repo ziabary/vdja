@@ -11,9 +11,9 @@ import type { IntfChunk } from "../interfaces/file";
 
 
 type FieldCondition = Schemas["FieldCondition"];
-type Filter        = Schemas["Filter"];
-type Range         = Schemas["Range"];
-type QRecord  = Schemas["Record"]
+type Filter = Schemas["Filter"];
+type Range = Schemas["Range"];
+type QRecord = Schemas["Record"]
 
 interface QdrantSearchPoint {
   id: string | number;
@@ -40,7 +40,10 @@ export function trimToTokenLimit(
   const lastSentenceIdx = Math.max(
     trimmed.lastIndexOf("."),
     trimmed.lastIndexOf("؟"),
-    trimmed.lastIndexOf("?")
+    trimmed.lastIndexOf("?"),
+    trimmed.lastIndexOf("\n"),
+    trimmed.lastIndexOf(";"),
+    trimmed.lastIndexOf("؛"),
   );
   if (lastSentenceIdx > 0) trimmed = trimmed.slice(0, lastSentenceIdx + 1);
 
@@ -52,8 +55,8 @@ export function approximateTokenCount(text: string) {
   const wordCount = text.split(/\s+/).filter(Boolean).length;
 
   const est = Math.ceil(
-    (charCount / 3.6) +
-    (wordCount * 0.4)
+    (charCount / 3) +
+    (wordCount * 0.5)
   );
 
   return est + 4;
@@ -92,7 +95,7 @@ export default function vectorDB() {
     collectionKey: string,
     fileKey: string,
     fileName: string,
-    chunks: IntfChunk[],
+    chunks: IntfChunk | IntfChunk[],
   ): Promise<number> {
     const points: {
       id: string;
@@ -102,21 +105,28 @@ export default function vectorDB() {
 
     await initCollection(collectionKey)
 
-    for (let i = 0; i < chunks.length; i++) {
-      let chunkText = chunks[i]?.text
+    const activeChunks = Array.isArray(chunks) ? chunks : [chunks]
+
+    for (let i = 0; i < activeChunks.length; i++) {
+      const chunk = activeChunks[i]!
+      let chunkText = chunk.text
       if (!chunkText) continue
 
       const payload: IntfChunkPayload = {
-        text: chunks[i]?.text!,
+        text: chunk.text!,
         chunk_index: i,
-        chunk_time: chunks[i]?.meta?.time,
+        chunk_time: chunk.meta?.time,
         col_Key: collectionKey,
         file_id: fileKey,
         file_name: fileName,
       }
 
+      console.log({ approx: approximateTokenCount(chunkText), max: configManager.active().embedding.maxTokens })
+
       if (approximateTokenCount(chunkText) > configManager.active().embedding.maxTokens)
         chunkText = trimToTokenLimit(chunkText, configManager.active().embedding.maxTokens, approximateTokenCount);
+
+      console.log({ afterTrim: 1, approx: approximateTokenCount(chunkText), max: configManager.active().embedding.maxTokens })
 
       const embedding = await getEmbedding(chunkText);
       if (!embedding || !Array.isArray(embedding) || embedding.length === 0) {
@@ -168,7 +178,7 @@ export default function vectorDB() {
 
     const mustConditions: FieldCondition[] = [];
     if (fileIds && fileIds.length > 0) {
-      //@ODO this need dual collection approach as post-filter is not good
+      //@TODO this need dual collection approach as post-filter is not good
       mustConditions.push({
         key: "file_id",
         match: { any: fileIds },
@@ -186,45 +196,37 @@ export default function vectorDB() {
 
     try {
       const queryBody = {
-          query: Array.from(embeddedQuery),
-          filter,
-          limit,
-          order_by: {
-            key: "chunk_time",
-            direction: "desc"   // newest first
-          },
-          with_payload: true,
-          with_vectors: false,
-          // optional: score_threshold: 0.8,
-        };
-    const response = await fetch(
-      `${configManager.active().RAGDB.url}/collections/${collectionKey}/points/query`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          // Add API key header if your Qdrant instance requires auth
-          // "api-key": "your-key-here",
-        },
-        body: JSON.stringify(queryBody),
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error(`Query failed: ${response.statusText}`);
-    }
-
-    const { result } = await response.json();  // { result: { points: [...] } }
-    const points = result.points ?? [];
-      /*const points = await VDBClient.search(collectionKey, {
-        vector: Array.from(embeddedQuery),
-        limit,
+        query: Array.from(embeddedQuery),
         filter,
-        params: { hnsw_ef: 512, exact: false },
-        order_by: [{ key: "chunk_time", order: "desc" }],
+        limit,
+        order_by: {
+          key: "chunk_time",
+          direction: "desc"   // newest first
+        },
         with_payload: true,
-        with_vector: false,
-      });*/
+        with_vectors: false,
+        // optional: score_threshold: 0.8,
+      };
+      const response = await fetch(
+        `${configManager.active().RAGDB.url}/collections/${collectionKey}/points/query`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(queryBody),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Query failed: ${response.statusText}`);
+      }
+
+      const { result } = await response.json();
+      const points = result.points ?? [];
+      const isNews = collectionKey === configManager.active().specialCollections.news
+      if(isNews)
+        console.log({result, embeddedQuery})
 
       const filteredChunks = points.filter((r: QdrantSearchPoint) => r.payload?.col_Key === collectionKey && r.score > 0.8);
 
@@ -279,7 +281,7 @@ export default function vectorDB() {
         } as Filter,
       });
 
-      const pointIds: string[] = points.map((p: QRecord) => p.id+"");
+      const pointIds: string[] = points.map((p: QRecord) => p.id + "");
 
       if (pointIds.length > 0) {
         await VDBClient.delete(collectionKey, { points: pointIds });
@@ -319,7 +321,7 @@ export default function vectorDB() {
 
       // Extract text from payloads
       points.forEach((p: QRecord) => {
-        if (p.payload?.text) chunks.push(p.payload.text+"");
+        if (p.payload?.text) chunks.push(p.payload.text + "");
       });
 
       offset = next_page_offset != null ? String(next_page_offset) : null;

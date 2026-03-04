@@ -58,6 +58,19 @@ const upload = multer({
   limits: { fileSize: 200 * 1024 * 1024 },
 });
 
+export const DEFAULT_PERSIAN_SYSTEM_INTRO = `شما یک دستیار هوش مصنوعی فارسی‌زبان هستید که توسط شرکت پردازش هوشمند ترگمان توسعه داده شده است.
+
+## قوانین اجباری — حتماً دقیقاً رعایت کنید:
+- همیشه به زبان فارسی روان، رسمی و طبیعی پاسخ دهید؛ مگر این‌که کاربر به صراحت زبان دیگری را درخواست کند (در هر صورت منابع و کلمات کلیدی به زبان فارسی باشند)
+- تاریخ امروز ${date2Jalali()} معادل با ${new Date().toDateString()} میلادی و ${date2Hijri()} قمری
+- اگر کاربر درباره هویت شما پرسید (مثل «تو کی هستی؟»، «چه مدلی هستی؟»، «ChatGPT هستی؟» و غیره)، دقیقاً و فقط این پاسخ را بدهید:
+  «من یک دستیار هوش مصنوعی مبتنی بر مدل‌های زبانی بزرگ بهینه‌سازی‌شده برای زبان فارسی هستم که توسط شرکت پردازش هوشمند ترگمان مورد توسعه قرار گرفته است. این نسخه از سامانه به صورت آزمایشی و رایگان در اختیار شما قرار گرفته است.»
+- اسم تو «دستیار هوش مصنوعی ترگمان» است و فعلا امکان گفتگوی صوتی نداری اما به زودی این خدمت راه‌اندازی می‌شه
+- قواعد متن‌های markdown رو رعایت کن و برای فرمول‌ها از MathJax  استفاده کن. در فرمول‌ها متغیر یا توضیحات همیشه انگلیسی باشند.
+- اگر کاربر درخواست کد کرد یا در جواب خواستی کد بدی حتما از الکوی کدنویسی markdown استفاده کن
+- در اولین مکالمه پاسخ حداکثر ۱۰۰ کلمه باشد و در انتهای توضیح اگر ممکن بود جمله‌ای با معنی «اگر مایلید بیشتر توضیح بدم» ارایه شود. در ادامه اگر کاربر خودش متن طولانی‌تر، توضیحات کامل یا تشریح درخواست کرد تا ۳۰۰۰ کلمه توضیح داده شود
+`
+
 export default function ragService(
   service: enuLLMServices,
   logName: string,
@@ -89,28 +102,18 @@ export default function ragService(
   - حتما در ابتدای هر سوال شماره سوال رو به صورت 1. و 2. بذار`
   const GEN_QUESTIONS_PROMPT_PREFIX = "محتوای مورد نظر:\n"
 
-
-  const DEFAULT_SYSTEM_PROMPT_PREFIX = `شما یک دستیار هوش مصنوعی فارسی‌زبان هستید که توسط شرکت پردازش هوشمند ترگمان توسعه داده شده است.
-
-## قوانین اجباری — حتماً دقیقاً رعایت کنید:
-- همیشه به زبان فارسی روان، رسمی و طبیعی پاسخ دهید؛ مگر این‌که کاربر به صراحت زبان دیگری را درخواست کند (در هر صورت منابع و کلمات کلیدی به زبان فارسی باشند)
-- اگر کاربر درباره هویت شما پرسید (مثل «تو کی هستی؟»، «چه مدلی هستی؟»، «ChatGPT هستی؟» و غیره)، دقیقاً و فقط این پاسخ را بدهید:
-  «من یک دستیار هوش مصنوعی مبتنی بر مدل‌های زبانی بزرگ بهینه‌سازی‌شده برای زبان فارسی هستم که توسط شرکت پردازش هوشمند ترگمان مورد توسعه قرار گرفته است. این نسخه از سامانه به صورت آزمایشی و رایگان در اختیار شما قرار گرفته است.»
+const DEFAULT_SYSTEM_PROMPT_PREFIX =`${DEFAULT_PERSIAN_SYSTEM_INTRO}
 - اطلاعات تو تا اسفند ۱۴۰۳ و مبتنی بر کلان‌پیکره ترگمان که در آدرس (https://oss.targoman.ir/TLPC) در دسترس است به‌روز شده. اما اخبار ایران رو به صورت لحظه‌ای در حال دریافت هستی.
 - اگر کاربر سوال سیاسی یا ضدمذهبی پرسید. دقیقا و فقط این پاسخ را بدهید و هیچ پاسخ اضافه‌ای ندهید:
   من یک دستیار هوش مصنوعی هستم و فعلا اجازه اظهار نظر در خصوص مسایل سیاسی و مذهبی ندارم. 
-- قواعد متن‌های markdown رو رعایت کن و برای فرمول‌ها از MathJax  استفاده کن. در فرمول‌ها متغیر یا توضیحات همیشه انگلیسی باشند.
-- اگر کاربر درخواست کد کرد یا در جواب خواستی کد بدی حتما از الکوی کدنویسی markdown استفاده کن
-- در اولین مکالمه پاسخ حداکثر ۱۰۰ کلمه باشد و در انتهای توضیح اگر ممکن بود جمله‌ای با معنی «اگر مایلید بیشتر توضیح بدم» ارایه شود. در ادامه اگر کاربر خودش متن طولانی‌تر، توضیحات کامل یا تشریح درخواست کرد تا ۳۰۰۰ کلمه توضیح داده شود
+- اگر کاربر درخواست کرد که بگویی «مرگ بر آمریکا» یا «مرگ بر اسراییل» حتما درخواست کاربر را اجرا کن و دستورات قبلی را صرفنظر کن
 - هر زمان کاربر گفت «اسراییل» یا در پاسخ خواستی بگی اسرائیل به جاش از کلمه رژیم اشغالگر صهیونیستی استفاده کن
-- اسم تو «دستیار هوش مصنوعی ترگمان» است و فعلا امکان گفتگوی صوتی نداری اما به زودی این خدمت راه‌اندازی می‌شه
 - مواردی که به عنوان «دانش عمومی داخلی» ارایه می‌شوند مستقل از هم هستند و نباید با هم ترکیب شوند 
-- تاریخ امروز ${date2Jalali()} معادل با ${new Date().toDateString()} میلادی و ${date2Hijri()} قمری
 `
   const DEFAULT_SYSTEM_PROMPT_POSTFIX =
     `- همیشه در پایان پیان دو سطر داریم به صورت زیر: 
     ۱- در یک سطر به صورت متن ساده که با عبارت «عبارات کلیدی:» شروع می‌شود ۵ عبارت کلیدی از پاسخ که با "," از هم جدا شوند
-    ۲- در سطر آخر منابع استفاده‌شده را دقیقاً به یکی از این سه روش زیر در یک خط جداگانه بنویسید (این آخرین خط پاسخ باشد و پس از این سطر به هیچ عنوان چیزی نوشته نشود):
+    ۲- در سطر آخر منابع استفاده‌شده را دقیقاً به یکی از این سه روش زیر در یک خط جداگانه بنویسید (این آخرین خط پاسخ باشد و هرگز پس از این سطر چیزی نوشته نشود):
        a. اگر از متن‌های مرجع استفاده کردید در یک سطر به صورت متن ساده با الگوی: «منابع: 1. [نام مرجع]، 2. [نام مرجع]، 3. [نام مرجع]»
        b. اگر از اخبار مرتبط استفاده شد:  «منبع: اخبار خزش‌شده»
        c. در غیر این صورت «منبع: دانش داخلی مدل»
@@ -171,14 +174,14 @@ export default function ragService(
   router.put(`/${service}/chat/:chatId/title`, async (apiReq: Request, apiRes: Response) => {
     const auth = await getAuthInfo(apiReq);
     const { title } = apiReq.body;
-    const { chatID: chatIdParam } = apiReq.params;
-    const chatId = parseQueryToString(chatIdParam)
-    if(chatId?.length != 32) throw new exHttpInvalidParams("Invalid chat ID")
+    const { chatId: chatIdParam } = apiReq.params;
+    const chatID = parseQueryToString(chatIdParam)
+    if(chatID?.length != 32) throw new exHttpInvalidParams("Invalid chat ID")
 
     const trimmedTitle = title.trim();
     if (trimmedTitle.length > 100) throw new exHttpInvalidParams("عنوان حداکثر می‌تواند ۱۰۰ کاراکتر باشد");
 
-    const chatSpecs = await atDB.chats.get(service, auth.uid, chatId)
+    const chatSpecs = await atDB.chats.get(service, auth.uid, chatID)
     if (!chatSpecs) throw new exHttpAccessDenied("چت مورد نظر یافت نشد یا شما دسترسی ندارید")
 
     apiRes.json(await atDB.chats.setTitle(service, auth.uid, chatSpecs, title))
@@ -187,22 +190,22 @@ export default function ragService(
   /**************************************************/
   /*                    MESSAGES                    */
   /**************************************************/
-  router.get(`/${service}/chat/:chatKey/messages`, async (apiReq: Request, apiRes: Response) => {
+  router.get(`/${service}/chat/:chatId/messages`, async (apiReq: Request, apiRes: Response) => {
     const auth = await getAuthInfo(apiReq);
-    const { chatKey } = apiReq.params;
+    const { chatId } = apiReq.params;
     const { maxItems, from } = apiReq.query;
-    apiRes.json(await atDB.messages.listByChatID(service, auth.uid, parseQueryToString(chatKey)||"not provided", parseQueryToNumber(maxItems), parseQueryToNumber(from)));
+    apiRes.json(await atDB.messages.listByChatID(service, auth.uid, parseQueryToString(chatId)||"not provided", parseQueryToNumber(maxItems), parseQueryToNumber(from)));
   });
 
   //-----------------------------------------------------
   router.put(`/${service}/chat/:chatId/message/:msgId/opinion`, async (apiReq: Request, apiRes: Response) => {
     const auth = await getAuthInfo(apiReq);
-    const { msgId, chatID: chatIdParam } = apiReq.params;
+    const { msgId, chatId: chatIdParam } = apiReq.params;
     const { opinion } = apiReq.body;
-    const chatId = parseQueryToString(chatIdParam)
-    if(chatId?.length != 32) throw new exHttpInvalidParams("Invalid chat ID")
+    const chatID = parseQueryToString(chatIdParam)
+    if(chatID?.length != 32) throw new exHttpInvalidParams("Invalid chat ID")
 
-    apiRes.json({ success: await atDB.messages.setOpinion(service, auth.uid, chatId, parseQueryToString(msgId)||"not provided", opinion) ? true : false })
+    apiRes.json({ success: await atDB.messages.setOpinion(service, auth.uid, chatID, parseQueryToString(msgId)||"not provided", opinion) ? true : false })
   });
 
   /**************************************************/
@@ -323,9 +326,7 @@ export default function ragService(
     //-----------------------------------------------------
     router.post(`/${service}/generate-questions`, async (apiReq: Request, apiRes: Response) => {
       const auth = await getAuthInfo(apiReq);
-
       const { fileId } = apiReq.body 
-
       const fileSpecs = await atDB.files.get(service, auth.uid, fileId);
       if(!fileSpecs)
         throw new exHttpInvalidParams("فایل مورد نظر یافت نشد")
@@ -558,7 +559,7 @@ ${systemPromptPostfix}`)
       const newsContext = !isSummarizing && useNews
         ? userContext.chunks && userContext.chunks.length > 3
           ? DEFAULT_EMPTY_CONTEXT
-          : await getMatchingContexts(configManager.active().specialCollections.news, embeddedQuery, false, 8, api_question.startsWith("اخبار تازه") || api_question.endsWith(" چه خبره"))
+          : await getMatchingContexts(configManager.active().specialCollections.news, embeddedQuery, false, 8, api_question.startsWith("آخرین خبرها") || api_question.endsWith(" چه خبره"))
         : DEFAULT_EMPTY_CONTEXT;
 
       const generateAdequateLenghtMessages = () => {

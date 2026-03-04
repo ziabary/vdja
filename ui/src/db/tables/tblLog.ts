@@ -1,6 +1,5 @@
 import { exHttpInternalServerError } from '../../interfaces/exHttp';
 import { getLogDB } from '../index';
-import tblUser from './tblUser';
 
 /* =======================
    Columns & Table

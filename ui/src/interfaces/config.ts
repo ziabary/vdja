@@ -70,6 +70,7 @@ export enum enuLLMServices {
   Translate = "translate",
   Summarize = "summarize",
   Think = "think",
+  Rahbari = "rahbari"
 }
 
 export interface IntfConfigs {
@@ -106,5 +107,7 @@ export interface IntfConfigs {
   }
   db: IntfDBConfig;
   logDb?: boolean | IntfDBConfig;
+  newsDb?: boolean | IntfDBConfig;
+  specialDb?: boolean | IntfDBConfig;
 }
 

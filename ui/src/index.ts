@@ -22,6 +22,8 @@ import summarize from './routes/summarize';
 import fileToText from './routes/file2Text';
 import auth from './routes/auth';
 import rag from './routes/rag';
+import think from './routes/think';
+import rahbari from './routes/rahbari';
 import type { IntfExHttp } from './interfaces/exHttp';
 import { enuLLMServices } from './interfaces/config';
 import setupAPICallLogger from './utils/apiCallLog';
@@ -94,7 +96,8 @@ async function init() {
     fileToText,
     auth,
     rag,
-    // think,
+    think,
+    rahbari
     // stats,
   ])
 

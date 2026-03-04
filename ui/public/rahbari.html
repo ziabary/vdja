@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>چت با تفکر - دستیار هوشمند فارسی</title>
+    <title>اندیشه رهبر شهید - دستیار هوشمند فارسی</title>
     
     <link rel="stylesheet" href="css/bootstrap.rtl.min.css" />
     <link rel="stylesheet" href="fonts/IranSansX/fontiran.css" />
@@ -16,8 +16,8 @@
     <span id="loading"><div class=marquee></div></span>
     <nav class="navbar shadow-sm">
       <div class="container">
-        <a href="/"><img src="/img/logo-light.png" class="bi-color" alt="لوگو"/></a>
-        <span class="navbar-brand mx-auto h4 mb-0">چت با تفکر</span>
+        <a href="/"><img src="/img/logo-light.png" class=bi-color alt="لوگو"/></a>
+        <span class="navbar-brand mx-auto h4 mb-0">چت با رهبر شهید</span>
         <span class="burger" onclick="document.body.classList.add('side-open')"><i class="fa fa-bars"></i></span>
         <span class="close-sidebar-cross" onclick="document.body.classList.remove('side-open')"><i class="fa fa-close"></i></span>
       </div>
@@ -25,7 +25,7 @@
     <div class="sidebar p-3">
       <span class="close-sidebar-cross" onclick="document.body.classList.remove('side-open')"><i class="fa fa-close"></i></span>
       <div class="logo">
-        <a href="/"><img alt="targoman-logo" src="img/logo-light.png" class="bi-color"/></a>
+        <a href="/"><img alt="targoman-logo" src="img/logo-light.png" class=bi-color/></a>
       </div>
 
       <h5 class="mb-3 mt-2">
@@ -40,18 +40,19 @@
     </div>
 
     <!-- Main Chat -->
-    <div class="main-chat" >
+    <div class="main-chat">
+      <div class="bg-image"><img src="img/rahbar-bg.png" alt=""></div>
       <div class="chat-header d-flex justify-content-between align-items-center mb-3">
-        <h4 id="lblChatTitle"  class="clickable-title" style="cursor: pointer; display: inline-block">چت متفکرانه با ترگمان</h4>
+        <h4 id="lblChatTitle"  class="clickable-title" style="cursor: pointer; display: inline-block">چت اندیشه رهبر شهید</h4>
         <i class="fa fa-moon fa-lg btn" id=btnToggleDarkMode></i>
       </div>
       <div id="chatContainer" class="chat-container border p-3 rounded" manual-scroll-allowed></div>
       <div class="message-input">
       <div class="chat-helper row mb-5 text-center">
-        <h5>با ترگمان می‌تونی راجع به هرچی حرف بزنی. البته ترجیحا به انگلیسی</h5>
+        <h5>هرچه می‌خواهی بپرس بر اساس آثار و اندیشه رهبر شهید پاسخ می‌دهم</h5>
       </div>
       <div class="input-group mt-3 w-100">
-        <textarea type="text" id="messageInput" class="form-control ltr" placeholder="هر چی می‌خوای بپرس&hellip;"></textarea>
+        <textarea type="text" id="messageInput" class="form-control" placeholder="هر چی می‌خوای بپرس&hellip;"></textarea>
         <div class="message-buttons">
           <button id="btnSend" class="btn btn-text" title="ارسال"><i class="fa fa-send fa-reverse"></i></button>
           <button id="btnStop" class="btn btn-text hidden" title="توقف"><i class="fa fa-stop fa-reverse"></i></button>
@@ -79,7 +80,7 @@
       if(!localStorage.getItem("tgmn-banner-shown")) document.querySelector('.banner').classList.remove('hidden')
 
       const page = {
-        serviceName: "think",
+        serviceName: "rahbari",
         userContainer: document.getElementById("userInfo"),
         chatsList: document.getElementById("chatsList"),
         chatContainer: document.getElementById("chatContainer"),

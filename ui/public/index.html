@@ -18,10 +18,14 @@
       }
       .card-icon {
         font-size: 4rem;
-        /*color: #0d6efd;*/
+      }
+      .card-icon img{
+        height: 4rem;
       }
       .card {
         transition: transform 0.3s;
+        height: 100%;
+        padding: 1.5rem;
       }
       .card:hover {
         transform: translateY(-10px);
@@ -36,14 +40,14 @@
       }
 
       @media (max-width: 640px) {
-        
+        .card{padding: .25rem;}
       }
     </style>
   </head>
   <body>
     <div class="container py-3">
       <div class="d-flex flex-row align-items-center mb-5">
-        <img src="/img/logo-light.png" alt="لوگو" id="logo" class="logo me-3" />
+        <img src="/img/logo-light.png" alt="لوگو" class="bi-color logo me-3" />
         <div class="w-100"></div>
         <i class="fa fa-moon fa-lg btn" id=btnToggleDarkMode></i>
       </div>
@@ -53,8 +57,18 @@
 
       <div class="row g-4 justify-content-center">
         <div class="col-md-4">
+          <a href="/rag" class="text-decoration-none">
+            <div class="card text-center shadow-sm">
+              <div class="card-icon mb-3">📚</div>
+              <h4>گفتگوی عمومی و تخصصی</h4>
+              <p class="text-muted">چت عمومی یا مبتنی بر فایل‌های شخصی</p>
+            </div>
+          </a>
+        </div>
+
+        <div class="col-md-4">
           <a href="/translate" class="text-decoration-none">
-            <div class="card text-center shadow-sm h-100 p-4">
+            <div class="card text-center shadow-sm">
               <div class="card-icon mb-3">🌐</div>
               <h4>ترجمه</h4>
               <p class="text-muted">ترجمه متن به/از فارسی با دقت بالا</p>
@@ -63,24 +77,25 @@
         </div>
 
         <div class="col-md-4">
-          <a href="/rag" class="text-decoration-none">
-            <div class="card text-center shadow-sm h-100 p-4">
-              <div class="card-icon mb-3">📚</div>
-              <h4>چت عمومی و تخصصی</h4>
-              <p class="text-muted">چت عمومی یا مبتنی بر فایل‌های شخصی</p>
+          <a href="/rahbari" class="text-decoration-none">
+            <div class="card text-center shadow-sm">
+              <div class="card-icon mb-3"><img src="img/rahbar.svg" alt=""></div>
+              <h4>اندیشه رهبر شهید</h4>
+              <p class="text-muted">چت با اندیشه و گفتار شهید آیت‌الله خامنه‌ای</p>
             </div>
           </a>
         </div>
 
         <div class="col-md-4">
           <a href="/summarize" class="text-decoration-none">
-            <div class="card text-center shadow-sm h-100 p-4">
+            <div class="card text-center shadow-sm">
               <div class="card-icon mb-3">📝</div>
               <h4>خلاصه‌سازی</h4>
               <p class="text-muted">خلاصه متون و فایل‌ها با دقت بالا</p>
             </div>
           </a>
         </div>
+
       </div>
     </div>
     <!-- <div class="text-center mb-2"><small>قدرت‌گرفته از GPUهای <a target=blank href="https://afranet.ir/fa/services/gpu">افرانت</a></small></div> -->

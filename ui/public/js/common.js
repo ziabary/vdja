@@ -125,8 +125,8 @@ function setDarkMode(state) {
     document.documentElement.setAttribute('data-bs-theme', active ? 'dark' : 'light')
     localStorage.setItem('tgmn-dark-mode', state)
     
-    const logo = document.getElementById("logo")
-    if(logo) logo.src = logo.src.replace(active ? '-light' : '-dark', active ? '-dark' : '-light' )
+    const logos = document.querySelectorAll(".bi-color")
+    logos.forEach(logo=>{logo.src = logo.src.replace(active ? '-light' : '-dark', active ? '-dark' : '-light' )})
 
     const navbar = document.getElementById("navbar")
     if(navbar) setClass(navbar, 'navbar-dark', active)

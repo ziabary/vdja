@@ -45,7 +45,7 @@ export default function setupAPICallLogger(app: Express) {
 
   app.use(
     morgan('APICall=====> :remote-addr - :method :url ', {
-      skip: (_, res: Response) =>!configManager.active().log.showAPICalls && !res.req.originalUrl.startsWith('/api'),
+      skip: (_, res: Response) =>!configManager.active().log.showAPICalls || !res.req.originalUrl.startsWith('/api'),
       stream: process.stdout,
       immediate: true
     })

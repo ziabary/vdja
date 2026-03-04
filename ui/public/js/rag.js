@@ -10,11 +10,15 @@ const SUMMARIZE_PROMPT = `درخواست سیستم از طرف کاربر: مک
 const editHelp = `<small class="text-muted ms-2" style="font-size: 0.5em;">(برای ویرایش کلیک کنید)</small>`;
 
 function setupRAG(page, handlers, options) {
+
   let currentChatKey = location.hash.replace('#', '') || undefined;
   let activeReqID = null;
   const titleCache = new Map();
-
+  let auth; 
   if (!isMobileDevice()) page.messageInput.placeholder += ' (برای سطر بعدی Shift+Enter)';
+
+  
+  setupAuth("rag", true).then(r=>auth=r)
 
   /*********************************/
   function autoQuery(text) {
@@ -580,7 +584,7 @@ function setupRAG(page, handlers, options) {
     }, 500);
   }
   /*************************************/
-  page.inpUpload.addEventListener('change', async (e) => {
+  page.inpUpload?.addEventListener('change', async (e) => {
     let files = Array.from(e.target.files);
     if (files.length === 0) return;
 
@@ -589,7 +593,7 @@ function setupRAG(page, handlers, options) {
       const loadingModal = document.getElementById('globalLoadingModal')
       const lblStatus = loadingModal.querySelector('#progress-message');
       const overallProgress = loadingModal.querySelector('#overallProgress');
-      const blckFileUploadInfo = loadingModal.querySelector('#file-progress');;
+      const blckFileUploadInfo = loadingModal.querySelector('#file-progress');
       let i=0
       let lastFileKey = undefined
       for (const file of files) {
@@ -686,7 +690,7 @@ function setupRAG(page, handlers, options) {
     }
   }
   /*************************************/
-  page.btnDeleteAllFiles.addEventListener('click', async () => {
+  page.btnDeleteAllFiles?.addEventListener('click', async () => {
     const result = await confirmDialog({
       title: 'حذف همه فایل‌ها',
       message: 'همه فایل‌های بارگذاری‌شده حذف خواهند شد. این عمل برگشت‌ناپذیر است!',
@@ -762,7 +766,7 @@ function setupRAG(page, handlers, options) {
 
   /*************************************/
   page.btnSend.addEventListener('click', ()=>sendMessage(false));
-  page.btnBanUsingFiles.addEventListener('click', async () => {
+  page.btnBanUsingFiles?.addEventListener('click', async () => {
     if (page.useFiles) {
       const result = await confirmDialog({
         title: 'غیرفعال‌سازی فایل‌ها',

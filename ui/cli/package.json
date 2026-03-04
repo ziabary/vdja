@@ -5,6 +5,9 @@
   "type": "module",
   "description": "CLI tools for vadja project",
   "dependencies": {
+    "@types/cheerio": "^0.22.35",
+    "@types/yargs": "^17.0.35",
+    "cheerio": "^1.2.0",
     "yargs": "^18.0.0"
   }
 }

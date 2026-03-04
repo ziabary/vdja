@@ -10,256 +10,13 @@
     <link rel="stylesheet" href="fonts/fontawesome/active/all.css" />
 
     <link rel="stylesheet" href="css/style.css" />
-    <style>
-      .chat-container {
-        height: 80vh;
-        overflow-y: auto;
-      }
-      pre{
-        direction: ltr;
-        text-align: left;
-      }
-      .message {
-        margin-bottom: 1rem;
-        padding: 0.5rem;
-        border-radius: 0.5rem;
-      }
-      .user-message {
-        background: #0d6efd;
-        color: white;
-        margin-left: 10%;
-        text-align: right;
-      }
-      .bot-message {
-        /*background: #f8f9fa;*/
-        color: #333;
-        margin-right: 10%;
-        text-align: right;
-      }
-      html[data-bs-theme="dark"] .bot-message {
-        color: whitesmoke;
-      }
-      .sidebar {
-        position: fixed;
-        right: 0; 
-        top: 0;
-        width: 350px;
-        height: 100vh;
-        background: white;
-        box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
-        overflow-y: auto;
-        z-index: 1000;
-      }
-      html[data-bs-theme="dark"] .sidebar{background-color: #121212;}
-      
-      div#userInfo {
-          text-align: center;
-          font-size: 2em;
-          font-weight: 900;
-          padding: 1em;
-      }
-      .main-chat {
-        margin-right: 350px;
-        padding: 20px;
-        position: relative;
-        height: 100vh;
-      }
-      .modal-footer button {
-       font-size: 0.8em;
-      }
-      #backToLogin {
-          position: absolute;
-          top: 1em;
-          left: 1em;
-          font-size: 0.8rem;
-      }
-      #inpUpload {
-        display: none;
-      }
-      .rtl {
-        direction: rtl;
-        text-align: justify;
-      }
-      .ltr {
-        direction: ltr;
-        text-align: left;
-      }
-      .logo {
-        height: 2rem;
-        text-align: right;
-        margin-bottom: 2rem;
-      }
-      .logo img {
-        height: 100%;
-      }
-      .thinking {
-        opacity: 0.8;
-        font-style: italic;
-      }
-      stopped{
-        color: darkorange;
-        font-size: 90%;
-        padding: 0 1em;
-      }
-      error{
-        color: darkred;
-        font-size: 90%;
-        padding: 0 1em;
-      }
-
-      .navbar, .close-sidebar-cross {
-        display: none;
-      }
-      .push-bottom {
-        position: absolute;
-        bottom: 1em;
-        width: 100%;
-        text-align: center;
-      }
-
-      #chatsList, #filesList{
-        padding-right: 0.5em;
-        font-size: 0.8em;
-      }
-      .empty {
-        color: gray;
-        padding: .5rem;
-      }
-      .bot_buttons_row {
-        display: flex;
-        gap: 24px;
-        margin-top:0.5em
-      }
-
-      .bot_buttons_row span:hover{
-            filter: drop-shadow(2px 4px 6px black);
-            cursor: pointer; 
-      }
-
-      .bot_buttons_row .copy span {
-        font-size: 80%;
-        color:gray;
-        border: 1px solid gray;
-        border-radius: 2px;
-        padding: 0 4px;
-      }
-      html[data-bs-theme="dark"]  .bot_buttons_row .copy span{
-        color: whitesmoke;
-      }
-      .bot_buttons_row .copy:hover span{
-        filter: none
-      }
-
-      .bot-sources{
-        margin-top:8px;
-        padding:8px 12px;
-        background-color:#f1f5f9;
-        border-radius:8px;
-        font-size:0.9em;
-        color:#475569;
-      }
-      .bot-sources p{margin: 0;}
-      html[data-bs-theme="dark"] .bot-sources{
-        background-color: #292f34;
-        color: aqua;
-      }
-
-      .bot_buttons_row .up{color: darkgreen}
-      .bot_buttons_row .down{color:darkred}
-      .bot_buttons_row .warn{color: darkorange}
-       html[data-bs-theme="dark"] .bot_buttons_row .up{color:  lightgreen}
-       html[data-bs-theme="dark"] .bot_buttons_row .down{color: lightsalmon}
-       html[data-bs-theme="dark"] .bot_buttons_row .warn{color: yellow}
-
-      
-      .new-chat .chat-header, 
-      .new-chat .chat-container{
-        display: none;
-      }
-      .chat-helper { display: none; font-size: 70%; }
-      .chat-helper h5 {line-height: 1.5em;}
-      .new-chat .chat-helper {display: block;}
-
-      #messageInput{resize: none; z-index: 0; padding-left: 4em;}
-
-      .new-chat #messageInput{
-        border-radius: 5em;
-      }
-      .new-chat .message-input{
-        width: 70%;
-        margin: auto;
-        position: absolute;
-        top:50%;
-        left:50%;
-        transform: translate(-50%, -50%);
-      }
-
-      .new-chat #messageInput::placeholder,
-      .message-buttons {
-        position: absolute;
-        bottom: 50%;
-        left: 0;
-        z-index: 2;
-        transform: translateY(50%);
-      }
-      .new-chat #messageInput::placeholder{
-        left: unset;
-        right: 1em;
-      }
-
-      .message-buttons button:hover,
-      .message-buttons label:hover { 
-        border: 1px solid; 
-        /*background-color: gray; */
-        /*color: white;*/
-      }
-
-      .burger, .close-sidebar-cross{width: 24px; z-index:20000; cursor: pointer; pointer-events: all;}
-
-      .fa-reverse{ transform: rotate(180deg); }
-
-
-      @media (max-width: 640px) {
-        .sidebar {
-          right: -350px;
-          transition: ease-in 0.2s;
-        }
-
-        .navbar {
-          display: block;
-        }
-        .chat-container {
-          height: calc(80vh - 64px);
-        }
-
-        body.side-open .sidebar {
-          right: 0;
-        }
-        body.side-open .close-sidebar-cross {
-          display: block;
-        }
-        body.side-open .burger {
-          display: none;
-        }
-
-        .main-chat {
-          margin-right: unset;
-          margin-top: 64px;
-        }
-        h4#lblChatTitle {
-            font-size: 1rem;
-            font-weight: 800;
-        }
-        .new-chat .message-input{
-          width: calc(100% - 2em);
-        }
-      }
-    </style>
+    <link rel="stylesheet" href="css/rag-common.css" />    
   </head>
   <body class="new-chat">
+    <span id="loading"><div class=marquee></div></span>
     <nav class="navbar shadow-sm">
       <div class="container">
-        <img src="/img/logo-light.png" alt="لوگو"/>
+        <img src="/img/logo-light.png" class="bi-color" alt="لوگو"/>
         <span class="navbar-brand mx-auto h4 mb-0">چت با داده‌ها</span>
         <span class="burger" onclick="document.body.classList.add('side-open')"><i class="fa fa-bars"></i></span>
         <span class="close-sidebar-cross" onclick="document.body.classList.remove('side-open')"><i class="fa fa-close"></i></span>
@@ -268,7 +25,7 @@
     <div class="sidebar p-3">
       <span class="close-sidebar-cross" onclick="document.body.classList.remove('side-open')"><i class="fa fa-close"></i></span>
       <div class="logo">
-        <a href="/"><img alt="targoman-logo" src="img/logo-light.png" id="logo"/></a>
+        <a href="/"><img alt="targoman-logo" src="img/logo-light.png" class="bi-color"/></a>
       </div>
 
       <h5 class="mb-3 mt-2">
@@ -317,7 +74,7 @@
     <style>
       .banner{position: fixed; background-color: rgba(0, 0, 0, 0.4);top:0;left:0; width: 100vw;height: 100vh;z-index: 1000;}
       .banner .container{
-        background-color:white; 
+        background-color:rgb(var(--bs-body-bg-rgb));
         max-width:  400px;
         position:absolute;
         top:50%; 
@@ -338,8 +95,8 @@
       </script>
       <div class="container">
       <h2 class="mb-4">هموطن گرامی سلام</h2>
-      <p>از این که در شرایط جاری و نبود اینترنت می‌توانیم کمکی باشیم خرسندیم. ضمن تشکر از حسن توجه و استقبال هموطنان گرامی به اطلاع می‌رسانیم که متاسفانه به دلیل برخی سو‌ءاستفاده‌ها و محدودیت‌های سخت‌افزاری در شرایط جاری مجبور به اعمال محدودیت‌هایی در سامانه شدیم که از این بابت پوزش می‌طلبیم.</p>
-      <p>امیدواریم شرایط هرچه زودتر به شرایط عادی بازگشته و اینترنت برقرار شود.</p>
+      <p>از این که در این شرایط جنگی و در نبود اینترنت می‌توانیم کمکی باشیم خرسندیم. ضمن تشکر از حسن توجه و استقبال هموطنان گرامی به اطلاع می‌رسانیم که متاسفانه به دلیل برخی سو‌ءاستفاده‌ها و محدودیت‌های سخت‌افزاری در شرایط جاری مجبور به اعمال محدودیت‌هایی در سامانه شدیم که از این بابت پوزش می‌طلبیم.</p>
+      <p>امیدواریم با شکست دشمنان دژخیم، شرایط هرچه زودتر به شرایط عادی بازگشته و اینترنت برقرار شود.</p>
       <div class="text-center mt-4"><button class="btn btn-primary" onclick="closeBanner()">متوجه شدم</button></div>
       </div>
     </div>
@@ -354,7 +111,6 @@
 
     <script src="js/common.js"></script>
     <script src="js/auth.js"></script>
-    <script>let auth; setupAuth("rag", true).then(r=>auth=r)</script>
     <script src="js/llm.js"></script>
     <script src="js/rag.js"></script>
 
@@ -384,7 +140,6 @@
 
       const SAMPLE_MESSAGES = [
         "امروز چه روزیه؟",
-        "خسته‌شدم کی پس اینترنت درست می‌شه؟",
         "این فایلی که بهت دادم در مورد چیه؟",
         "یه کد بنویس به زبان پایتون که چاپ کنه سلام",
         "می‌تونی یه جوک بگی؟",
@@ -393,20 +148,6 @@
         "این فایل رو برام خلاصه می‌کنی؟",
         "می تونی این تمرینا رو حل کنی؟",
         "مدل زبانیت چیه؟",
-        "تهران چه خبره",
-        "اصفهان چه خبره",
-        "تبریز چه خبره",
-        "بوشهر چه خبره",
-        "مشهد چه خبره",
-        "قم چه خبره",
-        "همدان چه خبره",
-        "کردستان چه خبره",
-        "ارومیه چه خبره",
-        "رشت چه خبره",
-        "کرمان چه خبره",
-        "زاهدان چه خبره",
-        "بندر چه خبره",
-        "بوشهر چه خبره",
         "تفاوت موشک بالستیک و کروز",
         "دستور پخت قرمه‌سبزی",
         "آیا افرادی که قبلاً یارانه نقدی دریافت نمی‌کردند هم واجد شرایط کالابرگ هستند؟",
@@ -431,7 +172,8 @@
         "انواع خیارات رو نام ببر",
         "این خیار غبن که می‌گن چه؟",
         "دلار چند شده؟",
-        "حق ما از زندگی چیه پس",
+        "جنگ کی تموم می‌شه؟",
+        "مراسم تشییع رهبر شهید",
         "معنی ترگمان چیه؟"
       ]
       
@@ -450,7 +192,7 @@
           rag.addHelpItem("این سند راجع به چی بود؟")
         } else {
           SAMPLE_MESSAGES.sort((a,b)=>Math.random()>.5 ? -1 : 1).slice(0, 5).forEach(rag.addHelpItem)
-          rag.addHelpItem("اخبار تازه بگو")
+          rag.addHelpItem("آخرین خبرها")
         }
       }
 
@@ -461,7 +203,6 @@
         setClass(btnStop, "hidden", !state)
         setClass(inpUpload, "hidden", state)
         inpUpload.disabled = state;
-        btnNewChat.disabled = state
         btnNewChat.disabled = state
         document.querySelectorAll('label[for="inpUpload"]').forEach(
           el=>state ? el.classList.add('disabled') : el.classList.remove('disabled')

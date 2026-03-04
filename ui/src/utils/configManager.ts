@@ -65,6 +65,14 @@ const DEFAULT_CONFIGS: IntfConfigs = {
       maxTokens: 20000,
       maxDelayed: 60,
     },
+    rahbari: {
+      url: 'llm-server',
+      model: 'targoman',
+      temperature: 0.5,
+      maxInputChars: 2000,
+      maxTokens: 10000,
+      maxDelayed: 45,
+    }
   },
   embedding: {
     server: { url: 'embd-server', model: 'targoman' },
@@ -110,6 +118,8 @@ const DEFAULT_CONFIGS: IntfConfigs = {
     news: ""
   },
   logDb: false,
+  newsDb: false,
+  specialDb: false,
 };
 
 /* =======================
