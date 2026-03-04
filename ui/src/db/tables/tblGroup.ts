@@ -17,26 +17,9 @@ interface Group {
   privs: IntfPrivileges;
 }
 
-export const DEFAULT_GROUP: Group = {
-  id: 2,
-  name: 'public',
-  privs: {
-    services: {
-      rag: {
-        files: {
-          maxCount: 10,
-          maxSize: 10,
-          maxTotalSize: 200,
-        },
-        messages:{
-          maxChars: 2000
-        }
-      },
-      think: { forbidden: true }
-    }
-  },
-};
-
+export const ANONYMOUS_GROUP_ID = 2
+export const DEFAULT_GROUP_ID = 2
+export const VERIFIED_GROUP_ID = 3
 /* =======================
    Export
 ======================= */

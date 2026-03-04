@@ -33,6 +33,10 @@ const DEFAULT_CONFIGS: IntfConfigs = {
     scope: "openid profile TargomanApi UserManagementApi",
     callbackUri: "http://localhost:3000/api/auth/oidc/callback"
   },
+  baleOTP: {
+    gwID: "",
+    gwSecret: ""
+  },
   llmServers: {
     rag: {
       url: 'llm-server',

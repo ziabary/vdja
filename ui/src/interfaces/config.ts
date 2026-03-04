@@ -84,6 +84,10 @@ export interface IntfConfigs {
     scope: string,
     callbackUri: string 
   };
+  baleOTP: {
+    gwID: string,
+    gwSecret: string
+  }
   llmServers: {
     [key in enuLLMServices]: IntfLLMServerConfig
   };

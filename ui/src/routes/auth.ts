@@ -73,7 +73,7 @@ router.get("/auth/oidc/login", async (apiReq: Request, apiRes: Response) => {
   ).toString("base64url");
 
 
-  apiRes.cookie("oidc_state", payload, {
+  apiRes.cookie("oidc_flow", payload, {
     httpOnly: true,
     secure: true,
     sameSite: "lax",
@@ -195,7 +195,77 @@ router.post("/auth/refresh", async (apiReq: Request, apiRes: Response) => {
     throw new exHttpAccessDenied("شما به این سرویس دسترسی ندارید")
 
   await sendJWT(user, apiRes)
-});
+}); 
+
+function normalizePhone(mobile) {
+  if ((!mobile.startsWith("+98") && !mobile.startsWith("0"))
+    || (mobile.startsWith("+98") && mobile.length != 13)
+    || (mobile.startsWith("0") && mobile.length != 11)
+  )
+    throw new exHttpInvalidParams("شماره موبایل نامعتبر است")
+
+  return (mobile.startsWith("0") ? `98` : "") + mobile.substring(1)
+}
+
+router.post("/auth/sendBaleOTP", async (apiReq: Request, apiRes: Response) => {
+  const { mobile } = apiReq.body
+
+  if(!mobile)
+    throw new exHttpInvalidParams("موبایل یا کد ارایه‌ نشده‌اند")
+
+  const phone = normalizePhone(mobile)
+  //step 0 get authToken
+  const payload = new URLSearchParams();
+  payload.append("grant_type", "client_credentials");
+  payload.append("client_id", configManager.active().baleOTP.gwID);
+  payload.append("client_secret", configManager.active().baleOTP.gwSecret);
+  payload.append("scope","read")
+
+  try {
+    const authToken = await fetch("https://safir.bale.ai/api/v2/auth/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: payload
+    }).then(r=>r.json());
+
+    console.log(authToken)
+
+    const otpCode = Math.floor(10000 + Math.random() * 90000)
+    atDB.user.setOTP(phone, `${otpCode}`)
+
+    const resp = await fetch("https://safir.bale.ai/api/v2/send_otp", {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${authToken.access_token}`
+       },
+      body: JSON.stringify({
+        phone,
+        otp: otpCode
+      })
+    }).then(r=>r.json());
+
+    console.log(resp)
+
+    apiRes.send(resp)
+  } catch (e) {
+    console.error(e);
+    throw new exHttpAccessDenied((e as Error).message)    
+  }
+})
+
+router.post("/auth/verifyOTP", async (apiReq: Request, apiRes: Response) => {
+  const { mobile, otp, service } = apiReq.body
+  const phone = normalizePhone(mobile)
+
+  const res = await atDB.user.verifyOTP(phone, otp)
+  if(res && res.usrKey) {
+    let user: Partial<IntfUser> = await atDB.user.getDigesting(res.usrKey, false, true);
+    atDB.log.add(res.usrKey, "login", { service }, 0, 200)
+    return await sendJWT(user, apiRes)
+  }
+  throw new exHttpInvalidParams("کد وارد شده صحیح نمی‌باشد")
+})
 
 /****
  async function getAccessToken() {

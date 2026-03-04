@@ -3,9 +3,10 @@ import type { IntfPrivileges, IntfRefreshTokenPayload } from '../../interfaces/a
 import { enuBannableStatus, type Select } from '../../interfaces/db';
 import { deepMerge } from '../../utils/common';
 import { getDB } from '../index';
-import group from "./tblGroup"
-import tblGroup, { DEFAULT_GROUP } from './tblGroup';
+import group, { VERIFIED_GROUP_ID } from "./tblGroup"
+import tblGroup, { DEFAULT_GROUP_ID } from './tblGroup';
 import { resolveCols, type IntfGenericListOptions } from '../common';
+import md5 from 'md5';
 
 /* =======================
    Columns & Table
@@ -20,6 +21,7 @@ const priv_cols = {
   assigned_grpID: 'usrAssigned_grpID',
   specialPrivs: 'usrSpecialPrivs',
   refreshHash: 'usrRefreshHash',
+  otp: 'usrOTP',
   //--------------
   groupPrivs: tblGroup.cols.privs,
 
@@ -49,12 +51,12 @@ export const cols = {
 ======================= */
 
 export type IntfUser = {
-  [K in keyof typeof cols as typeof cols[K]]: 
-    K extends 'id' | 'assigned_grpID' | 'activeFileCount' | 'totalUploadedCount' | 'totalChats' | 'activeTotalSize' ? number
-    : K extends 'lastLogin' | 'lastLogout' | 'createdAt' ? string | Date | null
-    : K extends 'status' ? typeof enuBannableStatus[keyof typeof enuBannableStatus]
-    : K extends 'specialPrivs' | 'groupPrivs' | '$$COMPILED_PRIVS$$' ? IntfPrivileges | null 
-    : string;
+  [K in keyof typeof cols as typeof cols[K]]:
+  K extends 'id' | 'assigned_grpID' | 'activeFileCount' | 'totalUploadedCount' | 'totalChats' | 'activeTotalSize' ? number
+  : K extends 'lastLogin' | 'lastLogout' | 'createdAt' ? string | Date | null
+  : K extends 'status' ? typeof enuBannableStatus[keyof typeof enuBannableStatus]
+  : K extends 'specialPrivs' | 'groupPrivs' | '$$COMPILED_PRIVS$$' ? IntfPrivileges | null
+  : string;
 };
 
 export type TypUserListItem = Select<IntfUser, typeof public_cols[keyof typeof public_cols]>;
@@ -100,19 +102,19 @@ function getDigesting(key: string, openID: boolean, isAdmin: true): Promise<Intf
 function getDigesting(key: string, openID: boolean, isAdmin?: false): Promise<TypUserListItem>;
 // Implementation
 async function getDigesting(key: string, openID: boolean, isAdmin?: boolean) {
-    const db = await getDB();
-    const colsToOutput = resolveCols(undefined, isAdmin, public_cols, cols).map(c => cols[c as keyof typeof cols]);
-    const keyCol = openID ? cols.openID : cols.key;
-    const user = await db<IntfUser>(tblName)
-      .select(colsToOutput)
-      .where(keyCol, key || 'undefined')
-      .andWhere(group.cols.status, enuBannableStatus.active)
-      .leftJoin(group.tblName, group.cols.id, cols.assigned_grpID)
-      .andWhere(cols.status, enuBannableStatus.active)
-      .first();    
-    if(user) 
-      user.privs = deepMerge(user.grpPrivs, user.specialPrivs)
-    return user
+  const db = await getDB();
+  const colsToOutput = resolveCols(undefined, isAdmin, public_cols, cols).map(c => cols[c as keyof typeof cols]);
+  const keyCol = openID ? cols.openID : cols.key;
+  const user = await db<IntfUser>(tblName)
+    .select(colsToOutput)
+    .where(keyCol, key || 'undefined')
+    .andWhere(group.cols.status, enuBannableStatus.active)
+    .leftJoin(group.tblName, group.cols.id, cols.assigned_grpID)
+    .andWhere(cols.status, enuBannableStatus.active)
+    .first();
+  if (user)
+    user.privs = deepMerge(user.grpPrivs, user.specialPrivs)
+  return user
 }
 
 export default {
@@ -133,7 +135,7 @@ export default {
       .leftJoin(group.tblName, group.cols.id, cols.assigned_grpID)
       .andWhere(cols.status, enuBannableStatus.active)
       .first()
-    if(user) 
+    if (user)
       user.privs = deepMerge(user.grpPrivs, user.specialPrivs)
     return user
   },
@@ -141,7 +143,7 @@ export default {
   updateRefreshHash: async (usrKey: string, refreshHash: string) => {
     const db = await getDB();
     return await db(tblName)
-      .update({usrRefreshHash: refreshHash})
+      .update({ usrRefreshHash: refreshHash })
       .where(cols.key, usrKey)
   },
 
@@ -152,7 +154,7 @@ export default {
     userOpenID: string | undefined = undefined,
     userFullname: string | undefined = undefined,
     usrPrivs: Record<string, unknown> = {},
-    grpId: number = DEFAULT_GROUP.id
+    grpId: number = DEFAULT_GROUP_ID
   ): Promise<number> => {
     const db = await getDB();
     const res = await db(tblName)
@@ -161,12 +163,46 @@ export default {
         usrEmail: userEmail || null,
         usrMobile: userMobile || null,
         usrOpenID: userOpenID || null,
-        usrName : userFullname || null,
+        usrName: userFullname || null,
         usrSpecialPrivs: JSON.stringify(usrPrivs),
         usrAssigned_grpID: grpId
       })
       .returning(cols.id);
     return Array.isArray(res) ? (res[0]?.[cols.id as keyof typeof res[0]] ?? res[0]) : res;
+  },
+
+  setOTP: async (mobile: string, otp: string) => {
+    const db = await getDB();
+    const res = await db(tblName)
+      .select(cols.otp)
+      .where(cols.mobile, mobile)
+      .first()
+
+    if (res)
+      await db(tblName)
+        .update({ usrOTP: otp })
+        .where(cols.mobile, mobile)
+    else
+      await db(tblName)
+        .insert({
+          usrKey: md5(crypto.randomUUID()),
+          usrMobile: mobile,
+          usrOTP: otp,
+          usrAssigned_grpID: VERIFIED_GROUP_ID
+        })
+  },
+
+  verifyOTP: async (mobile: string, otp: string) => {
+    const db = await getDB();
+    const res = await db(tblName)
+      .select(cols.otp, cols.key)
+      .where(cols.mobile, mobile)
+      .first()
+
+      console.log({res, mobile, otp})
+
+    if(res && res.usrOTP === otp)
+      return res
   },
 
   /** Update last login */

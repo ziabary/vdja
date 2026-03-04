@@ -83,7 +83,7 @@ function toast(message = 'عملیات موفق', type = 'success', delay = 4000
   bsToast.show();
 
   toastEl.addEventListener('hidden.bs.toast', () => toastEl.remove());
-}; 
+};
 
 function showError(message) {
   toast(message, 'danger', 10000);
@@ -93,55 +93,55 @@ function movingDotsLoader() {
   return `<span class="loader"><div class="dot"></div><div class="dot"></div><div class="dot"></div></span>`;
 }
 
-function setClass(obj, classNames, apply) {
-  if(!obj) return
+function setClass(obj, classNames, apply = true) {
+  if (!obj) return
   const setIndividual = (className) => {
     if (apply) obj.classList.add(className);
     else obj.classList.remove(className);
   }
 
-  if(typeof classNames === 'string')
+  if (typeof classNames === 'string')
     setIndividual(classNames)
-  else 
-    classNames.forEach(c=>setIndividual(c))
+  else
+    classNames.forEach(c => setIndividual(c))
 }
 
- 
+
 const toKiloByte = (byte) => byte / 1024;
 const toMegaByte = (byte) => byte / 1024 / 1024;
 const toGigaByte = (byte) => byte / 1024 / 1024 / 1024;
 const toHuman = byte => {
-  if(byte > 1024 * 1024 * 1024) return toGigaByte(byte).toFixed(1) + " GB"
-  else if(byte > 1024 * 1024) return toMegaByte(byte).toFixed(1) + " MB"
-  else if(byte > 1024) return toKiloByte(byte).toFixed(0) + " KB"
+  if (byte > 1024 * 1024 * 1024) return toGigaByte(byte).toFixed(1) + " GB"
+  else if (byte > 1024 * 1024) return toMegaByte(byte).toFixed(1) + " MB"
+  else if (byte > 1024) return toKiloByte(byte).toFixed(0) + " KB"
   else byte + " B"
 }
 
 const btnToggleDarkMode = document.getElementById('btnToggleDarkMode')
 function setDarkMode(state) {
-    const active = state === "dark"
-    setClass(btnToggleDarkMode, 'fa-moon', !active)
-    setClass(btnToggleDarkMode, 'fa-sun', active)
-    document.documentElement.setAttribute('data-bs-theme', active ? 'dark' : 'light')
-    localStorage.setItem('tgmn-dark-mode', state)
-    
-    const logos = document.querySelectorAll(".bi-color")
-    logos.forEach(logo=>{logo.src = logo.src.replace(active ? '-light' : '-dark', active ? '-dark' : '-light' )})
+  const active = state === "dark"
+  setClass(btnToggleDarkMode, 'fa-moon', !active)
+  setClass(btnToggleDarkMode, 'fa-sun', active)
+  document.documentElement.setAttribute('data-bs-theme', active ? 'dark' : 'light')
+  localStorage.setItem('tgmn-dark-mode', state)
 
-    const navbar = document.getElementById("navbar")
-    if(navbar) setClass(navbar, 'navbar-dark', active)
-    if(navbar) setClass(navbar, 'navbar-light', !active)
-    if(navbar) setClass(navbar, 'bg-dark', active)
-    if(navbar) setClass(navbar, 'bg-light', !active)
-    
-    document.querySelectorAll(".btn-light").forEach(el=>{
-      setClass(el, 'btn-light', !active); 
-      setClass(el, 'btn-dark', active); 
-    })
+  const logos = document.querySelectorAll(".bi-color")
+  logos.forEach(logo => { logo.src = logo.src.replace(active ? '-light' : '-dark', active ? '-dark' : '-light') })
+
+  const navbar = document.getElementById("navbar")
+  if (navbar) setClass(navbar, 'navbar-dark', active)
+  if (navbar) setClass(navbar, 'navbar-light', !active)
+  if (navbar) setClass(navbar, 'bg-dark', active)
+  if (navbar) setClass(navbar, 'bg-light', !active)
+
+  document.querySelectorAll(".btn-light").forEach(el => {
+    setClass(el, 'btn-light', !active);
+    setClass(el, 'btn-dark', active);
+  })
 }
 
 setDarkMode(localStorage.getItem('tgmn-dark-mode'))
-setTimeout(()=>{if(btnToggleDarkMode)btnToggleDarkMode.onclick=ev=>setDarkMode(localStorage.getItem('tgmn-dark-mode') === "dark" ? "" : "dark")})
+setTimeout(() => { if (btnToggleDarkMode) btnToggleDarkMode.onclick = ev => setDarkMode(localStorage.getItem('tgmn-dark-mode') === "dark" ? "" : "dark") })
 
 function confirmDialog(options = {}) {
   return new Promise((resolve) => {
@@ -200,12 +200,11 @@ function confirmDialog(options = {}) {
     // ----- BODY -----
     bodyEl.innerHTML = `
       <p class="mb-3">${config.message}</p>
-      ${
-        config.input
-          ? `<input class="form-control text-center"
+      ${config.input
+        ? `<input class="form-control text-center"
                    placeholder="${config.input.placeholder || ''}"
                    value="${config.input.value || ''}">`
-          : ''
+        : ''
       }
     `;
 
@@ -213,12 +212,11 @@ function confirmDialog(options = {}) {
 
     // ----- FOOTER -----
     footerEl.innerHTML = `
-      ${
-        config.showCancel
-          ? `<button class="btn ${config.cancelClass} px-4" data-bs-dismiss="modal">
+      ${config.showCancel
+        ? `<button class="btn ${config.cancelClass} px-4" data-bs-dismiss="modal">
                ${config.cancelText}
              </button>`
-          : ''
+        : ''
       }
       <button class="btn ${config.confirmClass} px-4" id="confirmYesBtn">
         ${config.confirmText}
@@ -251,3 +249,10 @@ function confirmDialog(options = {}) {
     }
   });
 }
+
+function num2arabic(str) {
+  const persianToEnglish = { '۰': '0', '۱': '1', '۲': '2', '۳': '3', '۴': '4', '۵': '5', '۶': '6', '۷': '7', '۸': '8', '۹': '9' };
+  return str.replace(/[۰-۹]/g, (match) => persianToEnglish[match]);
+}
+
+function str2Num(str){return str*1}
