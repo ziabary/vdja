@@ -24,6 +24,7 @@ import auth from './routes/auth';
 import rag from './routes/rag';
 import think from './routes/think';
 import rahbari from './routes/rahbari';
+import stats from './routes/stats';
 import type { IntfExHttp } from './interfaces/exHttp';
 import { enuLLMServices } from './interfaces/config';
 import setupAPICallLogger from './utils/apiCallLog';
@@ -97,8 +98,8 @@ async function init() {
     auth,
     rag,
     think,
-    rahbari
-    // stats,
+    rahbari,
+    stats,
   ])
 
 

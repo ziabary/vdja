@@ -257,6 +257,9 @@
   }
 
   @media (max-width: 640px) {
+    .main-chat .bg-image {
+      position: fixed;
+    }
     .main-chat .bg-image img{
       height: auto;
       width: 100vw;

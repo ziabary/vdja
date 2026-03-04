@@ -155,6 +155,7 @@
     <script src="js/vendors//bootstrap.bundle.min.js"></script>
     <script src="js/common.js"></script>
     <script>
+      return
       const userKey = sessionStorage.getItem("user_key") || localStorage.getItem("user_key");
       if (!userKey || userKey.length < 16) {
         showError("لطفاً ابتدا وارد شوید.");

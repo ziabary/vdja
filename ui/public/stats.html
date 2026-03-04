@@ -6,6 +6,7 @@
     <title>آمار کاربران - دستیار هوشمند فارسی</title>
     <link rel="stylesheet" href="css/bootstrap.rtl.min.css" />
     <link rel="stylesheet" href="fonts/IranSansX/fontiran.css" />
+    <link rel="stylesheet" href="fonts/fontawesome/active/all.css" />
     <link rel="stylesheet" href="css/style.css" />
     <style>
       body {
@@ -84,16 +85,18 @@
     <script src="js/vendors//bootstrap.bundle.min.js"></script>
     <script src="js/vendors//marked.min.js"></script>
     <script src="js/vendors//md5.min.js"></script>
-    <script src="js/common.js"></script>
     <!-- MathJax -->
     <script src="js/vendors//mathjax/config.js"></script>
     <script src="js/vendors//polyfill.min.js?features=es6"></script>
     <script src="js/vendors//mathjax/es5/tex-mml-chtml.js"></script>
+    <script src="js/common.js"></script>
+    <script src="js/auth.js"></script>
 
     <script>
+      let auth;
       async function loadStats() {
         try {
-          const res = await apiFetch("/api/admin/stats");
+          const res = await auth.apiFetch("/api/admin/stats");
           if (!res.ok) throw new Error("دسترسی ممنوع یا خطا در سرور");
 
           const data = await res.json(); // { users: [...], totals: {...}, total_users: N }
@@ -166,9 +169,11 @@
         }
       }
 
-      // بارگذاری اولیه و هر ۳۰ ثانیه بروزرسانی خودکار
-      loadStats();
-      setInterval(loadStats, 30000);
+      setupAuth("translate", false).then(r=>{
+        auth=r
+        loadStats();
+        setInterval(loadStats, 30000);
+      })
     </script>
   </body>
 </html>
