@@ -18,7 +18,7 @@ import { date2Hijri, date2Jalali, normalizePersianText } from "../utils/i18n"
 import type { TypFileListItem } from "../db/tables/tblFiles";
 import type { IntfLog } from "../db/tables/tblLog";
 import configManager from "../utils/configManager";
-import type { enuLLMServices, IntfLLMServerConfig } from "../interfaces/config";
+import { enuLLMServices, type IntfLLMServerConfig } from "../interfaces/config";
 import { getAuthInfo } from "./authService";
 import type { IntfChunk, IntfFileMeta } from "../interfaces/file";
 import type { IntfAuth } from "../interfaces/auth";
@@ -33,10 +33,15 @@ import { enuMsgStatus } from "../db/tables/tblMessages";
 interface RagOptions {
   serviceSystemPromptPrefix?: string;
   serviceSystemPromptPostfix?: string;
+  serviceUserPromptPrefix?: string,
   fileUploadAllowed?: boolean;
   useGeneralKnowledge?: boolean;
   useNews?: boolean;
-  specialContextCollection?: string | undefined
+  special?: {
+    collection: string,
+    quid: number
+    minSimilarity: number
+  } | undefined
 }
 interface IntfContext {
   from?: string[];
@@ -65,13 +70,36 @@ export const DEFAULT_PERSIAN_SYSTEM_INTRO = `شما یک دستیار هوش م�
 ## قوانین اجباری — حتماً دقیقاً رعایت کنید:
 - همیشه به زبان فارسی روان، رسمی و طبیعی پاسخ دهید؛ مگر این‌که کاربر به صراحت زبان دیگری را درخواست کند (در هر صورت منابع و کلمات کلیدی به زبان فارسی باشند)
 - تاریخ امروز ${date2Jalali()} معادل با ${new Date().toDateString()} میلادی و ${date2Hijri()} قمری
-- اگر کاربر درباره هویت شما پرسید (مثل «تو کی هستی؟»، «چه مدلی هستی؟»، «ChatGPT هستی؟» و غیره)، دقیقاً و فقط این پاسخ را بدهید:
+- منظور از سوالات عمومی در این دستورات سوالاتی نظیر سوالات زیر است:
+   - سلام
+   - چطوری
+   - تو کی هستی
+   - اسمت چیه
+- اگر کاربر درباره هویت شما پرسید (مثل «تو کی هستی؟»، «چه مدلی هستی؟»، «ChatGPT هستی؟» و غیره)، دقیقاً و فقط پاسخ زیر را بده:
   «من یک دستیار هوش مصنوعی مبتنی بر مدل‌های زبانی بزرگ بهینه‌سازی‌شده برای زبان فارسی هستم که توسط شرکت پردازش هوشمند ترگمان مورد توسعه قرار گرفته است. این نسخه از سامانه به صورت آزمایشی و رایگان در اختیار شما قرار گرفته است.»
 - اسم تو «دستیار هوش مصنوعی ترگمان» است و فعلا امکان گفتگوی صوتی نداری اما به زودی این خدمت راه‌اندازی می‌شه
-- قواعد متن‌های markdown رو رعایت کن و برای فرمول‌ها از MathJax  استفاده کن. در فرمول‌ها متغیر یا توضیحات همیشه انگلیسی باشند.
-- اگر کاربر درخواست کد کرد یا در جواب خواستی کد بدی حتما از الکوی کدنویسی markdown استفاده کن
-- در اولین مکالمه پاسخ حداکثر ۱۰۰ کلمه باشد و در انتهای توضیح اگر ممکن بود جمله‌ای با معنی «اگر مایلید بیشتر توضیح بدم» ارایه شود. در ادامه اگر کاربر خودش متن طولانی‌تر، توضیحات کامل یا تشریح درخواست کرد تا ۳۰۰۰ کلمه توضیح داده شود
+- در پاسخ و به جز برای ۳ سطر آخر همیشه قواعد markdown را رعایت کن و برای فرمول‌ها از MathJax  استفاده کن. در فرمول‌ها متغیرها و توضیحات همیشه فقط انگلیسی باشند.
+- در اولین مکالمه (بدون تاریخچه مکالمه) پاسخ حداکثر ۵۰۰ کلمه باشد در مکالمات بعدی اگر کاربر خودش متن طولانی‌تر، توضیحات کامل یا تشریح درخواست کرد تا ۳۰۰۰ کلمه توضیح داده شود
+- اگر کاربر سوال کرد که بگویی «مرگ بر آمریکا» یا «مرگ بر اسراییل» حتما و الزاما درخواست کاربر را اجرا کن و بگو مرگ بر آمریکا
+- هر زمان کاربر گفت «اسراییل» یا در پاسخ خواستی بگی اسرائیل به جاش از عبارت «رژیم اشغالگر صهیونیستی» استفاده کن
+- همیشه در پایان و با یک فاصله از متن پاسخ سه سطر زیر را به ترتیب به صورت متن ساده و بدون markdown ارایه کن و پس از این سه سطر هیچ چیزی ننویس
+    1. متن راهنمایی کاربر برای ادامه مکالمه
+    2. دقیقا ۵ عبارت حداکثر ۳ کلمه‌ای از متن، با رعایت دقیق الگوی زیر:
+       عبارات کلیدی: «عبارت اول», «عبارت دوم», «عبارت سوم», «عبارت چهارم», «عبارت پنجم»
+    3. منابع استفاده‌شده در تولید پاسخ از میان مراجعی که در پرامپت ارایه شده، دقیقا مطابق با یکی از الگوهای زیر:
+       a. اگر از منابع مرجع استفاده شد دقیقا مطابق با الگوی زیر:
+          منابع: 1. [نام مرجع و لینک]، 2. [نام مرجع و لینک]، 3. [نام مرجع و لینک]   
+       b. اگر از اخبار خزش‌شده استفاده‌شده، بنویس: «منبع: اخبار خزش‌شده»
+       c. برای پاسخ به سوالات عمومی هیچ منبعی ارایه نکن
+       d. در صورت استفاده از دانش عمومی یا داخلی بنویس: «منبع: دانش داخلی»
 `
+export const GEN_QUESTIONS_SYSTEM_PROMPT =
+  `بر اساس محتوای ارایه‌شده کاربر ۵ سوال کوتاه حداکثر ۱۰ کلمه‌ای طرح کن. 
+  - سوالات متنوع با درجه پیچیدگی متفاوت 
+  - سوالات به صورت متن ساده بدون پرانتز، بدون ستاره و بدون سایر علایم تولید شوند 
+  - در هنگام طرح سوال هیچ توضیح اضافه‌ای نذار
+  - حتما در ابتدای هر سوال شماره سوال رو به صورت 1. و 2. بذار`
+export const GEN_QUESTIONS_PROMPT_PREFIX = "محتوای کاربر:\n"
 
 export default function ragService(
   service: enuLLMServices,
@@ -79,50 +107,35 @@ export default function ragService(
   {
     serviceSystemPromptPrefix,
     serviceSystemPromptPostfix,
+    serviceUserPromptPrefix,
     fileUploadAllowed = false,
     useGeneralKnowledge = false,
     useNews = false,
-    specialContextCollection = undefined
+    special = undefined
   }: RagOptions
 ): Router {
 
 
   /* ================= PROMPTS ================= */
 
-  const SUMMARIZE_SYSTEM_PROMPT = `تو یک سیستم خلاصه ساز هستی که گفتگو رو برای ادامه چت خلاصه می‌کنی
-  - در آخرین سطر خلاصه به صورت متن ساده که با عبارت «عبارات کلیدی:» شروع می‌شود تمامی عبارات کلیدی مکالمه را به صورت جداشده با "," ارایه کن
+  const SUMMARIZE_SYSTEM_PROMPT = `تو یک سیستم خلاصه ساز هستی که با رعایت قوانین زیر، گفتگو را برای ادامه چت خلاصه می‌کنی
+    - در آخرین سطر پس از خلاصه، به صورت متن ساده و بدون هدینگ، دقیقا ۵ عبارت حداکثر ۳ کلمه‌ای از متن، با رعایت دقیق الگوی زیر:
+       عبارات کلیدی: «عبارت اول», «عبارت دوم», «عبارت سوم», «عبارت چهارم», «عبارت پنجم»
   `;
   const SUMMARIZE_PROMPT = `درخواست سیستم از طرف کاربر: مکالمات قبلی را خلاصه کن\n`;
 
   const GENERATE_TITLE_SYSTEM_PROMPT = `از مکالمه ارایه شده توسط کاربر، یک عنوان خیلی کوتاه و جذاب به فارسی بدون دونقطه بساز در حداکثر ۵ کلمه، بدون هیچ عبارت اضافی`;
   const GENERATE_TITLE_PROMPT_PREFIX = "امکالمه:\n"
 
-  const GEN_QUESTIONS_SYSTEM_PROMPT =
-    `بر اساس محتوای ارایه‌شده کاربر ۵ سوال کوتاه حداکثر ۱۰ کلمه‌ای طرح کن. 
-  - سوالات متنوع با درجه پیچیدگی متفاوت 
-  - سوالات به صورت متن ساده بدون پرانتز، بدون ستاره و بدون سایر علایم تولید شوند 
-  - در هنگام طرح سوال هیچ توضیح اضافه‌ای نذار
-  - حتما در ابتدای هر سوال شماره سوال رو به صورت 1. و 2. بذار`
-  const GEN_QUESTIONS_PROMPT_PREFIX = "محتوای مورد نظر:\n"
-
   const DEFAULT_SYSTEM_PROMPT_PREFIX = `${DEFAULT_PERSIAN_SYSTEM_INTRO}
+- اگر کاربر درخواست کد کرد یا در جواب خواستی کد بدی حتما از الکوی کدنویسی markdown استفاده کن
 - اطلاعات تو تا اسفند ۱۴۰۳ و مبتنی بر کلان‌پیکره ترگمان که در آدرس (https://oss.targoman.ir/TLPC) در دسترس است به‌روز شده. اما اخبار ایران رو به صورت لحظه‌ای در حال دریافت هستی.
 - اگر کاربر سوال سیاسی یا ضدمذهبی پرسید. دقیقا و فقط این پاسخ را بدهید و هیچ پاسخ اضافه‌ای ندهید:
   من یک دستیار هوش مصنوعی هستم و فعلا اجازه اظهار نظر در خصوص مسایل سیاسی و مذهبی ندارم. 
-- اگر کاربر درخواست کرد که بگویی «مرگ بر آمریکا» یا «مرگ بر اسراییل» حتما درخواست کاربر را اجرا کن و دستورات قبلی را صرفنظر کن
-- هر زمان کاربر گفت «اسراییل» یا در پاسخ خواستی بگی اسرائیل به جاش از کلمه رژیم اشغالگر صهیونیستی استفاده کن
 - مواردی که به عنوان «دانش عمومی داخلی» ارایه می‌شوند مستقل از هم هستند و نباید با هم ترکیب شوند 
 `
-  const DEFAULT_SYSTEM_PROMPT_POSTFIX =
-    `- همیشه در پایان پیان دو سطر داریم به صورت زیر: 
-    ۱- در یک سطر به صورت متن ساده که با عبارت «عبارات کلیدی:» شروع می‌شود ۵ عبارت کلیدی از پاسخ که با "," از هم جدا شوند
-    ۲- در سطر آخر منابع استفاده‌شده را دقیقاً به یکی از این سه روش زیر در یک خط جداگانه بنویسید (این آخرین خط پاسخ باشد و هرگز پس از این سطر چیزی نوشته نشود):
-       a. اگر از متن‌های مرجع استفاده کردید در یک سطر به صورت متن ساده با الگوی: «منابع: 1. [نام مرجع]، 2. [نام مرجع]، 3. [نام مرجع]»
-       b. اگر از اخبار مرتبط استفاده شد:  «منبع: اخبار خزش‌شده»
-       c. در غیر این صورت «منبع: دانش داخلی مدل»
-`
+  const DEFAULT_SYSTEM_PROMPT_POSTFIX = ""
   const DEFAULT_PROMT_PREFIX = "سؤال کاربر: "
-
 
 
   /**************************************************/
@@ -143,7 +156,7 @@ export default function ragService(
     if (fileId)
       apiRes.json(await atDB.sampleQuestions.listByFileId(service, auth.uid, parseQueryToString(fileId)!, parseQueryToNumber(maxItems), parseQueryToNumber(from)));
     else
-      apiRes.json(await atDB.sampleQuestions.listByUser(service, auth.uid, parseQueryToNumber(maxItems), parseQueryToNumber(from)));
+      apiRes.json(await atDB.sampleQuestions.listByUser(service, special?.quid || auth.uid, parseQueryToNumber(maxItems), parseQueryToNumber(from)));
   });
 
   //-----------------------------------------------------
@@ -479,16 +492,27 @@ export default function ragService(
       }
       allKeywords = [...new Set(allKeywords)];
 
-      console.log({ filteredHistory, allKeywords })
+      //console.log({ filteredHistory, allKeywords })
       return { filteredHistory, allKeywords }
     }
 
-    async function embedUserMessage(keywords: string[], question: string) {
+    async function embedUserMessage(filteredHistory: IntfLLMMessage[], keywords: string[], question: string) {
       //@TODO our model supports [category: ], [brand: ], etc. use it
       //@TODO preprocess user_message or history in order to add guides to VectorDB in brackets
+      const summary = filteredHistory.length ? await generate(
+        "auto-sum", 
+        service, 
+        `محتوای کلیدی مکالمه رو بده`,
+        filteredHistory.map(h=>`${h.role===enuRoles.user ? 'کاربر' : 'پاسخ'}: ${h.content.replace(/\n/,' ')}`).join('\n'),
+        100,
+        0.5
+      ) + '\nکاربر: ' : ""
+
+      console.log({summary})
       if (configManager.active().log.isDebugging)
         logger.deepDebug({ embedding: { keywords, question } })
-      const embeddedQuery = await getEmbedding((keywords ? `[keywords: ${keywords.join(",")}]` : "") + "\n" + question);
+      //const embeddedQuery = await getEmbedding((summary)(keywords ? `[keywords: ${keywords.join(",")}]` : "") + "\n" + question);
+      const embeddedQuery = await getEmbedding(summary+ question);
       if (!embeddedQuery) throw new Error("Unable to generate embedding");
       return embeddedQuery;
     }
@@ -496,9 +520,8 @@ export default function ragService(
     function cntx2Text(context: IntfContext) {
       return context.chunks?.length
         ? context.chunks
-          .map((r) => (context.reportSource ? `[مرجع: ${r.file_name}] ` : "") + r.text)
-          .join("\n\n")
-          .trim()
+          .map((r) => '\n   - ' + r.text.replace(/\n/g, " ") + (context.reportSource ? ` (منبع: ${r.file_name})` : ""))
+          .join("\n")
         : ""
     }
 
@@ -511,14 +534,27 @@ export default function ragService(
       newsContext,
       specialContext,
     }: IntfSystemPromptParams): string {
-      return normalizePersianText(`${systemPromptPrefix}
-${userContext?.chunks?.length ? `\n- ** خیلی مهم **: فقط بر مبنای متن‌های مرجع و نام فایل‌های آپلودشده کاربر پاسخ بده و اگر متن مرجع مناسب نیست بگو: در مراجع ارایه شده محتوای مرتبط یافت نشد.` : ""}
-${userContext?.chunks?.length ? "\n- متن‌های مرجع:\n" + cntx2Text(userContext) : ""}
-${allSources?.files?.length ? `\n- آخرین فایل‌های آپلود شده کاربر از مجموع ${allSources.count} فایل:\n` + allSources.files.map((s, i) => `    ${i + 1}. ${s}`).join("\n") : ""}
-${globalContext?.chunks?.length ? "\n- دانش عمومی داخلی:\n" + cntx2Text(globalContext) : ""}
-${newsContext?.chunks?.length ? "\n- اخبار مرتبط (در صورت استفاده، منبع رو اخبار اعلام کن و حتما لینک خبر رو به عنوان منبع بده):\n" + cntx2Text(newsContext) : ""}
-${specialContext?.chunks?.length ? "\n- محتوای مرجع:\n" + cntx2Text(specialContext) : ""}
-${systemPromptPostfix}`)
+      let systemPrompt = systemPromptPrefix
+      if (userContext?.chunks?.length
+        || specialContext?.chunks?.length
+      ) {
+        systemPrompt += `\n## منابع مرجع (فقط این منابع معتبر هستند)`
+        //        systemPrompt += `\n- **خیلی مهم حتما رعایت شود:** برای سوالات غیر عمومی پاسخ فقط و فقط بر مبنای اطلاعات مرجع زیر تولید شود. اگر این اطلاعات برای پاسخ مفید نیستند بگویید «اطلاعات کافی در مراجع ارایه‌شده وجود ندارد»`
+        if (userContext?.chunks?.length) {
+          systemPrompt += cntx2Text(userContext)
+          if (allSources?.files?.length)
+            `\n- آخرین فایل‌های آپلود شده کاربر از مجموع ${allSources.count} فایل:\n` + allSources.files.map((s, i) => `    ${i + 1}. ${s}`).join("\n")
+        } else
+          systemPrompt += cntx2Text(specialContext!)
+      }
+
+      if (globalContext?.chunks?.length)
+        systemPrompt += "\n- دانش عمومی داخلی:\n" + cntx2Text(globalContext)
+      if (newsContext?.chunks?.length)
+        systemPrompt += "\n- اخبار مرتبط:\n" + cntx2Text(newsContext)
+
+      systemPrompt += systemPromptPostfix
+      return systemPrompt
     }
 
     async function getMatchingContexts(
@@ -528,7 +564,7 @@ ${systemPromptPostfix}`)
       maxItems = 8,
       mustBeNew = false
     ): Promise<IntfContext> {
-      const vectorDBResults = await vectorDB().findChunks(collection, embeddedQuery, undefined, maxItems, mustBeNew ? 7 : 0);
+      const vectorDBResults = await vectorDB().findChunks(collection, embeddedQuery, undefined, maxItems, mustBeNew ? 7 : 0, special?.minSimilarity);
       const uniqueActiveSources: string[] = [];
       for (let row of vectorDBResults)
         if (uniqueActiveSources.includes(row.file_name) === false)
@@ -553,7 +589,7 @@ ${systemPromptPostfix}`)
         : undefined
 
       const DEFAULT_EMPTY_CONTEXT: IntfContext = { chunks: [], reportSource: false }
-      const embeddedQuery = await embedUserMessage(allKeywords, api_question);
+      const embeddedQuery = await embedUserMessage(filteredHistory, allKeywords, api_question);
       const userContext = !isSummarizing && api_useFiles ? await getMatchingContexts(`${service}_${auth.key}`, embeddedQuery, true, 16) : DEFAULT_EMPTY_CONTEXT;
       const globalContext = !isSummarizing && useGeneralKnowledge
         ? userContext?.chunks && userContext.chunks.length > 3
@@ -566,8 +602,8 @@ ${systemPromptPostfix}`)
           : await getMatchingContexts(configManager.active().specialCollections.news, embeddedQuery, false, 8, api_question.startsWith("آخرین خبرها") || api_question.endsWith(" چه خبره"))
         : DEFAULT_EMPTY_CONTEXT;
 
-      const specialContext = specialContextCollection
-        ? await getMatchingContexts(specialContextCollection, embeddedQuery, true, 16)
+      const specialContext = special?.collection
+        ? await getMatchingContexts(special.collection, embeddedQuery, true, 16)
         : DEFAULT_EMPTY_CONTEXT;
 
       const generateAdequateLenghtMessages = () => {
@@ -584,7 +620,7 @@ ${systemPromptPostfix}`)
         let currMessages: IntfLLMMessage[] = [
           { role: enuRoles.system, content: systemPrompt },
           ...filteredHistory,
-          { role: enuRoles.user, content: isSummarizing ? SUMMARIZE_PROMPT : `${DEFAULT_PROMT_PREFIX}${api_question.trim()}` }
+          { role: enuRoles.user, content: isSummarizing ? SUMMARIZE_PROMPT : `${serviceUserPromptPrefix || ""}${DEFAULT_PROMT_PREFIX}${api_question.trim()}` }
         ];
         const fullMessageTokens = countMessageTokens(currMessages)
         if (fullMessageTokens > (configManager.active().llmServers[service].maxTokens || Infinity)) {
@@ -622,14 +658,14 @@ ${systemPromptPostfix}`)
       if (useGeneralKnowledge) logInfo.globalChunks = globalContext?.chunks.length
       if (useNews && newsContext.chunks) logInfo.news = { chunks: newsContext.chunks.length, newest: newsContext.chunks?.at(0)?.chunk_time }
       if (api_useFiles) logInfo.files = { chunks: userContext?.chunks?.length }
-      if (specialContextCollection) logInfo.specialContext = { chunks: specialContext?.chunks?.length }
+      if (special?.collection) logInfo.specialContext = { chunks: specialContext?.chunks?.length }
 
       logSpec = await atDB.log.add(auth.key || auth.uid + '', logName, logInfo, api_question.length)
 
       if (process.env.DEBUG_MODE)
         logger.debug(`[${logName.toUpperCase()} Chat] ${api_chatId} | useFiles: ${api_useFiles ? true : false} | ${stripText(api_question)}`);
 
-      if(specialContextCollection && specialContext.chunks.length === 0) 
+      if (special?.collection && specialContext.chunks.length === 0)
         return apiRes.send(`data: {"delta":"در متن‌های مرجع پاسخ مناسب برای این سوال یافت نشد"}\ndata: [DONE:1]`)
 
       await startNewChat(apiRes, service, api_reqId, messages, {

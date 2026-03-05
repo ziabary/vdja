@@ -51,14 +51,14 @@
       <div class="chat-helper row mb-5 text-center hidden">
         <h5>هرچه می‌خواهی بپرس بر اساس آثار و اندیشه رهبر شهید پاسخ می‌دهم</h5>
       </div>
-      <div class="input-group mt-3 w-100">
+      <div class="input-group mt-3 w-100" style="opacity:0.7">
         <textarea type="text" id="messageInput" class="form-control" placeholder="هر چی می‌خوای بپرس&hellip;"></textarea>
         <div class="message-buttons">
           <button id="btnSend" class="btn btn-text" title="ارسال"><i class="fa fa-send fa-reverse"></i></button>
           <button id="btnStop" class="btn btn-text hidden" title="توقف"><i class="fa fa-stop fa-reverse"></i></button>
         </div>
       </div>
-      <div id="chat-helper-container" class="chat-helper mt-3 px-2 ltr">
+      <div id="chat-helper-container" class="chat-helper mt-3 px-2">
       </div>
       </div>
     </div>
@@ -102,8 +102,7 @@
       /*********************************/
       function updateQuestions(questions, filesEnabled){
         page.chatHelper.innerHTML = ""
-        SAMPLE_MESSAGES.sort((a,b)=>Math.random()>.5 ? -1 : 1).slice(0, 5).forEach(rag.addHelpItem)
-        rag.addHelpItem("Help please!!!")
+        questions.forEach(item=>rag.addHelpItem(item.smqQuestion || item))
       }
 
       /*********************************/
@@ -135,6 +134,7 @@
               messageInput.focus()
           }
           if(whatToUpadte === "chats" || whatToUpadte === "all") await rag.loadChats();
+          if(whatToUpadte === "questions" || whatToUpadte === "all") await rag.loadQuestions(true);
       }
       
       const rag = setupRAG(page, {updateAppState, disableInputs, updateQuestions})

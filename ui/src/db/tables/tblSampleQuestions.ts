@@ -22,9 +22,9 @@ export const tblName = 'tblSampleQuestions';
    Types
 ======================= */
 export type IntfSampleQuestion = {
-  [K in keyof typeof cols as typeof cols[K]]: 
-    K extends 'id' | 'assigned_filID' ? number 
-    : string;
+  [K in keyof typeof cols as typeof cols[K]]:
+  K extends 'id' | 'assigned_filID' ? number
+  : string;
 };
 
 /* =======================
@@ -38,7 +38,7 @@ export default {
   listByFileId: async (
     service: string,
     userID: number,
-    fileId: number|string,
+    fileId: number | string,
     limit = 1000,
     from = 0
   ): Promise<Array<Pick<IntfSampleQuestion, typeof cols.question> & { filName: string }>> => {
@@ -58,6 +58,7 @@ export default {
       .andWhere(tblUser.cols.status, enuBannableStatus.active)
       .andWhere(tblGroup.cols.status, enuBannableStatus.active)
       .limit(Math.min(limit, 1000))
+      .orderByRaw('RAND()')
       .offset(from);
 
     return questions;
@@ -66,13 +67,27 @@ export default {
   /** List all questions visible to a user */
   listByUser: async (
     service: string,
-    userID: number,
+    userID: number | null,
     limit = 1000,
     from = 0
   ): Promise<Array<Pick<IntfSampleQuestion, typeof cols.question> & { filName: string }>> => {
     const db = await getDB();
 
-    const questions = await db(tblName)
+    if (userID)
+      return await db(tblName)
+        .select(cols.question, files.cols.name)
+        .leftJoin(files.tblName, files.cols.id, cols.assigned_filID)
+        .leftJoin(tblUser.tblName, tblUser.cols.id, files.cols.owner_usrID)
+        .leftJoin(tblGroup.tblName, tblGroup.cols.id, tblUser.cols.assigned_grpID)
+        .where(tblUser.cols.id, userID)
+        .andWhere(tblFiles.cols.service, service)
+        .andWhere(tblUser.cols.status, enuBannableStatus.active)
+        .andWhere(tblGroup.cols.status, enuBannableStatus.active)
+        .orderByRaw('RAND()')
+        .limit(Math.min(limit, 1000))
+        .offset(from);
+
+    return await db(tblName)
       .select(cols.question, files.cols.name)
       .leftJoin(files.tblName, files.cols.id, cols.assigned_filID)
       .leftJoin(tblUser.tblName, tblUser.cols.id, files.cols.owner_usrID)
@@ -81,10 +96,10 @@ export default {
       .andWhere(tblFiles.cols.service, service)
       .andWhere(tblUser.cols.status, enuBannableStatus.active)
       .andWhere(tblGroup.cols.status, enuBannableStatus.active)
+      .orderByRaw('RAND()')
       .limit(Math.min(limit, 1000))
       .offset(from);
 
-    return questions;
   },
 
   /** Add a question for a file */
@@ -97,15 +112,15 @@ export default {
     const db = await getDB();
 
     const fileSpecs = await tblFiles.get(service, userID, fileKey)
-    if(!fileSpecs) throw new exHttpAccessDenied("File not found or you have no access")
+    if (!fileSpecs) throw new exHttpAccessDenied("File not found or you have no access")
 
-    if(question.length > 100) 
+    if (question.length > 100)
       question = question.substring(0, 100)
 
     const res = await db(tblName)
       .insert({
-        smqQuestion: question,
-        smqAssigned_filID: fileSpecs[tblFiles.cols.id],
+        [cols.question]: question,
+        [cols.assigned_filID]: fileSpecs[tblFiles.cols.id],
       })
       .returning(cols.id);
 

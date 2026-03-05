@@ -15,7 +15,6 @@ export interface IntfChunkMeta {
   fileKey: string;
   page?: number;
   section?: string;
-  headingPath?: string[];
   time?: number
 }
 

@@ -66,7 +66,6 @@ export default function vectorDB() {
   const url = configManager.active().RAGDB.url
   let VDBClient = new QdrantClient({ url });
 
-
   async function colExists(collectionKey: string) {
     return (await VDBClient.collectionExists(collectionKey)).exists
   }
@@ -89,7 +88,6 @@ export default function vectorDB() {
       logger.error("Error initializing RAG-DB:", (ex as Error).message || ex);
     }
   }
-
 
   async function addFileText(
     collectionKey: string,
@@ -121,12 +119,8 @@ export default function vectorDB() {
         file_name: fileName,
       }
 
-      console.log({ approx: approximateTokenCount(chunkText), max: configManager.active().embedding.maxTokens })
-
       if (approximateTokenCount(chunkText) > configManager.active().embedding.maxTokens)
         chunkText = trimToTokenLimit(chunkText, configManager.active().embedding.maxTokens, approximateTokenCount);
-
-      console.log({ afterTrim: 1, approx: approximateTokenCount(chunkText), max: configManager.active().embedding.maxTokens })
 
       const embedding = await getEmbedding(chunkText);
       if (!embedding || !Array.isArray(embedding) || embedding.length === 0) {
@@ -161,23 +155,47 @@ export default function vectorDB() {
     return points.length;
   }
 
-  function weightedSort(data: QdrantSearchPoint[], scoreWeight = 0.6, timeWeight = 0.4) {
+  function weightedSort(data: QdrantSearchPoint[],
+    scoreWeight = 0.6,
+    timeWeight = 0.4,
+    titleWeight = 0,
+    lengthWeight = 0
+  ) {
     const now = Date.now() / 1000;
-    const maxChunkTime = Math.max(...data.map(i => (i.payload?.chunk_time ?? 0) as number));
     const maxTime = now - 0;
-  
+    const maxChunkLength = Math.max(...data.map(i => ((i.payload?.text as string)?.length ?? 0) as number)) || 1;
+
     return data.sort((a, b) => {
       const aTime = (a.payload?.chunk_time ?? 0) as number;
       const bTime = (b.payload?.chunk_time ?? 0) as number;
       const aScore = a.score || 0;
       const bScore = b.score || 0;
-  
+      const aTitle = ((a.payload?.text as string)?.startsWith("#") || false) as boolean;
+      const bTitle = ((b.payload?.text as string)?.startsWith("#") || false) as boolean;
+      const aLength = ((a.payload?.text as string)?.length || 0) as number;
+      const bLength = ((b.payload?.text as string)?.length || 0) as number;
+
       const aTimeScore = (now - aTime) / maxTime;
       const bTimeScore = (now - bTime) / maxTime;
-  
-      const aCombined = (aScore * scoreWeight) + (aTimeScore * timeWeight);
-      const bCombined = (bScore * scoreWeight) + (bTimeScore * timeWeight);
-  
+
+      const aLengthScore = aLength / maxChunkLength;
+      const bLengthScore = bLength / maxChunkLength;
+
+      const aTitleScore = aTitle ? 1 : 0;
+      const bTitleScore = bTitle ? 1 : 0;
+
+      const aCombined =
+        (aScore * scoreWeight) +
+        (aTimeScore * timeWeight) +
+        (aTitleScore * titleWeight) +
+        (aLengthScore * lengthWeight);
+
+      const bCombined =
+        (bScore * scoreWeight) +
+        (bTimeScore * timeWeight) +
+        (bTitleScore * titleWeight) +
+        (bLengthScore * lengthWeight);
+
       return bCombined - aCombined;
     });
   }
@@ -187,7 +205,8 @@ export default function vectorDB() {
     embeddedQuery: number[] | Float32Array,
     fileIds: string[] | undefined = undefined,
     limit: number = 8,
-    newerThanDays: number | undefined = undefined
+    newerThanDays: number | undefined = undefined,
+    minSimilarity: number = 0.8
   ): Promise<IntfChunkPayload[]> {
     // Early return if invalid
     if (!collectionKey
@@ -247,10 +266,10 @@ export default function vectorDB() {
       const { result } = await response.json();
       const points = result.points ?? [];
 
-      const filteredChunks = 
-        weightedSort(points.filter((r: QdrantSearchPoint) => r.payload?.col_Key === collectionKey && r.score > 0.8))
-        .slice(0, limit)
-        
+      const filteredChunks =
+        weightedSort(points.filter((r: QdrantSearchPoint) => r.payload?.col_Key === collectionKey && r.score > minSimilarity))
+          .slice(0, limit)
+
       if (configManager.active().log.isDebugging) {
         logger.deepDebug({
           chunks: filteredChunks.map((r: QdrantSearchPoint) => ({
@@ -317,12 +336,21 @@ export default function vectorDB() {
 
   async function getRandomChunks(
     collectionKey: string,
-    fileId: string,
+    fileId: string | null,
     maxCount: number
   ): Promise<string[]> {
     const chunks: string[] = [];
 
     let offset: string | null = null;
+
+    const filter: Filter = fileId ? {
+      must: [
+        {
+          key: "file_id",
+          match: { value: fileId },
+        } as FieldCondition,
+      ],
+    } : {}
 
     do {
       const { points, next_page_offset } = await VDBClient.scroll(collectionKey, {
@@ -330,14 +358,7 @@ export default function vectorDB() {
         offset,
         with_vector: false,
         with_payload: true, // we need text from payload
-        filter: {
-          must: [
-            {
-              key: "file_id",
-              match: { value: fileId },
-            } as FieldCondition,
-          ],
-        } as Filter,
+        filter,
       });
 
       // Extract text from payloads

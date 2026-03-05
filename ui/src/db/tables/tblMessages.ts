@@ -75,7 +75,7 @@ export default {
     service: string,
     userID: number,
     chatId: number|string,
-    msgId: string,
+    msgId: string|number,
     opinion: string
   ): Promise<number> => {
     const db = await getDB();
@@ -90,7 +90,9 @@ export default {
     const count = await db<IntfMessage>(tblName)
       .update({ msgOpinion: singleCharOpinion as 'u' | 'd' | 'w' })
       .where(cols.related_chtID, relatedChat.chtID)
-      .andWhere(qb => {qb.where(cols.key, msgId).orWhere(cols.key, msgId);});
+      .andWhere(qb => 
+        qb.where(cols.key, typeof msgId === "string" ? msgId : null)
+          .orWhere(cols.id, typeof msgId === "number" ? msgId : null));
 
     return count;
   },

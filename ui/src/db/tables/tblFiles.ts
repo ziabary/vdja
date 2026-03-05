@@ -91,14 +91,20 @@ export default {
   get: async (service:string, userID: number, fileKey: string | number): Promise<IntfFile | null> => {
     const db = await getDB();
 
-    const row = await db<IntfFile>(tblName)
+    const query = db<IntfFile>(tblName)
       .select('*')
       .where(cols.owner_usrID, userID)
       .andWhere(cols.service, service)
-      .andWhere(qb => {qb.where(cols.key, fileKey || null).orWhere(cols.id, fileKey || null);})
+      .andWhere(qb => 
+        qb.where(cols.key, typeof fileKey === "string" ? fileKey :  null)
+          .orWhere(cols.id, typeof fileKey === "number" ? fileKey :  null)
+      )
       .andWhere(qb => {qb.where(cols.status, enuFileStatus.active).orWhere(cols.status, enuFileStatus.processing);})
       .first();
-    return row ?? null
+
+    // const { sql, bindings } = query.toSQL();
+    // console.log({sql, bindings})
+    return await query ?? null
   },
 
   /** Delete a file */
@@ -138,18 +144,20 @@ export default {
     fileKey: string,
     fileName: string,
     fileSize: number,
-    chunksCount: number
+    chunksCount: number,
+    state: enuFileStatus = enuFileStatus.processing
   ): Promise<number> => {
     const db = await getDB();
 
     const res = await db(tblName)
       .insert({
-        filOwner_usrID: userID,
-        filService: service,
-        filKey: fileKey,
-        filName: fileName,
-        filSize: fileSize,
-        filChunkCount: chunksCount,
+        [cols.owner_usrID]: userID,
+        [cols.service]: service,
+        [cols.key]: fileKey,
+        [cols.name]: fileName,
+        [cols.size]: fileSize,
+        [cols.chunkCount]: chunksCount,
+        [cols.status]: state
       })
       .returning(cols.id);
     const insertRes =  (Array.isArray(res)) ? res[0]?.[cols.id as keyof typeof res[0]] ?? res[0] : res

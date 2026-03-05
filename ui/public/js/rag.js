@@ -234,6 +234,7 @@ function setupRAG(page, handlers, options) {
       sourceText = 'دانش داخلی مدل';
     } else {
       sourceText = sourceText
+      const a = `
         .replace(/^\d+\.\s*/gm, '')
         .replace(/منبع \d+[:：]\s*/gi, '')
         .replace(/منا?بع[:：]\s*/gi, '')
@@ -241,6 +242,7 @@ function setupRAG(page, handlers, options) {
         .map((s) => s.trim())
         .filter((s) => s && !/دانش داخلی/i.test(s))
         .join('، ');
+        `
     }
     mainAnswer = mainAnswer.replace(/(^|\n\n)LLM_GEN_CANCELLED$/, '<stopped>(ادامه تولید محتوا متوقف شد)</stopped>');
 

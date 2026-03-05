@@ -52,12 +52,12 @@ export default {
 
     const res = await db(tblName)
       .insert({
-        logBy_usrKey: userKey,
-        logAction: action,
-        logInfo: JSON.stringify(info),
-        logMsgLen: msgLen,
-        logResultCode: resultCode ?? null,
-        logResult: JSON.stringify(result ?? null),
+        [cols.by_usrKey]: userKey,
+        [cols.action]: action,
+        [cols.info]: JSON.stringify(info),
+        [cols.msgLen]: msgLen,
+        [cols.resultCode]: resultCode ?? null,
+        [cols.result]: JSON.stringify(result ?? null),
       })
       .returning(cols.id);
     return {logID : (Array.isArray(res)) ? res[0]?.[cols.id as keyof typeof res[0]] ?? res[0] : res}

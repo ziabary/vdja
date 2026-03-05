@@ -74,12 +74,6 @@ function fetchWithHttps(url: string, maxRedirects = 10) {
   });
 }
 
-interface IntfNews {
-  link: string,
-  time: Date | undefined,
-  text: string
-}
-
 let totalAdded = 0
 async function addFeedToDB(url: string, onFetchURL: ((link: string) => Promise<string[]>) | undefined = undefined) {
   console.log(`Trying ${url} on ${new Date().toLocaleString("fa-IR")}`);

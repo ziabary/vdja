@@ -13,7 +13,7 @@ import configManager from "../utils/configManager";
 function splitSentences(text: string): string[] {
   return text
     .replace(/\n+/g, " ")
-    .split(/(?<=[.!؟؟\?])(?:\s+|\n+)/)
+    .split(/(?<=[.!؟\?])(?:\s+|\n+)/)
     .map(s => s.trim())
     .filter(Boolean);
 }
@@ -120,7 +120,7 @@ export function semanticChunker(
         .slice(0, options.maxChars);
   }
 
-  return chunks.filter(c => c.text.length > 50);
+  return chunks.filter(c => c.text.length > options.minChars);
 }
 
 export default async function file2DB(

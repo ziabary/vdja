@@ -94,7 +94,9 @@ export default {
     const row = await db<IntfDBChat>(tblName)
       .select(cols.id, cols.title, cols.last_msgID, cols.createdAt)
       .where(cols.owner_usrID, userID)
-      .andWhere(qb => qb.where(cols.key, chatId || null).orWhere(cols.id, chatId || null))
+      .andWhere(qb => 
+        qb.where(cols.key, typeof chatId === "string" ? chatId :  null)
+          .orWhere(cols.id, typeof chatId === "number" ? chatId :  null))
       .andWhere(cols.status, enuGenericStatus.active)
       .andWhere(cols.service, service)
       .first();
@@ -107,9 +109,9 @@ export default {
 
     const [row] = await db<IntfDBChat>(tblName)
       .insert({
-        chtService: service,
-        chtOwner_usrID: userID,
-        chtKey: chatKey
+        [cols.service]: service,
+        [cols.owner_usrID]: userID,
+        [cols.key]: chatKey
       }).returning(cols.id);
 
     return row?.[cols.id];

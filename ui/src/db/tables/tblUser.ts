@@ -159,13 +159,13 @@ export default {
     const db = await getDB();
     const res = await db(tblName)
       .insert({
-        usrKey: userTokenMD5 || null,
-        usrEmail: userEmail || null,
-        usrMobile: userMobile || null,
-        usrOpenID: userOpenID || null,
-        usrName: userFullname || null,
-        usrSpecialPrivs: JSON.stringify(usrPrivs),
-        usrAssigned_grpID: grpId
+        [cols.key]: userTokenMD5 || null,
+        [cols.email]: userEmail || null,
+        [cols.mobile]: userMobile || null,
+        [cols.openID]: userOpenID || null,
+        [cols.name]: userFullname || null,
+        [cols.specialPrivs]: JSON.stringify(usrPrivs),
+        [cols.assigned_grpID]: grpId
       })
       .returning(cols.id);
     return Array.isArray(res) ? (res[0]?.[cols.id as keyof typeof res[0]] ?? res[0]) : res;
@@ -185,10 +185,10 @@ export default {
     else
       await db(tblName)
         .insert({
-          usrKey: md5(crypto.randomUUID()),
-          usrMobile: mobile,
-          usrOTP: otp,
-          usrAssigned_grpID: VERIFIED_GROUP_ID
+          [cols.key]: md5(crypto.randomUUID()),
+          [cols.mobile]: mobile,
+          [cols.otp]: otp,
+          [cols.assigned_grpID]: VERIFIED_GROUP_ID
         })
   },
 
