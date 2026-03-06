@@ -114,7 +114,6 @@ export default function vectorDB() {
         text: chunk.text!,
         chunk_index: i,
         chunk_time: chunk.meta?.time,
-        col_Key: collectionKey,
         file_id: fileKey,
         file_name: fileName,
       }
@@ -209,6 +208,7 @@ export default function vectorDB() {
     minSimilarity: number = 0.8
   ): Promise<IntfChunkPayload[]> {
     // Early return if invalid
+
     if (!collectionKey
       || !embeddedQuery
       || embeddedQuery.length === 0
@@ -267,19 +267,19 @@ export default function vectorDB() {
       const points = result.points ?? [];
 
       const filteredChunks =
-        weightedSort(points.filter((r: QdrantSearchPoint) => r.payload?.col_Key === collectionKey && r.score > minSimilarity))
+        weightedSort(points.filter((r: QdrantSearchPoint) => r.score > minSimilarity))
           .slice(0, limit)
 
       if (configManager.active().log.isDebugging) {
         logger.deepDebug({
+          collectionKey,
+          filtered: points.length - filteredChunks.length,
           chunks: filteredChunks.map((r: QdrantSearchPoint) => ({
             file: r.payload?.file_name,
             chunk_time: r.payload?.chunk_time,
             score: r.score,
             p: r.payload?.text,
           })),
-          filtered: points.length - filteredChunks.length,
-          collectionKey,
         });
       }
 

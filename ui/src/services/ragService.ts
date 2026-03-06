@@ -539,11 +539,10 @@ export default function ragService(
         || specialContext?.chunks?.length
       ) {
         systemPrompt += `\n## منابع مرجع (فقط این منابع معتبر هستند)`
-        //        systemPrompt += `\n- **خیلی مهم حتما رعایت شود:** برای سوالات غیر عمومی پاسخ فقط و فقط بر مبنای اطلاعات مرجع زیر تولید شود. اگر این اطلاعات برای پاسخ مفید نیستند بگویید «اطلاعات کافی در مراجع ارایه‌شده وجود ندارد»`
         if (userContext?.chunks?.length) {
           systemPrompt += cntx2Text(userContext)
           if (allSources?.files?.length)
-            `\n- آخرین فایل‌های آپلود شده کاربر از مجموع ${allSources.count} فایل:\n` + allSources.files.map((s, i) => `    ${i + 1}. ${s}`).join("\n")
+            `\n## آخرین فایل‌های آپلود شده کاربر \n - **تعداد کل**: ${allSources.count} فایل\n- **آخرین فایل‌ها**:\n` + allSources.files.map((s, i) => `    ${i + 1}. ${s}`).join("\n")
         } else
           systemPrompt += cntx2Text(specialContext!)
       }
@@ -570,7 +569,7 @@ export default function ragService(
         if (uniqueActiveSources.includes(row.file_name) === false)
           uniqueActiveSources.push(row.file_name);
 
-      if (false && configManager.active().log.isDebugging)
+      if (configManager.active().log.isDebugging)
         logger.deepDebug({ matchedContext: { collection, vectorDBResults, uniqueActiveSources } })
 
       return {
@@ -653,7 +652,8 @@ export default function ragService(
 
       const logInfo: { [key: string]: unknown } = {
         historyLen: filteredHistory.length,
-        question: api_question
+        question: api_question,
+        chatId: api_chatId 
       }
       if (useGeneralKnowledge) logInfo.globalChunks = globalContext?.chunks.length
       if (useNews && newsContext.chunks) logInfo.news = { chunks: newsContext.chunks.length, newest: newsContext.chunks?.at(0)?.chunk_time }

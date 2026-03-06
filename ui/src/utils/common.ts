@@ -103,3 +103,4 @@ export function relativeToRun(filePath:string): string {
 export const toKiloByte = (byte: number): number => byte / 1024;
 export const toMegaByte = (byte: number): number => byte / 1024 / 1024;
 export const toGigaByte = (byte: number): number => byte / 1024 / 1024 / 1024;
+export const toNumber = (val: string|number|undefined): number => typeof val === "string" ? Number(val) : (val ||0 )

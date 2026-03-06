@@ -1,4 +1,5 @@
 import { exHttpInternalServerError } from '../../interfaces/exHttp';
+import { toNumber } from '../../utils/common';
 import { getLogDB } from '../index';
 
 /* =======================
@@ -31,6 +32,11 @@ export type IntfLog = {
     : string | null;
 };
 
+interface IntfLogByActionStats {
+  logs: IntfLog[],
+  total: {len: number, count: number}
+  active: {sessions: number, questions: number}
+}
 /* =======================
    Actions
 ======================= */
@@ -83,4 +89,38 @@ export default {
 
     return count;
   },
+
+  listByAction: async(
+    action: string,
+    from:number = 0,
+    limit: number = 100
+  ) : Promise<IntfLogByActionStats> => {
+    const db = await getLogDB();
+
+    const logs = await db(tblName)
+      .select('*')
+      .where(cols.action, action)
+      .offset(from)
+      .limit(limit)
+
+    const total = await db(tblName)
+      .sum(`${cols.msgLen} as len`)
+      .count(`${cols.id} as count`)
+      .where(cols.action, action)
+      .first()
+
+    const active = await db(tblName)
+      .countDistinct(`${cols.by_usrKey} as sessions`)
+      .count(`${cols.id} as questions`)
+      .where(cols.action, action)
+      .andWhere(cols.createdAt, '>', db.raw("NOW() - INTERVAL 10 MINUTE"))
+      .first()
+
+      console.log({logs, active, total})
+    return {
+      logs,
+      active: {questions: toNumber(active?.questions), sessions: toNumber(active?.sessions)},
+      total: {count: toNumber(total?.count), len: toNumber(total?.len)}
+    }      
+  }
 };
