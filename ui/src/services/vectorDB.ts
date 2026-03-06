@@ -8,6 +8,7 @@ import configManager from "../utils/configManager";
 import type { IntfChunkPayload } from "../interfaces/llm";
 import type { IntfExHttp } from "../interfaces/exHttp";
 import type { IntfChunk } from "../interfaces/file";
+import { RAG_CRAWLED_RSS_NEWS } from "./ragService";
 
 
 type FieldCondition = Schemas["FieldCondition"];
@@ -233,7 +234,7 @@ export default function vectorDB() {
     }
 
     const filter: Filter | undefined = mustConditions.length > 0 ? { must: mustConditions } : undefined;
-    const isNews = collectionKey === configManager.active().specialCollections.news
+    const isNews = collectionKey === RAG_CRAWLED_RSS_NEWS
 
     try {
       const queryBody = {
@@ -323,9 +324,12 @@ export default function vectorDB() {
 
       const pointIds: string[] = points.map((p: QRecord) => p.id + "");
 
-      if (pointIds.length > 0) {
+      if(configManager.active().log.isDebugging)
+        logger.deepDebug({removing: {collectionKey, fileId, len: pointIds.length, next_page_offset}})
+
+      if (pointIds.length > 0) 
         await VDBClient.delete(collectionKey, { points: pointIds });
-      }
+      
 
       removed += pointIds.length;
       offset = next_page_offset != null ? String(next_page_offset) : null;

@@ -7,6 +7,8 @@ import configManager from "../src/utils/configManager";
 import atDB from "../src/db/atDB";
 import md5 from 'md5';
 import db from '../src/db';
+import { semanticChunker } from '../src/services/file2TxtService';
+import { RAG_CRAWLED_RSS_NEWS } from '../src/services/ragService';
 
 const agent = new https.Agent({ rejectUnauthorized: false });
 
@@ -112,15 +114,20 @@ async function addFeedToDB(url: string, onFetchURL: ((link: string) => Promise<s
 
         text = text.trim()
 
-     //   console.log({ text })
-        await vectorDB().addFileText(configManager.active().specialCollections.news, linkID, link, { text, meta: { time, fileKey: linkID } })
+        const chunks = semanticChunker(text, { fileKey: linkID }, {
+          maxChars: 900,
+          minChars: 300,
+          overlap: 150,
+        })
+
+        await vectorDB().addFileText(RAG_CRAWLED_RSS_NEWS, linkID, link, chunks)
         await atDB.news.add(link, linkID)
         totalAdded++
         addedCount++
       } catch (e) {
         console.error(e)
       }
-    } 
+    }
   }
 
   console.log(`===> ${addedCount} news added`)
@@ -141,8 +148,8 @@ async function addOnlineRSS(selector: string, rssPath: string) {
 
 async function start() {
   configManager.init("../.config.json");
-  db.init();
-  await vectorDB().initCollection(configManager.active().specialCollections.news)
+  await db.init();
+  await vectorDB().initCollection(RAG_CRAWLED_RSS_NEWS)
 
   await addOnlineRSS(".article_content #main_ck_editor p", "https://www.khabarfoori.com/fa/feeds/?p=ZGF0ZVJhbmdlJTVCc3RhcnQlNUQ9LTQzMjAw")
 
@@ -344,5 +351,6 @@ async function start() {
   /**/
 
   console.log("FINISHED! total news added: ", totalAdded);
+  process.exit()
 }
 start();

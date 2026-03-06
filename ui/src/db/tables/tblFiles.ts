@@ -108,21 +108,24 @@ export default {
   },
 
   /** Delete a file */
-  delete: async (service:string, fileSpec: Partial<IntfFile>) => {
+  delete: async (service:string, fileSpec: Partial<IntfFile>, forced: boolean = false) => {
     if (!fileSpec?.hasOwnProperty(cols.id) || !fileSpec?.hasOwnProperty(cols.owner_usrID) || !fileSpec?.hasOwnProperty(cols.size))
       throw new exHttpInternalServerError('Invalid call to delete without spec!');
 
     const db = await getDB();
     let delResult
 
-    if (configManager.active().app.softDelete) {
+    if (!forced && configManager.active().app.softDelete) {
       delResult = await db(tblName)
         .update({ filStatus: enuGenericStatus.removed })
         .where(cols.id, fileSpec[cols.id])
         .andWhere(cols.service, service)
     } else 
       delResult = await db(tblName).where(cols.id, fileSpec[cols.id]).del();
-    tblPerUserStats.removeFile(service, fileSpec[cols.owner_usrID]!, fileSpec[cols.size]!)
+    
+    await tblPerUserStats.removeFile(service, fileSpec[cols.owner_usrID]!, fileSpec[cols.size]!)
+
+    console.log({delResult})
     return delResult
   },
 

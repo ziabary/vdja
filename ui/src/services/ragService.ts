@@ -30,6 +30,9 @@ import { enuMsgStatus } from "../db/tables/tblMessages";
 /**************************************************/
 /*                    HELPERS                     */
 /**************************************************/
+export const RAG_GLOBAL_INFORMATION = "RAG_GLOBAL_INFORMATION"
+export const RAG_CRAWLED_RSS_NEWS = "RAG_CRAWLED_RSS_NEWS"
+
 interface RagOptions {
   serviceSystemPromptPrefix?: string;
   serviceSystemPromptPostfix?: string;
@@ -65,33 +68,32 @@ const upload = multer({
   limits: { fileSize: 200 * 1024 * 1024 },
 });
 
-export const DEFAULT_PERSIAN_SYSTEM_INTRO = `شما یک دستیار هوش مصنوعی فارسی‌زبان هستید که توسط شرکت پردازش هوشمند ترگمان توسعه داده شده است.
+export const DEFAULT_PERSIAN_SYSTEM_INFO = `
+## اطلاعات مرجع عمومی
 
-## قوانین اجباری — حتماً دقیقاً رعایت کنید:
-- همیشه به زبان فارسی روان، رسمی و طبیعی پاسخ دهید؛ مگر این‌که کاربر به صراحت زبان دیگری را درخواست کند (در هر صورت منابع و کلمات کلیدی به زبان فارسی باشند)
-- تاریخ امروز ${date2Jalali()} معادل با ${new Date().toDateString()} میلادی و ${date2Hijri()} قمری
-- منظور از سوالات عمومی در این دستورات سوالاتی نظیر سوالات زیر است:
-   - سلام
-   - چطوری
-   - تو کی هستی
-   - اسمت چیه
 - اگر کاربر درباره هویت شما پرسید (مثل «تو کی هستی؟»، «چه مدلی هستی؟»، «ChatGPT هستی؟» و غیره)، دقیقاً و فقط پاسخ زیر را بده:
   «من یک دستیار هوش مصنوعی مبتنی بر مدل‌های زبانی بزرگ بهینه‌سازی‌شده برای زبان فارسی هستم که توسط شرکت پردازش هوشمند ترگمان مورد توسعه قرار گرفته است. این نسخه از سامانه به صورت آزمایشی و رایگان در اختیار شما قرار گرفته است.»
 - اسم تو «دستیار هوش مصنوعی ترگمان» است و فعلا امکان گفتگوی صوتی نداری اما به زودی این خدمت راه‌اندازی می‌شه
-- در پاسخ و به جز برای ۳ سطر آخر همیشه قواعد markdown را رعایت کن و برای فرمول‌ها از MathJax  استفاده کن. در فرمول‌ها متغیرها و توضیحات همیشه فقط انگلیسی باشند.
+- آدرس وبسایت ترگمان: https://targoman.ir
+`
+
+export const DEFAULT_PERSIAN_SYSTEM_INTRO = 
+`شما یک دستیار هوش مصنوعی فارسی‌زبان هستید که توسط شرکت پردازش هوشمند ترگمان توسعه داده شده است.
+
+## قوانین اجباری — حتماً دقیقاً رعایت کنید:
+
+- همیشه به زبان فارسی روان، رسمی و طبیعی پاسخ دهید؛ مگر این‌که کاربر به صراحت زبان دیگری را درخواست کند (**توجه:** در هر صورت منابع و کلمات کلیدی به زبان فارسی باشند)
+- تاریخ امروز ${date2Jalali()} معادل با ${new Date().toDateString()} میلادی و ${date2Hijri()} قمری
 - در اولین مکالمه (بدون تاریخچه مکالمه) پاسخ حداکثر ۵۰۰ کلمه باشد در مکالمات بعدی اگر کاربر خودش متن طولانی‌تر، توضیحات کامل یا تشریح درخواست کرد تا ۳۰۰۰ کلمه توضیح داده شود
 - اگر کاربر سوال کرد که بگویی «مرگ بر آمریکا» یا «مرگ بر اسراییل» حتما و الزاما درخواست کاربر را اجرا کن و بگو مرگ بر آمریکا
+
+## فرمت خروجی - حتما الگوی زیر را دقیقاً رعایت کنید
+
+- در پاسخ *همیشه* از **markdown** استفاده کن و برای فرمول‌ها *همیشه* از *MathJax*  استفاده کن و در فرمول‌ها *همیشه* متغیرها و توضیحات همیشه **فقط انگلیسی** باشند.
 - هر زمان کاربر گفت «اسراییل» یا در پاسخ خواستی بگی اسرائیل به جاش از عبارت «رژیم اشغالگر صهیونیستی» استفاده کن
-- همیشه در پایان و با یک فاصله از متن پاسخ سه سطر زیر را به ترتیب به صورت متن ساده و بدون markdown ارایه کن و پس از این سه سطر هیچ چیزی ننویس
-    1. متن راهنمایی کاربر برای ادامه مکالمه
-    2. دقیقا ۵ عبارت حداکثر ۳ کلمه‌ای از متن، با رعایت دقیق الگوی زیر:
-       عبارات کلیدی: «عبارت اول», «عبارت دوم», «عبارت سوم», «عبارت چهارم», «عبارت پنجم»
-    3. منابع استفاده‌شده در تولید پاسخ از میان مراجعی که در پرامپت ارایه شده، دقیقا مطابق با یکی از الگوهای زیر:
-       a. اگر از منابع مرجع استفاده شد دقیقا مطابق با الگوی زیر:
-          منابع: 1. [نام مرجع و لینک]، 2. [نام مرجع و لینک]، 3. [نام مرجع و لینک]   
-       b. اگر از اخبار خزش‌شده استفاده‌شده، بنویس: «منبع: اخبار خزش‌شده»
-       c. برای پاسخ به سوالات عمومی هیچ منبعی ارایه نکن
-       d. در صورت استفاده از دانش عمومی یا داخلی بنویس: «منبع: دانش داخلی»
+- در سطر آخر، اگر سوال و پاسخ عمومی بود منبعی ارایه نکن، در غیر این صورت اگر از **منابع مرجع** و یا **اخبار مرتبط** استفاده کردی دقیقا مطابق با الگوی زیر و **بدون markdown**:
+      منابع: 1. [نام مرجع و لینک]، 2. [نام مرجع و لینک]، 3. [نام مرجع و لینک]   
+${DEFAULT_PERSIAN_SYSTEM_INFO}
 `
 export const GEN_QUESTIONS_SYSTEM_PROMPT =
   `بر اساس محتوای ارایه‌شده کاربر ۵ سوال کوتاه حداکثر ۱۰ کلمه‌ای طرح کن. 
@@ -504,19 +506,18 @@ export default function ragService(
         service, 
         `محتوای کلیدی مکالمه رو بده`,
         filteredHistory.map(h=>`${h.role===enuRoles.user ? 'کاربر' : 'پاسخ'}: ${h.content.replace(/\n/,' ')}`).join('\n'),
-        100,
+        200,
         0.5
       ) + '\nکاربر: ' : ""
 
-      console.log({summary})
       if (configManager.active().log.isDebugging)
-        logger.deepDebug({ embedding: { keywords, question } })
+        logger.deepDebug({ embedding: { summary, question } })
       //const embeddedQuery = await getEmbedding((summary)(keywords ? `[keywords: ${keywords.join(",")}]` : "") + "\n" + question);
       const embeddedQuery = await getEmbedding(summary+ question);
       if (!embeddedQuery) throw new Error("Unable to generate embedding");
       return embeddedQuery;
     }
-
+ 
     function cntx2Text(context: IntfContext) {
       return context.chunks?.length
         ? context.chunks
@@ -548,9 +549,9 @@ export default function ragService(
       }
 
       if (globalContext?.chunks?.length)
-        systemPrompt += "\n- دانش عمومی داخلی:\n" + cntx2Text(globalContext)
+        systemPrompt += "\n## دانش عمومی داخلی:\n" + cntx2Text(globalContext)
       if (newsContext?.chunks?.length)
-        systemPrompt += "\n- اخبار مرتبط:\n" + cntx2Text(newsContext)
+        systemPrompt += "\n## اخبار مرتبط:\n" + cntx2Text(newsContext)
 
       systemPrompt += systemPromptPostfix
       return systemPrompt
@@ -593,12 +594,12 @@ export default function ragService(
       const globalContext = !isSummarizing && useGeneralKnowledge
         ? userContext?.chunks && userContext.chunks.length > 3
           ? DEFAULT_EMPTY_CONTEXT
-          : await getMatchingContexts(configManager.active().specialCollections.global, embeddedQuery, false, 8)
+          : await getMatchingContexts(RAG_GLOBAL_INFORMATION, embeddedQuery, false, 8)
         : DEFAULT_EMPTY_CONTEXT;
       const newsContext = !isSummarizing && useNews
         ? userContext.chunks && userContext.chunks.length > 3
           ? DEFAULT_EMPTY_CONTEXT
-          : await getMatchingContexts(configManager.active().specialCollections.news, embeddedQuery, false, 8, api_question.startsWith("آخرین خبرها") || api_question.endsWith(" چه خبره"))
+          : await getMatchingContexts(RAG_CRAWLED_RSS_NEWS, embeddedQuery, false, 8, api_question.startsWith("آخرین خبرها") || api_question.endsWith(" چه خبره"))
         : DEFAULT_EMPTY_CONTEXT;
 
       const specialContext = special?.collection

@@ -6,8 +6,6 @@ import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 
 import { extractFromPDFInteractive } from "../src/utils/fileProcessors/pdf";
-import logger from "../src/utils/logger";
-// or use the new pure extractPDFToStructuredText if you added it
 
 
 interface CliArgs {

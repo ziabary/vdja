@@ -99,10 +99,6 @@ export interface IntfConfigs {
   }
 
   RAGDB: { url: string };
-  specialCollections: {
-    global: string
-    news: string
-  };
   jwt: {
     baseSecret: string
     refreshSecret: string

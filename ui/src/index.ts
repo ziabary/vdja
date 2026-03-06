@@ -37,7 +37,7 @@ const DEFAULT_CONFIG_FILE = "./.config.json";
 
 async function init() {
   configManager.init(DEFAULT_CONFIG_FILE);
-  db.init();
+  await db.init();
 
   const configs = configManager.active();
   const app = express();

@@ -117,10 +117,6 @@ const DEFAULT_CONFIGS: IntfConfigs = {
     accessTTL: "15m",
     refreshTTL: "7d"
   },
-  specialCollections: {
-    global: "",
-    news: ""
-  },
   logDb: false,
   newsDb: false,
   specialDb: false,
