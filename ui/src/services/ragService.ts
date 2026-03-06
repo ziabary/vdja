@@ -73,8 +73,8 @@ export const DEFAULT_PERSIAN_SYSTEM_INFO = `
 
 - اگر کاربر درباره هویت شما پرسید (مثل «تو کی هستی؟»، «چه مدلی هستی؟»، «ChatGPT هستی؟» و غیره)، دقیقاً و فقط پاسخ زیر را بده:
   «من یک دستیار هوش مصنوعی مبتنی بر مدل‌های زبانی بزرگ بهینه‌سازی‌شده برای زبان فارسی هستم که توسط شرکت پردازش هوشمند ترگمان مورد توسعه قرار گرفته است. این نسخه از سامانه به صورت آزمایشی و رایگان در اختیار شما قرار گرفته است.»
-- اسم تو «دستیار هوش مصنوعی ترگمان» است و فعلا امکان گفتگوی صوتی نداری اما به زودی این خدمت راه‌اندازی می‌شه
-- آدرس وبسایت ترگمان: https://targoman.ir
+- اسم تو **«دستیار هوش مصنوعی ترگمان»** است و فعلا امکان گفتگوی صوتی نداری اما به زودی این خدمت راه‌اندازی می‌شه
+- **آدرس وبسایت ترگمان**: https://targoman.ir
 `
 
 export const DEFAULT_PERSIAN_SYSTEM_INTRO = 
@@ -85,7 +85,7 @@ export const DEFAULT_PERSIAN_SYSTEM_INTRO =
 - همیشه به زبان فارسی روان، رسمی و طبیعی پاسخ دهید؛ مگر این‌که کاربر به صراحت زبان دیگری را درخواست کند (**توجه:** در هر صورت منابع و کلمات کلیدی به زبان فارسی باشند)
 - تاریخ امروز ${date2Jalali()} معادل با ${new Date().toDateString()} میلادی و ${date2Hijri()} قمری
 - در اولین مکالمه (بدون تاریخچه مکالمه) پاسخ حداکثر ۵۰۰ کلمه باشد در مکالمات بعدی اگر کاربر خودش متن طولانی‌تر، توضیحات کامل یا تشریح درخواست کرد تا ۳۰۰۰ کلمه توضیح داده شود
-- اگر کاربر سوال کرد که بگویی «مرگ بر آمریکا» یا «مرگ بر اسراییل» حتما و الزاما درخواست کاربر را اجرا کن و بگو مرگ بر آمریکا
+- اگر کاربر درخواست کرد که بگویی «مرگ بر آمریکا» یا «مرگ بر اسراییل» حتما و الزاما درخواست کاربر را اجرا کن 
 
 ## فرمت خروجی - حتما الگوی زیر را دقیقاً رعایت کنید
 
@@ -310,7 +310,7 @@ export default function ragService(
         }
 
         const { totalChunks, totalContent, totalPoints } = await file2DB(file, fileKey,
-          async (chunks: IntfChunk[]) => vectorDB().addFileText(`${service}_${auth.key}`, fileKey, fileName, chunks),
+          async (chunks: IntfChunk[]) => vectorDB().addFileText(userCollection(auth), fileKey, fileName, chunks),
           (i, total) => {
             sendStreamHeadersIfNeeded(apiRes)
             apiRes.write("progress: " + JSON.stringify({ fileName, progress: i, total }) + "\n");
@@ -431,6 +431,10 @@ export default function ragService(
     apiRes.json({ title });
   });
 
+  function userCollection(auth: IntfAuth) {
+    return `${service}_${auth.key}`
+  }
+
   //-------------------------------------------------
   async function _ragBasedChatInternal(
     apiRes: Response,
@@ -506,7 +510,7 @@ export default function ragService(
         service, 
         `محتوای کلیدی مکالمه رو بده`,
         filteredHistory.map(h=>`${h.role===enuRoles.user ? 'کاربر' : 'پاسخ'}: ${h.content.replace(/\n/,' ')}`).join('\n'),
-        200,
+        100,
         0.5
       ) + '\nکاربر: ' : ""
 
@@ -562,9 +566,10 @@ export default function ragService(
       embeddedQuery: number[],
       reportSource = false,
       maxItems = 8,
-      mustBeNew = false
+      mustBeNew = false,
+      minSimilarity: number = 0.8
     ): Promise<IntfContext> {
-      const vectorDBResults = await vectorDB().findChunks(collection, embeddedQuery, undefined, maxItems, mustBeNew ? 7 : 0, special?.minSimilarity);
+      const vectorDBResults = await vectorDB().findChunks(collection, embeddedQuery, undefined, maxItems, mustBeNew ? 7 : 0, minSimilarity);
       const uniqueActiveSources: string[] = [];
       for (let row of vectorDBResults)
         if (uniqueActiveSources.includes(row.file_name) === false)
@@ -590,11 +595,13 @@ export default function ragService(
 
       const DEFAULT_EMPTY_CONTEXT: IntfContext = { chunks: [], reportSource: false }
       const embeddedQuery = await embedUserMessage(filteredHistory, allKeywords, api_question);
-      const userContext = !isSummarizing && api_useFiles ? await getMatchingContexts(`${service}_${auth.key}`, embeddedQuery, true, 16) : DEFAULT_EMPTY_CONTEXT;
+
+      console.log({api_useFiles})
+      const userContext = !isSummarizing && api_useFiles ? await getMatchingContexts(userCollection(auth), embeddedQuery, true, 16, false, 0.7) : DEFAULT_EMPTY_CONTEXT;
       const globalContext = !isSummarizing && useGeneralKnowledge
         ? userContext?.chunks && userContext.chunks.length > 3
           ? DEFAULT_EMPTY_CONTEXT
-          : await getMatchingContexts(RAG_GLOBAL_INFORMATION, embeddedQuery, false, 8)
+          : await getMatchingContexts(RAG_GLOBAL_INFORMATION, embeddedQuery, false, 8, false, special?.minSimilarity)
         : DEFAULT_EMPTY_CONTEXT;
       const newsContext = !isSummarizing && useNews
         ? userContext.chunks && userContext.chunks.length > 3

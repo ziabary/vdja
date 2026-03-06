@@ -8,13 +8,13 @@ const enuStates = {
 const SUMMARIZE_PROMPT = `درخواست سیستم از طرف کاربر: مکالمات قبلی را خلاصه کن\n`;
 
 const editHelp = `<small class="text-muted ms-2" style="font-size: 0.5em;">(برای ویرایش کلیک کنید)</small>`;
+let auth; 
 
 function setupRAG(page, handlers, options) {
 
   let currentChatKey = location.hash.replace('#', '') || undefined;
   let activeReqID = null;
   const titleCache = new Map();
-  let auth; 
   if (!isMobileDevice()) page.messageInput.placeholder += ' (برای سطر بعدی Shift+Enter)';
 
   
