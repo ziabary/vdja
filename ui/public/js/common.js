@@ -256,3 +256,10 @@ function num2arabic(str) {
 }
 
 function str2Num(str){return str*1}
+
+function parseQuery(search) {
+  const queries = {}
+  if(search.startsWith("?")) 
+    search.substring(1).split("&").forEach(q=>{const parts = q.split("="); queries[parts[0]] = decodeURIComponent(parts[1])})
+  return queries
+}

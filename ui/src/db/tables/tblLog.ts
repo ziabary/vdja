@@ -32,7 +32,7 @@ export type IntfLog = {
     : string | null;
 };
 
-export interface IntfLogByActionStats {
+export interface IntfLogByActionStats  {
   logs: IntfLog[],
   total: {len: number, count: number}
   active: {sessions: number, questions: number}
@@ -100,6 +100,7 @@ export default {
     const logs = await db(tblName)
       .select('*')
       .where(cols.action, action)
+      .orderBy(cols.createdAt, "desc")
       .offset(from)
       .limit(limit)
 
@@ -116,7 +117,6 @@ export default {
       .andWhere(cols.createdAt, '>', db.raw("NOW() - INTERVAL 10 MINUTE"))
       .first()
 
-      console.log({logs, active, total})
     return {
       logs,
       active: {questions: toNumber(active?.questions), sessions: toNumber(active?.sessions)},

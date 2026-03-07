@@ -35,11 +35,12 @@ x-vllm_base: &vllm_base
     - net
     
 x-ui_base: &ui_base
-    image: targoman-llm-ui:2.0
+    image: targoman-llm-ui:2.1
     restart: unless-stopped
     ports:
       - "127.0.0.1:3300:3000"
-    command: npm run dev
+    command: 
+        /app/dist/index.js
     volumes:
       - ./config.json:/app/.config.json
       - /etc/localtime:/etc/localtime:ro
@@ -143,28 +144,45 @@ services:
     <<: *ui_base
     ports:
       - "127.0.0.1:3300:3000"
+    volumes:
+      - ./config.json:/app/.config.json
+      - ./logs/ui:/app/logs
+      - /etc/localtime:/etc/localtime:ro
+      - /usr/share/zoneinfo:/usr/share/zoneinfo:ro  
 
   api-rag:
     <<: *ui_base
     ports:
       - "127.0.0.1:23310:3000"
+    volumes:
+      - ./logs/rag:/app/logs
+      - /etc/localtime:/etc/localtime:ro
+      - /usr/share/zoneinfo:/usr/share/zoneinfo:ro  
 
   api-trnsl:
     <<: *ui_base
     ports:
       - "127.0.0.1:23311:3000"
+    volumes:
+      - ./logs/transl:/app/logs
+      - /etc/localtime:/etc/localtime:ro
+      - /usr/share/zoneinfo:/usr/share/zoneinfo:ro  
 
   api-sum:
     <<: *ui_base
     ports:
       - "127.0.0.1:23312:3000"
-
+    volumes:
+      - ./logs/sum:/app/logs
+      - /etc/localtime:/etc/localtime:ro
+      - /usr/share/zoneinfo:/usr/share/zoneinfo:ro  
+      
   ui-dev:
     <<: *ui_base
     ports:
       - "127.0.0.1:3301:3000"
     volumes:
-      - ./config.debug.json:/app/.config.json
+      - ./app:/app
       - /etc/localtime:/etc/localtime:ro
       - /usr/share/zoneinfo:/usr/share/zoneinfo:ro      
     command: >

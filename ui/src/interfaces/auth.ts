@@ -4,14 +4,18 @@ interface IntfServiceAccess {
     maxCount?: number;
     maxSize?: number;
     maxTotalSize?: number;
+    onQuota?: string
   }
   messages?: {
     maxChars?: number
+    maxCount?: number
+    onQuota?: string
   }
 }
 
 export interface IntfPrivileges {
-  services: {[service:string]: IntfServiceAccess}
+  services: {[service:string]: IntfServiceAccess},
+  isAdmin: boolean
 }
 
 export interface IntfAuth {

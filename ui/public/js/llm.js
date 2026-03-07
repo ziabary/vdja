@@ -216,7 +216,7 @@ function parseStreamException(usage, ex) {
 }
 
 function genReqId() {
-  return md5(uuidv4() + (auth.info.key || ''));
+  return md5(uuidv4() + (auth.info().key || ''));
 }
 
 function copy2Clipboard(btn, md, convertHtml) {

@@ -5,7 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>خلاصه‌سازی - دستیار هوشمند فارسی</title>
-    <link rel="stylesheet" href="css/bootstrap.rtl.min.css" />
+    <link rel="stylesheet" href="css/bootstrap/bootstrap.rtl.min.css" />
     <link rel="stylesheet" href="fonts/IranSansX/fontiran.css" />
     <link rel="stylesheet" href="css/style.css" />
     <link rel="stylesheet" href="fonts/fontawesome/active/all.css" />
@@ -131,7 +131,7 @@
 
         const MAX_CHARS = 3000;
         setupFileConverter({
-            userToken: auth.info.key, 
+            userToken: auth.info().key, 
             inpFile,
             blckFileUploadInfo: blckUpload, 
             txtInput, 
@@ -153,7 +153,7 @@
         }
 
         btnSummarize.addEventListener("click", async () => {
-            if(activeReqId) return await stopLLMGen("/api/summarize", auth.info.key, activeReqId).then(()=>setAppStateRunning(false))
+            if(activeReqId) return await stopLLMGen("/api/summarize", auth.info().key, activeReqId).then(()=>setAppStateRunning(false))
 
             const text = txtInput.value.trim();
             if (!text) {
@@ -168,7 +168,7 @@
 
             const maxOutWords = parseInt(inpMaxWords.value) || 200;
 
-            activeReqId = genReqId(auth.info.key)
+            activeReqId = genReqId(auth.info().key)
             setAppStateRunning(true)
 
             try {

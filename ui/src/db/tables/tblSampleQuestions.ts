@@ -1,9 +1,8 @@
 import { getDB } from '../index';
 import { exHttpAccessDenied, exHttpConflict, exHttpInternalServerError } from '../../interfaces/exHttp';
-import files, { type IntfFile } from './tblFiles';
+import tblFiles, { type IntfFile } from './tblFiles';
 import tblUser from './tblUser';
 import * as Knex from 'knex';
-import tblFiles from './tblFiles';
 import { enuBannableStatus } from '../../interfaces/db';
 import tblGroup from './tblGroup';
 
@@ -45,15 +44,15 @@ export default {
     const db = await getDB();
 
     // Ensure user has access to file
-    const relatedFile = await files.get(service, userID, fileId);
+    const relatedFile = await tblFiles.get(service, userID, fileId);
     if (!relatedFile) throw new exHttpAccessDenied('چت درخواستی وجود ندارد یا به آن دسترسی ندارید');
 
     const questions = await db(tblName)
-      .select(cols.question, files.cols.name)
-      .leftJoin(files.tblName, files.cols.id, cols.assigned_filID)
-      .leftJoin(tblUser.tblName, tblUser.cols.id, files.cols.owner_usrID)
+      .select(cols.question, tblFiles.cols.name)
+      .leftJoin(tblFiles.tblName, tblFiles.cols.id, cols.assigned_filID)
+      .leftJoin(tblUser.tblName, tblUser.cols.id, tblFiles.cols.owner_usrID)
       .leftJoin(tblGroup.tblName, tblGroup.cols.id, tblUser.cols.assigned_grpID)
-      .where(cols.assigned_filID, relatedFile[files.cols.id])
+      .where(cols.assigned_filID, relatedFile[tblFiles.cols.id])
       .andWhere(tblFiles.cols.service, service)
       .andWhere(tblUser.cols.status, enuBannableStatus.active)
       .andWhere(tblGroup.cols.status, enuBannableStatus.active)
@@ -75,9 +74,9 @@ export default {
 
     if (userID)
       return await db(tblName)
-        .select(cols.question, files.cols.name)
-        .leftJoin(files.tblName, files.cols.id, cols.assigned_filID)
-        .leftJoin(tblUser.tblName, tblUser.cols.id, files.cols.owner_usrID)
+        .select(cols.question, tblFiles.cols.name)
+        .leftJoin(tblFiles.tblName, tblFiles.cols.id, cols.assigned_filID)
+        .leftJoin(tblUser.tblName, tblUser.cols.id, tblFiles.cols.owner_usrID)
         .leftJoin(tblGroup.tblName, tblGroup.cols.id, tblUser.cols.assigned_grpID)
         .where(tblUser.cols.id, userID)
         .andWhere(tblFiles.cols.service, service)
@@ -88,9 +87,9 @@ export default {
         .offset(from);
 
     return await db(tblName)
-      .select(cols.question, files.cols.name)
-      .leftJoin(files.tblName, files.cols.id, cols.assigned_filID)
-      .leftJoin(tblUser.tblName, tblUser.cols.id, files.cols.owner_usrID)
+      .select(cols.question, tblFiles.cols.name)
+      .leftJoin(tblFiles.tblName, tblFiles.cols.id, cols.assigned_filID)
+      .leftJoin(tblUser.tblName, tblUser.cols.id, tblFiles.cols.owner_usrID)
       .leftJoin(tblGroup.tblName, tblGroup.cols.id, tblUser.cols.assigned_grpID)
       .where(tblUser.cols.id, userID)
       .andWhere(tblFiles.cols.service, service)

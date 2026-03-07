@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>مدیریت دادگان - دستیار هوشمند فارسی</title>
-  <link rel="stylesheet" href="css/bootstrap.rtl.min.css" />
+  <link rel="stylesheet" href="css/bootstrap/bootstrap.rtl.min.css" />
   <link rel="stylesheet" href="fonts/IranSansX/fontiran.css" />
   <link rel="stylesheet" href="css/style.css" />
   <style>
@@ -286,7 +286,7 @@
           const logInfo = log.logInfo
           const row = document.createElement("tr");
 
-          const created = new Date(log.logCreatedAt).toLocaleString("fa-IR");
+          const created = new Date(log.logCreatedAt).toLocaleString("fa-IR", {timeZone: "GMT"})
           let info = ''
           switch (action) {
             case 'tr': info = logInfo.dir; break

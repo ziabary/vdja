@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>ترجمه - دستیار هوشمند فارسی</title>
-    <link rel="stylesheet" href="css/bootstrap.rtl.min.css" />
+    <link rel="stylesheet" href="css/bootstrap/bootstrap.rtl.min.css" />
     <link rel="stylesheet" href="fonts/IranSansX/fontiran.css" />
     <link rel="stylesheet" href="css/style.css" />
     <link rel="stylesheet" href="fonts/fontawesome/active/all.css" />
@@ -198,7 +198,7 @@
 
       const MAX_CHARS = 2000;
       setupFileConverter({
-        userToken: auth.info.key, 
+        userToken: auth.info().key, 
         inpFile,
         blckFileUploadInfo: blckUpload, 
         txtInput, 
@@ -228,7 +228,7 @@
       }
 
       btnTransl.addEventListener("click", async () => {
-        if(activeReqId) return await stopLLMGen("/api/translate", auth.info.key, activeReqId).then(()=>setAppStateRunning(false))
+        if(activeReqId) return await stopLLMGen("/api/translate", auth.info().key, activeReqId).then(()=>setAppStateRunning(false))
         if(selSource.value === "auto" && isRTL(txtInput.value))  {
           selTarget.value = "en"
           selSource.value = 'fa'
@@ -250,7 +250,7 @@
             text = text.slice(0, MAX_CHARS);
         }
 
-        activeReqId = genReqId(auth.info.key)
+        activeReqId = genReqId(auth.info().key)
         setAppStateRunning(true)
 
         try {

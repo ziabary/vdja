@@ -304,9 +304,9 @@ export default function ragService(
         const userStats = await atDB.perUserStats.get(service, auth.uid)
         if (userStats) {
           if ((userStats[atDB.perUserStats.cols.activeFiles] || 0) > (auth?.privs?.services[service]?.files?.maxCount || Infinity))
-            throw new exHttpInvalidParams("حداکثر تعداد مجاز فایل فعال را استفاده کرده‌اید. برای آپلود فایل جدید از فایل‌های قبلی حذف کنید")
+            throw new exHttpInvalidParams(auth.privs?.services[service]?.files?.onQuota || "حداکثر تعداد مجاز فایل فعال را استفاده کرده‌اید. برای آپلود فایل جدید از فایل‌های قبلی حذف کنید")
           if (toMegaByte(userStats[atDB.perUserStats.cols.activeSize] || 0) > (auth?.privs?.services[service]?.files?.maxTotalSize || Infinity))
-            throw new exHttpInvalidParams("حداکثر حجم مجموع را استفاده کرده‌اید. برای آپلود فایل جدید از فایل‌های قبلی حذف کنید")
+            throw new exHttpInvalidParams(auth.privs?.services[service]?.files?.onQuota || "حداکثر حجم مجموع را استفاده کرده‌اید. برای آپلود فایل جدید از فایل‌های قبلی حذف کنید")
         }
 
         const { totalChunks, totalContent, totalPoints } = await file2DB(file, fileKey,
@@ -451,6 +451,10 @@ export default function ragService(
     const isSummarizing = api_question === SUMMARIZE_PROMPT
     let chatSpecs: TypChatListItem | null
 
+    const userStats = await atDB.perUserStats.get(service, auth.uid)
+    if(userStats[atDB.perUserStats.cols.totalChats] > (auth?.privs?.services[service]?.messages?.maxCount || Infinity)) 
+      throw new exHttpInvalidParams(auth.privs?.services[service]?.messages?.onQuota || "حداکثر تعداد پیام را استفاده کرده‌اید.")
+
     chatSpecs = await atDB.chats.get(service, auth.uid, api_chatId)
     if (!chatSpecs) throw new exHttpAccessDenied("چت مورد نظر یافت نشد یا شما دسترسی ندارید")
 
@@ -584,6 +588,11 @@ export default function ragService(
     }
 
     let logSpec: Partial<IntfLog> | undefined = undefined
+    var logInfo: { [key: string]: unknown } = {
+      question: api_question,
+      chatId: api_chatId 
+    }
+
     try {
       const { filteredHistory, allKeywords } = await retrieveChatHistory(21);
       const allFiles = (await atDB.files.list(service, auth.uid, 10, 0, false))
@@ -648,6 +657,17 @@ export default function ragService(
           return generateAdequateLenghtMessages()
         }
 
+        logInfo.historyLen = filteredHistory.length
+        if (useGeneralKnowledge) logInfo.globalChunks = globalContext?.chunks.length
+        if (useNews && newsContext.chunks) logInfo.news = { chunks: newsContext.chunks.length, newest: newsContext.chunks?.at(0)?.chunk_time }
+        if (api_useFiles) logInfo.files = { chunks: userContext?.chunks?.length }
+        if (special?.collection) logInfo.specialContext = { chunks: specialContext?.chunks?.length }
+
+        if (useGeneralKnowledge) logInfo.globalChunks = globalContext?.chunks.length
+        if (useNews && newsContext.chunks) logInfo.news = { chunks: newsContext.chunks.length, newest: newsContext.chunks?.at(0)?.chunk_time }
+        if (api_useFiles) logInfo.files = { chunks: userContext?.chunks?.length }
+        if (special?.collection) logInfo.specialContext = { chunks: specialContext?.chunks?.length }
+  
         return currMessages
       }
 
@@ -655,16 +675,6 @@ export default function ragService(
 
       if (configManager.active().log.isDebugging)
         logger.deepDebug({ matchedContextPostFilter: { userContext, globalContext, newsContext }, messages })
-
-      const logInfo: { [key: string]: unknown } = {
-        historyLen: filteredHistory.length,
-        question: api_question,
-        chatId: api_chatId 
-      }
-      if (useGeneralKnowledge) logInfo.globalChunks = globalContext?.chunks.length
-      if (useNews && newsContext.chunks) logInfo.news = { chunks: newsContext.chunks.length, newest: newsContext.chunks?.at(0)?.chunk_time }
-      if (api_useFiles) logInfo.files = { chunks: userContext?.chunks?.length }
-      if (special?.collection) logInfo.specialContext = { chunks: specialContext?.chunks?.length }
 
       logSpec = await atDB.log.add(auth.key || auth.uid + '', logName, logInfo, api_question.length)
 
@@ -691,13 +701,7 @@ export default function ragService(
           throw new exHttpPayloadTooLarge("حجم محتوای مکالمه بسیار زیاد شده چت جدیدی باز کنید یا این مکالمه خلاصه شود")
       }
       if (logSpec) await atDB.log.updateResult(logSpec, (ex as IntfExHttp).status || 500, (ex as IntfExHttp).message || (ex as { error: string }).error || ex)
-      else await atDB.log.add(auth.key, service, {
-        api_chatId,
-        api_reqId,
-        api_useFiles,
-        api_question,
-        ignoreLastHistory
-      }, api_question.length, 500, (ex as Error).message)
+      else await atDB.log.add(auth.key, service, logInfo, api_question.length, 500, (ex as Error).message)
       throw ex
     }
   }

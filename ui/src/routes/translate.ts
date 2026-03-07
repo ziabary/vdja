@@ -65,6 +65,7 @@ router.post("/translate", async (apiReq: Request, apiRes: Response) => {
 
   const configs = configManager.active();
   const auth = await getAuthInfo(apiReq, false);
+  console.log({auth})
   const translServer = configs.llmServers.translate
   
   if (!api_text?.trim()) throw new exHttpInvalidParams("متن خالی است");

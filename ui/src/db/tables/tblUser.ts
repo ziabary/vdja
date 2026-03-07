@@ -112,8 +112,9 @@ async function getDigesting(key: string, openID: boolean, isAdmin?: boolean) {
     .leftJoin(group.tblName, group.cols.id, cols.assigned_grpID)
     .andWhere(cols.status, enuBannableStatus.active)
     .first();
-  if (user)
-    user.privs = deepMerge(user.grpPrivs, user.specialPrivs)
+
+  if (user) 
+    user.privs = deepMerge(user[cols.groupPrivs], user[cols.specialPrivs])
   return user
 }
 

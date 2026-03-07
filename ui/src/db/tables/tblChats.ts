@@ -4,7 +4,8 @@ import tblPerUserStats from './tblPerUserStats';
 import { getDB } from '../index';
 import configManager from '../../utils/configManager';
 import type { Select } from '../../interfaces/db';
-import { exHttpInternalServerError, exHttpUnauthorized } from '../../interfaces/exHttp';
+import { exHttpAccessDenied, exHttpInternalServerError, exHttpUnauthorized } from '../../interfaces/exHttp';
+import tblUser from './tblUser';
 
 /* =======================
    Columns & Table
@@ -88,16 +89,18 @@ export default {
     };
   },
 
-  get: async (service: string, userID: number, chatId: string | number): Promise<TypChatListItem | null> => {
+  get: async (service: string, userID: number|null, chatId: string | number, isAdmin = false): Promise<TypChatListItem | null> => {
     const db = await getDB();
+    if(!userID && !isAdmin)
+      throw new exHttpAccessDenied("you are not admin!")  
 
     const row = await db<IntfDBChat>(tblName)
-      .select(cols.id, cols.title, cols.last_msgID, cols.createdAt)
-      .where(cols.owner_usrID, userID)
+      .select(cols.id, cols.title, cols.last_msgID, cols.createdAt, cols.status)
+      .where(qb=>userID ? qb.where(cols.owner_usrID, userID) : qb.whereNotNull(cols.owner_usrID))
       .andWhere(qb => 
         qb.where(cols.key, typeof chatId === "string" ? chatId :  null)
           .orWhere(cols.id, typeof chatId === "number" ? chatId :  null))
-      .andWhere(cols.status, enuGenericStatus.active)
+      .andWhere(qb=>isAdmin ? qb.whereNotNull(cols.status): qb.where(cols.status, enuGenericStatus.active))
       .andWhere(cols.service, service)
       .first();
 

@@ -1,0 +1,37 @@
+import express from "express";
+import type { Request, Response, Router } from "express";
+import { parseQueryToString } from "../utils/common";
+import atDB from "../db/atDB";
+import { exHttpAccessDenied, exHttpInvalidParams } from "../interfaces/exHttp";
+import { getAuthInfo } from "../services/authService";
+
+const router = express.Router();
+
+router.get("/admin/logs", async (apiReq: Request, apiRes: Response) => {
+    const auth = await getAuthInfo(apiReq, false);
+    if(!auth.privs?.isAdmin) throw new exHttpAccessDenied("شما دسترسی کافی ندارید")
+
+    const {action: actionQuery}= apiReq.query
+    const action = parseQueryToString(actionQuery)
+    if(!action)
+        throw new exHttpInvalidParams("نوع لاگ مشخص نشده است")
+
+    apiRes.send(await atDB.log.listByAction(action))
+})
+
+router.get("/admin/conversation", async (apiReq: Request, apiRes: Response) => {
+    const auth = await getAuthInfo(apiReq, false);
+    if(!auth.privs?.isAdmin) throw new exHttpAccessDenied("شما دسترسی کافی ندارید")
+
+        const {id: idQuery, service: serviceQuery}= apiReq.query
+    const id = parseQueryToString(idQuery)
+    const service = parseQueryToString(serviceQuery)
+    if(!id || !service)
+        throw new exHttpInvalidParams("ّInvalid Params")
+
+    apiRes.send(await atDB.messages.listByChatID(service, null, id, 1000, 0, true, true))
+})
+
+export default async function init(): Promise<Router> {
+    return router;
+}

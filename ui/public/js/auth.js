@@ -1,10 +1,10 @@
 async function setupAuth(service, required) {
-  let accessToken = sessionStorage.getItem("accessToken");
+  let accessToken = localStorage.getItem("accessToken");
   const DEFAULT_PRIV = { uid: 1, name: "anonymous" }
   const auth = {
     setToken: (token) => {
       accessToken = token;
-      sessionStorage.setItem("accessToken", token);
+      localStorage.setItem("accessToken", token);
     },
     getToken: () => accessToken,
     getUser: () => {
@@ -13,7 +13,7 @@ async function setupAuth(service, required) {
     },
     logout: () => {
       accessToken = null;
-      sessionStorage.clear();
+      localStorage.removeItem("accessToken");
     },
   };
 
@@ -57,14 +57,14 @@ async function setupAuth(service, required) {
     return _refreshToken();
   }
 
-  async function logout() {
+  async function logout(backTo) {
     const res = await fetch('/api/auth/logout', {
       method: 'POST',
       credentials: 'include',
     });
 
     auth.logout()
-    window.location.href = "/"
+    window.location.href = backTo || "/"
   }
 
   async function apiFetch(url, options = {}) {
@@ -113,6 +113,7 @@ async function setupAuth(service, required) {
       document.getElementById("loading")?.classList.add("hidden")
     }
   }
+
   async function withAuth(fn, options) {
     try {
       return await fn(options);
@@ -132,7 +133,7 @@ async function setupAuth(service, required) {
     withAuth,
     setAccessToken: (token) => auth.setToken(token),
     token: () => auth.getToken(),
-    info: async () => auth.getUser(),
+    info: () => auth.getUser(),
     logout
   }
 }

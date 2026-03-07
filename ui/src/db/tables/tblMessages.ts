@@ -49,14 +49,17 @@ export default {
   /** List messages for a chat */
   listByChatID: async (
     service: string,
-    userID: number,
+    userID: number|null,
     chatId: number|string,
     limit = 1000,
     from = 0,
-    ascending = true
+    ascending = true,
+    isAdmin = false
   ): Promise<{chat: TypChatListItem, messages: Partial<IntfMessage>[]}> => {
     const db = await getDB();
-    const relatedChat = await tblChats.get(service, userID, chatId);
+    if(!userID && !isAdmin)
+      throw new exHttpAccessDenied("you are not admin!")  
+    const relatedChat = await tblChats.get(service, userID, chatId, isAdmin);
     if (!relatedChat) throw new exHttpAccessDenied('چت درخواستی وجود ندارد یا به آن دسترسی ندارید');
 
     const messages = await db<IntfMessage>(tblName)

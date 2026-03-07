@@ -228,8 +228,6 @@ router.post("/auth/sendBaleOTP", async (apiReq: Request, apiRes: Response) => {
       body: payload
     }).then(r=>r.json());
 
-    console.log(authToken)
-
     const otpCode = Math.floor(10000 + Math.random() * 90000)
     atDB.user.setOTP(phone, `${otpCode}`)
 
@@ -244,8 +242,6 @@ router.post("/auth/sendBaleOTP", async (apiReq: Request, apiRes: Response) => {
         otp: otpCode
       })
     }).then(r=>r.json());
-
-    console.log(resp)
 
     apiRes.send(resp)
   } catch (e) {
@@ -266,26 +262,6 @@ router.post("/auth/verifyOTP", async (apiReq: Request, apiRes: Response) => {
   }
   throw new exHttpInvalidParams("کد وارد شده صحیح نمی‌باشد")
 })
-
-/****
- async function getAccessToken() {
-  const { URLSearchParams } = require("url");
-
-  // Create the form data
-  const params = new URLSearchParams();
-  params.append("grant_type", "client_credentials");
-  params.append("client_id", BALE_GW_ID);
-  params.append("client_secret", BALE_GW_SECRET);
-
-  const resp = await fetch(`https://safir.bale.ai/api/v2/auth/token`, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: params,
-  }).then((resp) => resp.json());
-
-} 
- 
- */
 
 async function initOpenID() {
   const OIDC = configManager.active().OIDC

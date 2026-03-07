@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>ورود به چت خصوصی</title>
-  <link rel="stylesheet" href="css/bootstrap.rtl.min.css" />
+  <link rel="stylesheet" href="css/bootstrap/bootstrap.rtl.min.css" />
   <link rel="stylesheet" href="fonts/IranSansX/fontiran.css" />
   <link rel="stylesheet" href="fonts/fontawesome/active/all.css" />
   <link rel="stylesheet" href="css/style.css" />
@@ -257,8 +257,16 @@
   <script src="js/auth.js"></script>
 
   <script>
-    const service = window.location.search ? window.location.search.replace("?back=", "") : "rag";
-    let auth; setupAuth(service, false).then(r => { auth = r; auth.token() && (window.location.pathname = "/" + service) })
+    const queries = parseQuery(window.location.search)
+    const service = queries.back || "rag";
+
+    console.log(queries)
+
+    let auth; setupAuth(service, false).then(async r => {
+      auth = r;
+      if (auth.token() && (!queries.mustAdmin || auth.info().privs?.isAdmin))
+        window.location.pathname = "/" + service
+    })
 
     const userTokenInput = document.getElementById("userToken");
     const togglePass = document.getElementById("togglePass");
@@ -325,7 +333,6 @@
 
       try {
         const hashedKey = md5(userRawKey);
-        const service = window.location.search ? window.location.search.replace("?back=", "") : "rag";
         const res = await fetch("/api/auth/loginByKey", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -336,8 +343,13 @@
 
         if (data.accessToken) {
           auth.setAccessToken(data.accessToken);
-          userTokenInput.value = "";
-          window.location.href = "/" + service
+          if (queries.mustAdmin && !auth.info().privs?.isAdmin) {
+            showError("لازم است تا کاربر ادمین وارد شود");
+            setTimeout(auth.logout(window.location.href), 2000)
+          } else {
+            userTokenInput.value = "";
+            window.location.href = "/" + service
+          }
         } else
           showError(data.error || "خطا در ورود. کلید نامعتبر است.");
       } catch (err) {
@@ -367,6 +379,7 @@
       backToPhoneInput()
       balePhoneNumber.value = ''
       balePhoneNumber.onkeydown = ev => { if (ev.key === "Enter") btnSendBaleOTP.click() }
+      baleOTP.onkeydown = ev => { if (ev.key === "Enter") btnSendBaleOTP.click() }
     }
 
     btnCancelOTP.onclick = () => {
@@ -377,7 +390,6 @@
     }
 
     btnSendBaleOTP.onclick = async () => {
-      const service = window.location.search ? window.location.search.replace("?back=", "") : "rag";
       if (otpTimer) {
         const otpCode = num2arabic(baleOTP.value)
         if (otpCode.length != 5)
@@ -388,12 +400,17 @@
           body: JSON.stringify({ mobile: num2arabic(balePhoneNumber.value), otp: otpCode, service }),
         }).catch(err => {
           showError(err.message)
-        }).then(d=>d.json()).then(data => {
-          if(data.error) return showError(data.error.message)
+        }).then(d => d.json()).then(data => {
+          if (data.error) return showError(data.error.message)
           if (data.accessToken) {
             auth.setAccessToken(data.accessToken);
-            userTokenInput.value = "";
-            window.location.href = "/" + service
+            if (queries.mustAdmin && !auth.info().privs?.isAdmin) {
+              showError("لازم است تا کاربر ادمین وارد شود");
+              setTimeout(auth.logout(window.location.href), 2000)
+            } else {
+              userTokenInput.value = "";
+              window.location.href = "/" + service
+            }
           }
         });
       } else {
@@ -409,11 +426,11 @@
         fetch("/api/auth/sendBaleOTP", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ mobile: "+"+phonNo }),
+          body: JSON.stringify({ mobile: "+" + phonNo }),
         }).catch(err => {
           showError(err.message)
           backToPhoneInput()
-        }).then(d=>d.json()).then(data=>data.error && showError(data.error.message));
+        }).then(d => d.json()).then(data => data.error && showError(data.error.message));
 
         setClass(balePhoneNumber, 'hidden')
         setClass(baleOTP, 'hidden', false)

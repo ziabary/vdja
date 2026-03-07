@@ -5,9 +5,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>آمار کاربران - دستیار هوشمند فارسی</title>
-  <link rel="stylesheet" href="css/bootstrap.rtl.min.css" />
+  <link rel="stylesheet" href="css/bootstrap/bootstrap.rtl.min.css" />
   <link rel="stylesheet" href="fonts/IranSansX/fontiran.css" />
   <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="fonts/fontawesome/active/all.css" />
+
   <style>
     .table-container {
       max-height: 80vh;
@@ -27,6 +29,7 @@
       <a href="/" class="btn btn-outline-primary">← بازگشت</a>
       <span class="navbar-brand mx-auto h4 mb-0">آمار پرسش</span>
     </div>
+    <i class="fa fa-moon fa-lg btn" id=btnToggleDarkMode></i>
   </nav>
 
   <div class="container mt-4">
@@ -249,7 +252,11 @@
       </div>
     </div>
   </div>
-  <script src="js/vendors//bootstrap.bundle.min.js"></script>
+  <script src="js/vendors/marked.min.js"></script>
+  <script src="js/vendors/bootstrap.bundle.min.js"></script>
+  <script src="js/vendors/mathjax/config.js"></script>
+  <script src="js/vendors/polyfill.min.js?features=es6"></script>
+  <script src="js/vendors/mathjax/es5/tex-mml-chtml.js"></script>
   <script src="js/common.js"></script>
   <script src="js/auth.js"></script>
 
@@ -286,12 +293,14 @@
           const logInfo = log.logInfo
           const row = document.createElement("tr");
 
-          const created = new Date(log.logCreatedAt).toLocaleString("fa-IR");
+          const service = action === "rhbri" ? "rahbari" : "rag"
+
+          const created = new Date(log.logCreatedAt).toLocaleString("fa-IR", {timeZone: "GMT"});
           let info = ''
           switch (action) {
             case 'tr': info = logInfo.dir; break
             case 'sum': info = logInfo.force_persian ? 'بله' : 'خیر'; break
-            default: info = `<a target="_blank" href="/conv.html?id=${logInfo.chatId}">${logInfo.chatId.substring(0, 8)}</a>`
+            default: info = `<a target="_blank" href="/conv?id=${logInfo.chatId}&service=${service}">${logInfo.chatId?.substring(0, 8)}</a>`
           }
           row.innerHTML = `
               <td>${index + 1}</td>
@@ -320,13 +329,17 @@
       setTimeout(() => loadStats(action), 10000);
     }
 
-    setupAuth("logs", false).then(r => {
+    setupAuth("logs", true).then(async r => {
       auth = r
+
+      if(!auth.info().privs.isAdmin)
+        window.location.href=`/login?back=logs&mustAdmin=true`
+
       loadStats('rhbri');
       loadStats('tr');
       loadStats('sum');
       loadStats('rag');
-      loadStats('law');
+      // loadStats('law');
     })
   </script>
 </body>

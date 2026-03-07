@@ -227,7 +227,7 @@ export async function startInsert(
     }
   }
 
-  if ((options.genQuestions && argv["no-genq"]) || argv["genq"]) {
+  if ((options.genQuestions && !argv["no-genq"]) || argv["genq"]) {
     for (let i = 0; i < 10; i++) {
       console.log(`===========> Generating Questions (${i}/10)`)
       const randomChunks = await vectorDB().getRandomChunks(

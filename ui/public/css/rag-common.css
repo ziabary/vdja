@@ -301,3 +301,9 @@ html[data-bs-theme='dark'] .bot_buttons_row .warn {
     width: 100vw;
   }
 }
+
+.top-left{
+  position: absolute;
+  top: 1em;
+  left: 1em;
+}
