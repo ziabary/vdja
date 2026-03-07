@@ -1,49 +1,94 @@
 version: '3.9'
 
-services:
-  vllm:
-    image: vllm:25.11-py3
+# Reusable base config
+x-vllm_base: &vllm_base
+  image: targoman-llm-server:25.11
+  restart: unless-stopped
+  environment:
+    - HF_HUB_OFFLINE=1
+    - TRANSFORMERS_OFFLINE=1
+    - HF_HUB_ENABLE_HF_TRANSFER=0
+    - VLLM_SKIP_WARMUP=true
+    - VLLM_ENABLE_RESPONSES_API_STORE=1
+  volumes:
+    - ./models:/models:ro
+  command: >
+    python -m vllm.entrypoints.openai.api_server
+    --model /models/aya-expanse-8b
+    --served-model-name targoman
+    --tensor-parallel-size 1
+    --dtype auto
+    --max-model-len 7400
+    --gpu-memory-utilization 0.80
+    --block-size 16
+    --enable-chunked-prefill
+    --max-num-batched-tokens 8192
+    --port 8001
+  shm_size: '32gb'
+  ipc: host
+  healthcheck:
+    test: ["CMD", "curl", "-f", "http://localhost:8001/v1/models"]
+    interval: 30s
+    timeout: 10s
+    retries: 5
+  networks:
+    - net
+    
+x-ui_base: &ui_base
+    image: targoman-llm-ui:2.0
     restart: unless-stopped
-    environment:
-      - HF_HUB_OFFLINE=1
-      - TRANSFORMERS_OFFLINE=1
-      - HF_HUB_ENABLE_HF_TRANSFER=0
-      - VLLM_SKIP_WARMUP=true
+    ports:
+      - "127.0.0.1:3300:3000"
+    command: npm run dev
     volumes:
-      - ./models:/models:ro
-    command: >
-      python -m vllm.entrypoints.openai.api_server
-#      --model /models/aya-expanse-8b
-      --model /models/aya-expanse-32b-AWQ
-      --served-model-name aya
-      --served-model-name targoman
-      --tensor-parallel-size 2
-      --dtype auto
-      --max-model-len 8192
-      --gpu-memory-utilization 0.85
-      --block-size 16
-      --enable-chunked-prefill
-      --max-num-batched-tokens 32768
-      --port 8000
-    shm_size: '32gb'
-    ipc: host
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/v1/models"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
+      - ./config.json:/app/.config.json
+      - /etc/localtime:/etc/localtime:ro
+      - /usr/share/zoneinfo:/usr/share/zoneinfo:ro
+    environment:
+      - "TZ='Asia/Tehran'"
+    networks:
+      - net
+      
+services:
+  vllm1:
+    <<: *vllm_base
+    ports:
+      - "127.0.0.1:8001:8001"    
     deploy:
       resources:
         reservations:
           devices:
             - driver: nvidia
-              device_ids: ['0', '1']
+              device_ids: ['0']
               capabilities: [gpu]
-    networks:
-      - net
 
+  vllm2:
+    <<: *vllm_base
+    ports:
+      - "127.0.0.1:8002:8001"    
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ['2']
+              capabilities: [gpu]
+
+  vllm3:
+    <<: *vllm_base
+    ports:
+      - "127.0.0.1:8003:8001"    
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ['3']
+              capabilities: [gpu]
+
+              
   embedding:
-    image: vllm:25.11-py3
+    image: targoman-llm-server:25.11
     restart: unless-stopped
     environment:
       - HF_HUB_OFFLINE=1
@@ -74,64 +119,76 @@ services:
         reservations:
           devices:
             - driver: nvidia
-              device_ids: ['2']
+              device_ids: ['1']
               capabilities: [gpu]
     networks:
       - net
 
-  qdrant:
+  vectordb:
     image: qdrant/qdrant:latest
     restart: unless-stopped
     volumes:
-      - ./qdrant_storage:/qdrant/storage
+      - ./vdb:/qdrant/storage
     deploy:
       resources:
         reservations:
           devices:
             - driver: nvidia
-              device_ids: ['2']
+              device_ids: ['1']
               capabilities: [gpu]
     networks:
       - net
 
   ui:
-    image: vdja-ui:1.0
-    restart: unless-stopped
+    <<: *ui_base
     ports:
       - "127.0.0.1:3300:3000"
-    volumes:
-      - ./db:/app/db
-      - ./env:/app/.env
-    depends_on:
-      vllm:
-        condition: service_healthy
-      embedding:
-        condition: service_healthy
-      qdrant:
-        condition: service_started
-    networks:
-      - net
+
+  api-rag:
+    <<: *ui_base
+    ports:
+      - "127.0.0.1:23310:3000"
+
+  api-trnsl:
+    <<: *ui_base
+    ports:
+      - "127.0.0.1:23311:3000"
+
+  api-sum:
+    <<: *ui_base
+    ports:
+      - "127.0.0.1:23312:3000"
 
   ui-dev:
-    image: vdja-ui:dev
-    restart: unless-stopped
+    <<: *ui_base
     ports:
       - "127.0.0.1:3301:3000"
     volumes:
-      - ./app:/app/
-      - ./env.dev:/app/.env
-    command: yarn dev
-    depends_on:
-      vllm:
-        condition: service_healthy
-      embedding:
-        condition: service_healthy
-      qdrant:
-        condition: service_started
+      - ./config.debug.json:/app/.config.json
+      - /etc/localtime:/etc/localtime:ro
+      - /usr/share/zoneinfo:/usr/share/zoneinfo:ro      
+    command: >
+        npm run dev
+
+  mysql:
+    image: mysql:8.4.5
+    restart: unless-stopped
+    ports:
+       - "127.0.0.1:33011:3306"
+    volumes:
+      - ./mysql/data:/var/lib/mysql
+      - ./mysql/conf/enable_native.cnf:/etc/mysql/conf.d/enable_native.cnf
+      - /etc/localtime:/etc/localtime:ro
+      - /usr/share/zoneinfo:/usr/share/zoneinfo:ro
+    environment:
+      - "MYSQL_ROOT_PASSWORD=mehran@1234"
+      - "MYSQL_CHARACTER_SET_SERVER=utf8mb4"
+      - "MYSQL_COLLATION_SERVER=utf8mb4_unicode_ci"
+      - "TZ=Asia/Tehran"
     networks:
       - net
-
 
 networks:
   net:
     driver: bridge
+

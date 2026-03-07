@@ -2,7 +2,7 @@ import express from "express";
 import type { Request, Response, Router } from "express";
 
 import atDB from "../db/atDB";
-import { startNewChat, stopRequest, genReqId } from "../services/chatService";
+import { startNewChat, stopRequest } from "../services/chatService";
 import configManager from "../utils/configManager";
 import { parseQueryToString, stripText } from "../utils/common";
 import logger from "../utils/logger";
@@ -30,12 +30,11 @@ interface SummarizeRequestBody {
 router.post("/summarize", async (apiReq: Request<{}, {}, SummarizeRequestBody>, apiRes: Response) => {
   const auth = await getAuthInfo(apiReq, false);
 
-  const { request_id: api_requestId, text: api_text, max_words: api_maxWords, force_persian: api_forcePersian } = apiReq.body;
+  const { request_id: api_reqId, text: api_text, max_words: api_maxWords, force_persian: api_forcePersian } = apiReq.body;
   const configs = configManager.active();
   const summaryServer = configs.llmServers.summarize
   
-  if (!api_text?.trim()) 
-    throw new exHttpInvalidParams("متن خالی است");
+  if (!api_text?.trim()) throw new exHttpInvalidParams("متن خالی است");
 
   // TODO: handle special user word count logic
   const trimmed_text = api_text.slice(0, summaryServer?.maxInputChars || 2000).trim();
@@ -74,13 +73,13 @@ router.post("/summarize", async (apiReq: Request<{}, {}, SummarizeRequestBody>, 
       trimmed_text.length
     );
 
-    await startNewChat(apiRes, enuLLMServices.Summarize, api_requestId || genReqId(auth.uid), messages, {
+    await startNewChat(apiRes, enuLLMServices.Summarize, api_reqId, messages, {
       onDone: async (fullMarkdown: string, cancelled?: boolean) => {
         if (logSpec) {
           await atDB.log.updateResult(
             logSpec,
             cancelled ? 299 : 200,
-            { llm: fullMarkdown.length }
+            { llm: cancelled ? 'cancelled' : fullMarkdown.length }
           );
           await atDB.perUserStats.addChatTokens("sum", auth.uid, trimmed_text.length)
         }

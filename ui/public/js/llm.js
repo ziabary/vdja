@@ -215,8 +215,8 @@ function parseStreamException(usage, ex) {
   }
 }
 
-function genReqId(action, userToken) {
-  return action + '-' + md5(uuidv4() + (userToken || ''));
+function genReqId() {
+  return md5(uuidv4() + (auth.info.key || ''));
 }
 
 function copy2Clipboard(btn, md, convertHtml) {

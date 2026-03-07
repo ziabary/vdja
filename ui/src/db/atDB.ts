@@ -19,7 +19,7 @@ const atDB =  {
   group,
   sampleQuestions,
   perUserStats,
-  news
+  news,
 };
 
 export default atDB

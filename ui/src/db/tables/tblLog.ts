@@ -32,7 +32,7 @@ export type IntfLog = {
     : string | null;
 };
 
-interface IntfLogByActionStats {
+export interface IntfLogByActionStats {
   logs: IntfLog[],
   total: {len: number, count: number}
   active: {sessions: number, questions: number}

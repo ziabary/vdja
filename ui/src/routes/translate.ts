@@ -1,7 +1,7 @@
 import express from "express";
 import type { Request, Response, Router } from "express";
 
-import { startNewChat, stopRequest, genReqId } from "../services/chatService";
+import { startNewChat, stopRequest} from "../services/chatService";
 import configManager from "../utils/configManager";
 import { stripText, safeJsonParse, parseQueryToString } from "../utils/common";
 import atDB from "../db/atDB";
@@ -57,7 +57,7 @@ Strict rules:
 
 router.post("/translate", async (apiReq: Request, apiRes: Response) => {
   const {
-    request_id: api_requestId,
+    request_id: api_reqId,
     text: api_text,
     source_lang: api_sourceLang,
     target_lang: api_targetLang,
@@ -67,8 +67,7 @@ router.post("/translate", async (apiReq: Request, apiRes: Response) => {
   const auth = await getAuthInfo(apiReq, false);
   const translServer = configs.llmServers.translate
   
-  if (!api_text?.trim())
-    return apiRes.status(400).json({ error: "متن خالی است" });
+  if (!api_text?.trim()) throw new exHttpInvalidParams("متن خالی است");
 
   if (api_sourceLang === api_targetLang)
     return apiRes
@@ -113,7 +112,7 @@ router.post("/translate", async (apiReq: Request, apiRes: Response) => {
           api_targetLang === "en"))
     ) {
       await atDB.log.add(
-        auth.key || auth.uid + '',
+        auth.key,
         "tr",
         { dir: `${api_sourceLang}2${api_targetLang}`, strippedText },
         trimmed_text.length,
@@ -136,23 +135,18 @@ router.post("/translate", async (apiReq: Request, apiRes: Response) => {
     ];
 
     logSpec = await atDB.log.add(
-      auth.key || auth.uid + '',
+      auth.key,
       "tr",
       { dir: `${api_sourceLang}2${api_targetLang}`, strippedText },
       trimmed_text.length
     );
 
-    await startNewChat(
-      apiRes as Response,
-      enuLLMServices.Translate,
-      api_requestId || genReqId(auth.key),
-      messages,
-      {
+    await startNewChat(apiRes as Response,  enuLLMServices.Translate, api_reqId, messages, {
         onDone: async (fullMarkdown: string, cancelled: boolean | undefined) => {
           await atDB.log.updateResult(
             logSpec,
             cancelled ? 299 : 200,
-            { llm: fullMarkdown.length } 
+            { llm: cancelled ? 'cancelled' : fullMarkdown.length }
           ); 
           await atDB.perUserStats.addChatTokens("tr", auth.uid, trimmed_text.length)
           

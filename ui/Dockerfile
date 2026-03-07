@@ -30,7 +30,10 @@ RUN npm ci
 # Copy source + config
 COPY src/               src/
 COPY public/            public/
+COPY cli/               cli/
 COPY tsconfig.json      ./
+COPY tsconfig.cli.json  ./
+COPY eslint.config.js   ./
 COPY obfuscator.config.json ./
 
 # === YOUR PROTECTED BUILD ===
@@ -65,9 +68,6 @@ RUN npm ci --only=production --ignore-scripts --no-audit --no-fund
 
 # Copy the fully bundled + obfuscated single file (prompts are now hidden)
 COPY --from=builder /app/dist/index.js ./dist/index.js
-
-# Optional: if you have config templates or .env.example
-# COPY .env.example ./.env
 
 ENTRYPOINT ["/sbin/tini", "--"]
 EXPOSE 3000

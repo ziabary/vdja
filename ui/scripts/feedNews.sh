@@ -1,4 +1,4 @@
 #!/bin/sh
 
-cd $(pwd)/cli
+cd /app/cli
 npx tsx rss2db.ts

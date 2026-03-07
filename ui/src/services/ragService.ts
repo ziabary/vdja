@@ -443,16 +443,13 @@ export default function ragService(
     api_reqId: string,
     api_useFiles: boolean,
     api_question: string,
-    api_initial: boolean,
     ignoreLastHistory: boolean
   ) {
-    if (api_chatId.length != 32) throw new exHttpInvalidParams("Invalid chat ID")
-    if (api_reqId.length != 32) throw new exHttpInvalidParams("Invalid request ID")
+    if (api_chatId?.length != 32) throw new exHttpInvalidParams("Invalid chat ID")
+    if (api_reqId?.length != 32) throw new exHttpInvalidParams("Invalid request ID")
 
     const isSummarizing = api_question === SUMMARIZE_PROMPT
     let chatSpecs: TypChatListItem | null
-    if (api_initial)
-      await atDB.chats.new(service, auth.uid, api_chatId)
 
     chatSpecs = await atDB.chats.get(service, auth.uid, api_chatId)
     if (!chatSpecs) throw new exHttpAccessDenied("چت مورد نظر یافت نشد یا شما دسترسی ندارید")
@@ -543,11 +540,12 @@ export default function ragService(
       if (userContext?.chunks?.length
         || specialContext?.chunks?.length
       ) {
+
         systemPrompt += `\n## منابع مرجع (فقط این منابع معتبر هستند)`
         if (userContext?.chunks?.length) {
           systemPrompt += cntx2Text(userContext)
           if (allSources?.files?.length)
-            `\n## آخرین فایل‌های آپلود شده کاربر \n - **تعداد کل**: ${allSources.count} فایل\n- **آخرین فایل‌ها**:\n` + allSources.files.map((s, i) => `    ${i + 1}. ${s}`).join("\n")
+            systemPrompt +=`\n## فایل‌های آپلود شده کاربر \n- **تعداد کل**: ${allSources.count} فایل\n- **آخرین و جدیدترین فایل‌ها**:\n` + allSources.files.map((s, i) => `    ${i + 1}. ${s}`).join("\n")
         } else
           systemPrompt += cntx2Text(specialContext!)
       }
@@ -678,7 +676,7 @@ export default function ragService(
 
       await startNewChat(apiRes, service, api_reqId, messages, {
         onDone: async (fullMarkdown: string, cancelled: boolean | undefined) => {
-          await atDB.log.updateResult(logSpec, cancelled ? 299 : 200, { responseLen: fullMarkdown?.length || 0 })
+          await atDB.log.updateResult(logSpec, cancelled ? 299 : 200, { responseLen: cancelled ? 'cancelled' : fullMarkdown?.length || 0 })
           await atDB.messages.addDialogue(chatSpecs, api_reqId, api_question, fullMarkdown, cancelled ? enuMsgStatus.Stopped : enuMsgStatus.Finished)
           return false
         },
@@ -686,14 +684,14 @@ export default function ragService(
     } catch (ex) {
       if ((ex as Error).message?.startsWith(`LLM error (400): {"error":{"message":"'max_tokens' or 'max_completion_tokens' is too large:`)
         || (ex as Error).message?.startsWith(`LLM error (400): {"error":{"message":"This model's maximum context length is`)) {
-        if (logSpec) await atDB.log.updateResult(logSpec, isSummarizing ? 412 : 413)
+        if (logSpec) await atDB.log.updateResult(logSpec, isSummarizing ? 412 : 413, {[service]: "large history"})
         if (isSummarizing)
           throw new exHttpPreconditionFailed("امکان خلاصه‌سازی این مکالمه وجود ندارد لطفا چت جدیدی باز کنید")
         else
           throw new exHttpPayloadTooLarge("حجم محتوای مکالمه بسیار زیاد شده چت جدیدی باز کنید یا این مکالمه خلاصه شود")
       }
       if (logSpec) await atDB.log.updateResult(logSpec, (ex as IntfExHttp).status || 500, (ex as IntfExHttp).message || (ex as { error: string }).error || ex)
-      else await atDB.log.add(auth.key || auth.uid + '', 'rag', {
+      else await atDB.log.add(auth.key, service, {
         api_chatId,
         api_reqId,
         api_useFiles,
@@ -711,13 +709,12 @@ export default function ragService(
       msg_id: api_reqId,
       use_files: api_useFiles,
       question: api_question,
-      initial: api_initial,
     } = apiReq.body
 
     if (api_question.length > (auth?.privs?.services[service]?.messages?.maxChars || 1000000))
       throw new exHttpInvalidParams("حجم سوال ورودی زیاد است آن را کاهش دهید")
 
-    await _ragBasedChatInternal(apiRes, auth, api_chatId, api_reqId, api_useFiles, api_question, api_initial, false)
+    await _ragBasedChatInternal(apiRes, auth, api_chatId, api_reqId, api_useFiles, api_question, false)
   })
 
   //-------------------------------------------------
@@ -725,7 +722,7 @@ export default function ragService(
     const auth = await getAuthInfo(apiReq);
     const { chat_id: api_chatId, msg_id: api_reqId } = apiReq.body
 
-    await _ragBasedChatInternal(apiRes, auth, api_chatId, api_reqId, false, SUMMARIZE_PROMPT, false, false)
+    await _ragBasedChatInternal(apiRes, auth, api_chatId, api_reqId, false, SUMMARIZE_PROMPT, false)
   })
 
   //-------------------------------------------------
@@ -738,7 +735,7 @@ export default function ragService(
       question: api_question
     } = apiReq.body
 
-    await _ragBasedChatInternal(apiRes, auth, api_chatId, api_reqId, api_useFiles, api_question, false, true)
+    await _ragBasedChatInternal(apiRes, auth, api_chatId, api_reqId, api_useFiles, api_question, true)
   })
 
   return router;

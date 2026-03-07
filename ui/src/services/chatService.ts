@@ -4,7 +4,7 @@ import type { Response } from "express";
 
 import { stripText } from "../utils/common";
 import configManager from "../utils/configManager";
-import { exHttpInternalServerError } from "../interfaces/exHttp";
+import { exHttpInternalServerError, exHttpInvalidParams } from "../interfaces/exHttp";
 import logger from "../utils/logger";
 import type { enuLLMServices, IntfLLMServerConfig } from "../interfaces/config";
 import { enuRoles, type IntfLLMMessage } from "../interfaces/llm";
@@ -52,12 +52,18 @@ interface IntfReaderWithTimeout {
 }
 
 /* ------------------ State ------------------ */
-
 const activeRequests = new Map<string, Map<string,  TypActiveRequest>>();
 const totalRequests = new Map<string, number>();
 const stoppedRequests = new Map<string, number>();
 
 /* ------------------ Public API ------------------ */
+function effectiveReqId(service: enuLLMServices, api_reqId: string|undefined) {
+  if(!api_reqId || api_reqId.length !== 32 || api_reqId.includes("-"))
+    throw new exHttpInvalidParams("Invalid api_reqID")
+
+  return `${service}-${api_reqId}`
+}
+
 /**
  * Simulates a streaming LLM response using a virtual Express-like Response object.
  * Collects markdown chunks and returns the full response or an error message.
@@ -149,7 +155,7 @@ export async function generate(
     await startNewChat(
       virtualAPIRes,
       service,
-      genReqId(action),
+      md5(randomUUID()),
       messages,
       {}, // options / context?
       { temperature, maxTokens }
@@ -172,12 +178,13 @@ export async function generate(
 export async function startNewChat(
   apiRes: Response| TypVirtualResponse,
   service: enuLLMServices,
-  requestId: string,
+  reqId: string|undefined,
   messages: IntfLLMMessage[],
   handlers: TypStreamHandlers = {},
   params: {maxTokens?: number, temperature?: number} = {}
 ) {
   const server = configManager.active().llmServers[service]
+  const activeReqId = effectiveReqId(service, reqId)
   const llmParams = {
     temperature: params?.temperature || server.temperature,
     stream: true,
@@ -193,11 +200,11 @@ export async function startNewChat(
   const llmResponse = await fetch(`${server.url}/v1/responses/`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
+    body: JSON.stringify({ 
       model: server.model,
       input: messages,
       ...llmParams,
-      request_id: requestId,
+      request_id: activeReqId,
     }),
   });
 
@@ -210,7 +217,7 @@ export async function startNewChat(
     logger.deepDebug({
       startNewChat: {
         server: server.url,
-        requestId,
+        requestId: activeReqId,
         msg: stripText((messages[messages.length - 1]||{}).content || ""),
       },
     });
@@ -222,7 +229,7 @@ export async function startNewChat(
   if (!stoppedRequests.get(server.url))
     stoppedRequests.set(server.url, 0);
 
-  activeRequests.get(server.url)!.set(requestId, {
+  activeRequests.get(server.url)!.set(activeReqId, {
     time: Date.now(),
     stream: llmParams.stream,
     msg: (messages[messages.length - 1]||{}).content||"",
@@ -239,7 +246,7 @@ export async function startNewChat(
   const readerWithTimeout = () => {
     return new Promise<IntfReaderWithTimeout>((resolve, reject) => {
       const timer = setTimeout(async () => {
-        const status = await checkRequestState(server, requestId);
+        const status = await checkRequestState(server, activeReqId);
         if (status === "cancelled") {
           chatReader.cancel().catch(() => {});
           resolve({ done: true, value: undefined, cancelled: true });
@@ -253,13 +260,13 @@ export async function startNewChat(
     });
   };
 
-  await processChatStream(readerWithTimeout, apiRes, requestId, handlers);
-  removeActiveRequest(service, requestId)
+  await processChatStream(readerWithTimeout, apiRes, activeReqId, handlers);
+  removeActiveRequest(service, activeReqId)
 }
 
 /* ------------------ Helpers ------------------ */
 
-export function removeActiveRequest(service: enuLLMServices, reqID: string) {
+function removeActiveRequest(service: enuLLMServices, reqID: string) {
   const server = configManager.active().llmServers[service]
 
   if (configManager.active().log.isDebugging)
@@ -271,40 +278,39 @@ export function removeActiveRequest(service: enuLLMServices, reqID: string) {
   }
 }
 
-export async function checkRequestState(
+async function checkRequestState(
   server: IntfLLMServerConfig, 
   reqID: string
 ): Promise<string> {
   try {
-    const response = await fetch(`${server.url}/v1/responses/${reqID}`);
-    const json = await response.json();
-    return json.status;
+    const response = await fetch(`${server.url}/v1/responses/${reqID}`).then(r=>r.json());
+    return response.status;
   } catch (ex) {
     logger.error({ checkRequestState: ex });
     return "cancelled";
   }
 }
 
-export async function stopRequest(service: enuLLMServices, reqID: string|undefined) {
-  if(!reqID) return "NO_REQ_ID"
+export async function stopRequest(service: enuLLMServices, reqId: string|undefined) {
   const server = configManager.active().llmServers[service]
+  const activeReqId = effectiveReqId(service, reqId)
 
   try {
     if (
       activeRequests.has(server.url) &&
-      activeRequests.get(server.url)!.has(reqID)
+      activeRequests.get(server.url)!.has(activeReqId)
     ) {
-      const fetchResp = await fetch(`${server.url}/v1/responses/${reqID}/cancel`, { method: "POST" });
+      const fetchResp = await fetch(`${server.url}/v1/responses/${activeReqId}/cancel`, { method: "POST" });
       const checkRemoved = async () => {
-        const state = await checkRequestState(server, reqID);
+        const state = await checkRequestState(server, activeReqId);
         if (state === "queued") setTimeout(checkRemoved, 1000);
         else {
-          removeActiveRequest(service, reqID);
+          removeActiveRequest(service, activeReqId);
           stoppedRequests.set(server.url, (stoppedRequests.get(server.url) || 0) + 1);
         }
       };
 
-      setTimeout(checkRemoved, 1000);
+      setTimeout(checkRemoved, 500);
       return fetchResp.status === 200 ? "OK" : "PENDING";
     } else return "NOT_RUNNING";
   } catch (ex: unknown) {
@@ -391,11 +397,6 @@ async function processChatStream(
       apiRes.end();
     }
   } 
-}
-
-/* ------------------ Utils ------------------ */
-export function genReqId(postfix: number| string | undefined) {
-  return md5(randomUUID() + "_" + (postfix||"undefined"));
 }
 
 /* ------------------ Monitor ------------------ */
