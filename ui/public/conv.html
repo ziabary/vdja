@@ -23,19 +23,41 @@
     <div class=marquee></div>
   </span>
 
-  <nav class="navbar shadow-sm">
+  <!-- NAVBAR + MENU -->
+  <nav class="navbar shadow-sm" id="navbar">
     <div class="container">
-      <img src="/img/logo-light.png" alt="لوگو" class="bi-color logo me-3" />
-      <span class="navbar-brand mx-auto h4 mb-0">گزارش گفتگو</span>
-      <a href="/" class="btn btn-outline-primary">← بازگشت به خانه</a>
-    </div>
-    <div class="left-side">
-      <i class="fa fa-moon fa-lg btn" id=btnToggleDarkMode></i>
-      <a href="/login?back=conv" class="btn btn-outline-primary" id=btnLogin>ورود به سامانه</a>
+      <img src="/img/logo-light.png" alt="لوگو" class="bi-color logo" />
+
+      <span class="navbar-brand mx-auto h4 mb-0">لیست چت‌ها</span>
+
+      <div class="left-side mx-2">
+        <i class="btn btn-sm fa fa-moon fa-lg btn" id=btnToggleDarkMode></i>
+        <div class="on-mobile" title="منو"><i class="btn btn-sm fa fa-lg fa-bars" id="btnMenu"></i></div>
+        <div class="on-desktop">
+          <a href="/" class="btn btn-sm btn-outline-secondary" title="سایر خدمات">
+            <i class="fa fa-boxes"></i> سایر خدمات
+          </a>
+          <button class="btn btn-sm btn-outline-secondary" title="خروج" id="backToLogin">
+            <i class="fa fa-door-open"></i> خروج
+          </button>
+          <a href="/login?back=logs" class="btn btn-sm btn-primary" title="ورود به سامانه" id=btnLogin>
+            <i class="fa fa-user"></i> ورود به سامانه
+          </a>
+        </div>
+      </div>
     </div>
   </nav>
+  <div class="collapsed" id="menu">
+    <a href="/" class="btn btn-sm btn-outline-secondary" title="سایر خدمات">
+      <i class="fa fa-boxes"></i> سایر خدمات
+    </a>
+    <button class="btn btn-sm btn-outline-secondary" title="خروج" id="backToLogin">
+      <i class="fa fa-door-open"></i> خروج
+    </button>
+  </div>
 
-  <div class="container mt-4">
+  <!-- CONTAINER -->
+  <div class="main container">
     <div class="card shadow">
       <div class="card-body p-4">
         <h3 class="text-danger text-center" id="isRemoved"></h3>
@@ -82,14 +104,14 @@
           const data = await res.json()
 
           tbody.innerHTML = ""
-          
+
           document.getElementById("isRemoved").innerHTML = data.chat.chtStatus === "Removed" ? "این چت حذف شده" : ""
           data.messages.forEach((msg, index) => {
             const { msgCreatedAt, msgOpinion, msgRole, msgContent } = msg
-            const created = new Date(msgCreatedAt).toLocaleString("fa-IR", {timeZone: "GMT"});
+            const created = new Date(msgCreatedAt).toLocaleString("fa-IR", { timeZone: "GMT" });
             const opinion = `<i class="fa fa-solid fa-${msgOpinion === 'u' ? 'thumbs-up text-success' : msgOpinion === 'd' ? 'thumbs-down text-danger' : msgOpinion === 'w' ? 'warning text-warning' : '-'}"></i>`
             tbody.innerHTML += `
-              <td>${index}</td>
+              <td>${index+1}</td>
               <td style="text-align: right">${marked.parse(msgContent)}</td>
               <td>${opinion}</td>
               <td>${created}</td>
@@ -97,7 +119,7 @@
             `
           })
           setTimeout(() => window.MathJax.typesetPromise([tbody]))
-        }).catch(e=> tbody.innerHTML = `<td colspan=5>${e.message}</td>`);
+        }).catch(e => tbody.innerHTML = `<td colspan=5>${e.message}</td>`);
     })
 
   </script>

@@ -23,19 +23,41 @@
     <div class=marquee></div>
   </span>
 
-  <nav class="navbar shadow-sm">
-    <div class="container">
-      <img src="/img/logo-light.png" alt="لوگو" class="bi-color logo me-3" />
-      <a href="/" class="btn btn-outline-primary">← بازگشت</a>
-      <span class="navbar-brand mx-auto h4 mb-0">آمار پرسش</span>
-    </div>
-    <div class="left-side">
-      <i class="fa fa-moon fa-lg btn" id=btnToggleDarkMode></i>
-      <a href="/login?back=logs" class="btn btn-outline-primary" id=btnLogin>ورود به سامانه</a>
-    </div>
-  </nav>
+    <!-- NAVBAR + MENU -->
+    <nav class="navbar shadow-sm" id="navbar">
+      <div class="container">
+          <img src="/img/logo-light.png" alt="لوگو" class="bi-color logo" />
 
-  <div class="container mt-4">
+          <span class="navbar-brand mx-auto h4 mb-0">لیست چت‌ها</span>
+
+          <div class="left-side mx-2">
+              <i class="btn btn-sm fa fa-moon fa-lg btn" id=btnToggleDarkMode></i>
+              <div class="on-mobile" title="منو"><i class="btn btn-sm fa fa-lg fa-bars" id="btnMenu"></i></div>
+              <div class="on-desktop">
+                  <a href="/" class="btn btn-sm btn-outline-secondary" title="سایر خدمات">
+                      <i class="fa fa-boxes"></i> سایر خدمات
+                  </a>
+                  <button class="btn btn-sm btn-outline-secondary" title="خروج" id="backToLogin">
+                      <i class="fa fa-door-open"></i> خروج
+                  </button>
+                  <a href="/login?back=logs" class="btn btn-sm btn-primary" title="ورود به سامانه" id=btnLogin>
+                      <i class="fa fa-user"></i> ورود به سامانه
+                  </a>
+              </div>
+          </div>
+      </div>
+  </nav>
+  <div class="collapsed" id="menu">
+      <a href="/" class="btn btn-sm btn-outline-secondary" title="سایر خدمات">
+          <i class="fa fa-boxes"></i> سایر خدمات
+      </a>
+      <button class="btn btn-sm btn-outline-secondary" title="خروج" id="backToLogin">
+          <i class="fa fa-door-open"></i> خروج
+      </button>
+  </div>
+
+  <!-- CONTAINER -->
+  <div class="main container">
     <ul class="nav nav-tabs" id="myTab" role="tablist">
       <li class="nav-item" role="presentation">
         <button class="nav-link active" id="rhbri-tab" data-bs-toggle="tab" data-bs-target="#rhbri" type="button"
