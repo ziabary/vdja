@@ -216,7 +216,7 @@ function parseStreamException(usage, ex) {
 }
 
 function genReqId() {
-  return md5(uuidv4() + (auth.info().key || ''));
+  return md5(uuidv4() + (auth.info()?.key || ''));
 }
 
 function copy2Clipboard(btn, md, convertHtml) {
@@ -235,7 +235,7 @@ function copy2Clipboard(btn, md, convertHtml) {
   }, 1500);
 }
 
-async function stopLLMGen(apiPrefix, userToken, reqId) {
+async function stopLLMGen(apiPrefix, reqId) {
   if (!reqId) return;
   return auth.apiFetch(`${apiPrefix}/${reqId}/stop`, {
     method: 'POST',

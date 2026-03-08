@@ -8,17 +8,16 @@ const enuStates = {
 const SUMMARIZE_PROMPT = `درخواست سیستم از طرف کاربر: مکالمات قبلی را خلاصه کن\n`;
 
 const editHelp = `<small class="text-muted ms-2" style="font-size: 0.5em;">(برای ویرایش کلیک کنید)</small>`;
-let auth; 
+let auth;
 
-function setupRAG(page, handlers, options) {
+function setupRAG(page, options) {
 
   let currentChatKey = location.hash.replace('#', '') || undefined;
   let activeReqID = null;
   const titleCache = new Map();
   if (!isMobileDevice()) page.messageInput.placeholder += ' (برای سطر بعدی Shift+Enter)';
 
-  
-  setupAuth(page.serviceName, true).then(r=>auth=r)
+  setupAuth(page.serviceName, false).then(r => auth = r)
 
   /*********************************/
   function autoQuery(text) {
@@ -85,28 +84,21 @@ function setupRAG(page, handlers, options) {
     page.chatHelper.appendChild(div);
   }
 
-  /*************************************/
-  function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-  }
   /*********************************/
   async function loadChats() {
-    const res = await auth.apiFetch(`/api/${page.serviceName}/chats`).then(r=>r.json());
+    if (!auth.token()) return
+    const res = await auth.apiFetch(`/api/${page.serviceName}/chats`).then(r => r.json());
     page.chatsList.innerHTML =
-      res.chats 
+      res.chats
         .map(
           (chat) => `
-              <div class="chat-item ${
-                currentChatKey === chat.chat_id ? 'bg-primary text-white' : ''
-              }" onclick="rag.loadChat('${chat.chtKey}', '${chat.chtTitle || "چت جدید"}')">
+              <div class="chat-item ${currentChatKey === chat.chat_id ? 'bg-primary text-white' : ''
+            }" onclick="rag.loadChat('${chat.chtKey}', '${chat.chtTitle || "چت جدید"}')">
                 ${chat.chtTitle || "چت جدید"} <small class="d-inline-block">${new Date(chat.chtCreatedAt).toLocaleDateString(
-            'fa-IR'
-          )}</small>
-                <button class="delete-btn btn btn-outline-danger float-end" onclick="rag.deleteChat('${
-                  chat.chtKey
-                }', event)"><i class="fa fa-remove"></i></button>
+              'fa-IR'
+            )}</small>
+                <button class="delete-btn btn btn-outline-danger float-end" onclick="rag.deleteChat('${chat.chtKey
+            }', event)"><i class="fa fa-remove"></i></button>
               </div>
             `
         )
@@ -116,24 +108,24 @@ function setupRAG(page, handlers, options) {
     else page.btnDeleteAllChats.setAttribute('disabled', true);
   }
   /*********************************/
-  async function loadQuestions(hasFiles, fileId=undefined) {
-    if(!handlers.updateQuestions) return 
-    const questions = await auth.apiFetch(`/api/${page.serviceName}/questions?maxItems=5${fileId ? `&fileId=${fileId}` : ""}`).then(r=>r.json());
-    handlers.updateQuestions(questions,hasFiles && page.useFiles)
-  }  
+  async function loadQuestions(hasFiles, fileId = undefined) {
+    if (!options.updateQuestions) return
+    const questions = await auth.apiFetch(`/api/${page.serviceName}/questions?maxItems=5${fileId ? `&fileId=${fileId}` : ""}`).then(r => r.json());
+    options.updateQuestions(questions, hasFiles && page.useFiles)
+  }
   /*********************************/
   async function loadFiles() {
+    if (!auth.token()) return
     const res = await auth.apiFetch(`/api/${page.serviceName}/files`);
     const { files } = await res.json();
     page.filesList.innerHTML =
       files
         .map(
           (file) => `
-              <div class="file-item" style="pointer-events:none" ${page.useFiles? "" : "disabled"}>
+              <div class="file-item" style="pointer-events:none" ${page.useFiles ? "" : "disabled"}>
                 📄 ${file.filName} <small class="d-inline-block ltr">(${toHuman(file.filSize)})</small>
-                <button class="delete-btn btn btn-outline-danger float-end text" style="pointer-events:all" onclick="rag.deleteFile('${
-                  file.filKey
-                }', '${file.filName}', event)"><i class="fa fa-remove"></i></button>
+                <button class="delete-btn btn btn-outline-danger float-end text" style="pointer-events:all" onclick="rag.deleteFile('${file.filKey
+            }', '${file.filName}', event)"><i class="fa fa-remove"></i></button>
               </div>
             `
         )
@@ -150,6 +142,7 @@ function setupRAG(page, handlers, options) {
 
   /*************************************/
   async function loadChat(chatKey) {
+    setupAuth(page.serviceName, true).then(r => auth = r)
     currentChatKey = chatKey;
     page.lblChatTitle.innerHTML = 'در حال لود...';
     page.chatContainer.innerHTML = '';
@@ -157,14 +150,14 @@ function setupRAG(page, handlers, options) {
     try {
       const res = await auth.apiFetch(`/api/${page.serviceName}/chat/${chatKey}/messages`);
       if (!res.ok) {
-        if (res.status == 403) return await handlers.updateAppState(enuStates.newChat);
+        if (res.status == 403) return await updateAppState(enuStates.newChat);
 
         toast('خطا در بارگذاری چت', 'danger');
-        return await handlers.updateAppState(enuStates.newChat);
+        return await updateAppState(enuStates.newChat);
       }
 
-      const { messages, chat} = await res.json();
-      if (!chat?.chtTitle) return await handlers.updateAppState(enuStates.newChat);
+      const { messages, chat } = await res.json();
+      if (!chat?.chtTitle) return await updateAppState(enuStates.newChat);
 
       page.chatHistory = messages.map((m) => ({
         role: m.role,
@@ -174,7 +167,7 @@ function setupRAG(page, handlers, options) {
       messages.forEach((m) =>
         appendMessage(
           m.msgRole,
-          m.msgContent.startsWith(SUMMARIZE_PROMPT) 
+          m.msgContent.startsWith(SUMMARIZE_PROMPT)
             ? 'خلاصه مکالمات قبلی'
             : m.msgContent,
           m.msgKey,
@@ -183,7 +176,7 @@ function setupRAG(page, handlers, options) {
       );
       page.lblChatTitle.innerHTML = chat?.chtTitle + editHelp;
       location.hash = chatKey;
-      await handlers.updateAppState(enuStates.chatContinues);
+      await updateAppState(enuStates.chatContinues);
       page.chatContainer.scrollTop = page.chatContainer.scrollHeight;
     } catch (err) {
       console.error(err);
@@ -252,8 +245,8 @@ function setupRAG(page, handlers, options) {
     buttons_row.setAttribute('msg_id', msgId);
     buttons_row.innerHTML = `
             <span class="copy" title="تهیه رونوشت"><i class="fa fa-thin fa-copy"></i><span class=hidden>کپی شد</span></span>
-            <span class="down" title="پاسخ مناسب نیست"><i class="fa fa-${ opinion == 'd' ? 'solid' : 'thin'} fa-thumbs-down" op=d></i></span>
-            <span class="up" title="پاسخ خوب است"><i class="fa fa-${     opinion == 'u' ? 'solid' : 'thin'} fa-thumbs-up" op=u></i></span>
+            <span class="down" title="پاسخ مناسب نیست"><i class="fa fa-${opinion == 'd' ? 'solid' : 'thin'} fa-thumbs-down" op=d></i></span>
+            <span class="up" title="پاسخ خوب است"><i class="fa fa-${opinion == 'u' ? 'solid' : 'thin'} fa-thumbs-up" op=u></i></span>
             <span class="warn" title="پاسخ توهین‌آمیز است"><i class="fa fa-${opinion == 'w' ? 'solid' : 'thin'} fa-warning" op=w></i></span>
             `;
     botMessageWrapper.append(buttons_row);
@@ -279,7 +272,7 @@ function setupRAG(page, handlers, options) {
           .apiFetch(`/api/${page.serviceName}/chat/${currentChatKey}/message/${msgId}/opinion`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({opinion: el.getAttribute('op')})
+            body: JSON.stringify({ opinion: el.getAttribute('op') })
           })
           .then(() => {
             elp.parentElement.querySelectorAll('span').forEach((el) => {
@@ -331,7 +324,7 @@ function setupRAG(page, handlers, options) {
     });
     if (result.confirmed) {
       if (!result.value || result.value === page.lblChatTitle.innerHTML.trim())
-        return 
+        return
 
       const res = await auth.apiFetch(`/api/${page.serviceName}/chat/${currentChatKey}/title`, {
         method: 'PUT',
@@ -345,7 +338,7 @@ function setupRAG(page, handlers, options) {
         page.lblChatTitle.innerHTML = result.value + editHelp;
         toast('عنوان چت به‌روزرسانی شد', 'success');
         loadChats();
-      } else 
+      } else
         toast('خطا در تغییر عنوان', 'danger');
     }
   };
@@ -353,6 +346,17 @@ function setupRAG(page, handlers, options) {
 
   /*************************************/
   async function sendMessage(requestSummary = false) {
+    if (!auth.token()) {
+      if ((await confirmDialog({
+        title: 'نیاز به ورود به سیستم',
+        message: 'برای شروع چت نیاز است تا ابتدا به سیستم وارد شوید',
+        confirmText: 'باشه',
+        confirmClass: 'btn-primary',
+        showCancel: false
+      })).confirmed)
+        setupAuth(page.serviceName, true).then(r => auth = r)
+      return
+    }
     const message = requestSummary ? SUMMARIZE_PROMPT : page.messageInput.value.trim();
     if (!message) return;
     if (message.length > 2000) {
@@ -371,7 +375,7 @@ function setupRAG(page, handlers, options) {
           return;
         }
         const { key } = await res.json();
-        await handlers.updateAppState(enuStates.newChat, "chats");
+        await updateAppState(enuStates.newChat, "chats");
         setCurrChatId(key);
       } catch (err) {
         console.error(err);
@@ -379,7 +383,7 @@ function setupRAG(page, handlers, options) {
         return;
       }
     }
-    await handlers.updateAppState(enuStates.chatContinues);
+    await updateAppState(enuStates.chatContinues);
     const userMsg = appendMessage('user', message, -1);
 
     const botMessageWrapper = document.createElement('div');
@@ -403,74 +407,74 @@ function setupRAG(page, handlers, options) {
 
     let fullResponse = '';
     let attempts = 0;
-    const maxAttempts = 3; 
+    const maxAttempts = 3;
 
-    handlers.disableInputs(true);
+    disableInputs(true);
     while (attempts < maxAttempts) {
       attempts++;
       activeReqID = md5(uuidv4());
       page.btnStop.setAttribute('msg-id', activeReqID);
       try {
-        const res = requestSummary 
-          ?  await auth.apiFetch(`/api/${page.serviceName}/generate-summary`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  chat_id: currentChatKey,
-                  msg_id: activeReqID
-                }),
-              })
+        const res = requestSummary
+          ? await auth.apiFetch(`/api/${page.serviceName}/generate-summary`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              chat_id: currentChatKey,
+              msg_id: activeReqID
+            }),
+          })
           : await auth.apiFetch(`/api/${page.serviceName}/generate-answer`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  question: message,
-                  chat_id: currentChatKey,
-                  msg_id: activeReqID,
-                  use_files: page.useFiles,
-                }),
-              })
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              question: message,
+              chat_id: currentChatKey,
+              msg_id: activeReqID,
+              use_files: page.useFiles,
+            }),
+          })
 
         if (!res.ok) {
           const err = await res.json().catch(() => ({}));
-          if(res.status === 412) {
-            botMsg.innerHTML = err.error?.message||err.message,
-            await confirmDialog({
-              title: 'عدم امکان ادامه مکالمه',
-              message: err.error?.message||err.message,
-              confirmText: 'چت جدید',
-              confirmClass: 'btn-primary',
-            }).then((res)=>{
-              if(res.confirmed) {
-                handlers.disableInputs(false);
-                page.btnNewChat.click()
-              }
-            });
+          if (res.status === 412) {
+            botMsg.innerHTML = err.error?.message || err.message,
+              await confirmDialog({
+                title: 'عدم امکان ادامه مکالمه',
+                message: err.error?.message || err.message,
+                confirmText: 'چت جدید',
+                confirmClass: 'btn-primary',
+              }).then((res) => {
+                if (res.confirmed) {
+                  disableInputs(false);
+                  page.btnNewChat.click()
+                }
+              });
             return
-          }if(res.status === 413) {
-            handlers.disableInputs(false);
-            botMsg.innerHTML = err.error?.message||err.message,
-            await confirmDialog({
-              title: 'نیاز به خلاصه سازی',
-              message: err.error?.message||err.message,
-              confirmText: 'خلاصه کن',
-              confirmClass: 'btn-primary',
-              cancelText: 'چت جدید',
-              cancelClass: 'btn-secondary',
-            }).then(async (res)=>{
-              if(res.confirmed) {
-                attempts = maxAttempts
-                await sendMessage(true)
-              } else page.btnNewChat.click()
-            });
+          } if (res.status === 413) {
+            disableInputs(false);
+            botMsg.innerHTML = err.error?.message || err.message,
+              await confirmDialog({
+                title: 'نیاز به خلاصه سازی',
+                message: err.error?.message || err.message,
+                confirmText: 'خلاصه کن',
+                confirmClass: 'btn-primary',
+                cancelText: 'چت جدید',
+                cancelClass: 'btn-secondary',
+              }).then(async (res) => {
+                if (res.confirmed) {
+                  attempts = maxAttempts
+                  await sendMessage(true)
+                } else page.btnNewChat.click()
+              });
             return
           } else {
-            throw new Error(err.error?.message||err.message || 'خطای سرور');
+            throw new Error(err.error?.message || err.message || 'خطای سرور');
           }
         }
 
         function contentGenFinished() {
-          handlers.disableInputs(false);
+          disableInputs(false);
           page.messageInput.focus();
         }
 
@@ -478,7 +482,7 @@ function setupRAG(page, handlers, options) {
           {
             onDone: async (fullMarkdown) => {
               contentGenFinished(),
-              prettyShowResponse(fullMarkdown, botMessageWrapper, activeReqID);
+                prettyShowResponse(fullMarkdown, botMessageWrapper, activeReqID);
 
               page.chatHistory.push({ role: 'user', content: message });
               page.chatHistory.push({
@@ -489,7 +493,7 @@ function setupRAG(page, handlers, options) {
               if (page.chatHistory.length > 1 && page.chatHistory.length <= 4) await generateChatTitle(page.chatHistory);
             },
             onCancelled: contentGenFinished,
-            onRetry: ()=>{
+            onRetry: () => {
               page.messageInput.value = message
               page.chatContainer.removeChild(botMessageWrapper)
               page.chatContainer.removeChild(userMsg)
@@ -526,7 +530,7 @@ function setupRAG(page, handlers, options) {
       }
     }
 
-    handlers.disableInputs(false);
+    disableInputs(false);
   }
 
   /*************************************/
@@ -587,35 +591,48 @@ function setupRAG(page, handlers, options) {
   }
   /*************************************/
   page.inpUpload?.addEventListener('change', async (e) => {
+    if (!auth.token()) {
+      if ((await confirmDialog({
+        title: 'نیاز به ورود به سیستم',
+        message: 'برای شروع چت نیاز است تا ابتدا به سیستم وارد شوید',
+        confirmText: 'باشه',
+        confirmClass: 'btn-primary',
+        showCancel: false
+      })).confirmed)
+        setupAuth(page.serviceName, true).then(r => auth = r)
+      return
+    }
+
     let files = Array.from(e.target.files);
     if (files.length === 0) return;
 
     showLoadingModal();
-    setTimeout(async ()=>{
+    setTimeout(async () => {
       const loadingModal = document.getElementById('globalLoadingModal')
       const lblStatus = loadingModal.querySelector('#progress-message');
       const overallProgress = loadingModal.querySelector('#overallProgress');
       const blckFileUploadInfo = loadingModal.querySelector('#file-progress');
-      let i=0
+      let i = 0
       let lastFileKey = undefined
       for (const file of files) {
         await convertFile(file, {
-          blckFileUploadInfo, 
-          lblStatus, 
-          ragService: page.serviceName, 
-          onLoad: async (data)=> {
-            if(options?.generateQuestions)
+          blckFileUploadInfo,
+          lblStatus,
+          ragService: page.serviceName,
+          onLoad: async (data) => {
+            if (options?.generateQuestions) {
               lblStatus.innerHTML = `<info>در حال تولید سوالات نمونه ${movingDotsLoader()}</info>`;
-              try{
+              try {
                 await auth.apiFetch(`/api/${page.serviceName}/generate-questions`, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({fileId: data.fileKey}),
+                  body: JSON.stringify({ fileId: data.fileKey }),
                 });
 
                 lastFileKey = data.fileKey
 
-              } catch(ex){console.error(ex)}
+              } catch (ex) { console.error(ex) }
+            }
           }
         })
         const percent = Math.round((++i / files.length) * 100);
@@ -627,7 +644,8 @@ function setupRAG(page, handlers, options) {
       hideLoadingModal();
       await loadFiles();
       await loadQuestions(lastFileKey != undefined, lastFileKey);
-      page.inpUpload.value = '';
+      if(page.inpUpload)
+        page.inpUpload.value = '';
     }, 100)
   });
 
@@ -734,7 +752,7 @@ function setupRAG(page, handlers, options) {
 
     if (res.ok) {
       toast('چت حذف شد', 'info');
-      if (currentChatKey === chatId) await handlers.updateAppState(enuStates.newChat, "chats");
+      if (currentChatKey === chatId) await updateAppState(enuStates.newChat, "chats");
     }
   }
 
@@ -756,18 +774,21 @@ function setupRAG(page, handlers, options) {
 
     if (res.ok) {
       toast('همه چت‌ها حذف شدند', 'info');
-      await handlers.updateAppState(enuStates.newChat, "chats");
+      await updateAppState(enuStates.newChat, "chats");
     }
   });
 
   /*************************************/
-  page.btnNewChat.addEventListener('click', async () => {
+  async function newChat() {
     document.body.classList.remove('side-open');
-    await handlers.updateAppState(enuStates.newChat, "chats");
-  });
+    await updateAppState(enuStates.newChat, "chats");
+  }
+  page.btnNewChat.addEventListener('click', newChat);
+  page.btnNewChatMobile.addEventListener('click', newChat);
 
   /*************************************/
-  page.btnSend.addEventListener('click', ()=>sendMessage(false));
+  page.btnSend.addEventListener('click', () => sendMessage(false));
+
   page.btnBanUsingFiles?.addEventListener('click', async () => {
     if (page.useFiles) {
       const result = await confirmDialog({
@@ -798,29 +819,65 @@ function setupRAG(page, handlers, options) {
     const filesCount = await loadFiles()
     await loadQuestions(filesCount)
   });
+
   page.messageInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter' && !isMobileDevice() && e.shiftKey == false && e.ctrlKey == false && e.altKey == false)
       sendMessage(false);
   });
-  page.backToLogin.addEventListener('click', async () => {
-    const result = await confirmDialog({
-      title: 'خروج از حساب',
-      message: 'آیا می‌خواهید از حساب خود خارج شوید؟',
-      confirmText: 'بله، خارج شو',
-      confirmClass: 'btn-outline-danger',
-    });
-
-    if (result.confirmed) auth.logout();
-  });
 
   setTimeout(async () => {
     const toLoadChatKey = currentChatKey
-    await handlers.updateAppState(enuStates.newChat, "all");
+    await updateAppState(enuStates.newChat, "all");
     if (toLoadChatKey) setTimeout(() => loadChat(toLoadChatKey), 100);
   });
 
   async function logout() {
     await auth.logout();
+  }
+
+  /*********************************/
+  function disableInputs(state) {
+    page.messageInput.disabled = state;
+    setClass(page.btnSend, "hidden", state)
+    setClass(page.btnStop, "hidden", !state)
+    setClass(page.inpUpload, "hidden", state)
+    if(page.inpUpload)page.inpUpload.disabled = state;
+    page.btnNewChat.disabled = state
+    page.btnNewChatMobile.disabled
+    document.querySelectorAll('label[for="inpUpload"]').forEach(
+      el => state ? el.classList.add('disabled') : el.classList.remove('disabled')
+    )
+  }
+
+  let fileCount = 0
+  async function updateAppState(state, whatToUpadte = null) {
+    if (whatToUpadte === "files" || whatToUpadte === "all") fileCount = options.defaultTitle.onFile ? await loadFiles() : 0
+    switch (state) {
+      case enuStates.newChat:
+        page.lblChatTitle.innerHTML = fileCount && page.useFiles ? options.defaultTitle.onFile : options.defaultTitle.noFile
+        document.body.classList.add('new-chat')
+        page.chatHistory = [];
+        page.chatContainer.innerHTML = "";
+        page.btnNewChat.setAttribute('disabled', true)
+        page.btnNewChatMobile.setAttribute('disabled', true)
+        setClass(page.btnNewChatMobile, 'hidden', true)
+        document.body.classList.remove('side-open')
+        setCurrChatId('')
+        break;
+      case enuStates.chatStarted:
+        page.chatHistory = [];
+        page.chatContainer.innerHTML = "";
+        setClass(page.btnNewChatMobile, 'hidden', false)
+      case enuStates.chatContinues:
+        document.body.classList.remove('side-open')
+        page.btnNewChat.removeAttribute('disabled')
+        page.btnNewChatMobile.removeAttribute('disabled')
+        setClass(page.btnNewChatMobile, 'hidden', false)
+        document.body.classList.remove('new-chat')
+        page.messageInput.focus()
+    }
+    if (whatToUpadte === "chats" || whatToUpadte === "all") await loadChats();
+    if (whatToUpadte === "questions" || whatToUpadte === "all") await loadQuestions(fileCount);
   }
 
   return {

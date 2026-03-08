@@ -1,66 +1,102 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>چت با داده‌ها - دستیار هوشمند فارسی</title>
-    
-    <link rel="stylesheet" href="css/bootstrap/bootstrap.rtl.min.css" />
-    <link rel="stylesheet" href="fonts/IranSansX/fontiran.css" />
-    <link rel="stylesheet" href="fonts/fontawesome/active/all.css" />
 
-    <link rel="stylesheet" href="css/style.css" />
-    <link rel="stylesheet" href="css/rag-common.css" />    
-  </head>
-  <body class="new-chat">
-    <span id="loading"><div class=marquee></div></span>
-    <nav class="navbar shadow-sm" id="navbar">
-      <div class="container">
-        <img src="/img/logo-light.png" class="bi-color" alt="لوگو"/>
-        <span class="navbar-brand mx-auto h4 mb-0">چت با داده‌ها</span>
-        <span class="burger" onclick="document.body.classList.add('side-open')"><i class="fa fa-bars"></i></span>
-        <span class="close-sidebar-cross" onclick="document.body.classList.remove('side-open')"><i class="fa fa-close"></i></span>
-      </div>
-    </nav>
-    <div class="sidebar p-3">
-      <span class="close-sidebar-cross" onclick="document.body.classList.remove('side-open')"><i class="fa fa-close"></i></span>
-      <div class="logo">
-        <a href="/"><img alt="targoman-logo" src="img/logo-light.png" class="bi-color"/></a>
-      </div>
-      <a href="/" class="btn btn-outline-primary top-left">سایر خدمات</a>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>چت با داده‌ها - دستیار هوشمند فارسی</title>
 
-      <h5 class="mb-3 mt-2">
-        چت‌های شما
-        <button id="btnNewChat" disabled class="btn btn-outline-primary btn-sm float-end" title="ایجاد چت جدید"><i class="fa fa-edit"></i> جدید</button>
-        <button id="btnDeleteAllChats" class="btn btn-sm btn-outline-danger float-start float-end mx-1" title="حذف همه چت‌ها"><i class="fa fa-trash-can"></i> حذف همه</button>
-      </h5>
-      <div id="chatsList" class="mb-4" style="max-height: calc(100vh / 2 - 8em); overflow: auto"></div>
+  <link rel="stylesheet" href="css/bootstrap/bootstrap.rtl.min.css" />
+  <link rel="stylesheet" href="fonts/IranSansX/fontiran.css" />
+  <link rel="stylesheet" href="fonts/fontawesome/active/all.css" />
 
-      <h5 class="mb-3 mt-2">
-        اسناد شما
-         <button id="btnBanUsingFiles" class="btn btn-sm btn-outline-primary float-start float-end" title="متوقف‌کردن چت با اسناد"><i class="fa fa-ban-bug"></i> بدون اسناد</button>
-        <button id="btnDeleteAllFiles" class="btn btn-sm btn-outline-danger float-start float-end mx-1" title="حذف همه اسناد"><i class="fa fa-trash-can"></i> حذف همه</button>
-      </h5>
-      <div id="filesList" class="mb-3" style="max-height: calc(100vh / 2 - 8em); overflow: auto">هنوز هیچ سندی بارگذاری نکردید</div>
-      <label for="inpUpload" class="btn btn-outline-primary btn-sm"><i class="fa fa-paperclip-vertical"></i> آپلود سند جدید</label>
-      <input type="file" id="inpUpload" accept=".md,.txt,.odt,.docx,.pdf" multiple />
-      <div id="backToLogin" class="push-top"><button class="btn btn-outline-secondary" title="خروج"><i  class="fa fa-door-open"></i></button></div>
-      <div id="userInfo"></div>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/rag-common.css" />
+</head>
+
+<body class="new-chat">
+  <span id="loading">
+    <div class=marquee></div>
+  </span>
+  <nav class="navbar shadow-sm" id="navbar">
+    <div class="container">
+      <img src="/img/logo-light.png" class="bi-color" alt="لوگو" />
+      <span class="navbar-brand mx-auto h4 mb-0">چت عمومی</span>
+      <span class="burger" onclick="document.body.classList.add('side-open')"><i class="fa fa-bars"></i></span>
+      <span class="close-sidebar-cross" onclick="document.body.classList.remove('side-open')"><i
+          class="fa fa-close"></i></span>
+    </div>
+  </nav>
+  <div class="sidebar p-3">
+    <span class="close-sidebar-cross" onclick="document.body.classList.remove('side-open')"><i
+        class="fa fa-close"></i></span>
+    <div class="logo">
+      <a href="/"><img alt="targoman-logo" src="img/logo-light.png" class="bi-color" /></a>
+    </div>
+    <div class="top-left">
+      <a href="/login?back=rahbari" class="btn btn-outline-primary on-mobile" id=btnLogin><i class="fa fa-user"></i>
+        ورود
+        به سامانه</a>
     </div>
 
-    <!-- Main Chat -->
-    <div class="main-chat">
-      <div class="chat-header d-flex justify-content-between align-items-center mb-3">
-        <h4 id="lblChatTitle"  class="clickable-title" style="cursor: pointer; display: inline-block">چت عمومی با ترگمان</h4>
-        <i class="fa fa-moon fa-lg btn" id=btnToggleDarkMode></i>
+    <h5 class="mb-3 mt-2">
+      چت‌های شما
+      <button id="btnNewChat" disabled class="btn btn-outline-primary btn-sm float-end" title="ایجاد چت جدید"><i
+          class="fa fa-edit"></i> جدید</button>
+      <button id="btnDeleteAllChats" class="btn btn-sm btn-outline-danger float-start float-end mx-1"
+        title="حذف همه چت‌ها"><i class="fa fa-trash-can"></i> حذف همه</button>
+    </h5>
+    <div id="chatsList" class="mb-4" style="max-height: calc(100vh / 2 - 8em); overflow: auto"></div>
+
+    <h5 class="mb-3 mt-2">
+      اسناد شما
+      <button id="btnBanUsingFiles" class="btn btn-sm btn-outline-primary float-start float-end"
+        title="متوقف‌کردن چت با اسناد"><i class="fa fa-ban-bug"></i> بدون اسناد</button>
+      <button id="btnDeleteAllFiles" class="btn btn-sm btn-outline-danger float-start float-end mx-1"
+        title="حذف همه اسناد"><i class="fa fa-trash-can"></i> حذف همه</button>
+    </h5>
+    <div id="filesList" class="mb-3" style="max-height: calc(100vh / 2 - 8em); overflow: auto">هنوز هیچ سندی بارگذاری
+      نکردید</div>
+    <label for="inpUpload" class="btn btn-outline-primary btn-sm"><i class="fa fa-paperclip-vertical"></i> آپلود سند
+      جدید</label>
+    <input type="file" id="inpUpload" accept=".md,.txt,.odt,.docx,.pdf" multiple />
+
+    <div class="side-bar-footer">
+      <div id="userInfo"></div>
+      <a href="/" class="btn btn-outline-secondary"><i class="fa fa-boxes"></i> سایر خدمات</a>
+      <button id="backToLogin" class="btn btn-outline-secondary hidden" title="خروج"><i class="fa fa-door-open"></i>
+        خروج از
+        سامانه</button>
+      <div class="mt-3">
+        <small>کلیه حقوق برای <a target="blank" href="https://tip.co.ir">شرکت پردازش هوشمند
+            ترگمان</a> محفوظ است</small>
       </div>
-      <div id="chatContainer" class="chat-container border p-3 rounded" manual-scroll-allowed></div>
-      <div class="message-input">
+    </div>
+  </div>
+
+  <!-- Main Chat -->
+  <div class="main-chat">
+    <div class="chat-header d-flex justify-content-between align-items-center mb-3">
+      <h4 id="lblChatTitle" class="clickable-title" style="cursor: pointer; display: inline-block">چت عمومی با ترگمان
+      </h4>
+      <div class="on-desktop left-side">
+        <i class="fa fa-moon fa-lg btn" id=btnToggleDarkMode></i>
+        <a href="/login?back=rag" class="btn btn-outline-primary" id=btnLogin2>ورود به سامانه</a>
+      </div>
+      <div class="on-mobile left-side">
+        <button id="btnNewChatMobile" class="hidden btn btn-outline-primary btn-sm float-end" title="ایجاد چت جدید"><i
+            class="fa fa-edit"></i> جدید</button>
+      </div>      
+    </div>
+    <div id="chatContainer" class="chat-container border p-3 rounded" manual-scroll-allowed></div>
+    <div class="message-input">
       <div class="chat-helper row mb-5 text-center">
-        <h5>با ترگمان می‌تونی راجع به هرچی حرف بزنی.<br/>حتی می‌تونی فایل‌های خودت رو آپلود کنی و ازشون اطلاعات بگیری!</h5>
+        <h5>با ترگمان می‌تونی راجع به هرچی حرف بزنی.<br />حتی می‌تونی فایل‌های خودت رو آپلود کنی و ازشون اطلاعات بگیری!
+        </h5>
       </div>
       <div class="input-group mt-3 w-100">
-        <textarea type="text" id="messageInput" class="form-control" placeholder="هر چی می‌خوای بپرس&hellip;"></textarea>
+        <textarea type="text" id="messageInput" class="form-control"
+          placeholder="هر چی می‌خوای بپرس&hellip;"></textarea>
         <div class="message-buttons">
           <label for="inpUpload" class="btn btn-text px-2"><i class="fa fa-paperclip-vertical"></i></label>
           <button id="btnSend" class="btn btn-text" title="ارسال"><i class="fa fa-send fa-reverse"></i></button>
@@ -69,173 +105,160 @@
       </div>
       <div id="chat-helper-container" class="chat-helper mt-3 px-2">
       </div>
-      </div>
     </div>
+  </div>
 
-    <style>
-      .banner{position: fixed; background-color: rgba(0, 0, 0, 0.4);top:0;left:0; width: 100vw;height: 100vh;z-index: 1000;}
-      .banner .container{
-        background-color:rgb(var(--bs-body-bg-rgb));
-        max-width:  400px;
-        position:absolute;
-        top:50%; 
-        left:50%;
-        transform: translate(-50%,-50%);
-        padding: 2em;
-        border-radius: 2em;
-        text-align: justify;
+  <style>
+    .banner {
+      position: fixed;
+      background-color: rgba(0, 0, 0, 0.4);
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 1000;
+    }
+
+    .banner .container {
+      background-color: rgb(var(--bs-body-bg-rgb));
+      max-width: 400px;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      padding: 2em;
+      border-radius: 2em;
+      text-align: justify;
+    }
+
+    .banner .close {
+      position: relative;
+      top: 0;
+      left: 0;
+      pointer-events: all;
+      cursor: pointer;
+    }
+  </style>
+  <div class="banner hidden">
+    <script>
+      function closeBanner() {
+        document.querySelector('.banner').classList.add('hidden')
+        localStorage.setItem("tgmn-banner-shown", true)
       }
-      .banner .close{position: relative; top:0; left:0; pointer-events: all; cursor: pointer;}
-    </style>
-    <div class="banner hidden">
-      <script>
-        function closeBanner() {
-            document.querySelector('.banner').classList.add('hidden')
-            localStorage.setItem("tgmn-banner-shown", true)
-        }
-      </script>
-      <div class="container">
+    </script>
+    <div class="container">
       <h2 class="mb-4">هموطن گرامی سلام</h2>
-      <p>از این که در این شرایط جنگی و در نبود اینترنت می‌توانیم کمکی باشیم خرسندیم. ضمن تشکر از حسن توجه و استقبال هموطنان گرامی به اطلاع می‌رسانیم که متاسفانه به دلیل برخی سو‌ءاستفاده‌ها و محدودیت‌های سخت‌افزاری در شرایط جاری مجبور به اعمال محدودیت‌هایی در سامانه شدیم که از این بابت پوزش می‌طلبیم.</p>
+      <p>از این که در این شرایط جنگی و در نبود اینترنت می‌توانیم کمکی باشیم خرسندیم. ضمن تشکر از حسن توجه و استقبال
+        هموطنان گرامی به اطلاع می‌رسانیم که متاسفانه به دلیل برخی سو‌ءاستفاده‌ها و محدودیت‌های سخت‌افزاری در شرایط جاری
+        مجبور به اعمال محدودیت‌هایی در سامانه شدیم که از این بابت پوزش می‌طلبیم.</p>
       <p>امیدواریم با شکست دشمنان دژخیم، شرایط هرچه زودتر به شرایط عادی بازگشته و اینترنت برقرار شود.</p>
       <div class="text-center mt-4"><button class="btn btn-primary" onclick="closeBanner()">متوجه شدم</button></div>
-      </div>
     </div>
+  </div>
 
-    <script src="js/vendors/bootstrap.bundle.min.js"></script>
-    <script src="js/vendors/marked.min.js"></script>
-    <script src="js/vendors/md5.min.js"></script>
-    <!-- MathJax -->
-    <script src="js/vendors/mathjax/config.js"></script>
-    <script src="js/vendors/polyfill.min.js?features=es6"></script>
-    <script src="js/vendors/mathjax/es5/tex-mml-chtml.js"></script>
+  <script src="js/vendors/bootstrap.bundle.min.js"></script>
+  <script src="js/vendors/marked.min.js"></script>
+  <script src="js/vendors/md5.min.js"></script>
+  <!-- MathJax -->
+  <script src="js/vendors/mathjax/config.js"></script>
+  <script src="js/vendors/polyfill.min.js?features=es6"></script>
+  <script src="js/vendors/mathjax/es5/tex-mml-chtml.js"></script>
 
-    <script src="js/common.js"></script>
-    <script src="js/auth.js"></script>
-    <script src="js/llm.js"></script>
-    <script src="js/rag.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/llm.js"></script>
+  <script src="js/rag.js"></script>
 
-    <script>
-      if(!localStorage.getItem("tgmn-banner-shown")) document.querySelector('.banner').classList.remove('hidden')
+  <script>
+    if (!localStorage.getItem("tgmn-banner-shown")) document.querySelector('.banner').classList.remove('hidden')
 
-      const page = {
-        serviceName: "rag",
-        userContainer: document.getElementById("userInfo"),
-        chatsList: document.getElementById("chatsList"),
-        filesList: document.getElementById("filesList"),
-        chatContainer: document.getElementById("chatContainer"),
-        messageInput: document.getElementById("messageInput"),
-        btnSend: document.getElementById("btnSend"),
-        btnStop: document.getElementById("btnStop"),
-        lblChatTitle: document.getElementById("lblChatTitle"),
-        btnNewChat: document.getElementById("btnNewChat"),
-        inpUpload: document.getElementById("inpUpload"),
-        btnDeleteAllFiles: document.getElementById("btnDeleteAllFiles"),
-        btnDeleteAllChats: document.getElementById("btnDeleteAllChats"),
-        backToLogin: document.getElementById("backToLogin"),
-        chatHelper: document.getElementById("chat-helper-container"),
-        btnBanUsingFiles: document.getElementById("btnBanUsingFiles"),
-        useFiles: true,
-        chatHistory: []
+    const page = {
+      serviceName: "rag",
+      userContainer: document.getElementById("userInfo"),
+      chatsList: document.getElementById("chatsList"),
+      filesList: document.getElementById("filesList"),
+      chatContainer: document.getElementById("chatContainer"),
+      messageInput: document.getElementById("messageInput"),
+      btnSend: document.getElementById("btnSend"),
+      btnStop: document.getElementById("btnStop"),
+      lblChatTitle: document.getElementById("lblChatTitle"),
+      btnNewChat: document.getElementById("btnNewChat"),
+      btnNewChatMobile: document.getElementById("btnNewChatMobile"),
+      inpUpload: document.getElementById("inpUpload"),
+      btnDeleteAllFiles: document.getElementById("btnDeleteAllFiles"),
+      btnDeleteAllChats: document.getElementById("btnDeleteAllChats"),
+      backToLogin: document.getElementById("backToLogin"),
+      chatHelper: document.getElementById("chat-helper-container"),
+      btnBanUsingFiles: document.getElementById("btnBanUsingFiles"),
+      useFiles: true,
+      chatHistory: []
+    }
+
+    const SAMPLE_MESSAGES = [
+      "امروز چه روزیه؟",
+      "این فایلی که بهت دادم در مورد چیه؟",
+      "یه کد بنویس به زبان پایتون که چاپ کنه سلام",
+      "می‌تونی یه جوک بگی؟",
+      "تو به کدوم هوش مصنوعی وصلی؟",
+      "تو به کجا وصلی؟ چجوری کار میکنی؟ چقدر اشتراک بهم میدی؟",
+      "این فایل رو برام خلاصه می‌کنی؟",
+      "می تونی این تمرینا رو حل کنی؟",
+      "مدل زبانیت چیه؟",
+      "تفاوت موشک بالستیک و کروز",
+      "دستور پخت قرمه‌سبزی",
+      "عوامل خطر ابتلا به گرفتگی عروق مغز کدامند؟",
+      "فلج همی پلژی چیست؟",
+      "علایم اصلی سکته مغزی",
+      "الان که اینترنت قطعه چه جوری جستجو کنم؟",
+      "کلان‌پیکره متنی چیه دیگه!",
+      "علایم رایج دردهای عصبی",
+      "بی‌خوابی زده به سرم چه کار کنم؟",
+      "صرع چیه؟",
+      "چیزی در مورد اسکیزوفرنی می‌دونی؟",
+      "از کجا بفهمم وسواس گرفتم؟ ",
+      "سرماخوردگی همون کروناست؟",
+      "فرق ویروس زنده با ویروس کامپیوتری",
+      "فوبیا چیه؟",
+      "اضطراب دارم",
+      "یوگا بلدی؟",
+      "کجاها رو بمب زدن؟",
+      "موشک خرمشهر چیه؟",
+      "ایران چه موشک‌هایی داره؟",
+      "پهلوی کی میاد شاه بشه",
+      "آب حیات دیگه چیه؟!",
+      "این خیار غبن که می‌گن چه؟",
+      "مراسم تشییع رهبر شهید کی برگزار می‌شه؟",
+      "معنی ترگمان چیه؟"
+    ]
+
+    /*********************************/
+    function updateQuestions(questions, filesEnabled) {
+      const chatBanner = document.querySelector(".chat-helper h5")
+
+      if (filesEnabled)
+        chatBanner.innerHTML = "حالا می‌تونی با استفاده از فایل‌هایی که آپلود کردی چت کنی و ازشون اطلاعات در بیاری<br/>اگه می‌خوای به چت عمومی برگردی کافیه فایل‌ها رو پاک کنی یا اون‌ها  رو از توی پنل غیرفعال کنی"
+      else
+        chatBanner.innerHTML = "با ترگمان می‌تونی راجع به هرچی حرف بزنی.<br/> حتی می‌تونی فایل‌های خودت رو آپلود کنی و ازشون اطلاعات بگیری!"
+
+      page.chatHelper.innerHTML = ""
+      if (filesEnabled) {
+        questions.forEach(item => rag.addHelpItem(item.smqQuestion || item))
+        rag.addHelpItem("این سند راجع به چی بود؟")
+      } else {
+        SAMPLE_MESSAGES.sort((a, b) => Math.random() > .5 ? -1 : 1).slice(0, 5).forEach(rag.addHelpItem)
+        rag.addHelpItem("اخبار جنگ ایران و آمریکا")
       }
+    }
 
-      const SAMPLE_MESSAGES = [
-        "امروز چه روزیه؟",
-        "این فایلی که بهت دادم در مورد چیه؟",
-        "یه کد بنویس به زبان پایتون که چاپ کنه سلام",
-        "می‌تونی یه جوک بگی؟",
-        "تو به کدوم هوش مصنوعی وصلی؟",
-        "تو به کجا وصلی؟ چجوری کار میکنی؟ چقدر اشتراک بهم میدی؟",
-        "این فایل رو برام خلاصه می‌کنی؟",
-        "می تونی این تمرینا رو حل کنی؟",
-        "مدل زبانیت چیه؟",
-        "تفاوت موشک بالستیک و کروز",
-        "دستور پخت قرمه‌سبزی",
-        "عوامل خطر ابتلا به گرفتگی عروق مغز کدامند؟",
-        "فلج همی پلژی چیست؟",
-        "علایم اصلی سکته مغزی",
-        "الان که اینترنت قطعه چه جوری جستجو کنم؟",
-        "کلان‌پیکره متنی چیه دیگه!",
-        "علایم رایج دردهای عصبی",
-        "بی‌خوابی زده به سرم چه کار کنم؟",
-        "صرع چیه؟",
-        "چیزی در مورد اسکیزوفرنی می‌دونی؟",
-        "از کجا بفهمم وسواس گرفتم؟ ",
-        "سرماخوردگی همون کروناست؟",
-        "فرق ویروس زنده با ویروس کامپیوتری",
-        "فوبیا چیه؟",
-        "اضطراب دارم",
-        "یوگا بلدی؟",
-        "کجاها رو بمب زدن؟",
-        "موشک خرمشهر چیه؟",
-        "ایران چه موشک‌هایی داره؟",
-        "پهلوی کی میاد شاه بشه",
-        "آب حیات دیگه چیه؟!",
-        "این خیار غبن که می‌گن چه؟",
-        "مراسم تشییع رهبر شهید کی برگزار می‌شه؟",
-        "معنی ترگمان چیه؟"
-      ]
-      
-      /*********************************/
-      function updateQuestions(questions, filesEnabled){
-        const chatBanner = document.querySelector(".chat-helper h5")
+    const rag = setupRAG(page, {
+      updateQuestions,
+      defaultTitle: {
+        onFile: "چت با اسناد بارگذاری‌شده",
+        noFile: "چت عمومی با ترگمان"
+      },
+      generateQuestions: true
+    })
+  </script>
+</body>
 
-        if(filesEnabled)
-          chatBanner.innerHTML = "حالا می‌تونی با استفاده از فایل‌هایی که آپلود کردی چت کنی و ازشون اطلاعات در بیاری<br/>اگه می‌خوای به چت عمومی برگردی کافیه فایل‌ها رو پاک کنی یا اون‌ها  رو از توی پنل غیرفعال کنی"
-        else 
-          chatBanner.innerHTML = "با ترگمان می‌تونی راجع به هرچی حرف بزنی.<br/> حتی می‌تونی فایل‌های خودت رو آپلود کنی و ازشون اطلاعات بگیری!"
-
-        page.chatHelper.innerHTML = ""
-        if(filesEnabled) {
-          questions.forEach(item=>rag.addHelpItem(item.smqQuestion || item))
-          rag.addHelpItem("این سند راجع به چی بود؟")
-        } else {
-          SAMPLE_MESSAGES.sort((a,b)=>Math.random()>.5 ? -1 : 1).slice(0, 5).forEach(rag.addHelpItem)
-          rag.addHelpItem("اخبار جنگ ایران و آمریکا")
-        }
-      }
-
-      /*********************************/
-      function disableInputs(state)   {
-        messageInput.disabled = state;
-        setClass(btnSend, "hidden", state)
-        setClass(btnStop, "hidden", !state)
-        setClass(inpUpload, "hidden", state)
-        inpUpload.disabled = state;
-        btnNewChat.disabled = state
-        document.querySelectorAll('label[for="inpUpload"]').forEach(
-          el=>state ? el.classList.add('disabled') : el.classList.remove('disabled')
-          ) 
-      }
-
-      let fileCount = 0
-
-      async function updateAppState(state, whatToUpadte = null) {
-          if(whatToUpadte === "files" || whatToUpadte === "all") fileCount = await rag.loadFiles()
-          switch(state) {
-            case enuStates.newChat:
-              lblChatTitle.innerHTML = fileCount && page.useFiles ? "چت با اسناد بارگذاری‌شده" : "چت عمومی با ترگمان"
-              document.body.classList.add('new-chat')
-              page.chatHistory = [];
-              chatContainer.innerHTML = "";
-              btnNewChat.setAttribute('disabled', true)
-              document.body.classList.remove('side-open')
-              rag.setCurrChatId('')
-              break;
-            case enuStates.chatStarted:
-              page.chatHistory = [];
-              chatContainer.innerHTML = "";
-            case enuStates.chatContinues:
-              document.body.classList.remove('side-open')
-              btnNewChat.removeAttribute('disabled')
-              document.body.classList.remove('new-chat')
-              messageInput.focus()
-          }
-          if(whatToUpadte === "chats" || whatToUpadte === "all") await rag.loadChats();
-          if(whatToUpadte === "questions" || whatToUpadte === "all") await rag.loadQuestions(fileCount);
-      }
-      
-      const rag = setupRAG(page, {updateAppState, disableInputs, updateQuestions}, {generateQuestions: true})
-    </script>
-  </body>
 </html>

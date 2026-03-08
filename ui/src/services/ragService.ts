@@ -152,7 +152,7 @@ export default function ragService(
 
   //-----------------------------------------------------
   router.get(`/${service}/questions`, async (apiReq: Request, apiRes: Response) => {
-    const auth = await getAuthInfo(apiReq);
+    const auth = await getAuthInfo(apiReq, false);
 
     const { maxItems, from, fileId } = apiReq.query;
     if (fileId)
@@ -603,7 +603,6 @@ export default function ragService(
       const DEFAULT_EMPTY_CONTEXT: IntfContext = { chunks: [], reportSource: false }
       const embeddedQuery = await embedUserMessage(filteredHistory, allKeywords, api_question);
 
-      console.log({api_useFiles})
       const userContext = !isSummarizing && api_useFiles ? await getMatchingContexts(userCollection(auth), embeddedQuery, true, 16, false, 0.7) : DEFAULT_EMPTY_CONTEXT;
       const globalContext = !isSummarizing && useGeneralKnowledge
         ? userContext?.chunks && userContext.chunks.length > 3

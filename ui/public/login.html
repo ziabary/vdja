@@ -268,12 +268,12 @@
         window.location.pathname = "/" + service
     })
 
-    const userTokenInput = document.getElementById("userToken");
+    const inpUserToken = document.getElementById("userToken");
     const togglePass = document.getElementById("togglePass");
-    const eyeIcon = document.getElementById("eyeIcon");
-    const generateBtn = document.getElementById("generateBtn");
-    const enterBtn = document.getElementById("enterBtn");
-    const oidcBtn = document.getElementById("oidcBtn");
+    const icoEye = document.getElementById("eyeIcon");
+    const btnGenerate = document.getElementById("generateBtn");
+    const btnEnter = document.getElementById("enterBtn");
+    const btnOidc = document.getElementById("oidcBtn");
     const btnBale = document.getElementById("btnBale");
     const blkBaseLogin = document.getElementById("blkBaseLogin");
     const blkBaleOTP = document.getElementById("blkBaleOTP");
@@ -287,34 +287,46 @@
     const btnSendBaleOTP = document.getElementById("btnSendBaleOTP");
     const btnCancelOTP = document.getElementById("btnCancelOTP");
     const lblBale = document.getElementById("lblBale");
+    
     let otpTimer = null
     let isPasswordVisible = false;
 
     togglePass.addEventListener("click", () => {
       isPasswordVisible = !isPasswordVisible;
-      userTokenInput.type = isPasswordVisible ? "text" : "password";
-      eyeIcon.className = isPasswordVisible ? "fa fa-thin fa-eye-slash" : "fa fa-thin fa-eye";
+      inpUserToken.type = isPasswordVisible ? "text" : "password";
+      icoEye.className = isPasswordVisible ? "fa fa-thin fa-eye-slash" : "fa fa-thin fa-eye";
     });
 
-    generateBtn.addEventListener("click", () => {
+    function finalizeLogin(data) {
+      auth.setAccessToken(data.accessToken);
+      if (queries.mustAdmin && !auth.info().privs?.isAdmin) {
+        showError("لازم است تا کاربر ادمین وارد شود");
+        setTimeout(auth.logout(window.location.href), 2000)
+      } else {
+        inpUserToken.value = "";
+        window.location.href = (service.startsWith('/') ? "" :"/") + service
+      }
+    }
+
+    btnGenerate.addEventListener("click", () => {
       const chars =
         "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@!~%$";
       let key = "";
       for (let i = 0; i < 24; i++) {
         key += chars.charAt(Math.floor(Math.random() * chars.length));
       }
-      userTokenInput.value = key;
-      userTokenInput.type = "text";
+      inpUserToken.value = key;
+      inpUserToken.type = "text";
       isPasswordVisible = true;
-      eyeIcon.className = "fa fa-thin  fa-eye-slash";
+      icoEye.className = "fa fa-thin  fa-eye-slash";
     });
 
-    oidcBtn.addEventListener("click", () => {
+    btnOidc.addEventListener("click", () => {
       window.location.href = "/api/auth/oidc/login";
     });
 
-    enterBtn.addEventListener("click", () => {
-      const key = userTokenInput.value.trim();
+    btnEnter.addEventListener("click", () => {
+      const key = inpUserToken.value.trim();
       if (key.length < 16) {
         showError("کلید باید حداقل ۱۶ کاراکتر باشد!");
         return;
@@ -323,13 +335,13 @@
       login(key);
     });
 
-    userTokenInput.addEventListener("keypress", (e) => {
-      if (e.key === "Enter") enterBtn.click();
+    inpUserToken.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") btnEnter.click();
     });
 
     async function login(userRawKey) {
       document.getElementById("loading")?.classList.remove("hidden")
-      enterBtn.disabled = true;
+      btnEnter.disabled = true;
 
       try {
         const hashedKey = md5(userRawKey);
@@ -341,24 +353,17 @@
 
         const data = await res.json();
 
-        if (data.accessToken) {
-          auth.setAccessToken(data.accessToken);
-          if (queries.mustAdmin && !auth.info().privs?.isAdmin) {
-            showError("لازم است تا کاربر ادمین وارد شود");
-            setTimeout(auth.logout(window.location.href), 2000)
-          } else {
-            userTokenInput.value = "";
-            window.location.href = "/" + service
-          }
-        } else
+        if (data.accessToken)
+          finalizeLogin(data)
+        else
           showError(data.error || "خطا در ورود. کلید نامعتبر است.");
       } catch (err) {
         showError("خطا در ارتباط با سرور. لطفاً دوباره تلاش کنید.");
         console.error(err);
       } finally {
         document.getElementById("loading")?.classList.add("hidden")
-        enterBtn.disabled = false;
-        enterBtn.textContent = "ورود به چت";
+        btnEnter.disabled = false;
+        btnEnter.textContent = "ورود به چت";
       }
     }
     function backToPhoneInput() {
@@ -403,14 +408,7 @@
         }).then(d => d.json()).then(data => {
           if (data.error) return showError(data.error.message)
           if (data.accessToken) {
-            auth.setAccessToken(data.accessToken);
-            if (queries.mustAdmin && !auth.info().privs?.isAdmin) {
-              showError("لازم است تا کاربر ادمین وارد شود");
-              setTimeout(auth.logout(window.location.href), 2000)
-            } else {
-              userTokenInput.value = "";
-              window.location.href = "/" + service
-            }
+            finalizeLogin(data)
           }
         });
       } else {

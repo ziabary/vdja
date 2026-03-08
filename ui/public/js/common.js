@@ -139,9 +139,36 @@ function setDarkMode(state) {
     setClass(el, 'btn-dark', active);
   })
 }
-
 setDarkMode(localStorage.getItem('tgmn-dark-mode'))
 setTimeout(() => { if (btnToggleDarkMode) btnToggleDarkMode.onclick = ev => setDarkMode(localStorage.getItem('tgmn-dark-mode') === "dark" ? "" : "dark") })
+
+const backToLogin = document.querySelectorAll("#backToLogin, #backToLoginMenu")
+backToLogin.forEach(el => {
+  el.addEventListener('click', async () => {
+    if (!auth.token())
+      return setupAuth(page.serviceName, true).then(r => auth = r)
+
+    const result = await confirmDialog({
+      title: 'خروج از حساب',
+      message: 'آیا می‌خواهید از حساب خود خارج شوید؟',
+      confirmText: 'بله، خارج شو',
+      confirmClass: 'btn-outline-danger',
+    });
+
+    if (result.confirmed) auth.logout();
+  });
+})
+
+const btnMenu = document.getElementById("btnMenu")
+if(btnMenu)
+  btnMenu.addEventListener("click", ev => {
+  const isOpen = ev.target.classList.contains("fa-bars")
+  const menu = document.getElementById("menu")
+  setClass(ev.target, 'fa-close', isOpen)
+  setClass(ev.target, 'fa-bars', !isOpen)
+  setClass(menu, "collapsed", !isOpen)
+})
+
 
 function confirmDialog(options = {}) {
   return new Promise((resolve) => {
@@ -255,11 +282,11 @@ function num2arabic(str) {
   return str.replace(/[۰-۹]/g, (match) => persianToEnglish[match]);
 }
 
-function str2Num(str){return str*1}
+function str2Num(str) { return str * 1 }
 
 function parseQuery(search) {
   const queries = {}
-  if(search.startsWith("?")) 
-    search.substring(1).split("&").forEach(q=>{const parts = q.split("="); queries[parts[0]] = decodeURIComponent(parts[1])})
+  if (search.startsWith("?"))
+    search.substring(1).split("&").forEach(q => { const parts = q.split("="); queries[parts[0]] = decodeURIComponent(parts[1]) })
   return queries
 }

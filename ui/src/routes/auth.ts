@@ -38,7 +38,7 @@ router.post("/auth/loginByKey", async (apiReq: Request<{}, {}, AuthRequestBody>,
     } else
       await atDB.user.updateLastLogin(userKeyMD5);
 
-    if (!user.privs?.services?.hasOwnProperty(service || "no service"))
+    if (service !== '/' && !user.privs?.services?.hasOwnProperty(service || "no service"))
       throw new exHttpAccessDenied("شما به این سرویس دسترسی ندارید")
 
     atDB.log.add(userKeyMD5, "login", { service }, 0, 200)
@@ -46,7 +46,7 @@ router.post("/auth/loginByKey", async (apiReq: Request<{}, {}, AuthRequestBody>,
   } catch (err) {
     atDB.log.add(userKeyMD5, "login", { service }, 0, (err as IntfExHttp).status, (err as IntfExHttp).message)
     logger.error("Error in login:", err);
-    apiRes.status(500).json({ error: "خطا در ورود" });
+    apiRes.status(500).json({ error: "خطا در ورود: " + (err as Error).message });
   }
 });
 

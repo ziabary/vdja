@@ -7,7 +7,8 @@
     <link rel="stylesheet" href="css/bootstrap/bootstrap.rtl.min.css" />
     <link rel="stylesheet" href="fonts/IranSansX/fontiran.css" />
     <link rel="stylesheet" href="fonts/fontawesome/active/all.css" />
-
+    <link rel="stylesheet" href="css/style.css" />
+  
     <style>
       body {
         font-family: "IRANSansX", sans-serif;
@@ -46,10 +47,14 @@
   </head>
   <body>
     <div class="container py-3">
-      <div class="d-flex flex-row align-items-center mb-5">
+      <div class="d-flex flex-row align-items-center mb-5 position-relative">
         <img src="/img/logo-light.png" alt="لوگو" class="bi-color logo me-3" />
         <div class="w-100"></div>
-        <i class="fa fa-moon fa-lg btn" id=btnToggleDarkMode></i>
+        <div class="left-side">
+          <i class="fa fa-moon fa-lg btn" id=btnToggleDarkMode></i>
+          <a href="/login?back=/" class="btn btn-outline-primary" id=btnLogin>ورود به سامانه</a>
+          <a class="btn btn-outline-secondary hidden" id=backToLogin>خروج از سامانه</a>
+        </div>
       </div>
 
       <h1 class="text-center mb-1 text-primary">دستیار هوشمند فارسی</h1>
@@ -105,5 +110,7 @@
     </div>
     <script src="js/vendors/bootstrap.bundle.min.js"></script>
     <script src="js/common.js"></script>
+    <script src="js/auth.js"></script>
+    <script>let auth; setupAuth("/", false).then(r=>auth=r)</script>
   </body>
 </html>

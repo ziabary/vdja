@@ -111,6 +111,9 @@ async function setupAuth(service, required) {
       return auth.getUser();
     } finally {
       document.getElementById("loading")?.classList.add("hidden")
+      setClass(document.getElementById('btnLogin'), 'hidden', auth.getToken())
+      setClass(document.getElementById('btnLogin2'), 'hidden', auth.getToken())
+      setClass(document.getElementById('backToLogin'), 'hidden', !auth.getToken())
     }
   }
 

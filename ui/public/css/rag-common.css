@@ -58,11 +58,13 @@ div#userInfo {
 .modal-footer button {
   font-size: 0.8em;
 }
-#backToLogin {
+.side-bar-footer {
   position: absolute;
   bottom: 1em;
   right: 1em;
   font-size: 0.8rem;
+  text-align: center;
+  width: calc(100% - 1rem);
 }
 #inpUpload {
   display: none;
@@ -178,6 +180,10 @@ html[data-bs-theme='dark'] .bot_buttons_row .warn {
   color: yellow;
 }
 
+.chat-header{
+  position: relative;
+}
+
 .new-chat .chat-header,
 .new-chat .chat-container {
   display: none;
@@ -250,11 +256,15 @@ html[data-bs-theme='dark'] .bot_buttons_row .warn {
     transition: ease-in 0.2s;
   }
 
+  .clickable-title{
+    width: 80%;
+  }
+
   .navbar {
     display: block;
   }
   .chat-container {
-    height: calc(80vh - 10rem);
+    height: calc(80vh - 4rem);
   }
 
   body.side-open .sidebar {
@@ -270,6 +280,7 @@ html[data-bs-theme='dark'] .bot_buttons_row .warn {
   .main-chat {
     margin-right: unset;
     margin-top: 64px;
+    height: calc(100vh - 64px);
   }
   h4#lblChatTitle {
     font-size: 1rem;

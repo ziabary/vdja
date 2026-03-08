@@ -43,7 +43,10 @@
     <div class="main-chat" >
       <div class="chat-header d-flex justify-content-between align-items-center mb-3">
         <h4 id="lblChatTitle"  class="clickable-title" style="cursor: pointer; display: inline-block">چت متفکرانه با ترگمان</h4>
-        <i class="fa fa-moon fa-lg btn" id=btnToggleDarkMode></i>
+        <div class="left-side">
+          <i class="fa fa-moon fa-lg btn" id=btnToggleDarkMode></i>
+          <a href="/login?back=thinker" class="btn btn-outline-primary" id=btnLogin>ورود به سامانه</a>
+        </div>
       </div>
       <div id="chatContainer" class="chat-container border p-3 rounded" manual-scroll-allowed></div>
       <div class="message-input">

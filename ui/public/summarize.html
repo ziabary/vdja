@@ -14,6 +14,7 @@
             min-height: 250px;
             font-size: 1.2rem;
         }
+
         @media (max-width:640px) {
             #inputText {
                 min-height: 200px;
@@ -27,49 +28,85 @@
 </head>
 
 <body>
-    <span id="loading"><div class=marquee></div></span>
-    <nav class="navbar shadow-sm">
+    <span id="loading">
+        <div class=marquee></div>
+    </span>
+    <!-- NAVBAR + MENU -->
+    <nav class="navbar shadow-sm" id="navbar">
         <div class="container">
-            <img src="/img/logo-light.png" alt="لوگو" class="bi-color"/>
-            <span class="navbar-brand mx-auto h4 mb-0">خلاصه‌سازی هوشمند</span>
-            <a href="/" class="btn btn-outline-primary">← بازگشت</a>
-        </div>
-        <i class="fa fa-moon fa-lg btn" id=btnToggleDarkMode></i>
-    </nav>
+            <img src="/img/logo-light.png" alt="لوگو" class="bi-color logo" />
 
-    <div class="container mt-4">
+            <span class="navbar-brand mx-auto h4 mb-0">ترجمه هوشمند</span>
+
+            <div class="left-side mx-2">
+                <i class="btn btn-sm fa fa-moon fa-lg btn" id=btnToggleDarkMode></i>
+                <div class="on-mobile" title="منو"><i class="btn btn-sm fa fa-lg fa-bars" id="btnMenu"></i></div>
+                <div class="on-desktop">
+                    <a href="/" class="btn btn-sm btn-outline-secondary" title="سایر خدمات">
+                        <i class="fa fa-boxes"></i> سایر خدمات
+                    </a>
+                    <button class="btn btn-sm btn-outline-secondary" title="خروج" id="backToLogin">
+                        <i class="fa fa-door-open"></i> خروج
+                    </button>
+                    <a href="/login?back=translate" class="btn btn-sm btn-primary" title="ورود به سامانه" id=btnLogin>
+                        <i class="fa fa-user"></i> ورود به سامانه
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <div class="collapsed" id="menu">
+        <a href="/" class="btn btn-sm btn-outline-secondary" title="سایر خدمات">
+            <i class="fa fa-boxes"></i> سایر خدمات
+        </a>
+        <button class="btn btn-sm btn-outline-secondary" title="خروج" id="backToLogin">
+            <i class="fa fa-door-open"></i> خروج
+        </button>
+    </div>
+
+    <!-- CONTAINER -->
+    <div class="main container">
         <div class="card shadow">
             <div class="card-body p-4">
                 <div class="row g-4" style="min-height: 400px">
                     <!-- Input column -->
-                    <div class="col-lg-6 d-flex flex-column">
-                        <label class="form-label fw-bold mb-3">متن یا فایل برای خلاصه‌سازی</label>
-                        <textarea title="متن ورودی" id="txtInput" class="form-control input-box flex-grow-1"></textarea>
+                    <div class="col-lg-6 d-flex position-relative flex-column">
+                        <textarea title="متن ورودی" id="txtInput" class="form-control input-box flex-grow-1" placeholder="متن یا فایل برای خلاصه‌سازی"></textarea>
+                        <div class="text-muted inside-textbox">
+                            <small class="fa-num" id="lblCharCount">0</small><small> کاراکتر</small>
+                          </div>
                         <div class="mt-3 align-items-center" id="blckUpload">
                             <div class="custom-file-container">
-                            <input type="file" id="inpFile" style="display:none" accept=".md,.txt,.odt,.doc,.docx,.pdf"/>
-                            <label for="inpFile" class="btn btn-primary px-4">انتخاب فایل</label>
-                            <div class="file-name">برای فایل‌های طولانی آن‌ها را به صفحات کمتر بشکنید</div>
+                                <input type="file" id="inpFile" style="display:none"
+                                    accept=".md,.txt,.odt,.doc,.docx,.pdf" />
+                                <label for="inpFile" class="btn btn-primary px-4">انتخاب فایل</label>
+                                <div class="file-name">برای فایل‌های طولانی آن‌ها را به صفحات کمتر بشکنید</div>
                             </div>
-                            <div class="progress hidden"><div class="progress-bar"></div></div>
+                            <div class="progress hidden">
+                                <div class="progress-bar"></div>
+                            </div>
                         </div>
                         <div class="mt-3">
                             <label class="form-label">حداکثر تعداد کلمات در خلاصه</label>
-                            <input type="number" title="inpMaxWords" id="inpMaxWords" class="form-control fa-num ltr" value="200" min="50" max="1000" />
+                            <input type="number" title="inpMaxWords" id="inpMaxWords" class="form-control fa-num ltr"
+                                value="200" min="50" max="1000" />
                         </div>
                         <div class="mt-3 form-check text-start">
                             <input class="form-check-input" type="checkbox" id="chkForcePersian" checked />
-                            <label class="form-check-label" for="chkForcePersian">خروجی به فارسی (برای متن غیر فارسی)</label>
+                            <label class="form-check-label" for="chkForcePersian">خروجی به فارسی (برای متن غیر
+                                فارسی)</label>
                         </div>
                     </div>
 
                     <!-- Output column -->
                     <div class="col-lg-6 d-flex flex-column">
                         <label class="form-label fw-bold mb-3">خلاصه</label>
-                        <div id="txtOutput" class="form-control input-box output-text flex-grow-1" manual-scroll-allowed contenteditable="false"></div>
+                        <div id="txtOutput" class="form-control input-box output-text flex-grow-1" manual-scroll-allowed
+                            contenteditable="false"></div>
                         <div class="mt-3 text-end d-flex gap-3 justify-content-end align-items-center flex-wrap">
                             <button id="btnCopyMD" class="btn btn-outline-secondary hidden px-4">کپی Markdown</button>
-                            <button id="btnCopyPlain" class="btn btn-outline-secondary hidden px-4">کپی برای Word</button>
+                            <button id="btnCopyPlain" class="btn btn-outline-secondary hidden px-4">کپی برای
+                                Word</button>
                             <button id="btnSummarize" disabled class="btn btn-primary px-5">خلاصه کن</button>
                         </div>
                     </div>
@@ -100,8 +137,10 @@
             </div>
         </div>
     </div>
-    <div class="text-center mb-2"><small>قدرت‌گرفته از GPUهای <a target=blank href="https://afranet.ir/fa/services/gpu">افرانت</a></small></div>
-    <div class="text-center mb-3"><small>کلیه حقوق برای <a target="blank" href="https://tip.co.ir">شرکت پردازش هوشمند ترگمان</a> محفوظ است</small></div>
+    <div class="text-center mb-2"><small>قدرت‌گرفته از GPUهای <a target=blank
+                href="https://afranet.ir/fa/services/gpu">افرانت</a></small></div>
+    <div class="text-center mb-3"><small>کلیه حقوق برای <a target="blank" href="https://tip.co.ir">شرکت پردازش هوشمند
+                ترگمان</a> محفوظ است</small></div>
 
     <script src="js/vendors/bootstrap.bundle.min.js"></script>
     <script src="js/vendors/marked.min.js"></script>
@@ -113,9 +152,9 @@
 
     <script src="js/common.js"></script>
     <script src="js/auth.js"></script>
-    <script>let auth; setupAuth("summarize", false).then(r=>auth=r)</script>
+    <script>let auth; setupAuth("summarize", false).then(r => auth = r)</script>
     <script src="js/llm.js"></script>
-    
+
     <script>
         const txtInput = document.getElementById("txtInput");
         const txtOutput = document.getElementById("txtOutput");
@@ -126,17 +165,18 @@
         const btnCopyHTML = document.getElementById("btnCopyPlain");
         const chkForcePersian = document.getElementById("chkForcePersian");
         const blckUpload = document.getElementById("blckUpload");
+        const lblCharCount = document.getElementById("lblCharCount");
 
         let activeReqId = false
 
         const MAX_CHARS = 3000;
         setupFileConverter({
-            userToken: auth.info().key, 
+            userToken: auth.info()?.key,
             inpFile,
-            blckFileUploadInfo: blckUpload, 
-            txtInput, 
-            lblStatus: txtOutput, 
-            maxChars : MAX_CHARS
+            blckFileUploadInfo: blckUpload,
+            txtInput,
+            lblStatus: txtOutput,
+            maxChars: MAX_CHARS
         })
 
         function setAppStateRunning(running) {
@@ -146,14 +186,14 @@
             setClass(btnSummarize, "button-to-top", running)
             setClass(txtOutput, "streaming", running)
             txtInput.disabled = running
-            setClass(btnCopyMD, "hidden", running || !txtOutput.innerText.length) 
-            setClass(btnCopyHTML, "hidden", running || !txtOutput.innerText.length) 
-            btnSummarize.disabled = !txtInput.value.length 
-            if(!running) activeReqId = undefined
+            setClass(btnCopyMD, "hidden", running || !txtOutput.innerText.length)
+            setClass(btnCopyHTML, "hidden", running || !txtOutput.innerText.length)
+            btnSummarize.disabled = !txtInput.value.length
+            if (!running) activeReqId = undefined
         }
 
         btnSummarize.addEventListener("click", async () => {
-            if(activeReqId) return await stopLLMGen("/api/summarize", auth.info().key, activeReqId).then(()=>setAppStateRunning(false))
+            if (activeReqId) return await stopLLMGen("/api/summarize", activeReqId).then(() => setAppStateRunning(false))
 
             const text = txtInput.value.trim();
             if (!text) {
@@ -162,13 +202,13 @@
             }
 
             if (text.length > MAX_CHARS) {
-                toast(`طول متن از حد مجاز بیشتر است و تنها ${MAX_CHARS} ابتدایی آن ترجمه خواهد شد`,"warning");
+                toast(`طول متن از حد مجاز بیشتر است و تنها ${MAX_CHARS} ابتدایی آن ترجمه خواهد شد`, "warning");
                 text = text.slice(0, MAX_CHARS);
             }
 
             const maxOutWords = parseInt(inpMaxWords.value) || 200;
 
-            activeReqId = genReqId(auth.info().key)
+            activeReqId = genReqId()
             setAppStateRunning(true)
 
             try {
@@ -182,34 +222,41 @@
                         request_id: activeReqId
                     }),
                 });
-                if(!apiResponse.ok)  throw apiResponse
+                if (!apiResponse.ok) throw apiResponse
 
-                const summaryFinished= async (fullMarkdown) =>{
-                    btnCopyMD.markdown = fullMarkdown; 
-                    btnCopyHTML.markdown = fullMarkdown; 
+                const summaryFinished = async (fullMarkdown) => {
+                    btnCopyMD.markdown = fullMarkdown;
+                    btnCopyHTML.markdown = fullMarkdown;
                     setAppStateRunning(false)
                     activeReqId = undefined
                     updateOutputDirection(txtOutput)
                     history.replaceState({ path: location.pathname }, "", location.pathname);
                 }
 
-                await showStream("خلاصه‌سازی", txtOutput, apiResponse,{
+                await showStream("خلاصه‌سازی", txtOutput, apiResponse, {
                     onDone: summaryFinished,
                     onCancelled: summaryFinished,
-                    onRetry: async ()=>btnSummarize.click(),
+                    onRetry: async () => btnSummarize.click(),
                 })
             } catch (ex) {
                 parseStreamException("خلاصه‌سازی", ex)
             } finally {
-                setAppStateRunning(false)        
+                setAppStateRunning(false)
             }
         });
 
-        txtOutput.addEventListener("change", ()=>updateOutputDirection(txtOutput));
-        btnCopyMD.addEventListener("click", (ev)=>copy2Clipboard(ev.target, ev.target.markdown));
-        btnCopyHTML.addEventListener("click", (ev)=>copy2Clipboard(ev.target, ev.target.markdown, txtOutput));
-        txtInput.addEventListener("input", ()=>{ btnSummarize.disabled = false})
-        txtInput.addEventListener("change", ()=>{ btnSummarize.disabled = false})
+        txtOutput.addEventListener("change", () => updateOutputDirection(txtOutput));
+        btnCopyMD.addEventListener("click", (ev) => copy2Clipboard(ev.target, ev.target.markdown));
+        btnCopyHTML.addEventListener("click", (ev) => copy2Clipboard(ev.target, ev.target.markdown, txtOutput));
+        txtInput.addEventListener("input", () => {
+            lblCharCount.innerText = txtInput.value.length;
+            btnSummarize.disabled = false
+        }
+        )
+        txtInput.addEventListener("change", () => {
+            lblCharCount.innerText = txtInput.value.length;
+            btnSummarize.disabled = false
+        })
     </script>
 </body>
 

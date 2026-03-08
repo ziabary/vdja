@@ -1,358 +1,407 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>ترجمه - دستیار هوشمند فارسی</title>
-    <link rel="stylesheet" href="css/bootstrap/bootstrap.rtl.min.css" />
-    <link rel="stylesheet" href="fonts/IranSansX/fontiran.css" />
-    <link rel="stylesheet" href="css/style.css" />
-    <link rel="stylesheet" href="fonts/fontawesome/active/all.css" />
 
-    <style>
-      .input-box {
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ترجمه - دستیار هوشمند فارسی</title>
+  <link rel="stylesheet" href="css/bootstrap/bootstrap.rtl.min.css" />
+  <link rel="stylesheet" href="fonts/IranSansX/fontiran.css" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="fonts/fontawesome/active/all.css" />
+
+  <style>
+    .input-box {
+      min-height: 200px;
+      font-size: 1.2rem;
+    }
+
+    .lang-select {
+      max-width: 180px;
+    }
+
+    pronun {
+      color: green;
+      font-size: 0.8em;
+      float: left;
+    }
+
+    dic-section {
+      font-size: 90%;
+    }
+
+    transl {
+      display: block;
+    }
+
+    .dicEntry h4 {
+      margin-top: 1em;
+    }
+
+    @media (max-width: 640px) {
+      #txtInput {
         min-height: 200px;
-        font-size: 1.2rem;
       }
-      .lang-select { max-width: 180px; }
-      pronun {
-        color: green;
-        font-size: 0.8em;
-        float: left;
-      }
-      dic-section{ font-size: 90%; }
-      transl{ display: block; }
-      .dicEntry h4 {
-        margin-top: 1em;
-      }
-      @media (max-width: 640px) {
-        #txtInput { min-height: 200px; }
-      }
-    </style>
-  </head>
-  <body>
-    <span id="loading"><div class=marquee></div></span>
-    <nav class="navbar shadow-sm" id="navbar">
-      <div class="container">
-        <img src="/img/logo-light.png" alt="لوگو" class="bi-color logo me-3"/>
-        <a href="/" class="btn btn-outline-primary">← بازگشت</a>
-        <span class="navbar-brand mx-auto h4 mb-0">ترجمه هوشمند</span>
-      </div>
-      <i class="fa fa-moon fa-lg btn" id=btnToggleDarkMode></i>
-    </nav>
+    }
+  </style>
+</head>
 
-    <div class="container mt-4">
-      <div class="card shadow">
-        <div class="card-body p-4">
-          <!-- Language selection row - moved above boxes -->
-          <div class="row g-3 mb-4 align-items-center">
-            <div class="col-6 text-start">
-              <select title="زبان مبدا" id="selSource" class="form-select lang-select">
-                <option value="auto">تشخیص خودکار</option>
-                <!-- filled by JS -->
-              </select>
-            </div>
-            <div class="col-6 text-end">
-              <select title="زبان مقصد" id="seltarget" class="form-select lang-select">
-                <!-- filled by JS -->
-              </select>
-            </div>
-          </div>
+<body>
+  <span id="loading">
+    <div class=marquee></div>
+  </span>
 
-          <!-- Input and output boxes in same row with equal height -->
-          <div class="row g-4" style="min-height: 300px">
-            <div class="col-lg-6 d-flex flex-column">
-              <textarea title="متن ورودی" id="txtInput" class="form-control input-box flex-grow-1"></textarea>
-              <div class="mt-3 align-items-center" id="blckUpload">
-                <div class="custom-file-container">
-                  <input type="file" id="inpFile" style="display:none" accept=".md,.txt,.odt,.doc,.docx,.pdf"/>
-                  <label for="inpFile" class="btn btn-primary px-4">انتخاب فایل</label>
-                  <div class="file-name">برای فایل‌های طولانی آن‌ها را به صفحات کمتر بشکنید</div>
-                </div>
-                <div class="progress hidden"><div class="progress-bar"></div></div>
-              </div>
-              <div class="mt-2 text-end">
-                <small class="text-muted fa-num" id="lblCharCount">0</small><small> کاراکتر</small>
-              </div>
-            </div>
+  <!-- NAVBAR + MENU -->
+  <nav class="navbar shadow-sm" id="navbar">
+    <div class="container">
+      <img src="/img/logo-light.png" alt="لوگو" class="bi-color logo" />
 
-            <div class="col-lg-6 d-flex flex-column">
-              <div id="txtOutput" class="form-control input-box output-text flex-grow-1" manual-scroll-allowed contenteditable="false"></div>
-              <div class="mt-3 text-end d-flex gap-3 justify-content-end align-items-center">
-                <button id="btnTrnsl" disabled class="btn btn-primary px-5">ترجمه</button>
-                <button id="btnCopy" class="btn btn-outline-secondary px-4 hidden">کپی</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="card-footer bg-transparent border-0 pt-0">
-        <div class="alert alert-info small mt-4" role="alert">
-          <p class="mb-3">
-            <span class="me-2">ℹ️</span>
-            <strong>توجه:</strong> این مترجم به صورت غیر برخط و بر اساس مدل‌های
-            زبانی بزرگ بهینه‌شده برای زبان فارسی کار می‌کند و ممکن است در ترجمه
-            متون تخصصی خطاهایی داشته باشد. در صورت نیاز به ترجمه تخصصی، امکان
-            توسعه مترجم ویژه مبتنی بر دادگان تخصصی وجود دارد.
-          </p>
-          <p class="mb-3">
-            <span class="me-2">📄</span>
-            نسخه فعلی دارای محدودیت حجم متن ورودی به میزان حداکثر ۲ هزار کاراکتر بوده و
-                    الباقی متن را نمی‌خواند. برای فایل‌های بزرگتر آن‌ها را به چند بخش بشکنید
-            توجه داشته باشید که برای فایل‌های PDF (بالاخص فارسی) هنوز راه‌کار
-            قطعی برای استخراج محتوا وجود ندارد و سامانه از سرویس‌های استاندارد
-            استخراج متن استفاده می‌کند
-          </p>
-          <p class="mb-0">
-            <span class="me-2">⚠️</span>
-            درخواست‌های ترجمه در سیستم ذخیره نمی‌شوند، اما در حین ترجمه متن اصلی
-            و ترجمه آن در سرور قابل دسترسی هستند؛ به همین سبب لطفاً از ارسال
-            متون طبقه‌بندی‌شده یا حساس خودداری فرمایید.
-          </p>
+      <span class="navbar-brand mx-auto h4 mb-0">ترجمه هوشمند</span>
+
+      <div class="left-side mx-2">
+        <i class="btn btn-sm fa fa-moon fa-lg btn" id=btnToggleDarkMode></i>
+        <div class="on-mobile" title="منو"><i class="btn btn-sm fa fa-lg fa-bars" id="btnMenu"></i></div>
+        <div class="on-desktop">
+          <a href="/" class="btn btn-sm btn-outline-secondary" title="سایر خدمات">
+            <i class="fa fa-boxes"></i> سایر خدمات
+          </a>
+          <button class="btn btn-sm btn-outline-secondary" title="خروج" id="backToLogin">
+            <i class="fa fa-door-open"></i> خروج
+          </button>
+          <a href="/login?back=translate" class="btn btn-sm btn-primary" title="ورود به سامانه" id=btnLogin>
+            <i class="fa fa-user"></i> ورود به سامانه
+          </a>
         </div>
       </div>
     </div>
-    <div class="text-center mb-2"><small>قدرت‌گرفته از GPUهای <a target=blank href="https://afranet.ir/fa/services/gpu">افرانت</a></small></div>
-    <div class="text-center mb-3"><small>کلیه حقوق برای <a target="blank" href="https://tip.co.ir">شرکت پردازش هوشمند ترگمان</a> محفوظ است</small></div>
+  </nav>
+  <div class="collapsed" id="menu">
+    <a href="/" class="btn btn-sm btn-outline-secondary" title="سایر خدمات">
+      <i class="fa fa-boxes"></i> سایر خدمات
+    </a>
+    <button class="btn btn-sm btn-outline-secondary" title="خروج" id="backToLogin">
+      <i class="fa fa-door-open"></i> خروج
+    </button>
+  </div>
 
-    <script src="js/vendors/bootstrap.bundle.min.js"></script>
-    <script src="js/vendors/marked.min.js"></script>
-    <script src="js/vendors/md5.min.js"></script>
-    <!-- MathJax -->
-    <script src="js/vendors/mathjax/config.js"></script>
-    <script src="js/vendors/polyfill.min.js?features=es6"></script>
-    <script src="js/vendors/mathjax/es5/tex-mml-chtml.js"></script>
+  <!-- CONTAINER -->
+  <div class="main container">
+    <div class="card shadow">
+      <div class="card-body p-4">
+        <!-- Language selection row - moved above boxes -->
+        <div class="row g-3 mb-4 align-items-center">
+          <div class="col-6 text-start">
+            <select title="زبان مبدا" id="selSource" class="form-select lang-select">
+              <option value="auto">تشخیص خودکار</option>
+              <!-- filled by JS -->
+            </select>
+          </div>
+          <div class="col-6 text-end">
+            <select title="زبان مقصد" id="seltarget" class="form-select lang-select">
+              <!-- filled by JS -->
+            </select>
+          </div>
+        </div>
 
-    <script src="js/common.js"></script>
-    <script src="js/auth.js"></script>
-    <script>let auth; setupAuth("translate", false).then(r=>auth=r)</script>
-    <script src="js/llm.js"></script>
+        <!-- Input and output boxes in same row with equal height -->
+        <div class="row g-4" style="min-height: 300px">
+          <div class="col-lg-6 d-flex flex-column position-relative">
+            <textarea title="متن ورودی" id="txtInput" class="form-control input-box flex-grow-1" placeholder="متن یا فایل برای ترجمه"></textarea>
+            <div class="text-muted inside-textbox">
+              <small class="fa-num" id="lblCharCount">0</small><small> کاراکتر</small>
+            </div>
+            <div class="mt-3 align-items-center" id="blckUpload">
+              <div class="custom-file-container">
+                <input type="file" id="inpFile" style="display:none" accept=".md,.txt,.odt,.doc,.docx,.pdf" />
+                <label for="inpFile" class="btn btn-primary px-4">انتخاب فایل</label>
+                <div class="file-name">برای فایل‌های طولانی آن‌ها را به صفحات کمتر بشکنید</div>
+              </div>
+              <div class="progress hidden">
+                <div class="progress-bar"></div>
+              </div>
+            </div>
+          </div>
 
-    <script>
-      const languages = {
-        auto: "تشخیص خودکار",
-        en: "انگلیسی",
-        fa: "فارسی",
-        ar: "عربی",
-        es: "اسپانیایی",
-        ru: "روسی",
-        fr: "فرانسوی",
-        de: "آلمانی",
-        bg: "بلغاری",
-        //  cs: "چکی",
-        da: "دانمارکی",
-        el: "یونانی",
-        fi: "فنلاندی",
-        hi: "هندی",
-        // id: "اندونزیایی",
-        it: "ایتالیایی",
-        ja: "ژاپنی",
-        ko: "کره‌ای",
-        //nl: "هلندی",
-        pl: "لهستانی",
-        pt: "پرتغالی",
-        tr: "ترکی",
-        // uk: "اوکراینی",
-        zh: "چینی",
-      };
+          <div class="col-lg-6 d-flex flex-column">
+            <div id="txtOutput" class="form-control input-box output-text flex-grow-1" manual-scroll-allowed
+              contenteditable="false"></div>
+            <div class="mt-3 text-end d-flex gap-3 justify-content-end align-items-center">
+              <button id="btnTrnsl" disabled class="btn btn-primary px-5">ترجمه</button>
+              <button id="btnCopy" class="btn btn-outline-secondary px-4 hidden">کپی</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-footer bg-transparent border-0 pt-0">
+      <div class="alert alert-info small mt-4" role="alert">
+        <p class="mb-3">
+          <span class="me-2">ℹ️</span>
+          <strong>توجه:</strong> این مترجم بر اساس مدل‌های
+          زبانی بزرگ بهینه‌شده برای زبان فارسی کار می‌کند و ممکن است در ترجمه
+          متون تخصصی خطاهایی داشته باشد. در صورت نیاز به ترجمه تخصصی، امکان
+          توسعه مترجم ویژه مبتنی بر دادگان تخصصی وجود دارد.
+        </p>
+        <p class="mb-3">
+          <span class="me-2">📄</span>
+          نسخه فعلی دارای محدودیت حجم متن ورودی به میزان حداکثر ۲ هزار کاراکتر بوده و
+          الباقی متن را نمی‌خواند. برای فایل‌های بزرگتر آن‌ها را به چند بخش بشکنید
+          توجه داشته باشید که برای فایل‌های PDF (بالاخص فارسی) هنوز راه‌کار
+          قطعی برای استخراج محتوا وجود ندارد و سامانه از سرویس‌های استاندارد
+          استخراج متن استفاده می‌کند
+        </p>
+        <p class="mb-0">
+          <span class="me-2">⚠️</span>
+          درخواست‌های ترجمه در سیستم ذخیره نمی‌شوند، اما در حین ترجمه متن اصلی
+          و ترجمه آن در سرور قابل دسترسی هستند؛ به همین سبب لطفاً از ارسال
+          متون طبقه‌بندی‌شده یا حساس خودداری فرمایید.
+        </p>
+      </div>
+    </div>
+  </div>
+  <div class="text-center mb-2"><small>قدرت‌گرفته از GPUهای <a target=blank
+        href="https://afranet.ir/fa/services/gpu">افرانت</a></small></div>
+  <div class="text-center mb-3"><small>کلیه حقوق برای <a target="blank" href="https://tip.co.ir">شرکت پردازش هوشمند
+        ترگمان</a> محفوظ است</small></div>
 
-      const selSource = document.getElementById("selSource");
-      const selTarget = document.getElementById("seltarget");
-      const txtInput = document.getElementById("txtInput");
-      const txtOutput = document.getElementById("txtOutput");
-      const btnTransl = document.getElementById("btnTrnsl");
-      const btnCopy = document.getElementById("btnCopy");
-      const inpFile = document.getElementById("inpFile");
-      const lblCharCount = document.getElementById("lblCharCount");
-      const blckUpload = document.getElementById("blckUpload");
-      
-      let autoTranslateTimeout = null;
-      let activeReqId = false
+  <script src="js/vendors/bootstrap.bundle.min.js"></script>
+  <script src="js/vendors/marked.min.js"></script>
+  <script src="js/vendors/md5.min.js"></script>
+  <!-- MathJax -->
+  <script src="js/vendors/mathjax/config.js"></script>
+  <script src="js/vendors/polyfill.min.js?features=es6"></script>
+  <script src="js/vendors/mathjax/es5/tex-mml-chtml.js"></script>
 
-      Object.entries(languages).forEach(([code, name]) => {
-        if (code !== "auto") {
-          const opt1 = new Option(name, code);
-          const opt2 = new Option(name, code);
-          selSource.add(opt1);
-          selTarget.add(opt2);
-        }
-      });
-      selTarget.value = "fa";
+  <script src="js/common.js"></script>
+  <script src="js/auth.js"></script>
+  <script>let auth; setupAuth("translate", false).then(r => auth = r)</script>
+  <script src="js/llm.js"></script>
 
-      selSource.addEventListener("change", () => {
-        if (
-          selSource.value === selTarget.value &&
-          selSource.value !== "auto"
-        )
-          selTarget.value = "fa";
-      });
-      selTarget.addEventListener("change", () => {
-        if (
-          selSource.value === selTarget.value &&
-          selSource.value !== "auto"
-        )
-          selSource.value = "en";
-      });
+  <script>
+    const languages = {
+      auto: "تشخیص خودکار",
+      en: "انگلیسی",
+      fa: "فارسی",
+      ar: "عربی",
+      es: "اسپانیایی",
+      ru: "روسی",
+      fr: "فرانسوی",
+      de: "آلمانی",
+      bg: "بلغاری",
+      //  cs: "چکی",
+      da: "دانمارکی",
+      el: "یونانی",
+      fi: "فنلاندی",
+      hi: "هندی",
+      // id: "اندونزیایی",
+      it: "ایتالیایی",
+      ja: "ژاپنی",
+      ko: "کره‌ای",
+      //nl: "هلندی",
+      pl: "لهستانی",
+      pt: "پرتغالی",
+      tr: "ترکی",
+      // uk: "اوکراینی",
+      zh: "چینی",
+    };
 
-      btnCopy.addEventListener("click", (ev)=>copy2Clipboard(ev.target, ev.target.markdown, false));
+    const selSource = document.getElementById("selSource");
+    const selTarget = document.getElementById("seltarget");
+    const txtInput = document.getElementById("txtInput");
+    const txtOutput = document.getElementById("txtOutput");
+    const btnTransl = document.getElementById("btnTrnsl");
+    const btnCopy = document.getElementById("btnCopy");
+    const inpFile = document.getElementById("inpFile");
+    const lblCharCount = document.getElementById("lblCharCount");
+    const blckUpload = document.getElementById("blckUpload");
 
-      const MAX_CHARS = 2000;
-      setupFileConverter({
-        userToken: auth.info().key, 
-        inpFile,
-        blckFileUploadInfo: blckUpload, 
-        txtInput, 
-        lblStatus: txtOutput, 
-        maxChars : MAX_CHARS
-      })
-      
-      const makeLinks = (words) => {
-        const links = [];
-        for (const entry of words)
-          links.push(`<a href="?q=${entry}">${entry}</a>`);
-        return links;
-      };
+    let autoTranslateTimeout = null;
+    let activeReqId = false
 
-      function setAppStateRunning(running) {
-        btnTransl.innerHTML = running ? `<i class="fa fa-stop"></i> توقف ترجمه` : `ترجمه`
-        setClass(btnTransl, "btn-outline-warning", running)
-        setClass(btnTransl, "btn-primary", !running)
-        setClass(btnTransl, "button-to-top", running)
-        setClass(txtOutput, "streaming", running)
-        txtInput.disabled = running
-        selSource.disabled = running
-        selTarget.disabled = running
-        setClass(btnCopy, "hidden", running || !txtOutput.innerText.length) 
-        btnTransl.disabled = !txtInput.value.length 
-        if(!running) activeReqId = undefined
+    Object.entries(languages).forEach(([code, name]) => {
+      if (code !== "auto") {
+        const opt1 = new Option(name, code);
+        const opt2 = new Option(name, code);
+        selSource.add(opt1);
+        selTarget.add(opt2);
+      }
+    });
+    selTarget.value = "fa";
+
+    selSource.addEventListener("change", () => {
+      if (
+        selSource.value === selTarget.value &&
+        selSource.value !== "auto"
+      )
+        selTarget.value = "fa";
+    });
+    selTarget.addEventListener("change", () => {
+      if (
+        selSource.value === selTarget.value &&
+        selSource.value !== "auto"
+      )
+        selSource.value = "en";
+    });
+
+    btnCopy.addEventListener("click", (ev) => copy2Clipboard(ev.target, ev.target.markdown, false));
+
+    const MAX_CHARS = 2000;
+    setupFileConverter({
+      userToken: auth.info()?.key,
+      inpFile,
+      blckFileUploadInfo: blckUpload,
+      txtInput,
+      lblStatus: txtOutput,
+      maxChars: MAX_CHARS
+    })
+
+    const makeLinks = (words) => {
+      const links = [];
+      for (const entry of words)
+        links.push(`<a href="?q=${entry}">${entry}</a>`);
+      return links;
+    };
+
+    function setAppStateRunning(running) {
+      btnTransl.innerHTML = running ? `<i class="fa fa-stop"></i> توقف ترجمه` : `ترجمه`
+      setClass(btnTransl, "btn-outline-warning", running)
+      setClass(btnTransl, "btn-primary", !running)
+      setClass(btnTransl, "button-to-top", running)
+      setClass(txtOutput, "streaming", running)
+      txtInput.disabled = running
+      selSource.disabled = running
+      selTarget.disabled = running
+      setClass(btnCopy, "hidden", running || !txtOutput.innerText.length)
+      btnTransl.disabled = !txtInput.value.length
+      if (!running) activeReqId = undefined
+    }
+
+    btnTransl.addEventListener("click", async () => {
+      if (activeReqId) return await stopLLMGen("/api/translate", activeReqId).then(() => setAppStateRunning(false))
+      if (selSource.value === "auto" && isRTL(txtInput.value)) {
+        selTarget.value = "en"
+        selSource.value = 'fa'
       }
 
-      btnTransl.addEventListener("click", async () => {
-        if(activeReqId) return await stopLLMGen("/api/translate", auth.info().key, activeReqId).then(()=>setAppStateRunning(false))
-        if(selSource.value === "auto" && isRTL(txtInput.value))  {
-          selTarget.value = "en"
-          selSource.value = 'fa'
+      let text = txtInput.value.trim();
+      if (!text) {
+        showError("لطفاً متن یا فایلی برای ترجمه وارد کنید.");
+        return;
+      }
+
+      if (selTarget.value !== "fa" && selSource.value === "auto") {
+        toast("زبان مبدا را تعیین کنید", "danger");
+        return;
+      }
+
+      if (text.length > MAX_CHARS) {
+        toast(`طول متن از حد مجاز بیشتر است و تنها ${MAX_CHARS} ابتدایی آن ترجمه خواهد شد`, "warning");
+        text = text.slice(0, MAX_CHARS);
+      }
+
+      activeReqId = genReqId()
+      setAppStateRunning(true)
+
+      try {
+        const apiResponse = await auth.apiFetch("/api/translate", {
+          method: "POST",
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            text,
+            source_lang: selSource.value,
+            target_lang: selTarget.value,
+            request_id: activeReqId
+          }),
+        });
+
+        if (!apiResponse.ok) throw apiResponse
+
+        const translateFinished = async (fullMarkdown) => {
+          btnCopy.markdown = fullMarkdown;
+          setAppStateRunning(false)
+          activeReqId = undefined
+          updateOutputDirection(txtOutput)
+          history.replaceState({ path: location.pathname }, "", location.pathname);
         }
 
-        let text = txtInput.value.trim();
-        if (!text) {
-          showError("لطفاً متن یا فایلی برای ترجمه وارد کنید.");
-          return;
-        }
+        await showStream("ترجمه", txtOutput, apiResponse, {
+          onDone: translateFinished,
+          onCancelled: translateFinished,
+          onRetry: async () => btnTransl.click(),
+          onChunk: async (chunk) => {
+            if (!chunk.startsWith('{"phrase":')) return false
+            try {
+              const json = JSON.parse(chunk);
+              translations = [];
+              for (const entry of json.translations || [])
+                if (entry.startsWith("رجوع شود به: ")) {
+                  word = entry.replace("رجوع شود به: ", "").trim();
+                  translations.push(`رجوع شود به: <a href="?q=${word}">${word}</a>`);
+                } else translations.push(entry);
+              let dicResult = `<div class="dicEntry"><h2>${json.phrase} <pronun>${json.pronunciations?.us ? `(${json.pronunciations?.us})` : ""
+                }</pronun></h2><transl class="${isRTL(json.phrase) ? 'ltr' : 'rtl'}">${translations.join(isRTL(json.phrase) ? ", " : "، ")} </transl>`;
 
-        if (selTarget.value !== "fa" && selSource.value === "auto") {
-          toast("زبان مبدا را تعیین کنید", "danger");
-          return;
-        }
-
-        if (text.length > MAX_CHARS) {
-            toast(`طول متن از حد مجاز بیشتر است و تنها ${MAX_CHARS} ابتدایی آن ترجمه خواهد شد`,"warning");
-            text = text.slice(0, MAX_CHARS);
-        }
-
-        activeReqId = genReqId(auth.info().key)
-        setAppStateRunning(true)
-
-        try {
-          const apiResponse = await auth.apiFetch("/api/translate", {
-            method: "POST",
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              text,
-              source_lang: selSource.value,
-              target_lang: selTarget.value,
-              request_id: activeReqId
-            }),
-          });
-
-          if(!apiResponse.ok)  throw apiResponse
-
-          const translateFinished= async (fullMarkdown) =>{
-            btnCopy.markdown = fullMarkdown; 
-            setAppStateRunning(false)
-            activeReqId = undefined
-            updateOutputDirection(txtOutput)
-            history.replaceState({ path: location.pathname }, "", location.pathname);
-          }
-
-          await showStream("ترجمه", txtOutput, apiResponse, {
-            onDone: translateFinished,
-            onCancelled: translateFinished,
-            onRetry: async ()=>btnTransl.click(),
-            onChunk: async (chunk)=>{
-              if(!chunk.startsWith('{"phrase":')) return false
-              try {
-                const json = JSON.parse(chunk);
-                translations = [];
-                for (const entry of json.translations ||[])
-                  if (entry.startsWith("رجوع شود به: ")) {
-                    word = entry.replace("رجوع شود به: ", "").trim();
-                    translations.push(`رجوع شود به: <a href="?q=${word}">${word}</a>`);
-                  } else translations.push(entry);
-                let dicResult = `<div class="dicEntry"><h2>${json.phrase} <pronun>${
-                  json.pronunciations?.us ? `(${json.pronunciations?.us})` : ""
-                }</pronun></h2><transl class="${isRTL(json.phrase) ? 'ltr': 'rtl'}">${translations.join(isRTL(json.phrase) ? ", ": "، ")} </transl>`;
-
-                const addDicSection = (title, entry) => {
-                  dicResult += `<dic-section><h4>${title}:</h4><ul><li>${Object.keys(entry||[])
-                      .map((e) =>{
-                        let bullets = []
-                        if(Array.isArray(entry[e]))
-                          return `<strong>${e}: </strong>` + entry[e].join(isRTL(json.phrase) ? ", ":"، ")
-                        else 
-                          return Object.keys(entry[e]).map(
-                            (k) =>`<strong>${e}<small><i> (${k})</i></small>: </strong>${makeLinks(entry[e][k]).join(isRTL(json.phrase) ? "، ": ", ")}`
-                          ).join("<br/>")
-                      }
-                    )
-                    .join("</li><li>")}</li></ul></dic-section>`;
-                }
-
-                if (json.synonyms) addDicSection('مترادف‌ها', json.synonyms)
-                if (json.antonyms) addDicSection('متضادها', json.antonyms)
-                if (json.relWords) addDicSection('عبارات مرتبط', json.relWords)
-                if (json.relExp) addDicSection('جملات مرتبط', json.relExp)
-                
-                txtOutput.innerHTML = dicResult;
-                txtOutput.style.direction= "rtl"
-                txtOutput.style.textAlign= "right"
-              } catch (ex) {
-                console.error({onChunk: ex});
-                txtOutput.textContent = `خطا در پردازش اطلاعات.`;
+              const addDicSection = (title, entry) => {
+                dicResult += `<dic-section><h4>${title}:</h4><ul><li>${Object.keys(entry || [])
+                  .map((e) => {
+                    let bullets = []
+                    if (Array.isArray(entry[e]))
+                      return `<strong>${e}: </strong>` + entry[e].join(isRTL(json.phrase) ? ", " : "، ")
+                    else
+                      return Object.keys(entry[e]).map(
+                        (k) => `<strong>${e}<small><i> (${k})</i></small>: </strong>${makeLinks(entry[e][k]).join(isRTL(json.phrase) ? "، " : ", ")}`
+                      ).join("<br/>")
+                  }
+                  )
+                  .join("</li><li>")}</li></ul></dic-section>`;
               }
-              const newUrl = location.pathname + "?q=" + txtInput.value
-              history.replaceState({ path: newUrl }, "", newUrl);
-              return true
+
+              if (json.synonyms) addDicSection('مترادف‌ها', json.synonyms)
+              if (json.antonyms) addDicSection('متضادها', json.antonyms)
+              if (json.relWords) addDicSection('عبارات مرتبط', json.relWords)
+              if (json.relExp) addDicSection('جملات مرتبط', json.relExp)
+
+              txtOutput.innerHTML = dicResult;
+              txtOutput.style.direction = "rtl"
+              txtOutput.style.textAlign = "right"
+            } catch (ex) {
+              console.error({ onChunk: ex });
+              txtOutput.textContent = `خطا در پردازش اطلاعات.`;
             }
-          })
-        } catch (ex) {
-          parseStreamException("ترجمه", ex)
-        } finally {
-          setAppStateRunning(false)        
-        }
-      });
-
-      // Update on load and on language change
-      txtOutput.addEventListener("change", ()=>updateOutputDirection(txtOutput));
-      txtInput.addEventListener("change", ()=>{
-        lblCharCount.innerText = txtInput.value.length;
-        btnTransl.disabled = false
-      })
-      txtInput.addEventListener("input", () => {
-        lblCharCount.innerText = txtInput.value.length;
-        if (autoTranslateTimeout) clearTimeout(autoTranslateTimeout);
-        if(txtInput.value.length) {
-          btnTransl.disabled = false
-          autoTranslateTimeout = setTimeout(() => btnTransl.click(), 2000);
-        }
-      });
-
-      if (location.search?.startsWith("?q=")) {
-        query = location.search.replace("?q=", "");
-        txtInput.value = decodeURIComponent(query)
-        btnTransl.disabled = false
-        btnTransl.click();
+            const newUrl = location.pathname + "?q=" + txtInput.value
+            history.replaceState({ path: newUrl }, "", newUrl);
+            return true
+          }
+        })
+      } catch (ex) {
+        parseStreamException("ترجمه", ex)
+      } finally {
+        setAppStateRunning(false)
       }
-    </script>
-  </body>
+    });
+
+    // Update on load and on language change
+    txtOutput.addEventListener("change", () => updateOutputDirection(txtOutput));
+    txtInput.addEventListener("change", () => {
+      lblCharCount.innerText = txtInput.value.length;
+      btnTransl.disabled = false
+    })
+    txtInput.addEventListener("input", () => {
+      lblCharCount.innerText = txtInput.value.length;
+      if (autoTranslateTimeout) clearTimeout(autoTranslateTimeout);
+      if (txtInput.value.length) {
+        btnTransl.disabled = false
+        autoTranslateTimeout = setTimeout(() => btnTransl.click(), 2000);
+      }
+    });
+
+    if (location.search?.startsWith("?q=")) {
+      query = location.search.replace("?q=", "");
+      txtInput.value = decodeURIComponent(query)
+      btnTransl.disabled = false
+      btnTransl.click();
+    }
+  </script>
+</body>
+
 </html>
