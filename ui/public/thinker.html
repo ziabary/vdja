@@ -34,9 +34,9 @@
       <a href="/"><img alt="targoman-logo" src="img/logo-light.png" class="bi-color" /></a>
     </div>
     <div class="top-left">
+      <i class="fa fa-moon fa-lg btn on-mobile" id=btnToggleDarkMode2></i>
       <a href="/login?back=rahbari" class="btn btn-outline-primary on-mobile" id=btnLogin><i class="fa fa-user"></i>
-        ورود
-        به سامانه</a>
+        ورود        به سامانه</a>
     </div>
 
 
@@ -66,10 +66,8 @@
 
   <!-- Main Chat -->
   <div class="main-chat">
-    <div class="bg-image"><img src="img/rahbar-bg-light.png" class="bi-color" alt=""></div>
     <div class="chat-header position-relative d-flex justify-content-between align-items-center mb-3">
-      <h4 id="lblChatTitle" class="clickable-title" style="cursor: pointer; display: inline-block">چت با اندیشه رهبر
-        شهید</h4>
+      <h4 id="lblChatTitle" class="clickable-title" style="cursor: pointer; display: inline-block">چت عمیق</h4>
       <div class="on-desktop left-side">
         <i class="fa fa-moon fa-lg btn" id=btnToggleDarkMode></i>
         <a href="/login?back=rahbari" class="btn btn-outline-primary" id=btnLogin2>ورود به سامانه</a>
@@ -81,6 +79,9 @@
     </div>
     <div id="chatContainer" class="chat-container border p-3 rounded" manual-scroll-allowed></div>
     <div class="message-input">
+      <div class="row mb-5 text-center" id="chat-banner">
+        هر سوالی داری بپرس اول عمیق فکر می‌کنم بعد جواب می‌دم</br>راستش رو بخوای انگلیسی بهتر می‌فهمم
+      </div>
       <div class="input-group mt-3 w-100" style="opacity:0.7">
         <textarea type="text" id="messageInput" class="form-control"
           placeholder="هر چی می‌خوای بپرس&hellip;"></textarea>
@@ -109,7 +110,7 @@
 
   <script>
     const page = {
-      serviceName: "rahbari",
+      serviceName: "think",
       userContainer: document.getElementById("userInfo"),
       chatsList: document.getElementById("chatsList"),
       chatContainer: document.getElementById("chatContainer"),
@@ -122,6 +123,7 @@
       backToLogin: document.getElementById("backToLogin"),
       btnDeleteAllChats: document.getElementById("btnDeleteAllChats"),
       chatHelper: document.getElementById("chat-helper-container"),
+      chatBanner: document.getElementById("chat-banner"),
       useFiles: false,
       chatHistory: []
     }
@@ -141,10 +143,13 @@
     const rag = setupRAG(page, {
       updateQuestions,
       defaultTitle: {
-        noFile: "چت با اندیشه رهبر شهید"
+        noFile: "چت عمیق متفکرانه"
       },
-      generateQuestions: true
+      generateQuestions: true,
+      noPrettify:true,
+      maxMessageLen: 10000
     })
+
 
   </script>
 </body>

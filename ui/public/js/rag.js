@@ -26,6 +26,19 @@ function setupRAG(page, options) {
   }
 
   /*********************************/
+  function updateRTLState(object, text) {
+    const rtlState = isRTL(text)
+    setClass(object, 'rtl', rtlState)
+    setClass(object, 'ltr', !rtlState)
+  }
+
+  let changeDirTimer
+  page.messageInput.addEventListener("keypress", () => {
+    if (changeDirTimer) clearTimeout(changeDirTimer)
+    changeDirTimer = setTimeout(() => updateRTLState(page.messageInput, page.messageInput.value), 500)
+  })
+
+  /*********************************/
   let isUserScrolling = false;
   page.chatContainer.addEventListener('scroll', function () {
     // If the user is at the bottom, set a flag
@@ -67,6 +80,7 @@ function setupRAG(page, options) {
     if (role === 'user') {
       msgDiv.innerHTML = content.replace(/\r?\n/g, '<br/>');
       setTimeout(() => window.MathJax.typesetPromise([msgDiv]));
+      updateRTLState(msgDiv, msgDiv.innerText)
     } else {
       prettyShowResponse(content, msgDiv, msgId, opinion);
       updateDirection(msgDiv, content);
@@ -87,9 +101,9 @@ function setupRAG(page, options) {
   /*********************************/
   async function loadChats() {
     if (!auth.token()) return
-    const res = await auth.apiFetch(`/api/${page.serviceName}/chats`).then(r => r.json());
+    const res = await auth.apiFetch(`/api/${page.serviceName}/chats`);
     page.chatsList.innerHTML =
-      res.chats
+      res.data.chats
         .map(
           (chat) => `
               <div class="chat-item ${currentChatKey === chat.chat_id ? 'bg-primary text-white' : ''
@@ -104,20 +118,20 @@ function setupRAG(page, options) {
         )
         .join('') || '<div class="empty">هنوز هیچ چتی نداشته‌اید</div>';
 
-    if (res.chats.length) page.btnDeleteAllChats.removeAttribute('disabled');
+    if (res.data.chats.length) page.btnDeleteAllChats.removeAttribute('disabled');
     else page.btnDeleteAllChats.setAttribute('disabled', true);
   }
   /*********************************/
   async function loadQuestions(hasFiles, fileId = undefined) {
     if (!options.updateQuestions) return
-    const questions = await auth.apiFetch(`/api/${page.serviceName}/questions?maxItems=5${fileId ? `&fileId=${fileId}` : ""}`).then(r => r.json());
-    options.updateQuestions(questions, hasFiles && page.useFiles)
+    const res = await auth.apiFetch(`/api/${page.serviceName}/questions?maxItems=5${fileId ? `&fileId=${fileId}` : ""}`);
+    options.updateQuestions(res.data, hasFiles && page.useFiles)
   }
   /*********************************/
   async function loadFiles() {
     if (!auth.token()) return
     const res = await auth.apiFetch(`/api/${page.serviceName}/files`);
-    const { files } = await res.json();
+    const { files } = res.data;
     page.filesList.innerHTML =
       files
         .map(
@@ -156,7 +170,7 @@ function setupRAG(page, options) {
         return await updateAppState(enuStates.newChat);
       }
 
-      const { messages, chat } = await res.json();
+      const { messages, chat } = res.data
       if (!chat?.chtTitle) return await updateAppState(enuStates.newChat);
 
       page.chatHistory = messages.map((m) => ({
@@ -198,36 +212,36 @@ function setupRAG(page, options) {
     //let mainAnswer = fullResponse.trim().replace(/\n\*?\*?عبارات کلیدی:\*?\*?[\n ](.*,?)+\n/, '');
     let mainAnswer = fullResponse.trim().replace(/\n\*{0,2}عبارات کلیدی:\*{0,2}[ ]*(.*)[\n$]/, '')
 
-
     let sourceText = '';
-    const patterns = [
-      /\n\n?\*?\*?منا?بع?\*?\*?[:：]\n?\s*([\s\S]*)$/i,
-      /\n\n?\*?\*?منا?بع[:：]?\*?\*?\n?\s*([\s\S]*)$/i,
-      /\n\n?منابع[:：]\n?\s*([\s\S]*)$/i,
-      /\n---\n[\s\S]*$/i,
-      /\n\nمنا?بع[:؛]\n?\s*([\s\S]*)$/i,
-      /\n\*\*منا?بع\*\*[:؛]\n?\s*([\s\S]*)$/i,
-      /منا?بع[:؛]\n?\s*دانش داخلی مدل\s*$/i,
-      /منا?بع\s*:\n?\s*دانش داخلی مدل\s*$/i,
-      /منا?بع\s*:\n?\s*دانش داخلی مدل\s*$/i,
-    ];
+    if (!options.noPrettify) {
+      const patterns = [
+        /\n\n?\*?\*?منا?بع?\*?\*?[:：]\n?\s*([\s\S]*)$/i,
+        /\n\n?\*?\*?منا?بع[:：]?\*?\*?\n?\s*([\s\S]*)$/i,
+        /\n\n?منابع[:：]\n?\s*([\s\S]*)$/i,
+        /\n---\n[\s\S]*$/i,
+        /\n\nمنا?بع[:؛]\n?\s*([\s\S]*)$/i,
+        /\n\*\*منا?بع\*\*[:؛]\n?\s*([\s\S]*)$/i,
+        /منا?بع[:؛]\n?\s*دانش داخلی مدل\s*$/i,
+        /منا?بع\s*:\n?\s*دانش داخلی مدل\s*$/i,
+        /منا?بع\s*:\n?\s*دانش داخلی مدل\s*$/i,
+      ];
 
-    let matched = false;
-    for (const pattern of patterns) {
-      const match = mainAnswer.match(pattern);
-      if (match) {
-        sourceText = (match[1] || match[0]).trim();
-        mainAnswer = mainAnswer.replace(match[0], '').trim();
-        matched = true;
-        break;
+      let matched = false;
+      for (const pattern of patterns) {
+        const match = mainAnswer.match(pattern);
+        if (match) {
+          sourceText = (match[1] || match[0]).trim();
+          mainAnswer = mainAnswer.replace(match[0], '').trim();
+          matched = true;
+          break;
+        }
       }
-    }
 
-    if (!matched || /دانش داخلی/i.test(sourceText)) {
-      sourceText = 'دانش داخلی مدل';
-    } else {
-      sourceText = sourceText
-      const a = `
+      if (!matched || /دانش داخلی/i.test(sourceText)) {
+        sourceText = 'دانش داخلی مدل';
+      } else {
+        sourceText = sourceText
+        const a = `
         .replace(/^\d+\.\s*/gm, '')
         .replace(/منبع \d+[:：]\s*/gi, '')
         .replace(/منا?بع[:：]\s*/gi, '')
@@ -236,6 +250,7 @@ function setupRAG(page, options) {
         .filter((s) => s && !/دانش داخلی/i.test(s))
         .join('، ');
         `
+      }
     }
     mainAnswer = mainAnswer.replace(/(^|\n\n)LLM_GEN_CANCELLED$/, '<stopped>(ادامه تولید محتوا متوقف شد)</stopped>');
 
@@ -359,8 +374,8 @@ function setupRAG(page, options) {
     }
     const message = requestSummary ? SUMMARIZE_PROMPT : page.messageInput.value.trim();
     if (!message) return;
-    if (message.length > 2000) {
-      toast('طول درخواست بیش از ۲۰۰۰ کاراکتر است. لطفا کاهش دهید', 'danger');
+    if (message.length > (options.maxMessageLen || 2000)) {
+      toast('طول درخواست بیش از حد مجاز است. لطفا کاهش دهید', 'danger');
       return;
     }
 
@@ -374,7 +389,7 @@ function setupRAG(page, options) {
           toast('خطا در ساخت چت جدید', 'danger');
           return;
         }
-        const { key } = await res.json();
+        const { key } = res.data;
         await updateAppState(enuStates.newChat, "chats");
         setCurrChatId(key);
       } catch (err) {
@@ -436,7 +451,7 @@ function setupRAG(page, options) {
           })
 
         if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
+          const err = res.data
           if (res.status === 412) {
             botMsg.innerHTML = err.error?.message || err.message,
               await confirmDialog({
@@ -481,8 +496,8 @@ function setupRAG(page, options) {
         await showStream('تولید پاسخ', botMsg, res,
           {
             onDone: async (fullMarkdown) => {
-              contentGenFinished(),
-                prettyShowResponse(fullMarkdown, botMessageWrapper, activeReqID);
+              contentGenFinished()
+              prettyShowResponse(fullMarkdown, botMessageWrapper, activeReqID);
 
               page.chatHistory.push({ role: 'user', content: message });
               page.chatHistory.push({
@@ -644,7 +659,7 @@ function setupRAG(page, options) {
       hideLoadingModal();
       await loadFiles();
       await loadQuestions(lastFileKey != undefined, lastFileKey);
-      if(page.inpUpload)
+      if (page.inpUpload)
         page.inpUpload.value = '';
     }, 100)
   });
@@ -671,7 +686,7 @@ function setupRAG(page, options) {
       });
 
       if (res.ok) {
-        const { title, fullTitle } = await res.json();
+        const { title, fullTitle } = res.data;
         titleCache.set(cacheKey, title);
         if (title && title.trim() && title.trim() !== 'چت جدید') {
           page.lblChatTitle.innerHTML = title.trim() + editHelp;
@@ -841,7 +856,7 @@ function setupRAG(page, options) {
     setClass(page.btnSend, "hidden", state)
     setClass(page.btnStop, "hidden", !state)
     setClass(page.inpUpload, "hidden", state)
-    if(page.inpUpload)page.inpUpload.disabled = state;
+    if (page.inpUpload) page.inpUpload.disabled = state;
     page.btnNewChat.disabled = state
     page.btnNewChatMobile.disabled
     document.querySelectorAll('label[for="inpUpload"]').forEach(
@@ -863,6 +878,8 @@ function setupRAG(page, options) {
         setClass(page.btnNewChatMobile, 'hidden', true)
         document.body.classList.remove('side-open')
         setCurrChatId('')
+        updateRTLState(page.messageInput, "راست")
+        updateRTLState(page.lblChatTitle, "راست")
         break;
       case enuStates.chatStarted:
         page.chatHistory = [];
@@ -880,6 +897,7 @@ function setupRAG(page, options) {
     if (whatToUpadte === "questions" || whatToUpadte === "all") await loadQuestions(fileCount);
   }
 
+
   return {
     logout,
     setCurrChatId,
@@ -889,6 +907,7 @@ function setupRAG(page, options) {
     loadQuestions,
     addHelpItem,
     deleteFile,
-    deleteChat
+    deleteChat,
+    updateRTLState
   };
 }

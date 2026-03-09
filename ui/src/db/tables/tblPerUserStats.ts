@@ -38,12 +38,12 @@ async function updateStats(positive: boolean, userID: number, service: string, s
   const db = await getDB()
   const updatedRows = await db(tblName)
     .update({
-      [cols.totalFiles]: db.raw(`?? ${positive ? "+" : "-"} ?`, ['pusTotalFiles', size ? 1 : 0]),
-      [cols.activeFiles]: db.raw(`?? ${positive ? "+" : "-"} ?`, ['pusActiveFiles', size ? 1 : 0]),
-      [cols.totalSize]: db.raw(`?? ${positive ? "+" : "-"} ?`, ['pusTotalSize', size]),
-      [cols.activeSize]: db.raw(`?? ${positive ? "+" : "-"} ?`, ['pusActiveSize', size]),
-      [cols.totalChats]: db.raw(`?? ${positive ? "+" : "-"} ?`, ['pusTotalChats', chatTokens ? 1 : 0]),
-      [cols.usedTokens]: db.raw(`?? ${positive ? "+" : "-"} ?`, ['pusUsedTokens', chatTokens]),
+      [cols.totalFiles]: db.raw(`?? ${positive ? "+" : "-"} ?`, [cols.totalFiles, size ? 1 : 0]),
+      [cols.activeFiles]: db.raw(`?? ${positive ? "+" : "-"} ?`, [cols.activeFiles, size ? 1 : 0]),
+      [cols.totalSize]: db.raw(`?? ${positive ? "+" : "-"} ?`, [cols.totalSize, size]),
+      [cols.activeSize]: db.raw(`?? ${positive ? "+" : "-"} ?`, [cols.activeSize, size]),
+      [cols.totalChats]: db.raw(`?? ${positive ? "+" : "-"} ?`, [cols.totalChats, chatTokens ? 1 : 0]),
+      [cols.usedTokens]: db.raw(`?? ${positive ? "+" : "-"} ?`, [cols.usedTokens, chatTokens]),
     })
     .where(cols.assigned_usrID, userID)
     .andWhere(cols.service, service)

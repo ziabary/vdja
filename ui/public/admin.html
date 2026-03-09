@@ -265,7 +265,7 @@
         const res = await auth.apiFetch(`/api/admin/logs?action=${action}`);
         if (!res.ok) throw new Error("دسترسی ممنوع یا خطا در سرور");
 
-        const data = await res.json();
+        const data = res.data;
 
         const logs = data.logs || [];
         const totals = data.total || {};

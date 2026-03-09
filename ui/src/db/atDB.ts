@@ -8,6 +8,7 @@ import news from "./tables/tblNews";
 import perUserStats from "./tables/tblPerUserStats";
 import sampleQuestions from "./tables/tblSampleQuestions";
 import user from "./tables/tblUser";
+import sharedFiles from "./tables/tblSharedFiles";
 
 const atDB =  {
   log,
@@ -20,6 +21,7 @@ const atDB =  {
   sampleQuestions,
   perUserStats,
   news,
+  sharedFiles
 };
 
 export default atDB

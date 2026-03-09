@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>فایل‌های کاربردی - دستیار هوشمند فارسی</title>
+  <link rel="stylesheet" href="css/bootstrap/bootstrap.rtl.min.css" />
+  <link rel="stylesheet" href="fonts/IranSansX/fontiran.css" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="fonts/fontawesome/active/all.css" />
+
+  <style>
+    .file-tree {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .file-tree li {
+      margin-bottom: 5px;
+    }
+
+    i.fas {
+      margin-left: .4em;
+    }
+
+    .file-entry {
+      box-sizing: border-box;
+      border: 1px solid transparent;
+      border-radius: 5px;
+      padding: 0.25em;
+      min-width: 100px;
+      max-width: 600px;
+      overflow: hidden;
+    }
+
+    .file-entry.dir {
+      cursor: pointer;
+    }
+
+    .file-entry.dir:hover {
+      border-color: var(--bs-border-color);
+    }
+
+    .file-info {
+      font-size: 0.85em;
+      color: var(--bs-secondary);
+      display: flex;
+      flex-direction: row;
+      gap: 1em;
+      align-items: center;
+    }
+
+    @media (max-width: 767.98px) {
+
+      .list-group,
+      .list-group-item {
+        margin-right: 0 !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <span id="loading">
+    <div class=marquee></div>
+  </span>
+
+  <!-- NAVBAR + MENU -->
+  <nav class="navbar shadow-sm" id="navbar">
+    <div class="container">
+      <img src="/img/logo-light.png" alt="لوگو" class="bi-color logo" />
+
+      <span class="navbar-brand mx-auto h4 mb-0">لیست فایل‌های کاربردی</span>
+
+      <div class="left-side mx-2">
+        <i class="btn btn-sm fa fa-moon fa-lg btn" id=btnToggleDarkMode></i>
+        <div class="on-mobile" title="منو"><i class="btn btn-sm fa fa-lg fa-bars" id="btnMenu"></i></div>
+        <div class="on-desktop">
+          <a href="/" class="btn btn-sm btn-outline-secondary" title="سایر خدمات">
+            <i class="fa fa-boxes"></i> سایر خدمات
+          </a>
+          <button class="btn btn-sm btn-outline-secondary" title="خروج" id="backToLogin">
+            <i class="fa fa-door-open"></i> خروج
+          </button>
+          <a href="/login?back=logs" class="btn btn-sm btn-primary" title="ورود به سامانه" id=btnLogin>
+            <i class="fa fa-user"></i> ورود به سامانه
+          </a>
+        </div>
+      </div>
+    </div>
+  </nav>
+  <div class="collapsed" id="menu">
+    <a href="/" class="btn btn-sm btn-outline-secondary" title="سایر خدمات">
+      <i class="fa fa-boxes"></i> سایر خدمات
+    </a>
+    <button class="btn btn-sm btn-outline-secondary" title="خروج" id="backToLogin">
+      <i class="fa fa-door-open"></i> خروج
+    </button>
+  </div>
+
+  <!-- CONTAINER -->
+  <div class="main container">
+    <p>این فایل‌ها در شرایط جنگ تحمیلی رژیم صهیونستی و آمریکا، توسط یک گروه جهادی در پیام‌رسان بله
+      گردآوری شده و برای استفاده پژوهش‌گران و متخصصان در اختیار آن‌ها قرار گرفته است.
+    </p>
+    <p>ℹ️ در صورتی که فایل درخواستی شما در این لیست وجود ندارد در <a href="https://ble.ir/join/5ozFsJ74Tr">گروه
+        مربوطه</a>
+      درخواست کنید</p>
+    <p>⚠️ به جهت جلوگیری از ایجاد ترافیک بیش از اندازه نیاز است تا ابتدا با
+      <a href="/login.html?back=shares&mustVerified=true">پیام‌رسان بله احراز هویت شوید</a>   
+    </p>
+    <p>⚠️ لینک دانلود فایل برای ۱۰ دقیقه معتبر است و می‌توانید از ابزارهای تسریع دانلود هم استفاده کنید
+    </p>
+    <div class="border p-3 rounded">
+      <ul class="list-group" id="fileTree">
+      </ul>
+    </div>
+  </div>
+  <script src="js/vendors/bootstrap.bundle.min.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/auth.js"></script>
+
+  <script>
+
+    async function downloadByKey(ev) {
+      if (!auth.info().privs.isVerified) {
+        if ((await confirmDialog({
+          title: 'نیاز به احراز هویت',
+          message: 'برای دانلود نیاز است تا ابتدا از طریق پیام‌رسان بله احراز هویت شوید',
+          confirmText: 'انجام می‌دم',
+          confirmClass: 'btn-primary',
+          showCancel: false
+        })).confirmed)
+          window.location.href = '/login.html?back=shares&mustVerified=true'
+        //setupAuth('shares', true,).then(r => auth = r)
+        return
+      }
+
+      ev.target.disabled = true
+      ev.target.innerHTML = "لطفا صبر کنید ..."
+      setTimeout(() => { ev.target.disabled = false, ev.target.innerHTML = 'دانلود' }, 1000)
+      const res = await auth.apiFetch(`/api/shares/req-download/${ev.target.getAttribute('file-key')}`);
+      if (!res.ok) return showError(res.data.error.message)
+
+      const a = document.createElement('a')
+      a.href = "/api/shares/download?token=" + res.data.token
+      a.target = "_blank"
+      a.rel = "noopener noreferrer"; // for security
+      a.download = res.data.filename;
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+
+      const udw = ev.target.parentElement.querySelector('.user-dw span')
+      const tdw = ev.target.parentElement.querySelector('.total-dw span')
+      udw.innerHTML = str2Num(udw.textContent) + 1
+      tdw.innerHTML = str2Num(tdw.textContent) + 1
+      ev.target.disabled = false
+      ev.target.innerHTML = "دانلود"
+    }
+
+    function renderFileTree(data, parentElement) {
+      const list = document.createElement("ul");
+      list.classList.add("list-group", "mb-0");
+
+      data.forEach(item => {
+        const li = document.createElement("li");
+        li.classList.add("list-group-item",);
+
+        const liHeader = document.createElement("div");
+        liHeader.classList.add("d-flex", "flex-wrap", "align-items-center");
+
+        const itemContainer = document.createElement("span");
+        itemContainer.classList.add("file-entry", item.type)
+
+        const icon = document.createElement("i");
+        const iconClass = getFileIconClass(item.type);
+        icon.classList.add("fas", iconClass.icon, iconClass.color)
+
+        const name = document.createElement("span");
+        name.textContent = item.name;
+
+        if (item.type === "dir") {
+          const expandIcon = document.createElement("i");
+          expandIcon.classList.add("fas", "fa-plus");
+          expandIcon.title = "بازکردن";
+
+          itemContainer.addEventListener("click", () => {
+            const subList = li.querySelector("ul");
+            if (subList.classList.contains("d-none")) {
+              expandIcon.classList.remove("fa-plus");
+              expandIcon.classList.add("fa-minus");
+            } else {
+              expandIcon.classList.remove("fa-minus");
+              expandIcon.classList.add("fa-plus");
+            }
+            subList.classList.toggle("d-none");
+          });
+
+          itemContainer.appendChild(expandIcon);
+        }
+        itemContainer.appendChild(icon);
+        itemContainer.appendChild(name);
+        liHeader.appendChild(itemContainer)
+
+        const info = document.createElement("div");
+        info.classList.add("file-info");
+        // Created at
+        const createdAt = document.createElement("span");
+        createdAt.classList.add("file-date");
+        createdAt.innerHTML = `<label>تاریخ:</label> ${(new Date(item.createdAt)).toLocaleDateString('fa-IR')}`;
+
+        if (item.type === "dir") {
+          info.appendChild(createdAt);
+        } else {
+          const size = document.createElement("span");
+          size.classList.add("file-size");
+          size.innerHTML = `<label>حجم: </label>${formatSize(item.size)}`;
+          info.appendChild(size);
+
+          // Created at
+          info.appendChild(createdAt);
+          // Download count
+          const downloadCount = document.createElement("span");
+          downloadCount.classList.add("fa-num", "on-desktop", 'user-dw');
+          downloadCount.innerHTML = `دانلود شما: <span>${item.userDownload}</span> بار`;
+          info.appendChild(downloadCount);
+
+          const downloadCountTotal = document.createElement("span");
+          downloadCountTotal.classList.add("fa-num", "on-desktop", 'total-dw');
+          downloadCountTotal.innerHTML = `دانلود کل: <span>${item.totalDownload}</span> بار`;
+          info.appendChild(downloadCountTotal);
+
+          // Download link
+          const link = document.createElement("button");
+          link.classList.add("file-link", "btn", "btn-sm", "btn-primary");
+          link.setAttribute('file-key', item.key);
+          link.textContent = "دانلود";
+          link.target = "_blank";
+          link.onclick = downloadByKey
+          
+          liHeader.insertBefore(link, itemContainer);
+        }
+        liHeader.appendChild(info);
+        li.appendChild(liHeader)
+
+        // Sublist for dirs
+        if (item.type === "dir") {
+          const subList = document.createElement("ul");
+          subList.classList.add("list-group", "ms-4", "mt-1", "d-none");
+          li.appendChild(subList);
+          renderFileTree(item.children, subList);
+        }
+
+        list.appendChild(li);
+      });
+
+      parentElement.appendChild(list);
+    }
+
+    function getFileIconClass(fileType) {
+      const iconMap = {
+        "dir": { icon: "fa-folder", color: "text-primary" },
+        "pdf": { icon: "fa-file-pdf", color: "text-danger" },
+        "docx": { icon: "fa-file-word", color: "text-primary" },
+        "xlsx": { icon: "fa-file-excel", color: "text-success" },
+        "txt": { icon: "fa-file-alt", color: "text-info" },
+        "zip": { icon: "fa-file-archive", color: "text-warning" },
+        "jpg": { icon: "fa-file-image", color: "text-primary" },
+        "png": { icon: "fa-file-image", color: "text-primary" },
+        "mp3": { icon: "fa-file-audio", color: "text-secondary" },
+        "mp4": { icon: "fa-file-video", color: "text-danger" }
+      };
+      return iconMap[fileType] || { icon: "fa-file", color: "text-secondary" };
+    }
+
+    function formatSize(bytes) {
+      if (bytes === 0) return '0 بایت';
+      const k = 1024;
+      const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + sizes[i];
+    }
+
+    setupAuth("logs", true).then(async r => {
+      auth = r
+
+      const res = await auth.apiFetch(`/api/shares/list`);
+      if (!res.ok) return showError("دسترسی ممنوع یا خطا در سرور");
+      const data = res.data;
+
+      renderFileTree(data, document.getElementById("fileTree"));
+    })
+  </script>
+</body>
+
+</html>

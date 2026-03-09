@@ -197,7 +197,7 @@ router.post("/auth/refresh", async (apiReq: Request, apiRes: Response) => {
   await sendJWT(user, apiRes)
 }); 
 
-function normalizePhone(mobile) {
+function normalizePhone(mobile: string) {
   if ((!mobile.startsWith("+98") && !mobile.startsWith("0"))
     || (mobile.startsWith("+98") && mobile.length != 13)
     || (mobile.startsWith("0") && mobile.length != 11)

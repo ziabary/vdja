@@ -99,7 +99,7 @@
           const res = await auth.apiFetch("/api/admin/stats");
           if (!res.ok) throw new Error("دسترسی ممنوع یا خطا در سرور");
 
-          const data = await res.json(); // { users: [...], totals: {...}, total_users: N }
+          const data = res.data;
 
           const users = data.users || [];
           const totals = data.totals || {};

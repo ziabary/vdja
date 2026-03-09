@@ -26,6 +26,7 @@ import think from './routes/think';
 import rahbari from './routes/rahbari';
 import stats from './routes/stats';
 import admin from './routes/admin';
+import files from './routes/shares';
 import type { IntfExHttp } from './interfaces/exHttp';
 import { enuLLMServices } from './interfaces/config';
 import setupAPICallLogger from './utils/apiCallLog';
@@ -101,7 +102,8 @@ async function init() {
     think,
     rahbari,
     stats,
-    admin
+    admin, 
+    files
   ])
 
 

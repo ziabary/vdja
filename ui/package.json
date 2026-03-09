@@ -57,6 +57,7 @@
         "html-minifier-next": "^5.1.2",
         "javascript-obfuscator": "^5.3.0",
         "nodemon": "^3.1.11",
+        "streamsaver": "^2.0.6",
         "tedious": "^19.2.1",
         "ts-node": "^10.9.2",
         "tsup": "^8.5.1",

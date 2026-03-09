@@ -34,6 +34,7 @@
       <a href="/"><img alt="targoman-logo" src="img/logo-light.png" class="bi-color" /></a>
     </div>
     <div class="top-left">
+      <i class="fa fa-moon fa-lg btn on-mobile" id=btnToggleDarkMode2></i>
       <a href="/login?back=rahbari" class="btn btn-outline-primary on-mobile" id=btnLogin><i class="fa fa-user"></i>
         ورود
         به سامانه</a>
@@ -127,14 +128,14 @@
     }
 
     const SAMPLE_MESSAGES = [
-      "A code in python",
-      "give me docker command",
+      "رهبری سوم انقلاب اسلامی کیست",
     ]
 
     /*********************************/
     function updateQuestions(questions, filesEnabled) {
       page.chatHelper.innerHTML = ""
       questions.forEach(item => rag.addHelpItem(item.smqQuestion || item))
+      rag.addHelpItem("رهبری سوم انقلاب اسلامی کیست")
     }
 
     /*********************************/

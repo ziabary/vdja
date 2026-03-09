@@ -260,13 +260,15 @@
     const queries = parseQuery(window.location.search)
     const service = queries.back || "rag";
 
-    console.log(queries)
-
     let auth; setupAuth(service, false).then(async r => {
       auth = r;
-      if (auth.token() && (!queries.mustAdmin || auth.info().privs?.isAdmin))
+      if (auth.token()
+        && (!queries.mustAdmin || auth.info().privs?.isAdmin)
+        && (!queries.mustVerified || auth.info().privs?.isVerified)
+      )
         window.location.pathname = "/" + service
     })
+
 
     const inpUserToken = document.getElementById("userToken");
     const togglePass = document.getElementById("togglePass");
@@ -287,7 +289,7 @@
     const btnSendBaleOTP = document.getElementById("btnSendBaleOTP");
     const btnCancelOTP = document.getElementById("btnCancelOTP");
     const lblBale = document.getElementById("lblBale");
-    
+
     let otpTimer = null
     let isPasswordVisible = false;
 
@@ -302,9 +304,12 @@
       if (queries.mustAdmin && !auth.info().privs?.isAdmin) {
         showError("لازم است تا کاربر ادمین وارد شود");
         setTimeout(auth.logout(window.location.href), 2000)
+      } else if (queries.mustVerified && !auth.info().privs?.isVerified) {
+        showError("لازم است تا کاربر ادمین وارد شود");
+        setTimeout(auth.logout(window.location.href), 2000)
       } else {
         inpUserToken.value = "";
-        window.location.href = (service.startsWith('/') ? "" :"/") + service
+        window.location.href = (service.startsWith('/') ? "" : "/") + service
       }
     }
 

@@ -118,10 +118,11 @@ const toHuman = byte => {
 }
 
 const btnToggleDarkMode = document.getElementById('btnToggleDarkMode')
-function setDarkMode(state) {
+const btnToggleDarkMode2 = document.getElementById('btnToggleDarkMode2')
+function setDarkMode(el, state) {
   const active = state === "dark"
-  setClass(btnToggleDarkMode, 'fa-moon', !active)
-  setClass(btnToggleDarkMode, 'fa-sun', active)
+  setClass(el, 'fa-moon', !active)
+  setClass(el, 'fa-sun', active)
   document.documentElement.setAttribute('data-bs-theme', active ? 'dark' : 'light')
   localStorage.setItem('tgmn-dark-mode', state)
 
@@ -139,8 +140,12 @@ function setDarkMode(state) {
     setClass(el, 'btn-dark', active);
   })
 }
-setDarkMode(localStorage.getItem('tgmn-dark-mode'))
-setTimeout(() => { if (btnToggleDarkMode) btnToggleDarkMode.onclick = ev => setDarkMode(localStorage.getItem('tgmn-dark-mode') === "dark" ? "" : "dark") })
+
+setDarkMode(btnToggleDarkMode, localStorage.getItem('tgmn-dark-mode') === "dark" ? "dark" : "")
+setTimeout(() => { 
+  if (btnToggleDarkMode) btnToggleDarkMode.onclick = ev => setDarkMode(btnToggleDarkMode, localStorage.getItem('tgmn-dark-mode') === "dark" ? "" : "dark") 
+  if (btnToggleDarkMode2) btnToggleDarkMode2.onclick = ev => setDarkMode(btnToggleDarkMode2, localStorage.getItem('tgmn-dark-mode') === "dark" ? "" : "dark") 
+})
 
 const backToLogin = document.querySelectorAll("#backToLogin, #backToLoginMenu")
 backToLogin.forEach(el => {

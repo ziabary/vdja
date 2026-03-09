@@ -188,14 +188,15 @@ html[data-bs-theme='dark'] .bot_buttons_row .warn {
 .new-chat .chat-container {
   display: none;
 }
-.chat-helper {
+#chat-banner {
   display: none;
-  font-size: 70%;
+  font-size: 120%;
+  font-weight: bolder;
 }
-.chat-helper h5 {
+#chat-banner h5 {
   line-height: 1.5em;
 }
-.new-chat .chat-helper {
+.new-chat #chat-banner {
   display: block;
 }
 

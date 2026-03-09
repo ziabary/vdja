@@ -39,7 +39,7 @@ async function setupAuth(service, required) {
 
       if (!res.ok) return false;
 
-      const data = await res.json();
+      const data = res.data;
       auth.setToken(data.accessToken);
       refreshSubscribers.forEach((cb) => cb(data.accessToken));
       return true;
@@ -95,7 +95,16 @@ async function setupAuth(service, required) {
       return apiFetch(url, options);
     }
 
-    return res;
+    const isBlob = res.headers.get("Content-Type")?.includes("application/octet-stream") ||
+      res.headers.get("Content-Type")?.includes("image/") ||
+      res.headers.get("Content-Type")?.includes("video/") ||
+      res.headers.get("Content-Type")?.includes("audio/");
+
+
+    if (isBlob)
+      return { ok: res.ok, response: res, isBlob: true, stream: res.body };
+
+    return { ok: res.ok, response: res, isBlob: false, data: await res.json().catch(() => ({})) };
   }
 
   async function ensureAuth() {

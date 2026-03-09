@@ -34,6 +34,7 @@
       <a href="/"><img alt="targoman-logo" src="img/logo-light.png" class="bi-color" /></a>
     </div>
     <div class="top-left">
+      <i class="fa fa-moon fa-lg btn on-mobile" id=btnToggleDarkMode2></i>
       <a href="/login?back=rahbari" class="btn btn-outline-primary on-mobile" id=btnLogin><i class="fa fa-user"></i>
         ورود
         به سامانه</a>
@@ -86,13 +87,12 @@
       <div class="on-mobile left-side">
         <button id="btnNewChatMobile" class="hidden btn btn-outline-primary btn-sm float-end" title="ایجاد چت جدید"><i
             class="fa fa-edit"></i> جدید</button>
-      </div>      
+      </div>
     </div>
     <div id="chatContainer" class="chat-container border p-3 rounded" manual-scroll-allowed></div>
     <div class="message-input">
-      <div class="chat-helper row mb-5 text-center">
-        <h5>با ترگمان می‌تونی راجع به هرچی حرف بزنی.<br />حتی می‌تونی فایل‌های خودت رو آپلود کنی و ازشون اطلاعات بگیری!
-        </h5>
+      <div class="row mb-5 text-center" id="chat-banner">
+        با ترگمان می‌تونی راجع به هرچی حرف بزنی.<br />حتی می‌تونی فایل‌های خودت رو آپلود کنی و ازشون اطلاعات بگیری!
       </div>
       <div class="input-group mt-3 w-100">
         <textarea type="text" id="messageInput" class="form-control"
@@ -188,6 +188,7 @@
       btnDeleteAllFiles: document.getElementById("btnDeleteAllFiles"),
       btnDeleteAllChats: document.getElementById("btnDeleteAllChats"),
       backToLogin: document.getElementById("backToLogin"),
+      chatBanner: document.getElementById("chat-banner"),
       chatHelper: document.getElementById("chat-helper-container"),
       btnBanUsingFiles: document.getElementById("btnBanUsingFiles"),
       useFiles: true,
@@ -233,12 +234,10 @@
 
     /*********************************/
     function updateQuestions(questions, filesEnabled) {
-      const chatBanner = document.querySelector(".chat-helper h5")
-
       if (filesEnabled)
-        chatBanner.innerHTML = "حالا می‌تونی با استفاده از فایل‌هایی که آپلود کردی چت کنی و ازشون اطلاعات در بیاری<br/>اگه می‌خوای به چت عمومی برگردی کافیه فایل‌ها رو پاک کنی یا اون‌ها  رو از توی پنل غیرفعال کنی"
+        page.chatBanner.innerHTML = "حالا می‌تونی با استفاده از فایل‌هایی که آپلود کردی چت کنی و ازشون اطلاعات در بیاری<br/>اگه می‌خوای به چت عمومی برگردی کافیه فایل‌ها رو پاک کنی یا اون‌ها  رو از توی پنل غیرفعال کنی"
       else
-        chatBanner.innerHTML = "با ترگمان می‌تونی راجع به هرچی حرف بزنی.<br/> حتی می‌تونی فایل‌های خودت رو آپلود کنی و ازشون اطلاعات بگیری!"
+        page.chatBanner.innerHTML = "با ترگمان می‌تونی راجع به هرچی حرف بزنی.<br/> حتی می‌تونی فایل‌های خودت رو آپلود کنی و ازشون اطلاعات بگیری!"
 
       page.chatHelper.innerHTML = ""
       if (filesEnabled) {
