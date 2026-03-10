@@ -180,8 +180,20 @@ html[data-bs-theme='dark'] .bot_buttons_row .warn {
   color: yellow;
 }
 
-.chat-header{
+.chat-banner {
+  background-color: rgb(255 98 98 / 40%);
+  padding: 0.5em 1em;
+  font-size: 80%;
+  border-radius: 5px;
+  text-align: center;
+}
+
+.chat-header {
   position: relative;
+}
+
+#chat-helper-container {
+  display: none;
 }
 
 .new-chat .chat-header,
@@ -196,7 +208,8 @@ html[data-bs-theme='dark'] .bot_buttons_row .warn {
 #chat-banner h5 {
   line-height: 1.5em;
 }
-.new-chat #chat-banner {
+.new-chat #chat-banner,
+.new-chat #chat-helper-container {
   display: block;
 }
 
@@ -257,7 +270,7 @@ html[data-bs-theme='dark'] .bot_buttons_row .warn {
     transition: ease-in 0.2s;
   }
 
-  .clickable-title{
+  .clickable-title {
     width: 80%;
   }
 
@@ -314,7 +327,7 @@ html[data-bs-theme='dark'] .bot_buttons_row .warn {
   }
 }
 
-.top-left{
+.top-left {
   position: absolute;
   top: 1em;
   left: 1em;

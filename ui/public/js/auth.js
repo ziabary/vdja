@@ -36,10 +36,9 @@ async function setupAuth(service, required) {
         method: 'POST',
         credentials: 'include'
       });
+      const data = await res.json()
+      if (!res.ok || data.error) return false;
 
-      if (!res.ok) return false;
-
-      const data = res.data;
       auth.setToken(data.accessToken);
       refreshSubscribers.forEach((cb) => cb(data.accessToken));
       return true;
@@ -68,6 +67,8 @@ async function setupAuth(service, required) {
   }
 
   async function apiFetch(url, options = {}) {
+    document.getElementById("loading")?.classList.remove("hidden")
+
     const token = auth.getToken();
 
     if (token && isExpired(token))
@@ -88,10 +89,12 @@ async function setupAuth(service, required) {
         auth.logout();
         showError('نشست منقضی شده است');
         window.location.href = `/login?back=${service}`;
+        document.getElementById("loading")?.classList.add("hidden")
         return null;
       }
 
       // retry once
+      document.getElementById("loading")?.classList.add("hidden")
       return apiFetch(url, options);
     }
 
@@ -100,11 +103,8 @@ async function setupAuth(service, required) {
       res.headers.get("Content-Type")?.includes("video/") ||
       res.headers.get("Content-Type")?.includes("audio/");
 
-
-    if (isBlob)
-      return { ok: res.ok, response: res, isBlob: true, stream: res.body };
-
-    return { ok: res.ok, response: res, isBlob: false, data: await res.json().catch(() => ({})) };
+      document.getElementById("loading")?.classList.add("hidden")
+    return res
   }
 
   async function ensureAuth() {

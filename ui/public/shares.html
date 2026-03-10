@@ -51,8 +51,14 @@
       align-items: center;
     }
 
-    @media (max-width: 767.98px) {
+    #secReqDownload {
+      overflow: hidden;
+      height: 17em;
+      box-sizing: border-box;
+      transition: all 0.5s;
+    }
 
+    @media (max-width: 767.98px) {
       .list-group,
       .list-group-item {
         margin-right: 0 !important;
@@ -71,7 +77,7 @@
     <div class="container">
       <img src="/img/logo-light.png" alt="لوگو" class="bi-color logo" />
 
-      <span class="navbar-brand mx-auto h4 mb-0">لیست فایل‌های کاربردی</span>
+      <span class="navbar-brand mx-auto h4 mb-0">فایل‌های کاربردی</span>
 
       <div class="left-side mx-2">
         <i class="btn btn-sm fa fa-moon fa-lg btn" id=btnToggleDarkMode></i>
@@ -83,7 +89,7 @@
           <button class="btn btn-sm btn-outline-secondary" title="خروج" id="backToLogin">
             <i class="fa fa-door-open"></i> خروج
           </button>
-          <a href="/login?back=logs" class="btn btn-sm btn-primary" title="ورود به سامانه" id=btnLogin>
+          <a href="/login?back=shares" class="btn btn-sm btn-primary" title="ورود به سامانه" id=btnLogin>
             <i class="fa fa-user"></i> ورود به سامانه
           </a>
         </div>
@@ -104,16 +110,39 @@
     <p>این فایل‌ها در شرایط جنگ تحمیلی رژیم صهیونستی و آمریکا، توسط یک گروه جهادی در پیام‌رسان بله
       گردآوری شده و برای استفاده پژوهش‌گران و متخصصان در اختیار آن‌ها قرار گرفته است.
     </p>
-    <p>ℹ️ در صورتی که فایل درخواستی شما در این لیست وجود ندارد در <a href="https://ble.ir/join/5ozFsJ74Tr">گروه
+    <p class=hidden>ℹ️ در صورتی که فایل درخواستی شما در این لیست وجود ندارد در <a
+        href="https://ble.ir/join/5ozFsJ74Tr">گروه
         مربوطه</a>
       درخواست کنید</p>
     <p>⚠️ به جهت جلوگیری از ایجاد ترافیک بیش از اندازه نیاز است تا ابتدا با
-      <a href="/login.html?back=shares&mustVerified=true">پیام‌رسان بله احراز هویت شوید</a>   
+      <a href="/login.html?back=shares&mustVerified=true">پیام‌رسان بله احراز هویت شوید</a>
     </p>
-    <p>⚠️ لینک دانلود فایل برای ۱۰ دقیقه معتبر است و می‌توانید از ابزارهای تسریع دانلود هم استفاده کنید
+    <p>⚠️ لینک شروع به دانلود فایل برای ۱۰ دقیقه معتبر است و می‌توانید از ابزارهای تسریع دانلود هم استفاده کنید
     </p>
+
     <div class="border p-3 rounded">
       <ul class="list-group" id="fileTree">
+      </ul>
+    </div>
+
+    <div class="collapsed mb-4 mt-4 border rounded" id="secReqDownload">
+      <div class="p-3">
+        <input id=txtBaleUser type="text" placeholder="شناسه روی پیام‌رسان بله برای ارتباط و سوال در صورت وجود ابهام" class="form-control ltr w-100 mb-2">
+        <input id=txtCategory type="text" placeholder="Category / BaseFolder" class="form-control ltr w-100 mb-2">
+        <input id=txtLink type="url" class="form-control ltr w-100 mb-2"
+          placeholder="Direct link to download or link to download page">
+        <textarea id=txtDesc name="توضیحات" class="form-control w-100 mb-2"
+          placeholder="توضیحات در خصوص دلیل نیاز، نسخه مورد نیاز، شرایط بسته و ... (لطفا کامل توضیح دهید. درخواست‌های ناقص ترتیب اثر داده نمی‌شوند)"></textarea>
+        <div>
+          <button id="btnSumitReq" class="btn btn-primary ">ثبت درخواست</button>
+          <button id="btnCancelReq" class="btn btn-outline-secondary"> لغو</button>
+        </div>
+      </div>
+    </div>
+    <button class="btn btn-primary" id="btnReqDownload">درخواست بسته جدید</button>
+
+    <div class="mb-4 mt-4 p-2 border rounded hidden" id="secRequestList">
+      <ul class="list-group p-4">
       </ul>
     </div>
   </div>
@@ -122,9 +151,18 @@
   <script src="js/auth.js"></script>
 
   <script>
+    const btnReqDownload = document.getElementById('btnReqDownload')
+    const secReqDownload = document.getElementById('secReqDownload')
+    const btnSumitReq = document.getElementById('btnSumitReq')
+    const btnCancelReq = document.getElementById('btnCancelReq')
 
-    async function downloadByKey(ev) {
-      if (!auth.info().privs.isVerified) {
+    btnReqDownload.onclick = () => {
+      btnReqDownload.classList.add("hidden")
+      secReqDownload.classList.remove("collapsed")
+    }
+
+    async function isVerified() {
+      if (!auth.info()?.privs.isVerified) {
         if ((await confirmDialog({
           title: 'نیاز به احراز هویت',
           message: 'برای دانلود نیاز است تا ابتدا از طریق پیام‌رسان بله احراز هویت شوید',
@@ -134,20 +172,49 @@
         })).confirmed)
           window.location.href = '/login.html?back=shares&mustVerified=true'
         //setupAuth('shares', true,).then(r => auth = r)
-        return
+        return false
       }
+    }
+
+    btnSumitReq.onclick = async () => {
+      if (await !isVerified()) return
+
+      const baleUser = document.getElementById('txtBaleUser').value
+      const category = document.getElementById("txtCategory").value
+      const link = document.getElementById("txtLink").value
+      const description = document.getElementById("txtDesc").value
+      const res = await auth.apiFetch(`/api/shares/requests/add`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ category, link, description,baleUser })
+      });
+      const data = await res.json()
+      if (!res.ok || data?.error) return showError(data.error.message)
+      toast("درخواست شما ثبت شد", "success");
+      btnCancelReq.click()
+    }
+
+    btnCancelReq.onclick = (ev) => {
+      btnReqDownload.classList.remove("hidden")
+      secReqDownload.classList.add("collapsed")
+    }
+
+    async function downloadByKey(ev) {
+      if (await !isVerified()) return
 
       ev.target.disabled = true
       ev.target.innerHTML = "لطفا صبر کنید ..."
       setTimeout(() => { ev.target.disabled = false, ev.target.innerHTML = 'دانلود' }, 1000)
       const res = await auth.apiFetch(`/api/shares/req-download/${ev.target.getAttribute('file-key')}`);
-      if (!res.ok) return showError(res.data.error.message)
+      const data = await res.json()
+      if (!res.ok || data?.error) return showError(data.error.message)
+      
 
       const a = document.createElement('a')
-      a.href = "/api/shares/download?token=" + res.data.token
+      a.href = "/api/shares/download?token=" + data.token
       a.target = "_blank"
       a.rel = "noopener noreferrer"; // for security
-      a.download = res.data.filename;
+      a.download = data.filename;
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)
@@ -239,7 +306,7 @@
           link.textContent = "دانلود";
           link.target = "_blank";
           link.onclick = downloadByKey
-          
+
           liHeader.insertBefore(link, itemContainer);
         }
         liHeader.appendChild(info);
@@ -267,6 +334,11 @@
         "xlsx": { icon: "fa-file-excel", color: "text-success" },
         "txt": { icon: "fa-file-alt", color: "text-info" },
         "zip": { icon: "fa-file-archive", color: "text-warning" },
+        "tar": { icon: "fa-file-archive", color: "text-warning" },
+        "tar.gz": { icon: "fa-file-archive", color: "text-warning" },
+        "gz": { icon: "fa-file-archive", color: "text-warning" },
+        "tgz": { icon: "fa-file-archive", color: "text-warning" },
+        "rar": { icon: "fa-file-archive", color: "text-warning" },
         "jpg": { icon: "fa-file-image", color: "text-primary" },
         "png": { icon: "fa-file-image", color: "text-primary" },
         "mp3": { icon: "fa-file-audio", color: "text-secondary" },
@@ -283,14 +355,74 @@
       return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + sizes[i];
     }
 
-    setupAuth("logs", true).then(async r => {
+    async function listRequests() {
+      const res = await auth.apiFetch(`/api/shares/requests/list`);
+      const data = await res.json()
+      if (!res.ok || data?.error) return showError(data.error.message)
+
+      const secRequestList = document.getElementById("secRequestList")
+      secRequestList.classList.remove("hidden")
+      secRequestList.innerHTML = ''
+
+      status2Html = (status) => {
+        switch (status) {
+          case "New": return `<span><i class="fas fa-download text-warning"></i> درخواست جدید</span>`
+          case "Downloaded": return `<span><i class="fas fa-cloud-download text-success"></i> دانلود‌شده</span>`
+          case "Discarded": return `<span><i class="fas fa-trash text-danger"></i> حذف‌شده</span>`
+        }
+      }
+
+      const list = document.createElement("ul");
+      list.classList.add("list-group", "mb-0");
+      data.forEach(item => {
+        const li = document.createElement("li");
+        li.classList.add("list-group-item", "req-row", "p-4", "border", "rounded");
+
+        li.innerHTML = `
+          <div class="d-flex gap-2 flex-wrap mb-1">
+            <span><label>تاریخ:</label> ${(new Date(item.sfrCreatedAt)).toLocaleString('fa-IR', { timeZone: "GMT" })}</span>
+            <span>| <label>وضعیت: </label>${status2Html(item.sfrStatus)}</span>
+            <span class=fa-num>| <label>تلفن یا شناسه:</label> <span class=ltr>${item.sfrUserOnBale || ('0' + item.usrMobile.substr(2))}</span></span>
+            <button class="btn btn-outline-danger btn-sm" item-id="${item.sfrID}">حذف درخواست</button>
+            <button class="btn btn-outline-success btn-sm" item-id="${item.sfrID}">دریافت و ذخیره شد</button>
+          </div>
+          <div>
+          <div><label>موضوع:</label> ${item.sfrCategory}</div>
+          <div><label>لینک:</label> ${item.sfrLink}</div>
+          <div><label>توضیحات:</label> ${item.sfrDescription}</div>
+        `
+
+        secRequestList.appendChild(li)
+      })
+
+      setTimeout(() => {
+        secRequestList.querySelectorAll("button").forEach(el => el.onclick = async ev => {
+          const itemId = el.getAttribute("item-id")
+
+          const res = await auth.apiFetch(`/api/shares/requests/set-status`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: itemId, status: el.className.includes("danger") ? "Discarded" : "Downloaded" })
+          });
+          const data = await res.json()
+          if (!res.ok || data?.error) return showError(data.error.message)
+          toast("ثبت‌شد")
+          listRequests()
+        })
+      })
+
+    }
+
+    setupAuth("shares", false).then(async r => {
       auth = r
 
       const res = await auth.apiFetch(`/api/shares/list`);
-      if (!res.ok) return showError("دسترسی ممنوع یا خطا در سرور");
-      const data = res.data;
-
+      const data = await res.json()
+      if (!res.ok || data?.error) return showError(data.error.message)
       renderFileTree(data, document.getElementById("fileTree"));
+
+      if (auth.info()?.privs?.manageShares)
+        listRequests()
     })
   </script>
 </body>

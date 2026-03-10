@@ -50,7 +50,7 @@ function setupRAG(page, options) {
   });
   /*********************************/
   function isRTL(text) {
-    if (!text || text.length < 1) return false;
+    if (!text || text.length < 1) return true;
     const rtlRegex = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/g;
     const rtlChars = (text.match(rtlRegex) || []).length;
     const totalNonWhitespaceChars = text.replace(/\s/g, '').length;
@@ -102,8 +102,11 @@ function setupRAG(page, options) {
   async function loadChats() {
     if (!auth.token()) return
     const res = await auth.apiFetch(`/api/${page.serviceName}/chats`);
+    const data = await res.json()
+    if (!res.ok || data?.error) return showError(data.error.message)
+
     page.chatsList.innerHTML =
-      res.data.chats
+      data.chats
         .map(
           (chat) => `
               <div class="chat-item ${currentChatKey === chat.chat_id ? 'bg-primary text-white' : ''
@@ -118,20 +121,25 @@ function setupRAG(page, options) {
         )
         .join('') || '<div class="empty">هنوز هیچ چتی نداشته‌اید</div>';
 
-    if (res.data.chats.length) page.btnDeleteAllChats.removeAttribute('disabled');
+    if (data.chats.length) page.btnDeleteAllChats.removeAttribute('disabled');
     else page.btnDeleteAllChats.setAttribute('disabled', true);
   }
   /*********************************/
   async function loadQuestions(hasFiles, fileId = undefined) {
     if (!options.updateQuestions) return
     const res = await auth.apiFetch(`/api/${page.serviceName}/questions?maxItems=5${fileId ? `&fileId=${fileId}` : ""}`);
-    options.updateQuestions(res.data, hasFiles && page.useFiles)
+    const data = await res.json()
+    if (!res.ok || data?.error) return showError(data.error.message)
+
+    options.updateQuestions(data, hasFiles && page.useFiles)
   }
   /*********************************/
   async function loadFiles() {
     if (!auth.token()) return
     const res = await auth.apiFetch(`/api/${page.serviceName}/files`);
-    const { files } = res.data;
+    const data = await res.json()
+    if (!res.ok || data?.error) return showError(data.error.message)
+      const { files } = data;
     page.filesList.innerHTML =
       files
         .map(
@@ -163,14 +171,15 @@ function setupRAG(page, options) {
 
     try {
       const res = await auth.apiFetch(`/api/${page.serviceName}/chat/${chatKey}/messages`);
-      if (!res.ok) {
+      const data = await res.json()
+      if (!res.ok || data?.error) {
         if (res.status == 403) return await updateAppState(enuStates.newChat);
 
         toast('خطا در بارگذاری چت', 'danger');
         return await updateAppState(enuStates.newChat);
       }
 
-      const { messages, chat } = res.data
+      const { messages, chat } = data
       if (!chat?.chtTitle) return await updateAppState(enuStates.newChat);
 
       page.chatHistory = messages.map((m) => ({
@@ -265,6 +274,13 @@ function setupRAG(page, options) {
             <span class="warn" title="پاسخ توهین‌آمیز است"><i class="fa fa-${opinion == 'w' ? 'solid' : 'thin'} fa-warning" op=w></i></span>
             `;
     botMessageWrapper.append(buttons_row);
+    if(options.chatBanner) {
+      const banner = document.createElement('div');
+      banner.classList.add("chat-banner")
+      banner.innerHTML = options.chatBanner
+      botMessageWrapper.append(banner)
+    }
+      
     setTimeout(() => {
       buttons_row.querySelector('span.copy i').onclick = (ev) => {
         const el = ev.target;
@@ -385,11 +401,10 @@ function setupRAG(page, options) {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
         });
-        if (!res.ok) {
-          toast('خطا در ساخت چت جدید', 'danger');
-          return;
-        }
-        const { key } = res.data;
+        const data = await res.json()
+        if (!res.ok || data?.error) return toast('خطا در ساخت چت جدید', 'danger');
+        
+        const { key } = data;
         await updateAppState(enuStates.newChat, "chats");
         setCurrChatId(key);
       } catch (err) {
@@ -451,7 +466,8 @@ function setupRAG(page, options) {
           })
 
         if (!res.ok) {
-          const err = res.data
+          const data = await res.json()
+          const err = data
           if (res.status === 412) {
             botMsg.innerHTML = err.error?.message || err.message,
               await confirmDialog({
@@ -685,8 +701,9 @@ function setupRAG(page, options) {
         }),
       });
 
+      const data = await res.json()
       if (res.ok) {
-        const { title, fullTitle } = res.data;
+        const { title, fullTitle } = data;
         titleCache.set(cacheKey, title);
         if (title && title.trim() && title.trim() !== 'چت جدید') {
           page.lblChatTitle.innerHTML = title.trim() + editHelp;

@@ -52,6 +52,7 @@
 
 
     <div class="side-bar-footer">
+      <h2>نسخه آزمایشی</h2>
       <div id="userInfo"></div>
       <a href="/" class="btn btn-outline-secondary"><i class="fa fa-boxes"></i> سایر خدمات</a>
       <button id="backToLogin" class="btn btn-outline-secondary hidden" title="خروج"><i class="fa fa-door-open"></i>
@@ -139,19 +140,21 @@
     }
 
     /*********************************/
-    confirmDialog({
+    /*confirmDialog({
       title: 'به‌روزرسانی',
       message: 'سامانه در حال به‌روزرسانی است.<br/> فعلا از سایر سرویس‌های ترگمان استفاده کنید',
       confirmText: 'فهمیدم',
       showCancel: false
     }).then(()=>window.location.href="/");
-/*    const rag = setupRAG(page, {
+    */
+    const rag = setupRAG(page, {
       updateQuestions,
       defaultTitle: {
         noFile: "چت با اندیشه رهبر شهید"
       },
-      generateQuestions: true
-    })*/
+      generateQuestions: true,
+      chatBanner: "توجه داشته باشید که هوش مصنوعی می‌تواند در تولید پاسخ خطا داشته و یا بر اساس توهم پاسخ اشتباهی تولید کند. هرگز به پاسخ‌های تولید شده در این سامانه استناد ننموده و حتما منابع اصلی را بررسی کنید."
+    })
 
   </script>
 </body>

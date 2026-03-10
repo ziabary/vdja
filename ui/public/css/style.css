@@ -281,21 +281,17 @@ html[data-bs-theme='dark'] .chat-item {
   width: 80%;
 }
 
-#menu.collapsed {
-  height: 0;
+.collapsed {
+  height: 0 !important;
 }
 
 .inside-textbox {
   position: absolute;
-  bottom: 4em;
-  left: 2em;
+  top: -0.8em;
+  left: 1em;
   text-align: left;
-}
-@media (max-width: 640px) {
-  .inside-textbox {
-    top: -.8em;
-    left: 1em;
-  }
+  padding: 0 0.5em;
+  background-color: var(--bs-body-bg);
 }
 
 #loading {

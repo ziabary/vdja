@@ -181,6 +181,7 @@ async function convertFile(file, {blckFileUploadInfo, txtInput, lblStatus, maxCh
       showError('خطا در اتصال');
       lblStatus.textContent = '';
     } else {
+      if(err.res) err = err.res
       if(err?.body?.startsWith("{") && err?.body?.endsWith("}")) {
         const errObj = JSON.parse(err.body)?.error
         const fileName = file.name 

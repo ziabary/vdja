@@ -286,7 +286,12 @@
   <script src="js/auth.js"></script>
 
   <script>
-    async function loadStats(action) {
+    let updatingTimer
+    document.querySelectorAll('.nav-tabs button').forEach(el=>el.onclick = loadStats)
+    async function loadStats() {
+      const activeTab = document.querySelector('.nav-tabs button.active')
+      const action = activeTab.getAttribute('data-bs-target').substring(1)
+
       const block = document.getElementById(action)
       const lblSessions = block.querySelector('.active-sessions')
       const lblQuestions = block.querySelector('.active-questions')
@@ -295,9 +300,8 @@
       const lastUpdate = block.querySelector('.lastUpdate');
       try {
         const res = await auth.apiFetch(`/api/admin/logs?action=${action}`);
-        if (!res.ok) throw new Error("دسترسی ممنوع یا خطا در سرور");
-
-        const data = res.data;
+        const data = await res.json()
+        if (!res.ok || data?.error) throw new Error("دسترسی ممنوع یا خطا در سرور");
 
         const logs = data.logs || [];
         const totals = data.total || {};
@@ -351,19 +355,17 @@
         console.error(err);
         tbody.innerHTML = `<tr><td colspan="7" class="text-danger">خطا در بارگذاری آمار: ${err.message}</td></tr>`;
       }
-      setTimeout(() => loadStats(action), 10000);
+      if(!updatingTimer)
+        updatingTimer =  setTimeout(() => loadStats(), 5000);
     }
 
     setupAuth("logs", true).then(async r => {
       auth = r
 
-      if(!auth.info().privs.isAdmin)
+      if(!auth.info()?.privs.isAdmin)
         window.location.href=`/login?back=logs&mustAdmin=true`
 
-      loadStats('rhbri');
-      loadStats('tr');
-      loadStats('sum');
-      loadStats('rag');
+      loadStats('');
       // loadStats('law');
     })
   </script>

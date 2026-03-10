@@ -100,8 +100,8 @@
       const tbody = document.querySelector("tbody")
       auth.apiFetch(`/api/admin/conversation/?service=${queries.service}&id=${queries.id}`)
         .then(async res => {
-          if (!res.ok) throw new Error("دسترسی ممنوع یا خطا در سرور");
-          const data = res.data;
+          const data = await res.json()
+          if (!res.ok || data?.error) throw new Error(data.error.message);
 
           tbody.innerHTML = ""
 

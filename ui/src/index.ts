@@ -70,9 +70,9 @@ async function init() {
 
     try {
       await access(htmlPath);
-      res.sendFile(htmlPath);
+      res.sendFile(htmlPath); 
     } catch {
-      next();
+      next(); 
     }
   });
 

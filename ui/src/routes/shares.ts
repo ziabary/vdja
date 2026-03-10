@@ -4,8 +4,9 @@ import express from "express";
 import type { Request, Response, Router } from "express";
 import { parseQueryToString } from "../utils/common";
 import atDB from "../db/atDB";
-import { exHttpAccessDenied, exHttpInvalidParams, exHttpNotAllowed } from "../interfaces/exHttp";
+import { exHttpAccessDenied, exHttpInvalidParams, exHttpNotAllowed, exHttpPaymentRequired } from "../interfaces/exHttp";
 import { getAuthInfo } from "../services/authService";
+import { enuRequestStatus } from '../db/tables/tblSharedFileRequests';
 
 const router = express.Router();
 interface IntfDirSpec {
@@ -24,6 +25,7 @@ async function listFilesRecursively(userID: number, dir: string): Promise<IntfDi
     const dirSpec: IntfDirSpec[] = []
 
     for (const file of files) {
+        if(file === "temp")  continue
         const filePath = path.join(dir, file);
         const stat = fs.statSync(filePath);
 
@@ -117,6 +119,39 @@ router.get("/shares/download", async (apiReq: Request, apiRes: Response) => {
     }   
 
 })
+
+router.get("/shares/requests/list", async (apiReq: Request, apiRes: Response) => {
+    const auth = await getAuthInfo(apiReq, false);
+    if(!auth.privs?.isVerified)
+        throw new exHttpAccessDenied("You must be verified")
+    apiRes.send(await atDB.sharedFileRequests.list())
+})
+
+router.post("/shares/requests/add", async (apiReq: Request, apiRes: Response) => {
+    const auth = await getAuthInfo(apiReq, false);
+    if(!auth.privs?.isVerified)
+        throw new exHttpAccessDenied("You must be verified")
+    const {category, link, description, baleUser} = apiReq.body
+    if(!category?.trim() || !link?.trim() || description?.trim().length < 10)
+        throw new exHttpInvalidParams("همه ورودی‌ها الزامی هستند")
+    if((await atDB.sharedFileRequests.count(auth.uid)) >= 10)
+        throw new exHttpPaymentRequired("هر کاربر می‌تواند حداکثر  ۱۰ درخواست داشته باشد")
+    await atDB.sharedFileRequests.add(auth.uid, category, link, description, baleUser)
+    apiRes.send({inserted: "ok"})
+})
+
+router.patch("/shares/requests/set-status", async (apiReq: Request, apiRes: Response) => {
+    const auth = await getAuthInfo(apiReq, false);
+    if(!auth.privs?.isVerified)
+        throw new exHttpAccessDenied("You must be verified")
+    const {id, status} = apiReq.body
+    console.log({id, status, v:Object.keys(enuRequestStatus)})
+    if(!id || !Object.keys(enuRequestStatus).includes(status))
+        throw new exHttpInvalidParams("ورودی‌های نامعتبر")
+    await atDB.sharedFileRequests.setSatus(id, status)
+    apiRes.send({updated: "ok"})
+})
+
 
 export default async function init(): Promise<Router> {
     return router;

@@ -263,12 +263,11 @@
     let auth; setupAuth(service, false).then(async r => {
       auth = r;
       if (auth.token()
-        && (!queries.mustAdmin || auth.info().privs?.isAdmin)
-        && (!queries.mustVerified || auth.info().privs?.isVerified)
+        && (!queries.mustAdmin || auth.info()?.privs?.isAdmin)
+        && (!queries.mustVerified || auth.info()?.privs?.isVerified)
       )
         window.location.pathname = "/" + service
     })
-
 
     const inpUserToken = document.getElementById("userToken");
     const togglePass = document.getElementById("togglePass");
@@ -293,6 +292,7 @@
     let otpTimer = null
     let isPasswordVisible = false;
 
+
     togglePass.addEventListener("click", () => {
       isPasswordVisible = !isPasswordVisible;
       inpUserToken.type = isPasswordVisible ? "text" : "password";
@@ -301,10 +301,10 @@
 
     function finalizeLogin(data) {
       auth.setAccessToken(data.accessToken);
-      if (queries.mustAdmin && !auth.info().privs?.isAdmin) {
+      if (queries.mustAdmin && !auth.info()?.privs?.isAdmin) {
         showError("لازم است تا کاربر ادمین وارد شود");
         setTimeout(auth.logout(window.location.href), 2000)
-      } else if (queries.mustVerified && !auth.info().privs?.isVerified) {
+      } else if (queries.mustVerified && !auth.info()?.privs?.isVerified) {
         showError("لازم است تا کاربر ادمین وارد شود");
         setTimeout(auth.logout(window.location.href), 2000)
       } else {
@@ -461,6 +461,8 @@
       }
     }
 
+    if(queries.mustVerified)
+      setTimeout(()=>btnBale.click())
 
   </script>
 </body>
