@@ -75,6 +75,8 @@ export default {
     ): Promise<void> => {
         const db = await getDB();
 
+        const res = await db(tblName).select('*').where(cols.link, link)
+        if(res) return
         await db(tblName).insert({
             [cols.by_usrID]: userId,
             [cols.category]: category,

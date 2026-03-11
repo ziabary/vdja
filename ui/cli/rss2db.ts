@@ -114,7 +114,7 @@ async function addFeedToDB(url: string, onFetchURL: ((link: string) => Promise<s
 
         text = text.trim()
 
-        const chunks = semanticChunker(text, { fileKey: linkID }, {
+        const chunks = semanticChunker(text, { fileKey: linkID, time: new Date(time[1]).getTime() ||0 }, {
           maxChars: 900,
           minChars: 300,
           overlap: 150,

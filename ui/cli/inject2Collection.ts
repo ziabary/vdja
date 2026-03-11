@@ -34,7 +34,7 @@ const SERVICES: { [key: string]: IntfInjectOption } = {
     genQuestions: false,
     mustIgnore: (article: any) => {
       return !article.content
-      || article.content.length < 2
+        || article.content.length < 2
     }
   },
 
@@ -124,9 +124,9 @@ export enum enuTextType {
 
 export function textContent(article: any): string {
   let text = ''
-  if(article.title) text += `# ${article.aboveTitle? article.aboveTitle: ''} ${article.title}\n\n`
-  if(article.subtitle) text += `> ${article.subtitle}\n\n`
-  if(article.summary) text += `> ${article.summary}\n\n`
+  if (article.title) text += `# ${article.aboveTitle ? article.aboveTitle : ''} ${article.title}\n\n`
+  if (article.subtitle) text += `> ${article.subtitle}\n\n`
+  if (article.summary) text += `> ${article.summary}\n\n`
 
   for (const item of article.content) {
     switch (item.type as enuTextType) {
@@ -142,7 +142,7 @@ export function textContent(article: any): string {
       case enuTextType.h4: text += `#### ${item.text}\n\n`; break;
       case enuTextType.paragraph: text += `${item.text}\n\n`; break;
       case enuTextType.li: text += `- ${item.text}\n\n`; break;
-      case enuTextType.ilink: text += `[${item.text}](${item.ref}) `; break;
+      case enuTextType.ilink: text += item.ref ? `[${item.text}](${item.ref}) ` : `${item.text}\n\n`; break;
     }
   }
 
@@ -160,7 +160,6 @@ export async function startInsert(
 
   const dates = fs.readdirSync(filesPath);
   let chunkCount = 0
-  let url = ''
   let sampleFileKey = ''
 
   for (const dir of dates) {
@@ -173,7 +172,10 @@ export async function startInsert(
       const fileSize = fs.statSync(filePath).size
 
       try {
+        let url = ''
         let text = ""
+        let title = ""
+        let time = 0
 
         if (filePath.endsWith('.json')) {
           const article = JSON.parse(content)
@@ -185,10 +187,16 @@ export async function startInsert(
           }
 
           url = decodeURIComponent(article.url)
+          time = new Date(article.date).getTime() || 0
+          title = article.title || file
         } else {
           text = content
           url = file
+          time = new Date().getTime()
+          title = content.substring(0, content.indexOf("\n")).replace(/^#+ /, "")
         }
+        title = title.substring(0, 100) + (title.length > 100 ? "...": "")
+
         if (text.length < 1000) {
           console.log(`${filePath} [${url}] ===> Skipped (${text.length})`)
           continue
@@ -198,7 +206,7 @@ export async function startInsert(
 
         const res = await atDB.files.get(service, options.uid, fileKey)
         if (res) {
-          if(argv.force) {
+          if (argv.force) {
             const deletedChunks = await vectorDB().deleteFileChunks(options.collection, fileKey)
             const delRes = await atDB.files.delete(service, res, true)
             console.log(`${filePath} [${url}] ===> REMOVED. chunks: ${deletedChunks}, ${delRes}`)
@@ -209,7 +217,7 @@ export async function startInsert(
           }
         }
 
-        const chunks = semanticChunker(text, { fileKey }, {
+        const chunks = semanticChunker(text, { fileKey, time, title }, {
           maxChars: 900,
           minChars: 300,
           overlap: 150,

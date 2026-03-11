@@ -7,7 +7,7 @@ import os from "os";
 
 import atDB from "../db/atDB";
 import { exHttpAccessDenied, exHttpInvalidParams, exHttpPayloadTooLarge, exHttpPreconditionFailed, type IntfExHttp } from "../interfaces/exHttp";
-import { startNewChat, generate, stopRequest, sendStreamHeadersIfNeeded } from "./chatService";
+import { startNewChat, generate, stopRequest, sendStreamHeadersIfNeeded, type IntfRefrence } from "./chatService";
 import { getEmbedding } from './embedService'
 import { getDB } from '../db/index';
 import { toMegaByte, stripText, parseQueryToNumber, parseQueryToString } from "../utils/common";
@@ -683,7 +683,17 @@ export default function ragService(
       if (special?.collection && specialContext.chunks.length === 0)
         return apiRes.send(`data: {"delta":"در متن‌های مرجع پاسخ مناسب برای این سوال یافت نشد"}\ndata: [DONE:1]`)
 
-      await startNewChat(apiRes, service, api_reqId, messages, {
+      const references: IntfRefrence[] = []
+      const refContext = (userContext.chunks?.length ? userContext : specialContext.chunks?.length ? specialContext : DEFAULT_EMPTY_CONTEXT)
+      refContext.chunks.forEach(chunk=>{
+        references.push({
+          text: chunk.text,
+          title: chunk.title,
+          url: chunk.file_name          
+        })
+      })
+
+      await startNewChat(apiRes, service, api_reqId, messages, references, {
         onDone: async (fullMarkdown: string, cancelled: boolean | undefined) => {
           await atDB.log.updateResult(logSpec, cancelled ? 299 : 200, { responseLen: cancelled ? 'cancelled' : fullMarkdown?.length || 0 })
           await atDB.messages.addDialogue(chatSpecs, api_reqId, api_question, fullMarkdown, cancelled ? enuMsgStatus.Stopped : enuMsgStatus.Finished)

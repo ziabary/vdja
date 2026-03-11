@@ -9,3 +9,7 @@
     - vllm2: [gpu-1]  aya      8001 -> translation
     - embedding [gpu-2] multilingual-e5-large-instruct  no-port
     
+
+    pip install --upgrade vllm transformers --proxy http://172.17.0.1:8118
+
+    nvce.io/nvidia/vllm:26.02-py3

@@ -11,12 +11,12 @@ async function setupFileConverter({ inpFile, blckFileUploadInfo, txtInput, lblSt
   inpFile.addEventListener('change', async () => {
     const file = inpFile.files[0];
     if (!file) return;
-    await convertFile(file, {blckFileUploadInfo, txtInput, lblStatus, maxChars, onLoad});
+    await convertFile(file, { blckFileUploadInfo, txtInput, lblStatus, maxChars, onLoad });
     inpFile.value = '';
   });
 }
 
-async function convertFile(file, {blckFileUploadInfo, txtInput, lblStatus, maxChars=Infinity, onLoad, ragService}) {
+async function convertFile(file, { blckFileUploadInfo, txtInput, lblStatus, maxChars = Infinity, onLoad, ragService }) {
   if (!Object.values(allowedFileTypes).includes(file.type)) {
     showError(`نوع فایل مجاز نیست (فقط ${Object.keys(allowedFileTypes)})`);
     return;
@@ -62,7 +62,7 @@ async function convertFile(file, {blckFileUploadInfo, txtInput, lblStatus, maxCh
       if (ragService) req.open('POST', `/api/${page.serviceName}/upload`, true);
       else req.open('POST', `/api/file2Text?maxChars=${maxChars}`, true);
 
-      if (auth?.token()) 
+      if (auth?.token())
         req.setRequestHeader('Authorization', 'Bearer ' + auth.token());
 
       // Upload progress
@@ -71,48 +71,48 @@ async function convertFile(file, {blckFileUploadInfo, txtInput, lblStatus, maxCh
           const percent = Math.round((event.loaded / event.total) * 100);
           progressBar.style.width = percent + '%';
           if (percent > 98) {
-            setClass(progressBar, ['progress-bar-striped','progress-bar-animated'], true);
+            setClass(progressBar, ['progress-bar-striped', 'progress-bar-animated'], true);
             lblStatus.innerHTML = `<info>در حال استخراج متن از فایل ${movingDotsLoader()}</info>`;
           }
         }
       };
 
       let received = '';
-      let finalResolved = false; 
+      let finalResolved = false;
 
       req.onreadystatechange = function () {
         const { readyState } = req;
-        if ((readyState === 3 || readyState === 4) && req.responseText?.length > received.length) {      
+        if ((readyState === 3 || readyState === 4) && req.responseText?.length > received.length) {
           const newChunk = req.responseText.substring(received.length);
           received += newChunk;
 
           if (ragService) {
             const progressReports = received.split("\n")
-            for (let i = progressReports.length - 1; i>=0; i--) {
+            for (let i = progressReports.length - 1; i >= 0; i--) {
               const report = progressReports[i]
-              if(report.startsWith("data: [DONE]:")) {
-                try{
+              if (report.startsWith("data: [DONE]:")) {
+                try {
                   const obj = JSON.parse(report.replace(`data: [DONE]: {`, "{"))
-                  if(obj) 
+                  if (obj)
                     resolve(obj)
                   req.abort()
                   finalResolved = true
-                }catch{}
+                } catch { }
                 break;
               }
-              if(report.startsWith("data: [ERROR]:"))
-                return reject({ code: 400, body: file.name +": "+ report.replace("data: [ERROR]:", "") });
-              if(report.startsWith(`progress: {`)) {
-                try{
+              if (report.startsWith("data: [ERROR]:"))
+                return reject({ code: 400, body: file.name + ": " + report.replace("data: [ERROR]:", "") });
+              if (report.startsWith(`progress: {`)) {
+                try {
                   const pObj = JSON.parse(report.replace(`progress: {`, "{"))
-                  if(pObj)
+                  if (pObj)
                     lblStatus.innerHTML = `<info class="rtl fa-num">در حال استخراج متن بخش ${pObj.progress} از ${pObj.total} &nbsp; ${movingDotsLoader()}</info>`;
-                }catch{}
+                } catch { }
                 break;
               }
             }
           }
-          
+
           // Try to parse final result as soon as possible
           if (req.readyState === 4) {
             try {
@@ -128,7 +128,7 @@ async function convertFile(file, {blckFileUploadInfo, txtInput, lblStatus, maxCh
             }
           }
         }
-      
+
         if (req.readyState === 4) {
           if (!finalResolved) {
             // Fallback: whole response as text or error
@@ -160,7 +160,7 @@ async function convertFile(file, {blckFileUploadInfo, txtInput, lblStatus, maxCh
 
   try {
     const data = await auth.withAuth(sendFile);
-    if(data.text)  {
+    if (data.text) {
       let fullText = data.text;
       if (fullText.length > maxChars || data.stripped)
         toast('متن فایل بیش از حد مجاز است و ادامه آن بریده شد.', 'warning');
@@ -170,7 +170,7 @@ async function convertFile(file, {blckFileUploadInfo, txtInput, lblStatus, maxCh
         lblStatus.textContent = '';
         fullText = '';
       } else {
-        lblStatus.innerHTML = `<info>${ragService ? "پابان پردازش":"متن ورودی آماده شده."}</info>`;
+        lblStatus.innerHTML = `<info>${ragService ? "پابان پردازش" : "متن ورودی آماده شده."}</info>`;
       }
       txtInput.value = fullText.slice(0, maxChars);
       txtInput.dispatchEvent(new Event('change', { bubbles: true }));
@@ -181,10 +181,10 @@ async function convertFile(file, {blckFileUploadInfo, txtInput, lblStatus, maxCh
       showError('خطا در اتصال');
       lblStatus.textContent = '';
     } else {
-      if(err.res) err = err.res
-      if(err?.body?.startsWith("{") && err?.body?.endsWith("}")) {
+      if (err.res) err = err.res
+      if (err?.body?.startsWith("{") && err?.body?.endsWith("}")) {
         const errObj = JSON.parse(err.body)?.error
-        const fileName = file.name 
+        const fileName = file.name
         showError(fileName + ": " + errObj.message);
       } else {
         showError(err.body || err.message || 'خطا در ارسال فایل');
@@ -293,12 +293,22 @@ async function showStream(action, outTextContainer, apiResponse, { onChunk, onDo
           toast(err, 'danger');
           outTextContainer.innerHTML += `<error>${err}</error>`;
         }
-        if (line.startsWith('data: [DONE:')) {
+        else if (line.startsWith('data: [DONE:')) {
           updateOutput(outTextContainer, fullRespMarkdown, true);
           if (onDone) await onDone(fullRespMarkdown);
           return;
         }
-        if (line.startsWith('data: [CANCELLED:')) {
+        else if (line.startsWith('data: [REF]:')) {
+          const refJson = line.replace('data: [REF]:', '')
+          try {
+            const refrences = JSON.parse(refJson)
+            console.log(refrences)
+          } catch (ex) {
+            console.error({ showStream_refrences: ex });
+          }
+          continue
+        }
+        else if (line.startsWith('data: [CANCELLED:')) {
           updateOutput(outTextContainer, fullRespMarkdown, true);
           if (onCancelled) await onCancelled(fullRespMarkdown + '\nLLM_GEN_CANCELLED');
 
@@ -310,18 +320,18 @@ async function showStream(action, outTextContainer, apiResponse, { onChunk, onDo
             setTimeout(() => (outTextContainer.querySelector('.retry-box button').onclick = onRetry));
             return;
           }
-        }
+        } else {
+          try {
+            const json = JSON.parse(line.slice(6));
+            const token = json.delta || '';
+            fullRespMarkdown += token;
 
-        try {
-          const json = JSON.parse(line.slice(6));
-          const token = json.delta || '';
-          fullRespMarkdown += token;
-
-          updateOutput(outTextContainer, fullRespMarkdown, false);
-          if (!isUserScrolling) outContainerScrollable.scrollTop = outContainerScrollable.scrollHeight;
-        } catch (ex) {
-          console.error({ showStream_chunk: ex });
-          //ignore json errors
+            updateOutput(outTextContainer, fullRespMarkdown, false);
+            if (!isUserScrolling) outContainerScrollable.scrollTop = outContainerScrollable.scrollHeight;
+          } catch (ex) {
+            console.error({ showStream_chunk: ex });
+            //ignore json errors
+          }
         }
       }
     }

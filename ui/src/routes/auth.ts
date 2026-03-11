@@ -22,6 +22,26 @@ interface AuthRequestBody {
   [key: string]: string
 }
 
+/**
+ * @swagger
+ * components:
+ *   securitySchemes:
+ *     bearerAuth:
+ *       type: http
+ *       scheme: bearer
+ */
+
+
+/**
+ * @swagger
+ * /api/test:
+ *   get:
+ *     summary: Test endpoint
+ *     description: A simple test endpoint
+ *     responses:
+ *       200:
+ *         description: Success
+ */
 router.post("/auth/loginByKey", async (apiReq: Request<{}, {}, AuthRequestBody>, apiRes: Response) => {
   const { userKeyMD5, service } = apiReq.body;
   try {
@@ -195,7 +215,7 @@ router.post("/auth/refresh", async (apiReq: Request, apiRes: Response) => {
     throw new exHttpAccessDenied("شما به این سرویس دسترسی ندارید")
 
   await sendJWT(user, apiRes)
-}); 
+});
 
 function normalizePhone(mobile: string) {
   if ((!mobile.startsWith("+98") && !mobile.startsWith("0"))
@@ -210,7 +230,7 @@ function normalizePhone(mobile: string) {
 router.post("/auth/sendBaleOTP", async (apiReq: Request, apiRes: Response) => {
   const { mobile } = apiReq.body
 
-  if(!mobile)
+  if (!mobile)
     throw new exHttpInvalidParams("موبایل یا کد ارایه‌ نشده‌اند")
 
   const phone = normalizePhone(mobile)
@@ -219,35 +239,45 @@ router.post("/auth/sendBaleOTP", async (apiReq: Request, apiRes: Response) => {
   payload.append("grant_type", "client_credentials");
   payload.append("client_id", configManager.active().baleOTP.gwID);
   payload.append("client_secret", configManager.active().baleOTP.gwSecret);
-  payload.append("scope","read")
+  payload.append("scope", "read")
 
   try {
     const authToken = await fetch("https://safir.bale.ai/api/v2/auth/token", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: payload
-    }).then(r=>r.json());
+    }).then(r => r.json());
 
     const otpCode = Math.floor(10000 + Math.random() * 90000)
     atDB.user.setOTP(phone, `${otpCode}`)
 
     const resp = await fetch("https://safir.bale.ai/api/v2/send_otp", {
       method: "POST",
-      headers: { 
+      headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${authToken.access_token}`
-       },
+      },
       body: JSON.stringify({
         phone,
         otp: otpCode
       })
-    }).then(r=>r.json());
+    }).then(r => r.json());
 
     apiRes.send(resp)
   } catch (e) {
     console.error(e);
-    throw new exHttpAccessDenied((e as Error).message)    
+    throw new exHttpAccessDenied((e as Error).message)
   }
+})
+
+router.post("/auth/generateAccessToken", async (apiReq: Request, apiRes: Response) => {
+  const { secret, client_id } = apiReq.body
+  const user : Partial<IntfUser> = await atDB.user.getDigesting(secret, false, false)
+  if (!user) throw new exHttpUnauthorized("Invalid clientID or Secret")
+  if (md5(user.usrID + '').substring(6) !== client_id)
+      throw new exHttpUnauthorized("Invalid clientId or Secret")
+  atDB.log.add(user.usrKey!, "login", "generateAccessToken", 0, 200)
+  return await sendJWT(user, apiRes)
 })
 
 router.post("/auth/verifyOTP", async (apiReq: Request, apiRes: Response) => {
@@ -255,7 +285,7 @@ router.post("/auth/verifyOTP", async (apiReq: Request, apiRes: Response) => {
   const phone = normalizePhone(mobile)
 
   const res = await atDB.user.verifyOTP(phone, otp)
-  if(res && res.usrKey) {
+  if (res && res.usrKey) {
     let user: Partial<IntfUser> = await atDB.user.getDigesting(res.usrKey, false, true);
     atDB.log.add(res.usrKey, "login", { service }, 0, 200)
     return await sendJWT(user, apiRes)

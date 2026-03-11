@@ -73,7 +73,7 @@ router.post("/summarize", async (apiReq: Request<{}, {}, SummarizeRequestBody>, 
       trimmed_text.length
     );
 
-    await startNewChat(apiRes, enuLLMServices.Summarize, api_reqId, messages, {
+    await startNewChat(apiRes, enuLLMServices.Summarize, api_reqId, messages, [], {
       onDone: async (fullMarkdown: string, cancelled?: boolean) => {
         if (logSpec) {
           await atDB.log.updateResult(

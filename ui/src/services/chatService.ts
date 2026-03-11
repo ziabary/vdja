@@ -45,6 +45,12 @@ type TypVirtualResponse = {
   sendStatus?: (code: number) => TypVirtualResponse;
 };
 
+export interface IntfRefrence{
+  text: string,
+  title: string | undefined,
+  url: string
+}
+
 interface IntfReaderWithTimeout {
   done: boolean
   value: Uint8Array<ArrayBuffer> | undefined, 
@@ -157,6 +163,7 @@ export async function generate(
       service,
       md5(randomUUID()),
       messages,
+      [], // refrences
       {}, // options / context?
       { temperature, maxTokens }
     );
@@ -180,6 +187,7 @@ export async function startNewChat(
   service: enuLLMServices,
   reqId: string|undefined,
   messages: IntfLLMMessage[],
+  references: IntfRefrence[],
   handlers: TypStreamHandlers = {},
   params: {maxTokens?: number, temperature?: number} = {}
 ) {
@@ -260,7 +268,7 @@ export async function startNewChat(
     });
   };
 
-  await processChatStream(readerWithTimeout, apiRes, activeReqId, handlers);
+  await processChatStream(readerWithTimeout, apiRes, activeReqId, handlers, references);
   removeActiveRequest(service, activeReqId)
 }
 
@@ -332,7 +340,8 @@ async function processChatStream(
   chatReader: () => Promise<IntfReaderWithTimeout>,
   apiRes: Response | TypVirtualResponse,
   requestId: string,
-  { onChunk, onChunkDelta, onDone, onError }:  TypStreamHandlers
+  { onChunk, onChunkDelta, onDone, onError }:  TypStreamHandlers,
+  refrences: IntfRefrence[]
 ) {
   const decoder = new TextDecoder();
   try {
@@ -349,6 +358,7 @@ async function processChatStream(
         sendStreamHeadersIfNeeded(apiRes);
         if (cancelled)
           apiRes.write(`data: [CANCELLED:${requestId}]\n\n`);
+        apiRes.write(`data: [REF]:${JSON.stringify(refrences)}\n\n`)
         apiRes.write(`data: [DONE:${requestId}]\n\n`);
         apiRes.end();
         break;

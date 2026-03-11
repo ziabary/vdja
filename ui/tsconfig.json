@@ -44,7 +44,7 @@
   },
   "include": [
     "src/**/*"
-  ],
+, "src/utils/swagger.ts"  ],
   "exclude": [
     "node_modules",
     "dist",

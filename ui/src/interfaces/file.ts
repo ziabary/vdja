@@ -16,6 +16,7 @@ export interface IntfChunkMeta {
   page?: number;
   section?: string;
   time?: number
+  title?: string
 }
 
 export interface IntfChunk {

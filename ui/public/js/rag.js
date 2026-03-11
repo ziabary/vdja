@@ -110,7 +110,7 @@ function setupRAG(page, options) {
         .map(
           (chat) => `
               <div class="chat-item ${currentChatKey === chat.chat_id ? 'bg-primary text-white' : ''
-            }" onclick="rag.loadChat('${chat.chtKey}', '${chat.chtTitle || "چت جدید"}')">
+            }" onclick="rag.loadChat('${chat.chtKey}')">
                 ${chat.chtTitle || "چت جدید"} <small class="d-inline-block">${new Date(chat.chtCreatedAt).toLocaleDateString(
               'fa-IR'
             )}</small>

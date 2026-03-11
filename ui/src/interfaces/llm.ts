@@ -13,6 +13,7 @@ export interface IntfChunkPayload {
   text:string;
   file_id: string;
   file_name: string;
+  title: string | undefined,
   chunk_time: number | undefined;
   chunk_index: number;
 

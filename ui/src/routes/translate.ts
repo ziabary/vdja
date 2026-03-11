@@ -142,7 +142,7 @@ router.post("/translate", async (apiReq: Request, apiRes: Response) => {
       trimmed_text.length
     );
 
-    await startNewChat(apiRes as Response,  enuLLMServices.Translate, api_reqId, messages, {
+    await startNewChat(apiRes as Response,  enuLLMServices.Translate, api_reqId, messages, [], {
         onDone: async (fullMarkdown: string, cancelled: boolean | undefined) => {
           await atDB.log.updateResult(
             logSpec,

@@ -9,6 +9,7 @@ import * as path from 'path';
 import * as fs from 'fs'
 import { fileURLToPath } from 'url';
 import cookieParser from "cookie-parser";
+import * as swaggerUi from "swagger-ui-express";
 
 import configManager from './utils/configManager';
 import db from './db/index';
@@ -30,6 +31,7 @@ import files from './routes/shares';
 import type { IntfExHttp } from './interfaces/exHttp';
 import { enuLLMServices } from './interfaces/config';
 import setupAPICallLogger from './utils/apiCallLog';
+import genSwaggerSpec from './utils/swagger';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -70,9 +72,9 @@ async function init() {
 
     try {
       await access(htmlPath);
-      res.sendFile(htmlPath); 
+      res.sendFile(htmlPath);
     } catch {
-      next(); 
+      next();
     }
   });
 
@@ -87,7 +89,7 @@ async function init() {
 
     next();
   });
-
+ 
 
   ///////////////////////////////////////////////////////////////////////
   // Routes
@@ -102,12 +104,18 @@ async function init() {
     think,
     rahbari,
     stats,
-    admin, 
+    admin,
     files
   ])
 
 
   app.use("/api", activeRoutes)
+
+  const openAPIPath = path.join(__dirname, "dist", "open-api.json")
+  const swaggerDocument =  genSwaggerSpec(openAPIPath)
+
+  // Serve the Swagger UI
+  app.use('/api-swagger', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
   app.use((err: IntfExHttp | Error, _: Request, res: Response, next: NextFunction) => {
     if ((err as IntfExHttp).status && (err as IntfExHttp).status === 401)
@@ -137,6 +145,8 @@ async function init() {
     logger.info(`Using RAGDB at: ${configs.RAGDB?.url}`);
     logger.info(`Using Embedding at: ${configs.embedding.server?.url} (model: ${configs.embedding.server?.model})`);
     logger.info(`UI running at http://${configs.app.listen.ip}:${configs.app.listen.port}`);
+    logger.info(`Swagger UI is available at http://${configs.app.listen.ip}:${configs.app.listen.port}/api-swagger`);
+
   });
 
   Object.values(enuLLMServices).forEach(installMonitor);

@@ -115,6 +115,7 @@ export default function vectorDB() {
         text: chunk.text!,
         chunk_index: i,
         chunk_time: chunk.meta?.time,
+        title: chunk.meta?.title,
         file_id: fileKey,
         file_name: fileName,
       }
@@ -278,6 +279,7 @@ export default function vectorDB() {
           chunks: filteredChunks.map((r: QdrantSearchPoint) => ({
             file: r.payload?.file_name,
             chunk_time: r.payload?.chunk_time,
+            title: r.payload?.title,
             score: r.score,
             p: r.payload?.text,
           })),

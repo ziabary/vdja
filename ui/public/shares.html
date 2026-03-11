@@ -59,6 +59,7 @@
     }
 
     @media (max-width: 767.98px) {
+
       .list-group,
       .list-group-item {
         margin-right: 0 !important;
@@ -120,31 +121,100 @@
     <p>⚠️ لینک شروع به دانلود فایل برای ۱۰ دقیقه معتبر است و می‌توانید از ابزارهای تسریع دانلود هم استفاده کنید
     </p>
 
-    <div class="border p-3 rounded">
-      <ul class="list-group" id="fileTree">
-      </ul>
+    <ul class="nav nav-tabs" id="myTab" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="files-tab" data-bs-toggle="tab" data-bs-target="#files" type="button"
+          role="tab" aria-controls="rhbri" aria-selected="true">لیست فایل‌ها</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link " id="repo-tab" data-bs-toggle="tab" data-bs-target="#repo" type="button" role="tab"
+          aria-controls="rag" aria-selected="false">ریپازیتوری‌های ملی</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link hidden " id="admin-tab" data-bs-toggle="tab" data-bs-target="#admin" type="button"
+          role="tab" aria-controls="admin" aria-selected="false">مدیریت درخواست‌ها</button>
+      </li>
+    </ul>
+
+    <div class="tab-content">
+      <div class="tab-pane fade show active" id="files" role="tabpanel" aria-labelledby="rag-tab">
+        <div class="border p-3 rounded">
+          <ul class="list-group" id="fileTree">
+          </ul>
+        </div>
+
+        <div class="collapsed mb-4 mt-4 border rounded" id="secReqDownload">
+          <div class="p-3">
+            <input id=txtBaleUser type="text"
+              placeholder="شناسه روی پیام‌رسان بله برای ارتباط و سوال در صورت وجود ابهام"
+              class="form-control ltr w-100 mb-2">
+            <input id=txtCategory type="text" placeholder="Category / BaseFolder" class="form-control ltr w-100 mb-2">
+            <input id=txtLink type="url" class="form-control ltr w-100 mb-2"
+              placeholder="Direct link to download or link to download page">
+            <textarea id=txtDesc name="توضیحات" class="form-control w-100 mb-2"
+              placeholder="توضیحات در خصوص دلیل نیاز، نسخه مورد نیاز، شرایط بسته و ... (لطفا کامل توضیح دهید. درخواست‌های ناقص ترتیب اثر داده نمی‌شوند)"></textarea>
+            <div>
+              <button id="btnSumitReq" class="btn btn-primary ">ثبت درخواست</button>
+              <button id="btnCancelReq" class="btn btn-outline-secondary"> لغو</button>
+            </div>
+          </div>
+        </div>
+        <button class="btn btn-primary" id="btnReqDownload">درخواست بسته، نرم‌افزار یا دادگان جدید</button>
+      </div>
     </div>
 
-    <div class="collapsed mb-4 mt-4 border rounded" id="secReqDownload">
-      <div class="p-3">
-        <input id=txtBaleUser type="text" placeholder="شناسه روی پیام‌رسان بله برای ارتباط و سوال در صورت وجود ابهام" class="form-control ltr w-100 mb-2">
-        <input id=txtCategory type="text" placeholder="Category / BaseFolder" class="form-control ltr w-100 mb-2">
-        <input id=txtLink type="url" class="form-control ltr w-100 mb-2"
-          placeholder="Direct link to download or link to download page">
-        <textarea id=txtDesc name="توضیحات" class="form-control w-100 mb-2"
-          placeholder="توضیحات در خصوص دلیل نیاز، نسخه مورد نیاز، شرایط بسته و ... (لطفا کامل توضیح دهید. درخواست‌های ناقص ترتیب اثر داده نمی‌شوند)"></textarea>
-        <div>
-          <button id="btnSumitReq" class="btn btn-primary ">ثبت درخواست</button>
-          <button id="btnCancelReq" class="btn btn-outline-secondary"> لغو</button>
+    <div class="tab-content">
+      <div class="tab-pane fade show " id="repo" role="tabpanel" aria-labelledby="rag-tab">
+        <div class="border p-3 rounded">
+          <ul>
+            <li>
+              <h4>ریپازیتوری لینوکس</h4>
+              <ul class="me-5">
+                <li class="ltr"><a
+                    href="https://www.arvancloud.ir/dev/linux-repository">https://www.arvancloud.ir/dev/linux-repository</a>
+                </li>
+                <li class="ltr"><a target=_blank href="https://runflare.com/mirrors/">https://runflare.com/mirrors/</a></li>
+                <li class="ltr"><a target=_blank href="https://mirrors.hyperclouds.ir/">https://mirrors.hyperclouds.ir/</a></li>
+              </ul>
+            </li>
+            <li>
+              <h4>ریپازیتوری داکر</h4>
+              <ul class="me-5">
+                <li class="ltr"><a target=_blank href="https://docker.arvancloud.ir/">https://docker.arvancloud.ir</a></li>
+                <li class="ltr"><a target=_blank href="https://mirrors.hyperclouds.ir/">https://mirrors.hyperclouds.ir/</a></li>
+              </ul>
+            </li>
+            <li>
+              <h4>بسته‌های نرم‌افزاری</h4>
+              <ul class="me-5">
+                <li class="ltr"><a target=_blank href="https://runflare.com/mirrors/">https://runflare.com/mirrors/</a></li>
+                <li class="ltr"><a target=_blank href="https://mirrors.hyperclouds.ir/">https://mirrors.hyperclouds.ir/</a></li>
+              </ul>
+            </li>
+            <li>
+              <h4>سرویس‌های آپلود فایل</h4>
+              <ul class="me-5">
+                <li class="ltr"><a target=_blank href="https://www.picofile.com">https://www.picofile.com</a></li>
+                <li class="ltr"><a target=_blank href="https://uploadkon.ir">https://uploadkon.ir</a></li>
+                <li class="ltr"><a target=_blank href="https://uupload.ir">https://uupload.ir</a></li>
+                <li class="ltr"><a target=_blank href="https://files.ir">https://files.ir</a></li>
+                <li class="ltr"><a target=_blank href="https://biaupload.com">https://biaupload.com</a></li>
+              </ul>
+            </li>
+          </ul>
         </div>
       </div>
     </div>
-    <button class="btn btn-primary" id="btnReqDownload">درخواست بسته جدید</button>
 
-    <div class="mb-4 mt-4 p-2 border rounded hidden" id="secRequestList">
-      <ul class="list-group p-4">
-      </ul>
+    <div class="tab-content">
+      <div class="tab-pane fade show " id="admin" role="tabpanel" aria-labelledby="rag-tab">
+        <div class="mb-4 mt-4 p-2 border rounded">
+        </div>
+      </div>
     </div>
+
+
+
   </div>
   <script src="js/vendors/bootstrap.bundle.min.js"></script>
   <script src="js/common.js"></script>
@@ -186,7 +256,7 @@
       const res = await auth.apiFetch(`/api/shares/requests/add`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ category, link, description,baleUser })
+        body: JSON.stringify({ category, link, description, baleUser })
       });
       const data = await res.json()
       if (!res.ok || data?.error) return showError(data.error.message)
@@ -208,7 +278,7 @@
       const res = await auth.apiFetch(`/api/shares/req-download/${ev.target.getAttribute('file-key')}`);
       const data = await res.json()
       if (!res.ok || data?.error) return showError(data.error.message)
-      
+
 
       const a = document.createElement('a')
       a.href = "/api/shares/download?token=" + data.token
@@ -360,15 +430,16 @@
       const data = await res.json()
       if (!res.ok || data?.error) return showError(data.error.message)
 
-      const secRequestList = document.getElementById("secRequestList")
-      secRequestList.classList.remove("hidden")
+      const secRequestList = document.querySelector("#admin div")
+      document.getElementById('admin-tab').classList.remove("hidden")
       secRequestList.innerHTML = ''
 
       status2Html = (status) => {
         switch (status) {
-          case "New": return `<span><i class="fas fa-download text-warning"></i> درخواست جدید</span>`
-          case "Downloaded": return `<span><i class="fas fa-cloud-download text-success"></i> دانلود‌شده</span>`
-          case "Discarded": return `<span><i class="fas fa-trash text-danger"></i> حذف‌شده</span>`
+          case "New": return `<span class=text-warning> <i class="fas fa-download"></i> درخواست جدید</span>`
+          case "Downloaded": return `<span class=text-success> <i class="fas fa-cloud-download"></i> دانلود‌شده</span>`
+          case "Discarded": return `<span class=text-danger> <i class="fas fa-trash"></i> حذف‌شده</span>`
+          case "Downloading": return `<span class=text-info> <i class="fas fa-cloud-download-alt"></i> درحال دریافت</span>`
         }
       }
 
@@ -383,8 +454,9 @@
             <span><label>تاریخ:</label> ${(new Date(item.sfrCreatedAt)).toLocaleString('fa-IR', { timeZone: "GMT" })}</span>
             <span>| <label>وضعیت: </label>${status2Html(item.sfrStatus)}</span>
             <span class=fa-num>| <label>تلفن یا شناسه:</label> <span class=ltr>${item.sfrUserOnBale || ('0' + item.usrMobile.substr(2))}</span></span>
-            <button class="btn btn-outline-danger btn-sm" item-id="${item.sfrID}">حذف درخواست</button>
-            <button class="btn btn-outline-success btn-sm" item-id="${item.sfrID}">دریافت و ذخیره شد</button>
+            ${["New", "Downloading"].includes(item.sfrStatus) ? `<button class="btn btn-outline-danger btn-sm" item-id="${item.sfrID}">حذف درخواست</button>`:``}
+            ${["New", "Discarded"].includes(item.sfrStatus) ? `<button class="btn btn-outline-info btn-sm" item-id="${item.sfrID}">در حال دانلود</button>`:``}
+            ${["New", "Downloading", "Discarded"].includes(item.sfrStatus) ? `<button class="btn btn-outline-success btn-sm" item-id="${item.sfrID}">دریافت و ذخیره شد</button>`:``}
           </div>
           <div>
           <div><label>موضوع:</label> ${item.sfrCategory}</div>
@@ -402,7 +474,9 @@
           const res = await auth.apiFetch(`/api/shares/requests/set-status`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id: itemId, status: el.className.includes("danger") ? "Discarded" : "Downloaded" })
+            body: JSON.stringify({ id: itemId, 
+              status: el.className.includes("danger") ? "Discarded" : el.className.includes("info") ? "Downloading" : "Downloaded"
+             })
           });
           const data = await res.json()
           if (!res.ok || data?.error) return showError(data.error.message)
