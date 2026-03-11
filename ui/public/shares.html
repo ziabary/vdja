@@ -131,8 +131,8 @@
           aria-controls="rag" aria-selected="false">ریپازیتوری‌های ملی</button>
       </li>
       <li class="nav-item" role="presentation">
-        <button class="nav-link hidden " id="admin-tab" data-bs-toggle="tab" data-bs-target="#admin" type="button"
-          role="tab" aria-controls="admin" aria-selected="false">مدیریت درخواست‌ها</button>
+        <button class="nav-link" id="requests-tab" data-bs-toggle="tab" data-bs-target="#requests" type="button"
+          role="tab" aria-controls="requests" aria-selected="false">درخواست‌ها</button>
       </li>
     </ul>
 
@@ -207,7 +207,7 @@
     </div>
 
     <div class="tab-content">
-      <div class="tab-pane fade show " id="admin" role="tabpanel" aria-labelledby="rag-tab">
+      <div class="tab-pane fade show " id="requests" role="tabpanel" aria-labelledby="rag-tab">
         <div class="mb-4 mt-4 p-2 border rounded">
         </div>
       </div>
@@ -262,6 +262,7 @@
       if (!res.ok || data?.error) return showError(data.error.message)
       toast("درخواست شما ثبت شد", "success");
       btnCancelReq.click()
+      listRequests()
     }
 
     btnCancelReq.onclick = (ev) => {
@@ -430,8 +431,7 @@
       const data = await res.json()
       if (!res.ok || data?.error) return showError(data.error.message)
 
-      const secRequestList = document.querySelector("#admin div")
-      document.getElementById('admin-tab').classList.remove("hidden")
+      const secRequestList = document.querySelector("#requests div")
       secRequestList.innerHTML = ''
 
       status2Html = (status) => {
@@ -453,10 +453,10 @@
           <div class="d-flex gap-2 flex-wrap mb-1">
             <span><label>تاریخ:</label> ${(new Date(item.sfrCreatedAt)).toLocaleString('fa-IR', { timeZone: "GMT" })}</span>
             <span>| <label>وضعیت: </label>${status2Html(item.sfrStatus)}</span>
-            <span class=fa-num>| <label>تلفن یا شناسه:</label> <span class=ltr>${item.sfrUserOnBale || ('0' + item.usrMobile.substr(2))}</span></span>
-            ${["New", "Downloading"].includes(item.sfrStatus) ? `<button class="btn btn-outline-danger btn-sm" item-id="${item.sfrID}">حذف درخواست</button>`:``}
-            ${["New", "Discarded"].includes(item.sfrStatus) ? `<button class="btn btn-outline-info btn-sm" item-id="${item.sfrID}">در حال دانلود</button>`:``}
-            ${["New", "Downloading", "Discarded"].includes(item.sfrStatus) ? `<button class="btn btn-outline-success btn-sm" item-id="${item.sfrID}">دریافت و ذخیره شد</button>`:``}
+            ${auth.info()?.privs?.manageShares ? `<span class=fa-num>| <label>تلفن یا شناسه:</label> <span class=ltr>${item.sfrUserOnBale || ('0' + item.usrMobile.substr(2))}</span></span>` :``}
+            ${auth.info()?.privs?.manageShares && ["New", "Downloading"].includes(item.sfrStatus) ? `<button class="btn btn-outline-danger btn-sm" item-id="${item.sfrID}">حذف درخواست</button>`:``}
+            ${auth.info()?.privs?.manageShares && ["New", "Discarded"].includes(item.sfrStatus) ? `<button class="btn btn-outline-info btn-sm" item-id="${item.sfrID}">در حال دانلود</button>`:``}
+            ${auth.info()?.privs?.manageShares && ["New", "Downloading", "Discarded"].includes(item.sfrStatus) ? `<button class="btn btn-outline-success btn-sm" item-id="${item.sfrID}">دریافت و ذخیره شد</button>`:``}
           </div>
           <div>
           <div><label>موضوع:</label> ${item.sfrCategory}</div>
@@ -494,9 +494,7 @@
       const data = await res.json()
       if (!res.ok || data?.error) return showError(data.error.message)
       renderFileTree(data, document.getElementById("fileTree"));
-
-      if (auth.info()?.privs?.manageShares)
-        listRequests()
+      listRequests()
     })
   </script>
 </body>

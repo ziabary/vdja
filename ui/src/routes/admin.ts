@@ -6,32 +6,6 @@ import { exHttpAccessDenied, exHttpInvalidParams } from "../interfaces/exHttp";
 import { getAuthInfo } from "../services/authService";
 
 const router = express.Router();
-/**
- * @swagger
- * /admin/logs:
- *   get:
- *     summary: Get logs by action
- *     description: This endpoint allows an admin to retrieve logs based on a specific action.
- *     parameters:
- *       - in: query
- *         name: action
- *         description: The action to filter logs by
- *         required: true
- *         schema:
- *           type: string
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: A list of logs
- *       401:
- *         description: Access denied. The user is not an admin.
- *       400:
- *         description: Invalid parameters. The action is not specified.
- *     tags:
- *       - Admin
- * 
- */
 
 router.get("/admin/logs", async (apiReq: Request, apiRes: Response) => {
     const auth = await getAuthInfo(apiReq, false);
@@ -45,32 +19,6 @@ router.get("/admin/logs", async (apiReq: Request, apiRes: Response) => {
     apiRes.send(await atDB.log.listByAction(action))
 })
 
-/**
- * @swagger
- * /admin/conversation:
- *   get:
- *     summary: Get list of conversations
- *     description: This endpoint allows an admin to retrieve logs based on a specific action.
- *     parameters:
- *       - in: query
- *         name: action
- *         description: The action to filter logs by
- *         required: true
- *         schema:
- *           type: string
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: A list of logs
- *       401:
- *         description: Access denied. The user is not an admin.
- *       400:
- *         description: Invalid parameters. The action is not specified.
- *     tags:
- *       - Admin
- * 
- */
 router.get("/admin/conversation", async (apiReq: Request, apiRes: Response) => {
     const auth = await getAuthInfo(apiReq, false);
     if (!auth.privs?.isAdmin) throw new exHttpAccessDenied("شما دسترسی کافی ندارید")

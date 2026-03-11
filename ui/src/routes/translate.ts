@@ -54,7 +54,109 @@ Strict rules:
   `;
 
 /* -------------------- Routes -------------------- */
-
+/**
+ * @swagger
+ * /translate:
+ *   post:
+ *     summary: Translate text from one language to another
+ *     description: Translates the given text from a source language to a target language. The system may return a dictionary result if the text is a known phrase, or a stream of translation from the LLM.
+ *     tags:
+ *       - Translation
+ *     parameters:
+ *       - in: body
+ *         name: request
+ *         required: true
+ *         description: Translation request object
+ *         schema:
+ *           type: object
+ *           required:
+ *             - request_id
+ *             - text
+ *             - source_lang
+ *             - target_lang
+ *           properties:
+ *             request_id:
+ *               type: string
+ *               description: Unique ID for the request
+ *             text:
+ *               type: string
+ *               description: The text to be translated
+ *             source_lang:
+ *               type: string
+ *               description: The source language code (e.g., "en", "fa", "auto")
+ *             target_lang:
+ *               type: string
+ *               description: The target language code (e.g., "en", "fa")
+ *     responses:
+ *       200:
+ *         description: Translation result (could be dictionary or LLM stream)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 phrase:
+ *                   type: string
+ *                 translations:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                 synonyms:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                 antonyms:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                 relExp:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                 relWords:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                 pronunciations:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                 examples:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                 extra:
+ *                   type: object
+ *       400:
+ *         description: Bad request (e.g., source and target language are the same, or empty text)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *       400:
+ *         description: Input size is too large
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *     security:
+ *       - BearerAuth: []
+ */
 router.post("/translate", async (apiReq: Request, apiRes: Response) => {
   const {
     request_id: api_reqId,
@@ -179,6 +281,56 @@ router.post("/translate", async (apiReq: Request, apiRes: Response) => {
   }
 });
 
+
+/**
+ * @swagger
+ * /translate/{reqId}/stop:
+ *   post:
+ *     summary: متوقف کردن یک درخواست ترجمه
+ *     description: این مسیر به کاربر اجازه می‌دهد تا یک درخواست ترجمه را با ارائه `reqId` آن متوقف کند.
+ *     tags:
+ *       - Translation
+ *     parameters:
+ *       - in: path
+ *         name: reqId
+ *         required: true
+ *         description: شناسه یکتا درخواست ترجمه که می‌خواهید آن را متوقف کنید.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: درخواست با موفقیت متوقف شد.
+ *         content:
+ *           application/json:
+ *             example:
+ *               status: "stopped"
+ *       400:
+ *         description: reqId نامعتبر یا یافت نشد.
+ *         content:
+ *           application/json:
+ *             example:
+ *               error: "شناسه درخواست نامعتبر است"
+ *       401:
+ *         description: دسترسی غیرمجاز. نیاز به احراز هویت.
+ *         content:
+ *           application/json:
+ *             example:
+ *               error: "نیاز به احراز هویت"
+ *       403:
+ *         description: کاربر مجاز به متوقف کردن این درخواست نیست.
+ *         content:
+ *           application/json:
+ *             example:
+ *               error: "شما مجاز به متوقف کردن این درخواست نیستید"
+ *       500:
+ *         description: خطا در سرور.
+ *         content:
+ *           application/json:
+ *             example:
+ *               error: "خطایی در هنگام متوقف کردن درخواست رخ داد"
+ *     security:
+ *       - BearerAuth: []
+ */
 router.post(
   "/translate/:reqId/stop",
   async (apiReq: Request, apiRes: Response) => {

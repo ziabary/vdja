@@ -7,14 +7,14 @@ export default function genSwaggerSpec(outputFilePath: string) {
         definition: {
             openapi: '3.0.0',
             info: {
-                title: 'My API',
+                title: 'Targoman Services API',
                 version: '1.0.0',
-                description: 'API documentation for my Express app',
+                description: 'API documentation Targoman Services',
             },
             servers: [
                 {
-                    url: `http://${configManager.active().app.listen.ip}:${configManager.active().app.listen.port}`,
-                    description: 'Local server',
+                    url: `http://llm.targoman.ir/api/`,
+                    description: 'API Server',
                 },
             ],
         },

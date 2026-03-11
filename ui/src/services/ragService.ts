@@ -143,6 +143,91 @@ export default function ragService(
   /**************************************************/
   /*                     CHATS                      */
   /**************************************************/
+/**
+ * @swagger
+ * paths:
+ *  '/{service}/chats':
+ *    get:
+ *      summary: Retrieve a list of active chats for a user in a specific service
+ *      description: >
+ *        This endpoint is used to fetch a list of active chats (status: 'active') for the
+ *        authenticated user in a given service. The result includes the total number of
+ *        chats, total tokens used, and a list of chat details such as title, last message ID, and creation time.
+ * 
+ *        This route is used for the `rag`, `rahbari`, and `thinker` services.
+ * 
+ *      parameters:
+ *        - name: service
+ *          in: path
+ *          required: true
+ *          description: The service name (e.g., 'rag', 'rahbari', 'thinker')
+ *          schema:
+ *            type: string
+ *        - name: maxItems
+ *          in: query
+ *          description: Maximum number of chat items to return
+ *          schema:
+ *            type: integer
+ *            default: 1000
+ *        - name: from
+ *          in: query
+ *          description: Offset to start returning results from (for pagination)
+ *          schema:
+ *            type: integer
+ *            default: 0
+ * 
+ *      responses:
+ *        '200':
+ *          description: A list of active chats and user stats
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  totalChats:
+ *                    type: integer
+ *                    description: Total number of active chats for the user
+ *                  totalTokens:
+ *                    type: integer
+ *                    description: Total number of tokens used by the user
+ *                  chats:
+ *                    type: array
+ *                    items:
+ *                      type: object
+ *                      properties:
+ *                        id:
+ *                          type: integer
+ *                          description: Chat ID
+ *                        title:
+ *                          type: string
+ *                          nullable: true
+ *                          description: Title of the chat
+ *                        last_msgID:
+ *                          type: integer
+ *                          nullable: true
+ *                          description: ID of the last message in the chat
+ *                        createdAt:
+ *                          type: string
+ *                          format: date-time
+ *                          description: Timestamp of when the chat was created
+ *        '401':
+ *          description: Session is invalid or user is not authorized
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  message:
+ *                    type: string
+ *                    example: "نشست شما منقضی شده"
+ *      security:
+ *        - BearerAuth: []
+ *      tags:
+ *        - Rag
+ *        - Rahbari
+ *        - Thinker
+ * 
+ */
   router.get(`/${service}/chats`, async (apiReq: Request, apiRes: Response) => {
     const auth = await getAuthInfo(apiReq);
 

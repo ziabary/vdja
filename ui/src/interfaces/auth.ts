@@ -15,8 +15,9 @@ interface IntfServiceAccess {
 
 export interface IntfPrivileges {
   services: {[service:string]: IntfServiceAccess},
-  isAdmin: boolean
-  isVerified: boolean
+  isAdmin?: boolean
+  isVerified?: boolean
+  manageShares?: boolean
 }
 
 export interface IntfAuth {

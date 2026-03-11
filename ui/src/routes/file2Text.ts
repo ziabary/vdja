@@ -23,7 +23,58 @@ const upload = multer({
 });
 
 /**
- * Unified file-to-text endpoint
+ * @swagger
+ * /file2Text:
+ *   post:
+ *     summary: Extract text from an uploaded file
+ *     description: Uploads a file and extracts text from it. Supported formats include PDF, DOCX, DOC, and ODT. The file size is limited based on user privileges.
+ *     consumes:
+ *       - multipart/form-data
+ *     parameters:
+ *       - in: formData
+ *         name: file
+ *         type: file
+ *         description: The file to be processed.
+ *       - in: query
+ *         name: maxChars
+ *         type: integer
+ *         description: Maximum number of characters to extract from the file.
+ *       - in: query
+ *         name: service
+ *         type: string
+ *         description: The service identifier used to determine file size limits.
+ *     responses:
+ *       200:
+ *         description: Text extraction result
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 text: { type: string, description: "Extracted text from the file" }
+ *                 pagesProcessed: { type: integer, description: "Number of pages processed" }
+ *                 totalChars: { type: integer, description: "Total number of characters extracted" }
+ *       400:
+ *         description: Invalid parameters (e.g., no file uploaded, unsupported file format, or file size exceeds limit)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error: { type: string, description: "Error message" }
+ *       500:
+ *         description: Internal server error during text extraction
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error: { type: string, description: "Error message" }
+ *     security:
+ *       - Bearer: []
+ * 
+ *     tags:
+ *       - Convertor
  */
 router.post("/file2Text", upload.single("file"), async (apiReq: Request, apiRes: Response) => {
   const auth = await getAuthInfo(apiReq, false);

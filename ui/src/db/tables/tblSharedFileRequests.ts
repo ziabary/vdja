@@ -12,6 +12,7 @@ export enum enuRequestStatus {
     New = "New",
     Downloaded = "Downloaded",
     Discarded = "Discarded",
+    Downloading = "Downloading",
 }
 
 export const cols = {
@@ -47,11 +48,11 @@ export default {
     tblName,
 
     /** Add a log entry */
-    list: async (): Promise<IntfSharedFileRequests[]> => {
+    list: async (isManager: boolean | undefined): Promise<IntfSharedFileRequests[]> => {
         const db = await getDB();
-
+        const returnCols = Object.values(cols).filter(c=>isManager || c!== cols.userOnBale)
         return await db(tblName)
-            .select('*')
+            .select([...returnCols, tblUser.cols.mobile])
             .leftJoin(tblUser.tblName, tblUser.cols.id, cols.by_usrID)
             .orderBy(cols.status, "asc")
             .orderBy(cols.createdAt, "asc")            

@@ -27,6 +27,63 @@ interface SummarizeRequestBody {
   force_persian?: boolean;
 }
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     SummarizeRequestBody:
+ *       type: object
+ *       properties:
+ *         request_id:
+ *           type: string
+ *           description: Unique identifier for the request (optional).
+ *         text:
+ *           type: string
+ *           description: The text to be summarized. (required)
+ *         max_words:
+ *           type: number
+ *           description: Maximum number of words in the summary. (optional, default: 100)
+ *         force_persian:
+ *           type: boolean
+ *           description: If set to true, the summary will be in Persian regardless of the input language. (optional, default: false)
+ *       required:
+ *         - text
+ * 
+ * /summarize:
+ *   post:
+ *     summary: Summarize a given text
+ *     description: This endpoint takes a text and returns a summarized version of it, with options to control the output language and length.
+ *     tags:
+ *       - Text Summarization
+ *     parameters:
+ *       - in: body
+ *         name: body
+ *         description: The request body for summarization
+ *         required: true
+ *         schema:
+ *           $ref: '#/components/schemas/SummarizeRequestBody'
+ *     responses:
+ *       200:
+ *         description: Summary was successfully generated.
+ *         content:
+ *           application/json:
+ *             example:
+ *               summary: "This is a summarized version of the text."
+ *       400:
+ *         description: Invalid request parameters (e.g., empty text).
+ *         content:
+ *           application/json:
+ *             example:
+ *               error: "متن خالی است"
+ *       500:
+ *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             example:
+ *               error: "An error occurred while processing the request."
+ *     security:
+ *       - BearerAuth: []
+ */
 router.post("/summarize", async (apiReq: Request<{}, {}, SummarizeRequestBody>, apiRes: Response) => {
   const auth = await getAuthInfo(apiReq, false);
 
@@ -113,6 +170,55 @@ router.post("/summarize", async (apiReq: Request<{}, {}, SummarizeRequestBody>, 
   }
 });
 
+/**
+ * @swagger
+ * /summarize/{reqId}/stop:
+ *   post:
+ *     summary: Stop a running summarization request
+ *     description: This endpoint allows a user to stop a currently running summarization request by providing the `reqId` of the request.
+ *     tags:
+ *       - Text Summarization
+ *     parameters:
+ *       - in: path
+ *         name: reqId
+ *         required: true
+ *         description: The unique request ID of the summarization request to be stopped.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: The request was successfully stopped.
+ *         content:
+ *           application/json:
+ *             example:
+ *               status: "stopped"
+ *       400:
+ *         description: Invalid or missing `reqId`.
+ *         content:
+ *           application/json:
+ *             example:
+ *               error: "Invalid request ID"
+ *       401:
+ *         description: Unauthorized access.
+ *         content:
+ *           application/json:
+ *             example:
+ *               error: "Authentication required"
+ *       403:
+ *         description: User does not have access to stop the request.
+ *         content:
+ *           application/json:
+ *             example:
+ *               error: "You are not allowed to stop this request"
+ *       500:
+ *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             example:
+ *               error: "An error occurred while stopping the request"
+ *     security:
+ *       - BearerAuth: []
+ */
 router.post("/summarize/:reqId/stop", async (apiReq: Request, apiRes: Response) => {
   const auth = await getAuthInfo(apiReq, false);
   const { reqId } = apiReq.params;
