@@ -136,15 +136,6 @@ Strict rules:
  *               properties:
  *                 error:
  *                   type: string
- *       400:
- *         description: Input size is too large
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
  *       500:
  *         description: Internal server error
  *         content:

@@ -24,8 +24,7 @@
         "db:rollback": "tsx ./db/knexfile.ts migrate:rollback",
         "db:reset": "tsx ./db/knexfile.ts migrate:rollback --all && tsx ./db/knexfile.ts migrate:latest && tsx ./db/knexfile.ts seed:run",
         "db:make": "tsx ./db/knexfile.ts migrate:make -x ts",
-        "db:check": "tsx ./db/check-tables.ts",
-        "generate-swagger": "ts-node ./cli/swagger.ts"
+        "db:check": "tsx ./db/check-tables.ts"
     },
     "keywords": [
         "LLM",

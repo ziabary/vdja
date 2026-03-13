@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>راهنمای برنامه‌نویسان - دستیار هوشمند فارسی</title>
+  <link rel="stylesheet" href="css/bootstrap/bootstrap.rtl.min.css" />
+  <link rel="stylesheet" href="fonts/IranSansX/fontiran.css" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="fonts/fontawesome/active/all.css" />
+
+  <style>
+    iframe{
+        width: 100%;
+        min-height: calc(100vh - 5em);
+    }
+    .main.container {
+        max-width: 100%;
+            margin-top: 4em;
+    }
+  </style>
+</head>
+
+<body>
+  <span id="loading">
+    <div class=marquee></div>
+  </span>
+
+    <!-- NAVBAR + MENU -->
+    <nav class="navbar shadow-sm" id="navbar">
+      <div class="container" style="max-width: 100%;">
+          <img src="/img/logo-light.png" alt="لوگو" class="bi-color logo" />
+
+          <span class="navbar-brand mx-auto h4 mb-0">راهنمای توسعه‌دهندگان</span>
+
+          <div class="left-side mx-2">
+              <i class="btn btn-sm fa fa-moon fa-lg btn" id=btnToggleDarkMode></i>
+              <div class="on-mobile" title="منو"><i class="btn btn-sm fa fa-lg fa-bars" id="btnMenu"></i></div>
+              <div class="on-desktop">
+                  <a href="/" class="btn btn-sm btn-outline-secondary" title="سایر خدمات">
+                      <i class="fa fa-boxes"></i> سایر خدمات
+                  </a>
+                  <button class="btn btn-sm btn-outline-secondary" title="خروج" id="backToLogin">
+                      <i class="fa fa-door-open"></i> خروج
+                  </button>
+                  <a href="/login?back=logs" class="btn btn-sm btn-primary" title="ورود به سامانه" id=btnLogin>
+                      <i class="fa fa-user"></i> ورود به سامانه
+                  </a>
+              </div>
+          </div>
+      </div>
+  </nav>
+  <div class="collapsed" id="menu">
+      <a href="/" class="btn btn-sm btn-outline-secondary" title="سایر خدمات">
+          <i class="fa fa-boxes"></i> سایر خدمات
+      </a>
+      <button class="btn btn-sm btn-outline-secondary" title="خروج" id="backToLogin">
+          <i class="fa fa-door-open"></i> خروج
+      </button>
+  </div>
+
+  <!-- CONTAINER -->
+  <div class="main container">
+    <iframe src="https://devdocs.targoman.ir/"></iframe>
+  </div>
+  <script src="js/vendors/bootstrap.bundle.min.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/auth.js"></script>
+  <script>let auth; setupAuth("devdocs", false).then(r => auth = r)</script>
+</body>
+
+</html>

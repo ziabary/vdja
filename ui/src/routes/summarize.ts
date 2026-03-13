@@ -42,10 +42,12 @@ interface SummarizeRequestBody {
  *           description: The text to be summarized. (required)
  *         max_words:
  *           type: number
- *           description: Maximum number of words in the summary. (optional, default: 100)
+ *           description: Maximum number of words in the summary. 
+ *           default: 100
  *         force_persian:
  *           type: boolean
- *           description: If set to true, the summary will be in Persian regardless of the input language. (optional, default: false)
+ *           description: If set to true, the summary will be in Persian regardless of the input language. (optional)
+ *           default: false
  *       required:
  *         - text
  * 

@@ -1,8 +1,7 @@
 import swaggerJSDoc from 'swagger-jsdoc';
-import configManager from './configManager';
 
 
-export default function genSwaggerSpec(outputFilePath: string) {
+export default function genSwaggerSpec() {
     const options = {
         definition: {
             openapi: '3.0.0',
@@ -13,7 +12,7 @@ export default function genSwaggerSpec(outputFilePath: string) {
             },
             servers: [
                 {
-                    url: `http://llm.targoman.ir/api/`,
+                    url: `https://llm.targoman.ir/api/`,
                     description: 'API Server',
                 },
             ],
@@ -21,12 +20,5 @@ export default function genSwaggerSpec(outputFilePath: string) {
         apis: ['./src/**/*.ts'], // Make sure this path is correct and includes your route files
     };
 
-    const swaggerSpec = swaggerJSDoc(options);
-    // const dir = path.dirname(outputFilePath);
-    // fs.mkdirSync(dir, { recursive: true });
-
-    // // Write the spec to a file
-    // fs.writeFileSync(outputFilePath, JSON.stringify(swaggerSpec, null, 2));
-
-    return swaggerSpec
+    return swaggerJSDoc(options);
 }

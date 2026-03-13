@@ -103,6 +103,9 @@ export async function generate(
         return true;
       }
 
+      if(chunk.startsWith("data: [REF]")) 
+        return true
+
       // Parse normal SSE data chunk
       if (chunk.startsWith("data: ")) {
         try {

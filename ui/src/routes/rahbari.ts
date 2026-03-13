@@ -5,7 +5,7 @@ import { date2Hijri, date2Jalali } from "../utils/i18n";
 
 const router = express.Router();
 
-export const RAHBARI_COLLECTION = "rahbari-special-collection-temp7"
+export const RAHBARI_COLLECTION = "rahbari-special-collection-temp8"
 export const RAHBARI_UID = 2
 
 /*

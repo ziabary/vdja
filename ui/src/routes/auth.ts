@@ -426,6 +426,8 @@ router.post("/auth/generateAccessToken", async (apiReq: Request, apiRes: Respons
   if (md5(user.usrID + '').substring(6) !== client_id)
       throw new exHttpUnauthorized("Invalid clientId or Secret")
   atDB.log.add(user.usrKey!, "login", "generateAccessToken", 0, 200)
+  if(!user.privs?.apiAccess)
+    throw new exHttpUnauthorized("You are ot allowed to use API")
   return await sendJWT(user, apiRes)
 })
 

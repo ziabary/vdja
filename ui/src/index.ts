@@ -10,6 +10,7 @@ import * as fs from 'fs'
 import { fileURLToPath } from 'url';
 import cookieParser from "cookie-parser";
 import * as swaggerUi from "swagger-ui-express";
+import { parse, format } from 'url';
 
 import configManager from './utils/configManager';
 import db from './db/index';
@@ -90,6 +91,22 @@ async function init() {
     next();
   });
  
+  // Middleware to normalize the URL path
+app.use((req, res, next) => {
+ /* const baseUrl = `${req.protocol}://${req.hostname}`
+  const fullUrl = new URL(req.url, baseUrl).toString();
+
+  console.log(fullUrl)
+
+  const urlObj = new URL(fullUrl);
+  let normalizedPath = path.normalize(urlObj.pathname);
+  if(normalizedPath.endsWith("/")) normalizedPath = normalizedPath.substring(0, normalizedPath.length - 1)
+  const newUrl = new URL(normalizedPath, baseUrl).toString();
+
+  console.log(newUrl)
+  req.url = newUrl;*/
+  next();
+});
 
   ///////////////////////////////////////////////////////////////////////
   // Routes
@@ -111,8 +128,7 @@ async function init() {
 
   app.use("/api", activeRoutes)
 
-  const openAPIPath = path.join(__dirname, "dist", "open-api.json")
-  const swaggerDocument =  genSwaggerSpec(openAPIPath)
+  const swaggerDocument =  genSwaggerSpec()
 
   // Serve the Swagger UI
   app.use('/api-swagger', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
@@ -133,8 +149,8 @@ async function init() {
     res.status(status).json({ error: { status, message: err.message || "Internal Server Error" } });
   });
 
-  app.use((_: Request, res: Response) => {
-    res.status(404).send('404: Not found');
+  app.use((_req: Request, res: Response) => {
+    res.status(404).send(`404: Not found ${_req.url}`);
   });
 
   app.listen(configs.app.listen.port, configs.app.listen.ip, () => {

@@ -18,6 +18,7 @@ export interface IntfPrivileges {
   isAdmin?: boolean
   isVerified?: boolean
   manageShares?: boolean
+  apiAccess?: boolean
 }
 
 export interface IntfAuth {

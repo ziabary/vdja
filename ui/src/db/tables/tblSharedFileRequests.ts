@@ -55,7 +55,8 @@ export default {
             .select([...returnCols, tblUser.cols.mobile])
             .leftJoin(tblUser.tblName, tblUser.cols.id, cols.by_usrID)
             .orderBy(cols.status, "asc")
-            .orderBy(cols.createdAt, "asc")            
+            .orderBy(cols.createdAt, "desc")
+            .limit(100)           
     },
 
     count: async (userId:number) => {
@@ -76,7 +77,7 @@ export default {
     ): Promise<void> => {
         const db = await getDB();
 
-        const res = await db(tblName).select('*').where(cols.link, link)
+        const res = await db(tblName).select('*').where(cols.link, link).first()
         if(res) return
         await db(tblName).insert({
             [cols.by_usrID]: userId,

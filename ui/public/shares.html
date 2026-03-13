@@ -58,11 +58,19 @@
       transition: all 0.5s;
     }
 
+    .clear-icon {
+      cursor: pointer;
+    }
+
     @media (max-width: 767.98px) {
 
       .list-group,
       .list-group-item {
         margin-right: 0 !important;
+      }
+
+      .inpSearchContainer {
+        width: 100% !important;
       }
     }
   </style>
@@ -111,15 +119,6 @@
     <p>این فایل‌ها در شرایط جنگ تحمیلی رژیم صهیونستی و آمریکا، توسط یک گروه جهادی در پیام‌رسان بله
       گردآوری شده و برای استفاده پژوهش‌گران و متخصصان در اختیار آن‌ها قرار گرفته است.
     </p>
-    <p class=hidden>ℹ️ در صورتی که فایل درخواستی شما در این لیست وجود ندارد در <a
-        href="https://ble.ir/join/5ozFsJ74Tr">گروه
-        مربوطه</a>
-      درخواست کنید</p>
-    <p>⚠️ به جهت جلوگیری از ایجاد ترافیک بیش از اندازه نیاز است تا ابتدا با
-      <a href="/login.html?back=shares&mustVerified=true">پیام‌رسان بله احراز هویت شوید</a>
-    </p>
-    <p>⚠️ لینک شروع به دانلود فایل برای ۱۰ دقیقه معتبر است و می‌توانید از ابزارهای تسریع دانلود هم استفاده کنید
-    </p>
 
     <ul class="nav nav-tabs" id="myTab" role="tablist">
       <li class="nav-item" role="presentation">
@@ -138,6 +137,12 @@
 
     <div class="tab-content">
       <div class="tab-pane fade show active" id="files" role="tabpanel" aria-labelledby="rag-tab">
+        <div class="inpSearchContainer input-group w-50 mt-2 mb-2" style="margin-right: auto;">
+          <span class="input-group-text clear-icon hidden"><i class="fa fa-times"></i></span>
+          <input type="text" class="ltr form-control" placeholder="...جستجوی نرم‌افزار یا بسته" aria-label="Search"
+            id="inpSearch">
+          <span class="input-group-text"><i class="fa fa-search"></i></span>
+        </div>
         <div class="border p-3 rounded">
           <ul class="list-group" id="fileTree">
           </ul>
@@ -160,6 +165,21 @@
           </div>
         </div>
         <button class="btn btn-primary" id="btnReqDownload">درخواست بسته، نرم‌افزار یا دادگان جدید</button>
+
+        <div class="card-footer bg-transparent border-0 pt-0">
+          <div class="alert alert-info small mt-4" role="alert">
+            <p class="mb-3"><span class="me-2">ℹ️</span> در صورتی که فایل درخواستی شما در این لیست وجود ندارد می‌توانید
+              دانلود آن را درخواست کنید</p>
+            <p class="mb-3"><span class="me-2">⚠️</span> به جهت جلوگیری از ایجاد ترافیک بیش از اندازه نیاز است تا ابتدا
+              با
+              <a href="/login.html?back=shares&mustVerified=true">پیام‌رسان بله احراز هویت شوید</a>
+            </p>
+            <p class="mb-3"><span class="me-2">⚠️</span> لینک شروع به دانلود فایل برای ۱۰ دقیقه معتبر است و می‌توانید از
+              ابزارهای تسریع دانلود (مثل IDM) هم استفاده کنید.</p>
+            <p class="mb-3"><span class="me-2">⚠️</span> دانلود فایل‌ها به صورت همزمان دارای محدودیت در تعداد می‌باشد
+            </p>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -173,22 +193,28 @@
                 <li class="ltr"><a
                     href="https://www.arvancloud.ir/dev/linux-repository">https://www.arvancloud.ir/dev/linux-repository</a>
                 </li>
-                <li class="ltr"><a target=_blank href="https://runflare.com/mirrors/">https://runflare.com/mirrors/</a></li>
-                <li class="ltr"><a target=_blank href="https://mirrors.hyperclouds.ir/">https://mirrors.hyperclouds.ir/</a></li>
+                <li class="ltr"><a target=_blank href="https://runflare.com/mirrors/">https://runflare.com/mirrors/</a>
+                </li>
+                <li class="ltr"><a target=_blank
+                    href="https://mirrors.hyperclouds.ir/">https://mirrors.hyperclouds.ir/</a></li>
               </ul>
             </li>
             <li>
               <h4>ریپازیتوری داکر</h4>
               <ul class="me-5">
-                <li class="ltr"><a target=_blank href="https://docker.arvancloud.ir/">https://docker.arvancloud.ir</a></li>
-                <li class="ltr"><a target=_blank href="https://mirrors.hyperclouds.ir/">https://mirrors.hyperclouds.ir/</a></li>
+                <li class="ltr"><a target=_blank href="https://docker.arvancloud.ir/">https://docker.arvancloud.ir</a>
+                </li>
+                <li class="ltr"><a target=_blank
+                    href="https://mirrors.hyperclouds.ir/">https://mirrors.hyperclouds.ir/</a></li>
               </ul>
             </li>
             <li>
               <h4>بسته‌های نرم‌افزاری</h4>
               <ul class="me-5">
-                <li class="ltr"><a target=_blank href="https://runflare.com/mirrors/">https://runflare.com/mirrors/</a></li>
-                <li class="ltr"><a target=_blank href="https://mirrors.hyperclouds.ir/">https://mirrors.hyperclouds.ir/</a></li>
+                <li class="ltr"><a target=_blank href="https://runflare.com/mirrors/">https://runflare.com/mirrors/</a>
+                </li>
+                <li class="ltr"><a target=_blank
+                    href="https://mirrors.hyperclouds.ir/">https://mirrors.hyperclouds.ir/</a></li>
               </ul>
             </li>
             <li>
@@ -213,8 +239,6 @@
       </div>
     </div>
 
-
-
   </div>
   <script src="js/vendors/bootstrap.bundle.min.js"></script>
   <script src="js/common.js"></script>
@@ -230,6 +254,56 @@
       btnReqDownload.classList.add("hidden")
       secReqDownload.classList.remove("collapsed")
     }
+
+    let searchTimeout = undefined
+    const inpSearch = document.getElementById("inpSearch")
+    const btnClear = document.querySelector(".inpSearchContainer .clear-icon")
+    function search(word) {
+      setClass(btnClear, "hidden", !word.length)
+      if (searchTimeout) return
+      searchTimeout = setTimeout(() => {
+        searchTimeout = null
+        const allDirs = document.querySelectorAll(`[item-type="dir"]`)
+        const collapse = (el, status) => {
+          setClass(el.nextElementSibling, "d-none", status)
+          setClass(el.firstElementChild.firstElementChild, 'fa-plus', status)
+          setClass(el.firstElementChild.firstElementChild, 'fa-minus', !status)
+        }
+        allDirs.forEach(el => collapse(el, true))
+        document.querySelectorAll("[file-name]").forEach(
+          el => setClass(el.parentElement?.parentElement?.parentElement, "hidden", false)
+        )
+
+        if (!word) return
+
+
+        const openParent = (el) => {
+          if (el.classList?.contains('tab-pane')) return
+          el = el.parentElement?.parentElement?.parentElement
+          if (el && el.previousElementSibling?.getAttribute('item-type') !== "dir")
+            el = el.parentElement?.parentElement
+
+          if (el && el.previousElementSibling?.getAttribute('item-type') === "dir") {
+            collapse(el.previousElementSibling, false)
+            openParent(el)
+          }
+        }
+        document.querySelectorAll("[file-name]").forEach(el => {
+          //console.log(el.innerText, word, el.innerText.includes(word))
+          if (el.innerText.includes(word))
+            openParent(el)
+          else
+            setClass(el.parentElement?.parentElement?.parentElement, "hidden")
+        })
+      }, 100)
+    }
+    btnClear.onclick = ()=>{inpSearch.value = "";search("")}
+    inpSearch.onkeydown = ev => {
+      if (ev.key === "Backspace")
+        search((ev.target.value && ev.target.value.substr(0, ev.target.value.length - 1))) || ""
+    }
+    inpSearch.onkeypress = ev => search(ev.target.value + ev.key)
+    inpSearch.oninput = ev => search(ev.target.value)
 
     async function isVerified() {
       if (!auth.info()?.privs.isVerified) {
@@ -337,7 +411,10 @@
           });
 
           itemContainer.appendChild(expandIcon);
-        }
+          liHeader.setAttribute("item-type", "dir")
+        } else
+          name.setAttribute("file-name", item.name)
+
         itemContainer.appendChild(icon);
         itemContainer.appendChild(name);
         liHeader.appendChild(itemContainer)
@@ -453,10 +530,10 @@
           <div class="d-flex gap-2 flex-wrap mb-1">
             <span><label>تاریخ:</label> ${(new Date(item.sfrCreatedAt)).toLocaleString('fa-IR', { timeZone: "GMT" })}</span>
             <span>| <label>وضعیت: </label>${status2Html(item.sfrStatus)}</span>
-            ${auth.info()?.privs?.manageShares ? `<span class=fa-num>| <label>تلفن یا شناسه:</label> <span class=ltr>${item.sfrUserOnBale || ('0' + item.usrMobile.substr(2))}</span></span>` :``}
-            ${auth.info()?.privs?.manageShares && ["New", "Downloading"].includes(item.sfrStatus) ? `<button class="btn btn-outline-danger btn-sm" item-id="${item.sfrID}">حذف درخواست</button>`:``}
-            ${auth.info()?.privs?.manageShares && ["New", "Discarded"].includes(item.sfrStatus) ? `<button class="btn btn-outline-info btn-sm" item-id="${item.sfrID}">در حال دانلود</button>`:``}
-            ${auth.info()?.privs?.manageShares && ["New", "Downloading", "Discarded"].includes(item.sfrStatus) ? `<button class="btn btn-outline-success btn-sm" item-id="${item.sfrID}">دریافت و ذخیره شد</button>`:``}
+            ${auth.info()?.privs?.manageShares ? `<span class=fa-num>| <label>تلفن یا شناسه:</label> <span class=ltr>${item.sfrUserOnBale || ('0' + item.usrMobile.substr(2))}</span></span>` : ``}
+            ${auth.info()?.privs?.manageShares && ["New", "Downloading"].includes(item.sfrStatus) ? `<button class="btn btn-outline-danger btn-sm" item-id="${item.sfrID}">حذف درخواست</button>` : ``}
+            ${auth.info()?.privs?.manageShares && ["New", "Discarded"].includes(item.sfrStatus) ? `<button class="btn btn-outline-info btn-sm" item-id="${item.sfrID}">در حال دانلود</button>` : ``}
+            ${auth.info()?.privs?.manageShares && ["New", "Downloading", "Discarded"].includes(item.sfrStatus) ? `<button class="btn btn-outline-success btn-sm" item-id="${item.sfrID}">دریافت و ذخیره شد</button>` : ``}
           </div>
           <div>
           <div><label>موضوع:</label> ${item.sfrCategory}</div>
@@ -474,9 +551,10 @@
           const res = await auth.apiFetch(`/api/shares/requests/set-status`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id: itemId, 
+            body: JSON.stringify({
+              id: itemId,
               status: el.className.includes("danger") ? "Discarded" : el.className.includes("info") ? "Downloading" : "Downloaded"
-             })
+            })
           });
           const data = await res.json()
           if (!res.ok || data?.error) return showError(data.error.message)
