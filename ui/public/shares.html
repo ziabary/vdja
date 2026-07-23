@@ -334,7 +334,8 @@
       });
       const data = await res.json()
       if (!res.ok || data?.error) return showError(data.error.message)
-      toast("درخواست شما ثبت شد", "success");
+      toast("درخواست شما ثبت شد. پس از دانلود به شما اطلاع داده خواهد شد", "success");
+      document.getElementById('requests-tab').click()
       btnCancelReq.click()
       listRequests()
     }

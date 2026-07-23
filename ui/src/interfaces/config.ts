@@ -69,24 +69,24 @@ export enum enuLLMServices {
   RAG = "rag",
   Translate = "translate",
   Summarize = "summarize",
-  Think = "think",
+  Thinker = "thinker",
   Rahbari = "rahbari"
 }
 
 export interface IntfConfigs {
   app: IntfAppConfig; 
   log: IntfAppLog;
-  OIDC: {
+  OIDC: { 
     active: boolean
     issuer: string
     clientId: string
     clientSecret: string
     scope: string,
-    callbackUri: string 
+    callbackUri: string  
   };
   baleOTP: {
     gwID: string,
-    gwSecret: string
+    gwSecret: string 
   }
   llmServers: {
     [key in enuLLMServices]: IntfLLMServerConfig

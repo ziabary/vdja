@@ -11,7 +11,7 @@ import { startNewChat, generate, stopRequest, sendStreamHeadersIfNeeded, type In
 import { getEmbedding } from './embedService'
 import { getDB } from '../db/index';
 import { toMegaByte, stripText, parseQueryToNumber, parseQueryToString } from "../utils/common";
-import vectorDB, { approximateTokenCount } from "./vectorDB";
+import vectorDB, { approximateTokenCount } from "./vectorDB-old";
 import file2DB from "./file2TxtService";
 import logger from "../utils/logger"
 import { date2Hijri, date2Jalali, normalizePersianText } from "../utils/i18n"
@@ -718,7 +718,7 @@ export default function ragService(
         let currMessages: IntfLLMMessage[] = [
           { role: enuRoles.system, content: systemPrompt },
           ...filteredHistory,
-          { role: enuRoles.user, content: isSummarizing ? SUMMARIZE_PROMPT : `${serviceUserPromptPrefix || ""}${DEFAULT_PROMT_PREFIX}${api_question.trim()}` }
+          { role: enuRoles.user, content: isSummarizing ? SUMMARIZE_PROMPT : `${serviceUserPromptPrefix || DEFAULT_PROMT_PREFIX}${api_question.trim()}` }
         ];
         const fullMessageTokens = countMessageTokens(currMessages)
         if (fullMessageTokens > (configManager.active().llmServers[service].maxTokens || Infinity)) {

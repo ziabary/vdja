@@ -387,22 +387,21 @@ function normalizePhone(mobile: string) {
  *   post:
  *     summary: Generate a new access token (JWT) for a client
  *     description: This route is used to generate a new access token (JWT) for a client by providing a `client_id` and a `secret`. The system validates the `client_id` and `secret` against a user in the database. If valid, a new JWT is issued for the user.
- *     parameters:
- *       - in: body
- *         name: body
- *         required: true
- *         description: JSON object containing the `client_id` and `secret` for the client
- *         schema:
- *           type: object
- *           properties:
- *             client_id:
- *               type: string
- *               description: A unique identifier for the client
- *               example: "1234567890"
- *             secret:
- *               type: string
- *               description: A shared secret key for the client
- *               example: "s3cr3tK3yF0rC13nt"
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               client_id:
+ *                 type: string
+ *                 description: A unique identifier for the client
+ *                 example: "1234567890"
+ *               secret:
+ *                 type: string
+ *                 description: A shared secret key for the client
+ *                 example: "s3cr3tK3yF0rC13nt" 
  *     responses:
  *       200:
  *         description: A new access token (JWT) is sent in the response
@@ -421,13 +420,13 @@ function normalizePhone(mobile: string) {
  */
 router.post("/auth/generateAccessToken", async (apiReq: Request, apiRes: Response) => {
   const { secret, client_id } = apiReq.body
-  const user : Partial<IntfUser> = await atDB.user.getDigesting(secret, false, false)
+  const user : Partial<IntfUser> = await atDB.user.getDigesting(secret, false, true)
   if (!user) throw new exHttpUnauthorized("Invalid clientID or Secret")
-  if (md5(user.usrID + '').substring(6) !== client_id)
+  if (md5(user.usrID + '').substring(0,6) !== client_id)
       throw new exHttpUnauthorized("Invalid clientId or Secret")
   atDB.log.add(user.usrKey!, "login", "generateAccessToken", 0, 200)
   if(!user.privs?.apiAccess)
-    throw new exHttpUnauthorized("You are ot allowed to use API")
+    throw new exHttpUnauthorized("You are ot allowed to use API" + JSON.stringify(user))
   return await sendJWT(user, apiRes)
 })
 

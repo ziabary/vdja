@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>دستیار هوشمند فارسی</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css" />
+    <link rel="stylesheet" href="fonts/IranSansX/fontiran.css" />
+    <style>
+      body {
+        font-family: "IRANSansX", sans-serif;
+        background: #f8f9fa;
+      }
+      .logo {
+        width: 120px;
+      }
+      .card-icon {
+        font-size: 4rem;
+        color: #0d6efd;
+      }
+      .card {
+        transition: transform 0.3s;
+      }
+      .card:hover {
+        transform: translateY(-10px);
+      }
+      h1 {
+        font-weight: 900;
+      }
+    </style>
+  </head>
+  <body class="bg-light">
+    <div class="container py-5">
+      <div class="text-end mb-5">
+        <img src="/img/defard.png" alt="لوگو" class="logo" />
+      </div>
+      <h1 class="text-center mb-5 text-primary">دستیار هوشمند فارسی</h1>
+
+      <div class="row g-4 justify-content-center">
+        <div class="col-md-4">
+          <a href="/translate.html" class="text-decoration-none">
+            <div class="card text-center shadow-sm h-100 p-4">
+              <div class="card-icon mb-3">🌐</div>
+              <h4>ترجمه</h4>
+              <p class="text-muted">ترجمه متن به/از فارسی با دقت بالا</p>
+            </div>
+          </a>
+        </div>
+
+        <div class="col-md-4">
+          <a href="/summarize.html" class="text-decoration-none">
+            <div class="card text-center shadow-sm h-100 p-4">
+              <div class="card-icon mb-3">📝</div>
+              <h4>خلاصه‌سازی</h4>
+              <p class="text-muted">خلاصه متون و فایل‌ها با دقت بالا</p>
+            </div>
+          </a>
+        </div>
+
+        <div class="col-md-4">
+          <a href="/login.html" class="text-decoration-none">
+            <div class="card text-center shadow-sm h-100 p-4">
+              <div class="card-icon mb-3">📚</div>
+              <h4>چت با اسناد</h4>
+              <p class="text-muted">آپلود فایل‌های شخصی و پرس‌وجو به فارسی</p>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <script src="js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

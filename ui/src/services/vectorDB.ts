@@ -9,6 +9,7 @@ import type { IntfChunkPayload } from "../interfaces/llm";
 import type { IntfExHttp } from "../interfaces/exHttp";
 import type { IntfChunk } from "../interfaces/file";
 import { RAG_CRAWLED_RSS_NEWS } from "./ragService";
+import { normalizePersianText } from "../utils/i18n";
 
 
 type FieldCondition = Schemas["FieldCondition"];
@@ -61,6 +62,109 @@ export function approximateTokenCount(text: string) {
   );
 
   return est + 4;
+}
+
+function extractPersianEntities(query: string): string[] {
+  if (!query) return [];
+
+  const normalized = query
+    .replace(/[؟?]/g, " ")
+    .replace(/[،,:؛]/g, " ")
+    .trim();
+
+  const tokens = normalized.split(/\s+/).filter(Boolean);
+
+  const stopWords = new Set([
+    "چه", "چرا", "کی", "کجا", "چگونه", "آیا",
+    "نظر", "دیدگاه", "درباره", "است", "بود",
+    "شد", "می", "را", "با", "که", "در", "از", "به", "برای"
+  ]);
+
+  const entities: string[] = [];
+
+  for (let i = 0; i < tokens.length; i++) {
+    const t = tokens[i];
+
+    if (!t) continue;
+    if (t.length < 3) continue;
+    if (stopWords.has(t)) continue;
+
+    if (/^[\u0600-\u06FF]{3,20}$/.test(t)) {
+      entities.push(t);
+    }
+
+    // detect two-token names
+    const next = tokens[i + 1];
+    if (next && /^[\u0600-\u06FF]{3,20}$/.test(next)) {
+      entities.push(`${t} ${next}`);
+    }
+  }
+
+  return [...new Set(entities)].slice(0, 5);
+}
+
+function extractDocumentEntities(text: string): string[] {
+  if (!text) return [];
+
+  const tokens = text
+    .replace(/[،,:؛.!?]/g, " ")
+    .split(/\s+/)
+    .filter(Boolean);
+
+  const entities = new Set<string>();
+
+  for (let i = 0; i < tokens.length; i++) {
+    const w1 = tokens[i];
+    const w2 = tokens[i + 1];
+
+    if (!w1) continue;
+
+    // Persian name
+    if (/^[\u0600-\u06FF]{3,20}$/.test(w1)) {
+      entities.add(w1);
+    }
+
+    // English name
+    if (/^[A-Z][a-z]{2,}$/.test(w1)) {
+      entities.add(w1);
+    }
+
+    // Two-word Persian name
+    if (
+      w1 &&
+      w2 &&
+      /^[\u0600-\u06FF]{3,20}$/.test(w1) &&
+      /^[\u0600-\u06FF]{3,20}$/.test(w2)
+    ) {
+      entities.add(`${w1} ${w2}`);
+    }
+
+    // Two-word English name
+    if (
+      w1 &&
+      w2 &&
+      /^[A-Z][a-z]+$/.test(w1) &&
+      /^[A-Z][a-z]+$/.test(w2)
+    ) {
+      entities.add(`${w1} ${w2}`);
+    }
+  }
+
+  return [...entities].slice(0, 20);
+}
+
+function entityScore(text: string, entities: string[]): number {
+  if (!entities.length) return 0;
+
+  text = normalizePersianText(text)
+  let hits = 0;
+
+  for (const e of entities) {
+    if (text.includes(normalizePersianText(e))) 
+      hits++;
+  }
+
+  return hits / entities.length;
 }
 
 export default function vectorDB() {
@@ -118,6 +222,7 @@ export default function vectorDB() {
         title: chunk.meta?.title,
         file_id: fileKey,
         file_name: fileName,
+        entities: extractDocumentEntities(chunk.text!)
       }
 
       if (approximateTokenCount(chunkText) > configManager.active().embedding.maxTokens)
@@ -204,19 +309,24 @@ export default function vectorDB() {
   async function findChunks(
     collectionKey: string,
     embeddedQuery: number[] | Float32Array,
+    queryText: string,
     fileIds: string[] | undefined = undefined,
     limit: number = 8,
     newerThanDays: number | undefined = undefined,
-    minSimilarity: number = 0.8
+    minSimilarity: number = 0.75
   ): Promise<IntfChunkPayload[]> {
-    // Early return if invalid
-
     if (!collectionKey
       || !embeddedQuery
       || embeddedQuery.length === 0
       || !(await colExists(collectionKey))
     )
       return [];
+
+    const entities = extractPersianEntities(queryText);
+
+    if (configManager.active().log.isDebugging)
+      logger.deepDebug({ queryText, entities });
+
 
     const mustConditions: FieldCondition[] = [];
     if (fileIds && fileIds.length > 0) {
@@ -241,7 +351,7 @@ export default function vectorDB() {
       const queryBody = {
         query: Array.from(embeddedQuery),
         filter,
-        limit: isNews ? 100 : limit * 2,
+        limit: isNews ? 120 : 40,
         order_by: {
           key: "chunk_time",
           direction: "desc"   // newest first
@@ -268,9 +378,43 @@ export default function vectorDB() {
       const { result } = await response.json();
       const points = result.points ?? [];
 
-      const filteredChunks =
-        weightedSort(points.filter((r: QdrantSearchPoint) => r.score > minSimilarity))
-          .slice(0, limit)
+      const candidates = points
+        .filter((r: QdrantSearchPoint) => r.score > minSimilarity)
+        .map((r: QdrantSearchPoint) => {
+          const text = (r.payload?.text as string) || "";
+          const docEntities = (r.payload?.entities as string[]) || [];
+
+
+          const eScore = docEntities.length
+            ? entityScore(docEntities.join(" "), entities)
+            : entityScore(text, entities);
+
+          return {
+            ...r,
+            entityScore: eScore,
+            combinedScore: (r.score * 0.7) + (eScore * 0.3)
+          };
+        });
+
+      // HARD ENTITY FILTER
+      let entityFiltered = candidates;
+
+      if (entities.length > 0) {
+        entityFiltered = candidates.filter((c:any) => c.entityScore > 0 || c.score > 0.85);
+
+        // if nothing matched entities -> return empty
+        if (entityFiltered.length === 0) {
+          if (configManager.active().log.isDebugging)
+            logger.deepDebug({
+              reason: "entity constraint removed all candidates",
+              entities
+            });
+
+          return [];
+        }
+      }
+
+      const filteredChunks = weightedSort(entityFiltered).slice(0, limit);
 
       if (configManager.active().log.isDebugging) {
         logger.deepDebug({
@@ -326,12 +470,12 @@ export default function vectorDB() {
 
       const pointIds: string[] = points.map((p: QRecord) => p.id + "");
 
-      if(configManager.active().log.isDebugging)
-        logger.deepDebug({removing: {collectionKey, fileId, len: pointIds.length, next_page_offset}})
+      if (configManager.active().log.isDebugging)
+        logger.deepDebug({ removing: { collectionKey, fileId, len: pointIds.length, next_page_offset } })
 
-      if (pointIds.length > 0) 
+      if (pointIds.length > 0)
         await VDBClient.delete(collectionKey, { points: pointIds });
-      
+
 
       removed += pointIds.length;
       offset = next_page_offset != null ? String(next_page_offset) : null;

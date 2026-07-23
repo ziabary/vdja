@@ -12,6 +12,10 @@ export default function genSwaggerSpec() {
             },
             servers: [
                 {
+                    url: `https://llm-dev.targoman.ir/api/`,
+                    description: 'API Server for development',
+                },
+                {
                     url: `https://llm.targoman.ir/api/`,
                     description: 'API Server',
                 },

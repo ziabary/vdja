@@ -24,7 +24,7 @@ import summarize from './routes/summarize';
 import fileToText from './routes/file2Text';
 import auth from './routes/auth';
 import rag from './routes/rag';
-import think from './routes/think';
+import thinker from './routes/thinker';
 import rahbari from './routes/rahbari';
 import stats from './routes/stats';
 import admin from './routes/admin';
@@ -46,7 +46,7 @@ async function init() {
   const configs = configManager.active();
   const app = express();
   const corsOptions = {
-    origin: configs.app.corsOrigin || "http://localhost:3000",
+    origin: configs.app.corsOrigin || "llm-dev.targoman.ir" || "http://localhost:3000",
     credentials: true,
     optionsSuccessStatus: 200,
   };
@@ -118,7 +118,7 @@ app.use((req, res, next) => {
     fileToText,
     auth,
     rag,
-    think,
+    thinker,
     rahbari,
     stats,
     admin,

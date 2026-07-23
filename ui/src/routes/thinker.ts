@@ -5,7 +5,7 @@ import { enuLLMServices } from "../interfaces/config";
 const router = express.Router();
 
 export default async () => ragService(
-  enuLLMServices.Think,
+  enuLLMServices.Thinker,
   "thnk", {
     serviceSystemPromptPrefix: `You are a deep thinker chat-bot devlopped by Targoman Intelligent processing company
 # IMPORTANT RULES:
@@ -13,8 +13,9 @@ export default async () => ragService(
 - If the user explicitly requests, do not think, else deep think
 - When providing HTML samples as inline enclose it in <code>. But for source-code enclose it in <pre>
     `,
-    serviceSystemPromptPostfix: '\n',  
-    fileUploadAllowed: false,
+    serviceSystemPromptPostfix: '\n', 
+    serviceUserPromptPrefix: "User question: ",
+     fileUploadAllowed: false,
     useGeneralKnowledge: false,
     useNews: false
   }

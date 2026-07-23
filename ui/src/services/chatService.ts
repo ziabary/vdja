@@ -358,6 +358,8 @@ async function processChatStream(
       if (done) {
         if (onDone && (await onDone(fullMarkdown, cancelled))) return;
 
+        console.log({ done, value, cancelled })
+
         sendStreamHeadersIfNeeded(apiRes);
         if (cancelled)
           apiRes.write(`data: [CANCELLED:${requestId}]\n\n`);
