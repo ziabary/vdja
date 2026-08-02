@@ -69,8 +69,7 @@
         خروج از
         سامانه</button>
       <div class="mt-3">
-        <small>کلیه حقوق برای <a target="blank" href="https://tip.co.ir">شرکت پردازش هوشمند
-            ترگمان</a> محفوظ است</small>
+        <small>کلیه حقوق برای <a target="blank" href="https://tip.co.ir">شرکت فناوران پارسیان</a> محفوظ است</small>
       </div>
     </div>
   </div>
@@ -78,7 +77,7 @@
   <!-- Main Chat -->
   <div class="main-chat">
     <div class="chat-header d-flex justify-content-between align-items-center mb-3">
-      <h4 id="lblChatTitle" class="clickable-title" style="cursor: pointer; display: inline-block">چت عمومی با ترگمان
+      <h4 id="lblChatTitle" class="clickable-title" style="cursor: pointer; display: inline-block">چت عمومی با فاپی‌چت
       </h4>
       <div class="on-desktop left-side">
         <i class="fa fa-moon fa-lg btn" id=btnToggleDarkMode></i>
@@ -92,7 +91,7 @@
     <div id="chatContainer" class="chat-container border p-3 rounded" manual-scroll-allowed></div>
     <div class="message-input">
       <div class="row mb-5 text-center" id="chat-banner">
-        با ترگمان می‌تونی راجع به هرچی حرف بزنی.<br />حتی می‌تونی فایل‌های خودت رو آپلود کنی و ازشون اطلاعات بگیری!
+        با فاپی‌چت می‌تونی راجع به هرچی حرف بزنی.<br />حتی می‌تونی فایل‌های خودت رو آپلود کنی و ازشون اطلاعات بگیری!
       </div>
       <div class="input-group mt-3 w-100">
         <textarea type="text" id="messageInput" class="form-control"
@@ -170,7 +169,7 @@
   <script src="js/rag.js"></script>
 
   <script>
-    if (!localStorage.getItem("tgmn-banner-shown")) document.querySelector('.banner').classList.remove('hidden')
+    //if (!localStorage.getItem("tgmn-banner-shown")) document.querySelector('.banner').classList.remove('hidden')
 
     const page = {
       serviceName: "rag",
@@ -199,37 +198,26 @@
       "امروز چه روزیه؟",
       "این فایلی که بهت دادم در مورد چیه؟",
       "یه کد بنویس به زبان پایتون که چاپ کنه سلام",
-      "می‌تونی یه جوک بگی؟",
       "تو به کدوم هوش مصنوعی وصلی؟",
-      "تو به کجا وصلی؟ چجوری کار میکنی؟ چقدر اشتراک بهم میدی؟",
       "این فایل رو برام خلاصه می‌کنی؟",
-      "می تونی این تمرینا رو حل کنی؟",
       "مدل زبانیت چیه؟",
       "تفاوت موشک بالستیک و کروز",
       "دستور پخت قرمه‌سبزی",
       "عوامل خطر ابتلا به گرفتگی عروق مغز کدامند؟",
       "فلج همی پلژی چیست؟",
       "علایم اصلی سکته مغزی",
-      "الان که اینترنت قطعه چه جوری جستجو کنم؟",
-      "کلان‌پیکره متنی چیه دیگه!",
       "علایم رایج دردهای عصبی",
-      "بی‌خوابی زده به سرم چه کار کنم؟",
       "صرع چیه؟",
       "چیزی در مورد اسکیزوفرنی می‌دونی؟",
       "از کجا بفهمم وسواس گرفتم؟ ",
       "سرماخوردگی همون کروناست؟",
-      "فرق ویروس زنده با ویروس کامپیوتری",
       "فوبیا چیه؟",
       "اضطراب دارم",
       "یوگا بلدی؟",
-      "کجاها رو بمب زدن؟",
       "موشک خرمشهر چیه؟",
       "ایران چه موشک‌هایی داره؟",
-      "پهلوی کی میاد شاه بشه",
       "آب حیات دیگه چیه؟!",
       "این خیار غبن که می‌گن چه؟",
-      "مراسم تشییع رهبر شهید کی برگزار می‌شه؟",
-      "معنی ترگمان چیه؟"
     ]
 
     /*********************************/
@@ -237,7 +225,7 @@
       if (filesEnabled)
         page.chatBanner.innerHTML = "حالا می‌تونی با استفاده از فایل‌هایی که آپلود کردی چت کنی و ازشون اطلاعات در بیاری<br/>اگه می‌خوای به چت عمومی برگردی کافیه فایل‌ها رو پاک کنی یا اون‌ها  رو از توی پنل غیرفعال کنی"
       else
-        page.chatBanner.innerHTML = "با ترگمان می‌تونی راجع به هرچی حرف بزنی.<br/> حتی می‌تونی فایل‌های خودت رو آپلود کنی و ازشون اطلاعات بگیری!"
+        page.chatBanner.innerHTML = "با فاپی‌چت می‌تونی راجع به هرچی حرف بزنی.<br/> حتی می‌تونی فایل‌های خودت رو آپلود کنی و ازشون اطلاعات بگیری!"
 
       page.chatHelper.innerHTML = ""
       if (filesEnabled) {
@@ -253,7 +241,7 @@
       updateQuestions,
       defaultTitle: {
         onFile: "چت با اسناد بارگذاری‌شده",
-        noFile: "چت عمومی با ترگمان"
+        noFile: "چت عمومی با فاپی‌چت"
       },
       generateQuestions: true
     })

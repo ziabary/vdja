@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="528mm"
+   height="529.41803mm"
+   viewBox="0 0 528 529.41803"
+   version="1.1"
+   id="svg8"
+   inkscape:export-filename="/home/tg/Projects/ztai/fa_IR/frontend/static/ztai/images/brand.ahoura/just-logo-white.png"
+   inkscape:export-xdpi="25.379944"
+   inkscape:export-ydpi="25.379944"
+   inkscape:version="1.0.1 (3bc2e813f5, 2020-09-07)"
+   sodipodi:docname="ahura-justLogo.svg">
+  <defs
+     id="defs2">
+    <clipPath
+       id="clip0_152_9654">
+      <rect
+         width="160"
+         height="62.176201"
+         fill="#ffffff"
+         id="rect22"
+         x="0"
+         y="0" />
+    </clipPath>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.056568543"
+     inkscape:cx="108.51437"
+     inkscape:cy="2319.0137"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     inkscape:document-rotation="0"
+     showgrid="false"
+     showguides="true"
+     inkscape:guide-bbox="true"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     inkscape:window-width="1680"
+     inkscape:window-height="977"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1">
+    <sodipodi:guide
+       position="425.61653,434.06292"
+       orientation="1,0"
+       id="guide42" />
+  </sodipodi:namedview>
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-49.723252,-52.887726)">
+    <g
+       id="g46"
+       transform="translate(48.299236)">
+      <rect
+         style="fill:#eb1c22;fill-opacity:1;stroke-width:0.318837"
+         id="rect29"
+         width="425.53473"
+         height="146.62614"
+         x="49.805054"
+         y="302.43192" />
+      <path
+         style="fill:#000000;stroke-width:4.24686"
+         d="m 146.40354,406.0526 c 0,-93.0589 1.85884,-172.72543 4.33477,-185.78105 2.38414,-12.57135 9.93567,-34.82593 16.78121,-49.45451 55.40668,-118.401388 211.13611,-140.867574 303.57342,-43.79496 12.42657,13.04968 12.46711,13.25236 4.24685,21.22075 -37.8725,29.95958 -73.59008,55.47889 -112.08937,81.94426 l -11.12355,-13.21956 c -14.69621,-17.46558 -35.45375,-18.33809 -48.28185,-2.0298 -7.55369,9.60294 -8.80192,17.13139 -8.80192,53.08556 v 41.89562 c 15.57177,0 31.1435,0 46.71528,0 0,43.88415 0,87.76817 0,131.65213 -15.57178,0 -31.14351,0 -46.71528,0 0,42.4685 0,84.93693 0,127.40532 h -74.31975 -74.31981 z"
+         id="path1055"
+         sodipodi:nodetypes="ssssccssscccccccs" />
+    </g>
+  </g>
+</svg>

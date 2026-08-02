@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" data-bs-theme="light">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="دموی مرکز عملیات هوشمند مشتریان فاپا" />
+  <title>مرکز عملیات مشتریان - فاپا</title>
+
+  <link rel="stylesheet" href="css/bootstrap/bootstrap.rtl.min.css" />
+  <link rel="stylesheet" href="fonts/IranSansX/fontiran.css" />
+  <link rel="stylesheet" href="fonts/fontawesome/active/all.css" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/crm.css" />
+</head>
+
+<body class="crm-page">
+  <span id="loading" class="hidden" aria-live="polite">
+    <span class="marquee"></span>
+  </span>
+
+  <nav class="navbar crm-topbar shadow-sm" id="navbar">
+    <div class="crm-topbar-inner">
+      <div class="d-flex align-items-center gap-2 min-width-0">
+        <button class="btn btn-sm btn-outline-secondary crm-mobile-menu" id="btnCrmMenu" type="button"
+          aria-label="نمایش منو">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+        <a href="/" class="crm-brand" aria-label="بازگشت به خدمات فاپا">
+          <img src="/img/logo-light.png" class="bi-color" alt="لوگوی فاپا" />
+        </a>
+        <div class="crm-title-wrap">
+          <strong>مرکز عملیات مشتریان</strong>
+          <small>فروش محصولات نرم‌افزاری و سخت‌افزاری فاپا</small>
+        </div>
+      </div>
+
+      <div class="crm-global-search-wrap">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input id="crmGlobalSearch" class="form-control" autocomplete="off"
+          placeholder="جست‌وجوی مشتری، محصول، فرصت یا مکالمه..." />
+        <kbd class="on-desktop">/</kbd>
+        <div id="crmSearchResults" class="crm-search-results hidden"></div>
+      </div>
+
+      <div class="crm-topbar-actions">
+        <select id="crmRoleSelector" class="form-select form-select-sm" title="نقش نمایشی">
+          <option value="sales">کارشناس فروش</option>
+          <option value="manager">مدیر فروش</option>
+          <option value="support">کارشناس خدمات مشتریان</option>
+        </select>
+        <button class="btn btn-sm btn-primary" id="btnOpenAssistant" type="button" title="دستیار هوشمند CRM">
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+          <span class="on-desktop">دستیار هوشمند</span>
+        </button>
+        <i class="btn btn-sm fa-solid fa-moon fa-lg" id="btnToggleDarkMode" title="تغییر حالت نمایش"></i>
+        <div class="dropdown on-desktop">
+          <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" type="button">
+            <i class="fa-solid fa-boxes-stacked"></i> سایر خدمات
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="/"><i class="fa-solid fa-boxes-stacked ms-2"></i>همه خدمات</a></li>
+            <li><a class="dropdown-item" href="/rag"><i class="fa-solid fa-comments ms-2"></i>چت‌بات عمومی</a></li>
+            <li><a class="dropdown-item" href="/translate"><i class="fa-solid fa-language ms-2"></i>ترجمه</a></li>
+            <li><a class="dropdown-item" href="/summarize"><i class="fa-solid fa-file-lines ms-2"></i>خلاصه‌سازی</a></li>
+          </ul>
+        </div>
+        <a href="/login?back=crm" class="btn btn-sm btn-outline-primary on-desktop" id="btnLogin">
+          <i class="fa-solid fa-user"></i> ورود
+        </a>
+        <button class="btn btn-sm btn-outline-secondary hidden on-desktop" id="backToLogin" type="button">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i> خروج
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="crm-mobile-backdrop" id="crmMobileBackdrop"></div>
+
+  <aside class="crm-sidebar" id="crmSidebar">
+    <div class="crm-sidebar-profile">
+      <div class="crm-avatar">س‌م</div>
+      <div class="min-width-0">
+        <strong id="crmCurrentUser">سارا محمدی</strong>
+        <small id="crmCurrentRole">کارشناس فروش سازمانی</small>
+      </div>
+    </div>
+
+    <nav class="crm-nav" aria-label="منوی CRM">
+      <a href="#dashboard" data-route="dashboard" class="crm-nav-item active">
+        <i class="fa-solid fa-house"></i><span>امروز</span>
+        <span class="badge text-bg-danger" id="navTaskBadge">۵</span>
+      </a>
+      <a href="#customers" data-route="customers" class="crm-nav-item">
+        <i class="fa-solid fa-building"></i><span>مشتریان</span>
+      </a>
+      <a href="#opportunities" data-route="opportunities" class="crm-nav-item">
+        <i class="fa-solid fa-handshake"></i><span>فرصت‌های فروش</span>
+        <span class="badge text-bg-primary" id="navOpportunityBadge">۶</span>
+      </a>
+      <a href="#conversations" data-route="conversations" class="crm-nav-item">
+        <i class="fa-solid fa-inbox"></i><span>مکالمات</span>
+        <span class="badge text-bg-warning" id="navConversationBadge">۳</span>
+      </a>
+      <a href="#products" data-route="products" class="crm-nav-item">
+        <i class="fa-solid fa-box-open"></i><span>محصولات و راهکارها</span>
+      </a>
+      <a href="#reports" data-route="reports" class="crm-nav-item">
+        <i class="fa-solid fa-chart-line"></i><span>گزارش مدیریتی</span>
+      </a>
+    </nav>
+
+    <div class="crm-sidebar-separator"></div>
+
+    <button class="crm-sidebar-ai" id="btnSidebarAssistant" type="button">
+      <span class="crm-ai-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
+      <span>
+        <strong>از داده‌های CRM بپرس</strong>
+        <small>تحلیل فروش، مشتری و محصولات</small>
+      </span>
+      <i class="fa-solid fa-chevron-left"></i>
+    </button>
+
+    <div class="crm-sidebar-footer">
+      <button class="btn btn-sm btn-outline-secondary w-100" id="btnResetDemo" type="button">
+        <i class="fa-solid fa-rotate-left"></i> بازنشانی داده‌های دمو
+      </button>
+      <small>نسخه نمایشی؛ داده‌ها واقعی نیستند.</small>
+    </div>
+  </aside>
+
+  <main class="crm-main" id="crmMain">
+    <div class="crm-page-container">
+      <div id="crmView" aria-live="polite"></div>
+      <footer class="crm-footer">
+        <small>کلیه حقوق برای <a target="_blank" href="https://tip.co.ir">شرکت فن‌آوران پارسیان</a> محفوظ است</small>
+      </footer>
+    </div>
+  </main>
+
+  <aside class="crm-ai-drawer" id="crmAssistantDrawer" aria-hidden="true">
+    <div class="crm-ai-header">
+      <div>
+        <div class="d-flex align-items-center gap-2">
+          <span class="crm-ai-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
+          <strong>دستیار هوشمند CRM</strong>
+        </div>
+        <small>پاسخ‌ها بر اساس داده‌های همین نسخه دمو تولید می‌شوند.</small>
+      </div>
+      <button class="btn btn-sm btn-outline-secondary" id="btnCloseAssistant" type="button" aria-label="بستن">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div class="crm-ai-context" id="crmAssistantContext">
+      <i class="fa-solid fa-database"></i> زمینه: کل سامانه
+    </div>
+    <div class="crm-ai-messages" id="crmAssistantMessages">
+      <div class="crm-ai-message assistant">
+        سلام! می‌توانم وضعیت مشتریان، فروش نرم‌افزار و سخت‌افزار، مکالمات و اقدام بعدی را تحلیل کنم.
+      </div>
+    </div>
+    <div class="crm-ai-suggestions" id="crmAssistantSuggestions">
+      <button data-ai-prompt="امروز بهتر است با چه مشتریانی تماس بگیرم؟">اولویت تماس امروز</button>
+      <button data-ai-prompt="کدام فرصت‌های فروش در خطر از دست رفتن‌اند؟">فرصت‌های در خطر</button>
+      <button data-ai-prompt="فروش محصولات سخت‌افزاری در چه وضعیتی است؟">وضعیت فروش سخت‌افزار</button>
+    </div>
+    <form class="crm-ai-input" id="crmAssistantForm">
+      <textarea id="crmAssistantInput" rows="2" placeholder="مثلاً: کدام مشتری برای فروش مکمل مناسب است؟"></textarea>
+      <button class="btn btn-primary" type="submit" title="ارسال">
+        <i class="fa-solid fa-paper-plane"></i>
+      </button>
+    </form>
+  </aside>
+  <div class="crm-ai-backdrop" id="crmAssistantBackdrop"></div>
+
+  <div class="crm-modal-backdrop hidden" id="crmModalBackdrop">
+    <section class="crm-modal" role="dialog" aria-modal="true" aria-labelledby="crmModalTitle">
+      <header class="crm-modal-header">
+        <h5 id="crmModalTitle"></h5>
+        <button class="btn btn-sm btn-outline-secondary" id="btnCloseCrmModal" type="button">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </header>
+      <div class="crm-modal-body" id="crmModalBody"></div>
+    </section>
+  </div>
+
+  <script>
+    var page = { serviceName: "crm" };
+    var auth;
+  </script>
+  <script src="js/vendors/bootstrap.bundle.min.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/crm.mock.js"></script>
+  <script src="js/crm.js"></script>
+</body>
+
+</html>
