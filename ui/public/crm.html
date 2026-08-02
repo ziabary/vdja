@@ -11,10 +11,11 @@
   <link rel="stylesheet" href="fonts/IranSansX/fontiran.css" />
   <link rel="stylesheet" href="fonts/fontawesome/active/all.css" />
   <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/app-nav.css" />
   <link rel="stylesheet" href="css/crm.css" />
 </head>
 
-<body class="crm-page">
+<body data-service="rag" class="crm-page">
   <span id="loading" class="hidden" aria-live="polite">
     <span class="marquee"></span>
   </span>
@@ -54,23 +55,8 @@
           <span class="on-desktop">دستیار هوشمند</span>
         </button>
         <i class="btn btn-sm fa-solid fa-moon fa-lg" id="btnToggleDarkMode" title="تغییر حالت نمایش"></i>
-        <div class="dropdown on-desktop">
-          <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" type="button">
-            <i class="fa-solid fa-boxes-stacked"></i> سایر خدمات
-          </button>
-          <ul class="dropdown-menu dropdown-menu-end">
-            <li><a class="dropdown-item" href="/"><i class="fa-solid fa-boxes-stacked ms-2"></i>همه خدمات</a></li>
-            <li><a class="dropdown-item" href="/rag"><i class="fa-solid fa-comments ms-2"></i>چت‌بات عمومی</a></li>
-            <li><a class="dropdown-item" href="/translate"><i class="fa-solid fa-language ms-2"></i>ترجمه</a></li>
-            <li><a class="dropdown-item" href="/summarize"><i class="fa-solid fa-file-lines ms-2"></i>خلاصه‌سازی</a></li>
-          </ul>
-        </div>
-        <a href="/login?back=crm" class="btn btn-sm btn-outline-primary on-desktop" id="btnLogin">
-          <i class="fa-solid fa-user"></i> ورود
-        </a>
-        <button class="btn btn-sm btn-outline-secondary hidden on-desktop" id="backToLogin" type="button">
-          <i class="fa-solid fa-arrow-right-from-bracket"></i> خروج
-        </button>
+        <span data-app-services></span>
+        <span data-app-account data-service="crm" data-login-back="crm"></span>
       </div>
     </div>
   </nav>
@@ -192,6 +178,7 @@
   <script src="js/vendors/bootstrap.bundle.min.js"></script>
   <script src="js/common.js"></script>
   <script src="js/auth.js"></script>
+  <script src="js/app-nav.js"></script>
   <script src="js/crm.mock.js"></script>
   <script src="js/crm.js"></script>
 </body>

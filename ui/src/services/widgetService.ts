@@ -52,7 +52,7 @@ export type WidgetSchedule = {
 };
 
 export type WidgetBehavior = {
-  requiredPrompt: string;
+  customPrompt: string;
   answerMode: 'files-only' | 'files-and-general';
   responseLength: 'short' | 'balanced' | 'detailed';
   tone: 'formal' | 'friendly' | 'sales' | 'support';
@@ -62,9 +62,9 @@ export type WidgetBehavior = {
     enabled: boolean;
     saveUnanswered: boolean;
     collectContact: boolean;
-    lowConfidenceEnabled: boolean;
-    confidenceThreshold: number;
-    categories: string[];
+    similarityEnabled: boolean;
+    similarityThreshold: number;
+    topics: string[];
     keywords: string[];
     outsideHoursBehavior: 'queue' | 'bot-only';
     schedule: WidgetSchedule;
@@ -76,7 +76,7 @@ export type WidgetConfig = {
   behavior: WidgetBehavior;
 };
 
-const CATEGORY_LABELS: Record<string, string> = {
+const LEGACY_CATEGORY_LABELS: Record<string, string> = {
   general: 'معرفی محصول و اطلاعات عمومی',
   sales: 'فروش، قیمت و درخواست پیش‌فاکتور',
   technical: 'پشتیبانی فنی و خطای محصول',
@@ -84,8 +84,24 @@ const CATEGORY_LABELS: Record<string, string> = {
   complaint: 'شکایت، نارضایتی و پیگیری فوری',
   contract: 'قرارداد، تمدید و امور مالی',
   security: 'امنیت، محرمانگی و الزامات سازمانی',
-  unknown: 'پرسش خارج از دانش یا با اطمینان پایین',
+  unknown: 'پرسش خارج از دانش',
 };
+
+export const DEFAULT_WIDGET_SYSTEM_PROMPT = `شما پشتیبان هوشمند وب‌سایتی هستید که این ویجت روی آن نصب شده است.
+- پاسخ را به زبان کاربر، روشن، محترمانه و بدون ادعای انجام اقدام خارج از سامانه ارائه کنید.
+- ابتدا از اسناد اختصاصی همین ویجت استفاده کنید و اطلاعات، قیمت، تعهد یا ویژگی ساختگی تولید نکنید.
+- اگر پاسخ مطمئن در منابع موجود نیست، این موضوع را صریح اعلام کنید و مطابق تنظیمات ویجت کاربر را به پشتیبان انسانی هدایت کنید.
+- خود را انسان معرفی نکنید.
+- از Markdown ساده استفاده کنید.`;
+
+const DEFAULT_WIDGET_FALLBACK = 'برای این پرسش پاسخ مطمئنی در منابع موجود ندارم. پرسش شما برای پشتیبان انسانی ثبت می‌شود.';
+const EFFECTIVE_APPEARANCE_DEFAULTS = {
+  title: 'پشتیبان هوشمند',
+  assistantName: 'پشتیبان',
+  subtitle: 'پاسخ‌گوی محصولات و خدمات',
+  welcomeMessage: 'سلام! چطور می‌توانم راهنمایی‌تان کنم؟',
+  inputPlaceholder: 'پرسش خود را بنویسید...',
+} as const;
 
 function defaultSchedule(): WidgetSchedule {
   return {
@@ -105,12 +121,12 @@ function defaultSchedule(): WidgetSchedule {
 export function defaultWidgetConfig(): WidgetConfig {
   return {
     appearance: {
-      title: 'دستیار هوشمند',
-      assistantName: 'پشتیبان هوشمند',
-      subtitle: 'پاسخ‌گوی محصولات و خدمات',
-      welcomeMessage: 'سلام! چطور می‌توانم راهنمایی‌تان کنم؟',
-      inputPlaceholder: 'پرسش خود را بنویسید...',
-      greetingBubble: 'سؤالی دارید؟ من اینجا هستم.',
+      title: '',
+      assistantName: '',
+      subtitle: '',
+      welcomeMessage: '',
+      inputPlaceholder: '',
+      greetingBubble: '',
       primaryColor: '#0d6efd',
       theme: 'light',
       position: 'right',
@@ -118,23 +134,23 @@ export function defaultWidgetConfig(): WidgetConfig {
       showBranding: true,
       autoOpen: false,
       autoOpenDelay: 5,
-      quickQuestions: ['محصولات شما چیست؟', 'شرایط گارانتی چگونه است؟', 'می‌خواهم با واحد فروش صحبت کنم'],
+      quickQuestions: [],
     },
     behavior: {
-      requiredPrompt: 'شما پشتیبان رسمی این وب‌سایت هستید. فقط بر اساس اسناد اختصاصی همین ویجت پاسخ دهید، اطلاعات ساختگی تولید نکنید و در صورت نبود پاسخ، کاربر را به پشتیبان انسانی ارجاع دهید.',
+      customPrompt: '',
       answerMode: 'files-only',
       responseLength: 'balanced',
       tone: 'formal',
       showReferences: true,
-      fallbackMessage: 'برای این پرسش پاسخ مطمئنی در منابع موجود ندارم. پرسش شما برای پشتیبان انسانی ثبت می‌شود.',
+      fallbackMessage: '',
       humanHandoff: {
         enabled: true,
         saveUnanswered: true,
-        collectContact: true,
-        lowConfidenceEnabled: true,
-        confidenceThreshold: 62,
-        categories: ['technical', 'complaint', 'unknown'],
-        keywords: ['اپراتور', 'کارشناس', 'شکایت', 'خراب', 'پیش فاکتور'],
+        collectContact: false,
+        similarityEnabled: false,
+        similarityThreshold: 35,
+        topics: [],
+        keywords: [],
         outsideHoursBehavior: 'queue',
         schedule: defaultSchedule(),
       },
@@ -209,11 +225,11 @@ function sanitizeAppearance(raw: unknown): WidgetAppearance {
   const position = ['right', 'left'].includes(String(input.position)) ? input.position : defaults.position;
   const logo = normalizeImageSource(input.logoDataUrl, 350000);
   return {
-    title: normalizeText(input.title, 80) || defaults.title,
-    assistantName: normalizeText(input.assistantName, 50) || defaults.assistantName,
+    title: normalizeText(input.title, 80),
+    assistantName: normalizeText(input.assistantName, 50),
     subtitle: normalizeText(input.subtitle, 140),
-    welcomeMessage: normalizeText(input.welcomeMessage, 1000) || defaults.welcomeMessage,
-    inputPlaceholder: normalizeText(input.inputPlaceholder, 120) || defaults.inputPlaceholder,
+    welcomeMessage: normalizeText(input.welcomeMessage, 1000),
+    inputPlaceholder: normalizeText(input.inputPlaceholder, 120),
     greetingBubble: normalizeText(input.greetingBubble, 180),
     primaryColor: color,
     theme: theme as WidgetAppearance['theme'],
@@ -221,8 +237,19 @@ function sanitizeAppearance(raw: unknown): WidgetAppearance {
     logoDataUrl: logo,
     showBranding: Boolean(input.showBranding),
     autoOpen: Boolean(input.autoOpen),
-    autoOpenDelay: Math.max(0, Math.min(120, Number(input.autoOpenDelay || 0))),
+    autoOpenDelay: Math.max(1, Math.min(120, Number(input.autoOpenDelay || defaults.autoOpenDelay))),
     quickQuestions: normalizeStringArray(input.quickQuestions, 6, 120),
+  };
+}
+
+function effectiveAppearance(appearance: WidgetAppearance): WidgetAppearance {
+  return {
+    ...appearance,
+    title: appearance.title || EFFECTIVE_APPEARANCE_DEFAULTS.title,
+    assistantName: appearance.assistantName || EFFECTIVE_APPEARANCE_DEFAULTS.assistantName,
+    subtitle: appearance.subtitle || EFFECTIVE_APPEARANCE_DEFAULTS.subtitle,
+    welcomeMessage: appearance.welcomeMessage || EFFECTIVE_APPEARANCE_DEFAULTS.welcomeMessage,
+    inputPlaceholder: appearance.inputPlaceholder || EFFECTIVE_APPEARANCE_DEFAULTS.inputPlaceholder,
   };
 }
 
@@ -248,25 +275,40 @@ function sanitizeSchedule(raw: unknown): WidgetSchedule {
 
 function sanitizeBehavior(raw: unknown): WidgetBehavior {
   const defaults = defaultWidgetConfig().behavior;
-  const input = deepMerge(defaults, raw);
+  const rawInput = isPlainObject(raw) ? raw : {};
+  const input = deepMerge(defaults, rawInput);
+  const rawHandoff = isPlainObject(rawInput.humanHandoff) ? rawInput.humanHandoff : {};
   const handoff = deepMerge(defaults.humanHandoff, input.humanHandoff);
-  const answerMode = ['files-only', 'files-and-general'].includes(String(input.answerMode)) ? input.answerMode : defaults.answerMode;
+  const rawAnswerMode = String(input.answerMode);
+  const answerMode = rawAnswerMode === 'files-plus-general'
+    ? 'files-and-general'
+    : ['files-only', 'files-and-general'].includes(rawAnswerMode) ? rawAnswerMode : defaults.answerMode;
   const responseLength = ['short', 'balanced', 'detailed'].includes(String(input.responseLength)) ? input.responseLength : defaults.responseLength;
-  const tone = ['formal', 'friendly', 'sales', 'support'].includes(String(input.tone)) ? input.tone : defaults.tone;
+  const rawTone = String(input.tone);
+  const tone = rawTone === 'technical'
+    ? 'support'
+    : ['formal', 'friendly', 'sales', 'support'].includes(rawTone) ? rawTone : defaults.tone;
+  const legacyCategories = normalizeStringArray(rawHandoff.categories, 12, 32)
+    .map(item => LEGACY_CATEGORY_LABELS[item] || item);
+  const topics = normalizeStringArray(rawHandoff.topics ?? handoff.topics, 30, 80);
+  const similarityEnabled = Object.prototype.hasOwnProperty.call(rawHandoff, 'similarityEnabled')
+    ? Boolean(rawHandoff.similarityEnabled)
+    : Boolean(rawHandoff.lowConfidenceEnabled);
+  const similarityThresholdValue = rawHandoff.similarityThreshold ?? rawHandoff.confidenceThreshold ?? defaults.humanHandoff.similarityThreshold;
   return {
-    requiredPrompt: normalizeText(input.requiredPrompt, 8000),
+    customPrompt: normalizeText(rawInput.customPrompt ?? rawInput.requiredPrompt ?? input.customPrompt, 8000),
     answerMode: answerMode as WidgetBehavior['answerMode'],
     responseLength: responseLength as WidgetBehavior['responseLength'],
     tone: tone as WidgetBehavior['tone'],
     showReferences: Boolean(input.showReferences),
-    fallbackMessage: normalizeText(input.fallbackMessage, 1000) || defaults.fallbackMessage,
+    fallbackMessage: normalizeText(input.fallbackMessage, 1000),
     humanHandoff: {
       enabled: Boolean(handoff.enabled),
       saveUnanswered: Boolean(handoff.saveUnanswered),
       collectContact: Boolean(handoff.collectContact),
-      lowConfidenceEnabled: Boolean(handoff.lowConfidenceEnabled),
-      confidenceThreshold: Math.max(0, Math.min(100, Number(handoff.confidenceThreshold || defaults.humanHandoff.confidenceThreshold))),
-      categories: normalizeStringArray(handoff.categories, 12, 32),
+      similarityEnabled,
+      similarityThreshold: Math.max(0, Math.min(100, Number(similarityThresholdValue))),
+      topics: topics.length ? topics : legacyCategories,
       keywords: normalizeStringArray(handoff.keywords, 30, 80),
       outsideHoursBehavior: handoff.outsideHoursBehavior === 'bot-only' ? 'bot-only' : 'queue',
       schedule: sanitizeSchedule(handoff.schedule),
@@ -418,7 +460,7 @@ export async function widgetDTO(row: IntfWidgetRow, includeDetails = true, viewe
     draftVersion: Number(row.wgtDraftVersion || 1),
     publishedVersion: Number(row.wgtPublishedVersion || 0),
     appearance: config.appearance,
-    behavior: config.behavior,
+    behavior: { ...config.behavior, defaultPrompt: DEFAULT_WIDGET_SYSTEM_PROMPT },
     operators,
     files,
     summary,
@@ -446,7 +488,7 @@ export async function getAccessibleWidget(auth: IntfAuth, key: string): Promise<
 }
 
 export async function createWidget(auth: IntfAuth, input: Record<string, unknown> = {}) {
-  const internalName = normalizeText(input.internalName, 100) || 'ویجت جدید';
+  const internalName = normalizeText(input.internalName, 100);
   const targetOrigin = input.destinationDomain ? normalizeTargetOrigin(input.destinationDomain) : '';
   const config = sanitizeWidgetConfig({
     appearance: input.appearance,
@@ -459,7 +501,7 @@ export async function createWidget(auth: IntfAuth, input: Record<string, unknown
     undefined,
     undefined,
     undefined,
-    `${internalName} (ویجت)`,
+    `${internalName || widgetUsername} (ویجت)`,
     {},
     DEFAULT_GROUP_ID,
     widgetUsername,
@@ -491,8 +533,8 @@ export async function updateWidget(auth: IntfAuth, key: string, patch: Record<st
     appearance: patch.appearance === undefined ? current.appearance : deepMerge(current.appearance, patch.appearance),
     behavior: patch.behavior === undefined ? current.behavior : deepMerge(current.behavior, patch.behavior),
   });
+  // Drafts may remain incomplete. Required fields are enforced only by validate/publish.
   const internalName = patch.internalName === undefined ? row.wgtInternalName : normalizeText(patch.internalName, 100);
-  if (!internalName) throw new exHttpInvalidParams('نام داخلی ویجت الزامی است');
   const targetOrigin = patch.destinationDomain === undefined ? row.wgtTargetOrigin : normalizeTargetOrigin(patch.destinationDomain);
   await atDB.widgets.updateDraft(row.wgtID, { internalName, targetOrigin, draftConfig: next });
   const updated = await atDB.widgets.getById(row.wgtID);
@@ -568,9 +610,11 @@ export async function validateWidget(auth: IntfAuth, key: string) {
       detail: files.some(file => file.status === 'ready') ? `${files.filter(file => file.status === 'ready').length} فایل آماده پاسخ‌گویی است.` : 'حداقل یک فایل آماده لازم است.',
     },
     {
-      key: 'prompt', label: 'پرامپت الزامی',
-      ok: config.behavior.requiredPrompt.trim().length >= 20,
-      detail: config.behavior.requiredPrompt.trim().length >= 20 ? 'دستورالعمل پایه مدل ثبت شده است.' : 'پرامپت الزامی را کامل کنید.',
+      key: 'prompt', label: 'دستور پاسخ‌گویی',
+      ok: true,
+      detail: config.behavior.customPrompt.trim()
+        ? 'دستور تکمیلی شما همراه پرامپت پیش‌فرض ویجت اعمال می‌شود.'
+        : 'پرامپت پیش‌فرض امن ویجت اعمال می‌شود؛ افزودن دستور تکمیلی اختیاری است.',
     },
     {
       key: 'handoff', label: 'مسیر پاسخ‌گویی انسانی',
@@ -620,7 +664,7 @@ export async function publicWidgetConfig(key: string, previewAuth?: IntfAuth) {
     id: row.wgtKey,
     destinationDomain: previewAuth ? row.wgtTargetOrigin : (row.wgtPublishedOrigin || row.wgtTargetOrigin),
     enabled: previewAuth ? true : Boolean(row.wgtPublishedConfig) && [enuWidgetStatus.published, enuWidgetStatus.changed].includes(row.wgtStatus),
-    appearance: config.appearance,
+    appearance: effectiveAppearance(config.appearance),
     behavior: {
       showReferences: config.behavior.showReferences,
       humanHandoff: { collectContact: config.behavior.humanHandoff.collectContact },
@@ -680,21 +724,25 @@ async function resolveSession(row: IntfWidgetRow, sessionKey: string): Promise<I
   return session;
 }
 
-function classifyQuestion(text: string): string {
-  const q = text.toLowerCase().replace(/[\u200c\s_-]+/g, ' ').trim();
-  const rules: Array<[string, string[]]> = [
-    ['complaint', ['شکایت', 'ناراضی', 'افتضاح', 'بدقول', 'پیگیری فوری']],
-    ['sales', ['قیمت', 'پیش فاکتور', 'پیش‌فاکتور', 'خرید', 'فروش', 'دمو', 'هزینه', 'تخفیف']],
-    ['technical', ['خطا', 'خراب', 'قطع', 'نصب', 'تنظیم', 'کار نمی', 'مشکل', 'لاگ']],
-    ['warranty', ['گارانتی', 'تعمیر', 'مرجوع', 'سریال', 'خدمات پس از فروش']],
-    ['contract', ['قرارداد', 'تمدید', 'فاکتور', 'پرداخت', 'مالی']],
-    ['security', ['امنیت', 'محرمان', 'نفوذ', 'رمزنگاری', 'استاندارد']],
-    ['general', ['محصول', 'نرم افزار', 'نرم‌افزار', 'سخت افزار', 'سخت‌افزار', 'راهکار', 'خدمات', 'امکانات', 'معرفی']],
-  ];
-  return rules.find(([, words]) => words.some(word => q.includes(word)))?.[0] || 'unknown';
+function normalizeMatchText(value: unknown): string {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/[يى]/g, 'ی')
+    .replace(/ك/g, 'ک')
+    .replace(/[،,؛;:.!?؟()\[\]{}"'«»]/g, ' ')
+    .replace(/[\u200c\s_-]+/g, ' ')
+    .trim();
 }
 
-function topContextConfidence(context: IntfRagBeforeGenerateContext): number {
+function findConfiguredPhrase(question: string, phrases: string[]): string | undefined {
+  const normalized = normalizeMatchText(question);
+  return phrases.find(item => {
+    const phrase = normalizeMatchText(item);
+    return phrase.length > 1 && normalized.includes(phrase);
+  });
+}
+
+function topContextSimilarity(context: IntfRagBeforeGenerateContext): number {
   const scores = context.userContext.chunks
     .map(chunk => Number(chunk._score || 0))
     .filter(score => Number.isFinite(score));
@@ -719,19 +767,25 @@ function humanAvailable(config: WidgetConfig, at = new Date()): boolean {
   const row = schedule.days[String(values.weekday || '').toLowerCase()];
   if (!row?.enabled) return false;
   const current = `${String(values.hour || '00').padStart(2, '0')}:${String(values.minute || '00').padStart(2, '0')}`;
-  return current >= row.start && current <= row.end;
+  if (row.start <= row.end) return current >= row.start && current <= row.end;
+  // Also support shifts that cross midnight, for example 22:00–06:00.
+  return current >= row.start || current <= row.end;
 }
 
-function handoffTrigger(config: WidgetConfig, question: string, category: string, confidence: number, hasContext: boolean) {
+type HandoffTrigger = { handoff: boolean; reason: string; topic: string };
+
+function handoffTrigger(config: WidgetConfig, question: string, similarity: number, hasContext: boolean): HandoffTrigger {
   const handoff = config.behavior.humanHandoff;
-  if (!handoff.enabled) return { handoff: false, reason: '' };
-  const normalized = question.toLowerCase().replace(/[\u200c\s_-]+/g, ' ').trim();
-  const keyword = handoff.keywords.find(item => normalized.includes(item.toLowerCase().replace(/[\u200c\s_-]+/g, ' ').trim()));
-  if (keyword) return { handoff: true, reason: `عبارت ارجاع اجباری: ${keyword}` };
-  if (handoff.categories.includes(category)) return { handoff: true, reason: `موضوع ${CATEGORY_LABELS[category] || category}` };
-  if (handoff.lowConfidenceEnabled && confidence < handoff.confidenceThreshold) return { handoff: true, reason: 'اطمینان پاسخ پایین است' };
-  if (!hasContext && config.behavior.answerMode === 'files-only') return { handoff: true, reason: 'پاسخ در اسناد اختصاصی پیدا نشد' };
-  return { handoff: false, reason: '' };
+  if (!handoff.enabled) return { handoff: false, reason: '', topic: 'other' };
+  const keyword = findConfiguredPhrase(question, handoff.keywords);
+  if (keyword) return { handoff: true, reason: `عبارت ارجاع اجباری: ${keyword}`, topic: keyword.slice(0, 32) };
+  const topic = findConfiguredPhrase(question, handoff.topics);
+  if (topic) return { handoff: true, reason: `موضوع ارجاع انسانی: ${topic}`, topic: topic.slice(0, 32) };
+  if (handoff.similarityEnabled && similarity < handoff.similarityThreshold)
+    return { handoff: true, reason: 'امتیاز تطابق اسناد پایین‌تر از آستانه تنظیم‌شده است', topic: 'low-similarity' };
+  if (!hasContext && config.behavior.answerMode === 'files-only')
+    return { handoff: true, reason: 'پاسخ در اسناد اختصاصی پیدا نشد', topic: 'no-context' };
+  return { handoff: false, reason: '', topic: 'other' };
 }
 
 function widgetSystemPrompt(config: WidgetConfig): string {
@@ -746,13 +800,21 @@ function widgetSystemPrompt(config: WidgetConfig): string {
     balanced: 'پاسخ را متناسب با سؤال و بدون زیاده‌گویی ارائه کن.',
     detailed: 'در صورت نیاز پاسخ را با جزئیات و ساختار روشن ارائه کن.',
   }[config.behavior.responseLength];
-  return `شما پشتیبان هوشمند یک وب‌سایت هستید.
-- پاسخ را به زبان کاربر و با لحن ${tone} ارائه کنید.
+  const knowledgeRule = config.behavior.answerMode === 'files-only'
+    ? 'فقط بر اساس اسناد اختصاصی ویجت پاسخ بده؛ از دانش عمومی برای افزودن واقعیت جدید استفاده نکن.'
+    : 'اسناد اختصاصی ویجت منبع اصلی هستند؛ فقط برای توضیح عمومی و غیرقطعی می‌توانی از دانش عمومی استفاده کنی.';
+  const handoffRules: string[] = [];
+  if (config.behavior.humanHandoff.topics.length)
+    handoffRules.push(`موضوعات ارجاع انسانی که نباید درباره آن‌ها تعهد یا پاسخ قطعی بدهی: ${config.behavior.humanHandoff.topics.join('، ')}`);
+  if (config.behavior.humanHandoff.keywords.length)
+    handoffRules.push(`عبارت‌های ارجاع اجباری: ${config.behavior.humanHandoff.keywords.join('، ')}`);
+  const custom = config.behavior.customPrompt.trim()
+    ? `\nدستور تکمیلی مالک ویجت، تا جایی که با قواعد ایمنی بالا تعارض ندارد:\n${config.behavior.customPrompt.trim()}`
+    : '';
+  return `${DEFAULT_WIDGET_SYSTEM_PROMPT}
+- لحن پاسخ: ${tone}.
 - ${length}
-- اطلاعات ساختگی، قیمت قطعی، تعهد قراردادی یا جزئیات خارج از منابع ارائه نکنید.
-- اگر منابع کافی نیست، صریحاً اعلام کنید که پاسخ مطمئن در دسترس نیست.
-- خودتان ادعا نکنید که یک انسان هستید یا عملی خارج از سامانه انجام داده‌اید.
-- از Markdown ساده استفاده کنید.`;
+- ${knowledgeRule}${handoffRules.length ? `\n- ${handoffRules.join('\n- ')}` : ''}${custom}`;
 }
 
 function streamImmediate(res: Response, requestID: string, answer: string, meta: Record<string, unknown>) {
@@ -797,7 +859,7 @@ export async function sendWidgetMessage(
     await saveImmediateDialogue(row, session, requestID, question, answer);
     streamImmediate(response, requestID, answer, {
       mode: 'handoff', conversationId: session.wssKey, category: session.wssCategory || 'unknown',
-      confidence: Number(session.wssConfidence || 0), reason: session.wssHandoffReason || '',
+      similarityScore: Number(session.wssConfidence || 0), confidence: Number(session.wssConfidence || 0), reason: session.wssHandoffReason || '',
       available: session.wssStatus !== 'Queued',
     });
     return;
@@ -816,7 +878,7 @@ export async function sendWidgetMessage(
     useFiles: true,
     question,
     systemPromptPrefix: widgetSystemPrompt(config),
-    userPromptPrefix: `${config.behavior.requiredPrompt.trim()}\n\nپرسش بازدیدکننده: `,
+    userPromptPrefix: 'پرسش بازدیدکننده: ',
     summarizeSystemPrompt: 'گفتگو را برای ادامه پاسخ‌گویی خلاصه کن.',
     summarizePrompt: '__WIDGET_SUMMARY__',
     useGeneralKnowledge: config.behavior.answerMode === 'files-and-general',
@@ -825,46 +887,50 @@ export async function sendWidgetMessage(
     referenceText: false,
     userContextMinSimilarity: 0.2,
     onBeforeGenerate: async context => {
-      const category = classifyQuestion(question);
-      const confidence = Math.round(topContextConfidence(context));
+      const similarityScore = Math.round(topContextSimilarity(context));
       const hasContext = context.userContext.chunks.length > 0;
-      const trigger = handoffTrigger(config, question, category, confidence, hasContext);
+      const trigger = handoffTrigger(config, question, similarityScore, hasContext);
+      const topic = trigger.topic || 'other';
       if (!trigger.handoff) {
-        await atDB.widgetSessions.updateAnalysis(session.wssID, category, confidence, 'Bot');
+        await atDB.widgetSessions.updateAnalysis(session.wssID, topic, similarityScore, 'Bot');
         return false;
       }
 
       const available = humanAvailable(config);
       if (!available && config.behavior.humanHandoff.outsideHoursBehavior === 'bot-only' && hasContext) {
-        await atDB.widgetSessions.updateAnalysis(session.wssID, category, confidence, 'Bot');
+        await atDB.widgetSessions.updateAnalysis(session.wssID, topic, similarityScore, 'Bot');
         return false;
       }
 
+      const fallback = config.behavior.fallbackMessage || DEFAULT_WIDGET_FALLBACK;
       if (!config.behavior.humanHandoff.saveUnanswered) {
-        const fallback = config.behavior.fallbackMessage;
         await saveImmediateDialogue(row, session, requestID, question, fallback);
-        streamImmediate(response, requestID, fallback, { mode: 'fallback', category, confidence, reason: trigger.reason, available: false });
+        streamImmediate(response, requestID, fallback, {
+          mode: 'fallback', topic, category: topic, similarityScore, confidence: similarityScore,
+          reason: trigger.reason, available: false,
+        });
         return true;
       }
 
       const status = available ? 'Pending' : 'Queued';
-      await atDB.widgetSessions.handoff(session.wssID, { status, category, confidence, reason: trigger.reason });
+      await atDB.widgetSessions.handoff(session.wssID, { status, category: topic, confidence: similarityScore, reason: trigger.reason });
       const answer = available
-        ? `${config.behavior.fallbackMessage}\n\nپرسش شما به صف پاسخ‌گویی انسانی منتقل شد.${config.behavior.humanHandoff.collectContact ? ' برای پیگیری بهتر می‌توانید نام و راه ارتباطی خود را ثبت کنید.' : ''}`
+        ? `${fallback}\n\nپرسش شما به صف پاسخ‌گویی انسانی منتقل شد.${config.behavior.humanHandoff.collectContact ? ' برای پیگیری بهتر می‌توانید نام و راه ارتباطی خود را ثبت کنید.' : ''}`
         : `در حال حاضر اپراتورها خارج از ساعت پاسخ‌گویی هستند. پرسش شما ذخیره شد و در نخستین زمان کاری بررسی می‌شود.${config.behavior.humanHandoff.collectContact ? ' برای پیگیری بهتر می‌توانید نام و راه ارتباطی خود را ثبت کنید.' : ''}`;
       await saveImmediateDialogue(row, session, requestID, question, answer);
       streamImmediate(response, requestID, answer, {
-        mode: 'handoff', conversationId: session.wssKey, category, confidence,
-        reason: trigger.reason, available,
+        mode: 'handoff', conversationId: session.wssKey, topic, category: topic,
+        similarityScore, confidence: similarityScore, reason: trigger.reason, available,
       });
       return true;
     },
     onDone: async ({ context }) => {
-      const category = classifyQuestion(question);
-      const confidence = Math.round(topContextConfidence(context));
-      await atDB.widgetSessions.updateAnalysis(session.wssID, category, confidence, 'Bot');
+      const similarityScore = Math.round(topContextSimilarity(context));
+      await atDB.widgetSessions.updateAnalysis(session.wssID, 'other', similarityScore, 'Bot');
       sendStreamHeadersIfNeeded(response);
-      response.write(`data: [WIDGET]:${JSON.stringify({ mode: 'ai', category, confidence, conversationId: session.wssKey })}\n\n`);
+      response.write(`data: [WIDGET]:${JSON.stringify({
+        mode: 'ai', topic: 'other', category: 'other', similarityScore, confidence: similarityScore, conversationId: session.wssKey,
+      })}\n\n`);
     },
   });
 }
@@ -874,6 +940,8 @@ export async function updateSessionVisitor(row: IntfWidgetRow, sessionKey: strin
   const session = await resolveSession(row, sessionKey);
   const name = visitor.name === undefined ? undefined : normalizeText(visitor.name, 100);
   const contact = visitor.contact === undefined ? undefined : normalizeText(visitor.contact, 150);
+  if (!contact || contact.length < 3)
+    throw new exHttpInvalidParams('شماره تماس یا ایمیل معتبر را وارد کنید');
   await atDB.widgetSessions.updateVisitor(session.wssID, name, contact);
   return { success: true };
 }
@@ -909,6 +977,7 @@ export async function sessionHistory(row: IntfWidgetRow, sessionKey: string, aft
       visitorName: session.wssVisitorName || '',
       visitorContact: session.wssVisitorContact || '',
       category: session.wssCategory || 'unknown',
+      similarityScore: Number(session.wssConfidence || 0),
       confidence: Number(session.wssConfidence || 0),
       assignedTo: assigned.username || (assigned.id ? `user-${assigned.id}` : ''),
       assignedToDisplay: assigned.displayName,
@@ -956,6 +1025,7 @@ export async function listConversations(auth: IntfAuth, filters: { widgetId?: st
       updatedAt: session.wssUpdatedAt,
       resolvedAt: session.wssResolvedAt,
       escalatedReason: session.wssHandoffReason || '',
+      similarityScore: Number(session.wssConfidence || 0),
       confidence: Number(session.wssConfidence || 0),
       messages: history.messages,
       operators: await operatorDTOs(row),

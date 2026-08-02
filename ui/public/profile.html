@@ -9,9 +9,10 @@
   <link rel="stylesheet" href="fonts/IranSansX/fontiran.css" />
   <link rel="stylesheet" href="fonts/fontawesome/active/all.css" />
   <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/app-nav.css" />
   <link rel="stylesheet" href="css/profile.css" />
 </head>
-<body class="profile-page d-flex flex-column min-vh-100">
+<body data-service="rag" class="profile-page d-flex flex-column min-vh-100">
   <span id="loading" class="hidden"><span class="marquee"></span></span>
 
   <nav class="navbar shadow-sm" id="navbar">
@@ -20,8 +21,8 @@
       <span class="navbar-brand mx-auto h4 mb-0">پروفایل کاربری</span>
       <div class="d-flex align-items-center gap-2">
         <i class="btn btn-sm fa-solid fa-moon fa-lg" id="btnToggleDarkMode" title="تغییر حالت نمایش"></i>
-        <a href="/webwidget" class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-puzzle-piece"></i> ویجت‌ها</a>
-        <button class="btn btn-sm btn-outline-secondary hidden on-desktop" id="backToLogin" type="button"><i class="fa-solid fa-arrow-right-from-bracket"></i> خروج</button>
+        <span data-app-services></span>
+        <span data-app-account data-service="rag" data-login-back="profile"></span>
       </div>
     </div>
   </nav>
@@ -117,6 +118,7 @@
   <script src="js/vendors/bootstrap.bundle.min.js"></script>
   <script src="js/common.js"></script>
   <script src="js/auth.js"></script>
+  <script src="js/app-nav.js"></script>
   <script src="js/profile.js"></script>
   <script>
     setupAuth("rag", false).then(async r => {

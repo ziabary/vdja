@@ -1,10 +1,14 @@
 async function setupAuth(service, required) {
   let accessToken = localStorage.getItem("accessToken");
+  const notifyAuthChanged = () => window.dispatchEvent(new CustomEvent("app-auth-changed", {
+    detail: { authenticated: Boolean(accessToken), service }
+  }));
   const DEFAULT_PRIV = { uid: 1, name: "anonymous" }
   const auth = {
     setToken: (token) => {
       accessToken = token;
       localStorage.setItem("accessToken", token);
+      notifyAuthChanged();
     },
     getToken: () => accessToken,
     getUser: () => {
@@ -14,6 +18,7 @@ async function setupAuth(service, required) {
     logout: () => {
       accessToken = null;
       localStorage.removeItem("accessToken");
+      notifyAuthChanged();
     },
   };
 
@@ -69,10 +74,12 @@ async function setupAuth(service, required) {
   async function apiFetch(url, options = {}) {
     document.getElementById("loading")?.classList.remove("hidden")
 
-    const token = auth.getToken();
+    let token = auth.getToken();
 
-    if (token && isExpired(token))
+    if (token && isExpired(token)) {
       await refreshToken();
+      token = auth.getToken();
+    }
 
     const res = await fetch(url, {
       ...options,
@@ -123,6 +130,7 @@ async function setupAuth(service, required) {
       setClass(document.getElementById('btnLogin'), 'hidden', auth.getToken())
       setClass(document.getElementById('btnLogin2'), 'hidden', auth.getToken())
       setClass(document.getElementById('backToLogin'), 'hidden', !auth.getToken())
+      notifyAuthChanged();
     }
   }
 

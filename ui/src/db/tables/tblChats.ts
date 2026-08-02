@@ -47,6 +47,13 @@ export interface IntfChatListResult {
   chats: TypChatListItem[]
 }
 
+function firstId(result: unknown): number {
+  if (!Array.isArray(result)) return Number(result);
+  const row = result[0] as Record<string, unknown> | number | undefined;
+  if (typeof row === 'number') return row;
+  return Number(row?.[cols.id] ?? 0);
+}
+
 /* =======================
    Actions
 ======================= */
@@ -110,14 +117,15 @@ export default {
   new: async(service:string, userID: number, chatKey: string): Promise<number | undefined> => {
     const db = await getDB();
 
-    const [row] = await db<IntfDBChat>(tblName)
+    const result = await db<IntfDBChat>(tblName)
       .insert({
         [cols.service]: service,
         [cols.owner_usrID]: userID,
         [cols.key]: chatKey
       }).returning(cols.id);
 
-    return row?.[cols.id];
+    const id = firstId(result);
+    return id > 0 ? id : undefined;
   },
 
   /** Delete a chat */

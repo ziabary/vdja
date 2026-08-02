@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="css/bootstrap/bootstrap.rtl.min.css" />
   <link rel="stylesheet" href="fonts/IranSansX/fontiran.css" />
   <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/app-nav.css" />
   <link rel="stylesheet" href="fonts/fontawesome/active/all.css" />
 
   <style>
@@ -46,7 +47,7 @@
   </style>
 </head>
 
-<body>
+<body data-service="translate">
   <span id="loading">
     <div class=marquee></div>
   </span>
@@ -61,27 +62,16 @@
       <div class="left-side mx-2">
         <i class="btn btn-sm fa fa-moon fa-lg btn" id=btnToggleDarkMode></i>
         <div class="on-mobile" title="منو"><i class="btn btn-sm fa fa-lg fa-bars" id="btnMenu"></i></div>
-        <div class="on-desktop">
-          <a href="/" class="btn btn-sm btn-outline-secondary" title="سایر خدمات">
-            <i class="fa fa-boxes"></i> سایر خدمات
-          </a>
-          <button class="btn btn-sm btn-outline-secondary" title="خروج" id="backToLogin">
-            <i class="fa fa-door-open"></i> خروج
-          </button>
-          <a href="/login?back=translate" class="btn btn-sm btn-primary" title="ورود به سامانه" id=btnLogin>
-            <i class="fa fa-user"></i> ورود به سامانه
-          </a>
+        <div class="on-desktop d-flex gap-2">
+          <span data-app-services></span>
+          <span data-app-account data-service="translate" data-login-back="translate"></span>
         </div>
       </div>
     </div>
   </nav>
   <div class="collapsed" id="menu">
-    <a href="/" class="btn btn-sm btn-outline-secondary" title="سایر خدمات">
-      <i class="fa fa-boxes"></i> سایر خدمات
-    </a>
-    <button class="btn btn-sm btn-outline-secondary" title="خروج" id="backToLogin">
-      <i class="fa fa-door-open"></i> خروج
-    </button>
+    <span data-app-services></span>
+    <span data-app-account data-service="translate" data-login-back="translate"></span>
   </div>
 
   <!-- CONTAINER -->
@@ -172,6 +162,7 @@
 
   <script src="js/common.js"></script>
   <script src="js/auth.js"></script>
+  <script src="js/app-nav.js"></script>
   <script>let auth; setupAuth("translate", false).then(r => auth = r)</script>
   <script src="js/llm.js"></script>
 

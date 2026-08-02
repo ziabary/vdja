@@ -177,3 +177,52 @@ body.ww-admin-page { min-height: 100vh; margin: 0; overflow-x: hidden; font-fami
   .ww-title-wrap strong{font-size:.83rem}.ww-brand img{width:40px}.ww-topbar-actions .btn span{display:none}.ww-kpi-grid{grid-template-columns:1fr}.ww-widget-card-head{flex-direction:column}.ww-toolbar{align-items:stretch;flex-direction:column}.ww-toolbar>*{width:100%}.ww-preview-browser.mobile{width:100%}.ww-test-chat{inset:48px 8px 8px!important;width:auto!important;height:auto!important}.ww-schedule-table th:nth-child(4),.ww-schedule-table td:nth-child(4){display:none}.ww-page-header h1{font-size:1.3rem}.ww-logo-uploader{align-items:flex-start;flex-direction:column}
 }
 .ww-test-greeting{position:absolute;bottom:31px;max-width:245px;padding:9px 12px;color:#263042;background:#fff;border:1px solid #dfe5ec;border-radius:12px;box-shadow:0 10px 24px rgba(0,0,0,.15);font-size:.68rem}.ww-test-greeting.right{right:91px}.ww-test-greeting.left{left:91px}.ww-test-chat.dark{color:#e9edf3;background:#20262c;border-color:#39424c}.ww-test-chat.dark .ww-test-messages{background:#181d22}.ww-test-chat.dark .ww-test-message.assistant{background:#262d34;border-color:#39424c}.ww-test-chat.dark .ww-test-quick,.ww-test-chat.dark .ww-test-input,.ww-test-chat.dark .ww-test-contact{background:#20262c;border-color:#39424c}.ww-test-chat.dark .ww-test-quick button{background:#20262c}.ww-test-chat.dark .form-control{color:#e9edf3;background:#262d34;border-color:#39424c}
+
+/* Shared editor affordances and corrected widget preview layout */
+.ww-form-field label{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+}
+.ww-form-field label>span:first-child{display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap}
+.ww-field-required,.ww-field-optional{display:inline-flex;align-items:center;padding:2px 6px;border-radius:999px;font-size:.55rem;font-weight:800;line-height:1.4}
+.ww-field-required{color:#b42318;background:rgba(220,53,69,.11)}
+.ww-field-optional{color:var(--ww-muted);background:var(--ww-surface-2);border:1px solid var(--ww-border)}
+.ww-help-button{width:25px;height:25px;flex:0 0 25px;display:grid;place-items:center;padding:0;color:var(--bs-primary);background:transparent;border:0;border-radius:50%;cursor:pointer}
+.ww-help-button:hover,.ww-help-button:focus{background:var(--ww-primary-soft);outline:none}
+.popover{font-family:"IRANSansX",sans-serif;direction:rtl;text-align:right;max-width:330px}
+.popover-header,.popover-body{text-align:right}
+.ww-field-disabled{opacity:.55}
+.ww-field-disabled input,.ww-field-disabled select{cursor:not-allowed}
+.ww-default-prompt{padding:12px;background:var(--ww-surface-2);border:1px solid var(--ww-border);border-radius:10px}
+.ww-default-prompt summary{cursor:pointer;font-weight:800;font-size:.76rem}
+.ww-default-prompt pre{margin:12px 0 0;padding:12px;max-height:260px;overflow:auto;white-space:pre-wrap;color:var(--ww-text);background:var(--ww-surface);border:1px solid var(--ww-border);border-radius:8px;font-family:inherit;font-size:.68rem;line-height:1.9}
+.ww-switch-card strong .ww-help-button{display:inline-grid;vertical-align:middle;margin-inline-start:3px}
+.ww-file-item{min-width:0}
+.ww-file-actions{align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.ww-progress span{min-width:2px}
+
+.ww-preview-browser{overflow:hidden}
+.ww-test-widget-layer{overflow:hidden}
+.ww-test-chat{max-width:calc(100% - 44px);min-width:0}
+.ww-test-chat-head>div:nth-child(2){flex:1;min-width:0}
+.ww-test-messages{min-width:0;overflow-x:hidden}
+.ww-test-message{overflow-wrap:anywhere;word-break:break-word}
+.ww-test-quick{max-height:126px;padding:8px 10px;display:grid;gap:6px;overflow-y:auto;overflow-x:hidden;background:#fff;border-top:1px solid #edf0f4}
+.ww-test-quick button{width:100%;padding:7px 9px;white-space:normal;overflow-wrap:anywhere;color:var(--widget-color,#0d6efd);background:#fff;border:1px solid var(--widget-color,#0d6efd);border-radius:10px;font-size:.62rem;line-height:1.6;text-align:right}
+.ww-test-input{width:100%;padding:10px;display:grid;grid-template-columns:minmax(0,1fr) 44px;gap:7px;overflow:hidden;background:#fff;border-top:1px solid #e4e9f0}
+.ww-test-input textarea{display:block;width:100%;min-width:0;height:42px;min-height:42px;max-height:84px;padding:9px;color:#1d2636;background:#fff;border:1px solid #d8dee7;border-radius:10px;resize:none;outline:none;font-size:.72rem}
+.ww-test-input button{width:44px;height:42px;display:grid;place-items:center;padding:0;flex:0 0 44px;color:#fff;background:var(--widget-color,#0d6efd);border:0;border-radius:10px}
+.ww-test-input button:disabled{opacity:.55}
+.ww-test-branding{padding:0 10px 8px;color:#8a94a2;text-align:center;font-size:.55rem}
+.ww-test-chat.dark .ww-test-input textarea{color:#e9edf3;background:#262d34;border-color:#39424c}
+.ww-test-chat.dark .ww-test-quick button{color:var(--widget-color,#0d6efd);background:#20262c}
+.ww-test-contact .input-group{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr) auto;gap:5px}
+.ww-test-contact .input-group>*{min-width:0;border-radius:7px!important}
+
+@media(max-width:767.98px){
+  .ww-test-chat{max-width:calc(100% - 16px)}
+  .ww-test-contact .input-group{grid-template-columns:1fr}
+  .ww-form-field label{align-items:flex-start}
+}

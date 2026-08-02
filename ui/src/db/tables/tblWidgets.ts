@@ -91,11 +91,17 @@ export default {
   listAccessible: async (userID: number): Promise<IntfWidgetRow[]> => {
     const db = await getDB();
     return db<IntfWidgetRow>(tblName)
-      .distinct(`${tblName}.*`)
-      .leftJoin('tblWidgetOperators', 'wopWidget_wgtID', cols.id)
-      .where(qb => qb.where(cols.owner_usrID, userID)
-        .orWhere(q => q.where('wopOperator_usrID', userID).andWhere('wopStatus', 'Active')))
+      .select('*')
       .whereNot(cols.status, enuWidgetStatus.removed)
+      .andWhere(qb => qb
+        .where(cols.owner_usrID, userID)
+        .orWhereExists(function () {
+          this.select('*')
+            .from('tblWidgetOperators')
+            .whereRaw('tblWidgetOperators.wopWidget_wgtID = tblWidgets.wgtID')
+            .andWhere('wopOperator_usrID', userID)
+            .andWhere('wopStatus', 'Active');
+        }))
       .orderBy(cols.updatedAt, 'desc');
   },
 
