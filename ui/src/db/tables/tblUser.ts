@@ -30,6 +30,10 @@ const priv_cols = {
 export const public_cols = {
   id: 'usrID',
   name: 'usrName',
+  username: 'usrUsername',
+  avatar: 'usrAvatar',
+  organization: 'usrOrganization',
+  title: 'usrTitle',
   lastLogin: 'usrLasLogin',
   lastLogout: 'usrLastLogout',
   createdAt: 'usrCreatedAt',
@@ -56,6 +60,7 @@ export type IntfUser = {
   : K extends 'lastLogin' | 'lastLogout' | 'createdAt' ? string | Date | null
   : K extends 'status' ? typeof enuBannableStatus[keyof typeof enuBannableStatus]
   : K extends 'specialPrivs' | 'groupPrivs' | '$$COMPILED_PRIVS$$' ? IntfPrivileges | null
+  : K extends 'avatar' | 'organization' | 'title' | 'username' | 'name' | 'email' | 'mobile' | 'openID' ? string | null
   : string;
 };
 
@@ -124,6 +129,55 @@ export default {
   //list,
   getDigesting,
 
+
+  getByID: async (userID: number, isAdmin = false): Promise<Partial<IntfUser> | undefined> => {
+    const db = await getDB();
+    const colsToOutput = resolveCols(undefined, isAdmin, public_cols, cols).map(c => cols[c as keyof typeof cols]);
+    const user = await db<IntfUser>(tblName)
+      .select(colsToOutput)
+      .leftJoin(group.tblName, group.cols.id, cols.assigned_grpID)
+      .where(cols.id, userID)
+      .andWhere(group.cols.status, enuBannableStatus.active)
+      .andWhere(cols.status, enuBannableStatus.active)
+      .first();
+    if (user) user.privs = deepMerge(user[cols.groupPrivs], user[cols.specialPrivs]);
+    return user;
+  },
+
+  findByUsername: async (username: string, isAdmin = false): Promise<Partial<IntfUser> | undefined> => {
+    const db = await getDB();
+    const colsToOutput = resolveCols(undefined, isAdmin, public_cols, cols).map(c => cols[c as keyof typeof cols]);
+    const user = await db<IntfUser>(tblName)
+      .select(colsToOutput)
+      .leftJoin(group.tblName, group.cols.id, cols.assigned_grpID)
+      .whereRaw('LOWER(??) = ?', [cols.username, username.trim().toLowerCase()])
+      .andWhere(group.cols.status, enuBannableStatus.active)
+      .andWhere(cols.status, enuBannableStatus.active)
+      .first();
+    if (user) user.privs = deepMerge(user[cols.groupPrivs], user[cols.specialPrivs]);
+    return user;
+  },
+
+  updateProfile: async (
+    userID: number,
+    profile: { name?: string | null; username?: string | null; avatar?: string | null; organization?: string | null; title?: string | null }
+  ): Promise<number> => {
+    const db = await getDB();
+    const changes: Record<string, string | null> = {};
+    if (Object.prototype.hasOwnProperty.call(profile, 'name')) changes[cols.name] = profile.name || null;
+    if (Object.prototype.hasOwnProperty.call(profile, 'username')) changes[cols.username] = profile.username || null;
+    if (Object.prototype.hasOwnProperty.call(profile, 'avatar')) changes[cols.avatar] = profile.avatar || null;
+    if (Object.prototype.hasOwnProperty.call(profile, 'organization')) changes[cols.organization] = profile.organization || null;
+    if (Object.prototype.hasOwnProperty.call(profile, 'title')) changes[cols.title] = profile.title || null;
+    if (!Object.keys(changes).length) return 0;
+    return db(tblName).update(changes).where(cols.id, userID).andWhere(cols.status, enuBannableStatus.active);
+  },
+
+  deactivate: async (userID: number): Promise<number> => {
+    const db = await getDB();
+    return db(tblName).update({ [cols.status]: enuBannableStatus.removed }).where(cols.id, userID);
+  },
+
   verifyRefreshToken: async (usrKey: string, refreshHash: string): Promise<IntfUser | undefined> => {
     const db = await getDB();
     const colsToOutput = resolveCols(undefined, true, public_cols, cols).map(c => cols[c as keyof typeof cols]);
@@ -137,7 +191,7 @@ export default {
       .andWhere(cols.status, enuBannableStatus.active)
       .first()
     if (user)
-      user.privs = deepMerge(user.grpPrivs, user.specialPrivs)
+      user.privs = deepMerge(user[cols.groupPrivs], user[cols.specialPrivs])
     return user
   },
 
@@ -155,7 +209,8 @@ export default {
     userOpenID: string | undefined = undefined,
     userFullname: string | undefined = undefined,
     usrPrivs: Record<string, unknown> = {},
-    grpId: number = DEFAULT_GROUP_ID
+    grpId: number = DEFAULT_GROUP_ID,
+    userUsername: string | undefined = undefined
   ): Promise<number> => {
     const db = await getDB();
     const res = await db(tblName)
@@ -165,6 +220,7 @@ export default {
         [cols.mobile]: userMobile || null,
         [cols.openID]: userOpenID || null,
         [cols.name]: userFullname || null,
+        [cols.username]: userUsername || null,
         [cols.specialPrivs]: JSON.stringify(usrPrivs),
         [cols.assigned_grpID]: grpId
       })

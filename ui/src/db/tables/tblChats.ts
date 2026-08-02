@@ -37,8 +37,8 @@ export type IntfDBChat = {
   : string;
 };
 
-export type TypChatListItem = Pick<IntfDBChat, 
-  typeof cols.id | typeof cols.title | typeof cols.last_msgID | typeof cols.createdAt
+export type TypChatListItem = Pick<IntfDBChat,
+  typeof cols.id | typeof cols.key | typeof cols.title | typeof cols.last_msgID | typeof cols.createdAt
 >;
 
 export interface IntfChatListResult {
@@ -95,7 +95,7 @@ export default {
       throw new exHttpAccessDenied("you are not admin!")  
 
     const row = await db<IntfDBChat>(tblName)
-      .select(cols.id, cols.title, cols.last_msgID, cols.createdAt, cols.status)
+      .select(cols.id, cols.key, cols.title, cols.last_msgID, cols.createdAt, cols.status)
       .where(qb=>userID ? qb.where(cols.owner_usrID, userID) : qb.whereNotNull(cols.owner_usrID))
       .andWhere(qb => 
         qb.where(cols.key, typeof chatId === "string" ? chatId :  null)

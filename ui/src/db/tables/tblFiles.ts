@@ -39,7 +39,7 @@ export type IntfFile = {
     : string;
 };
 
-export type TypFileListItem = Pick<IntfFile, typeof cols.id | typeof cols.key | typeof cols.name | typeof cols.size | typeof cols.uploadedAt>
+export type TypFileListItem = Pick<IntfFile, typeof cols.id | typeof cols.key | typeof cols.name | typeof cols.size | typeof cols.chunkCount | typeof cols.uploadedAt | typeof cols.status>
 
 /* =======================
    Actions
@@ -71,7 +71,7 @@ export default {
     if(!userFileInfo) throw new exHttpInternalServerError("Invalid User Info")
 
     const files = await db<IntfFile>(tblName)
-      .select(cols.id, cols.name, cols.owner_usrID, cols.key, cols.size, cols.uploadedAt)
+      .select(cols.id, cols.name, cols.owner_usrID, cols.key, cols.size, cols.chunkCount, cols.uploadedAt, cols.status)
       .where(cols.owner_usrID, userID)
       .andWhere(cols.service, service)
       .andWhere(qb => {qb.where(cols.status, enuFileStatus.active).orWhere(cols.status, enuFileStatus.processing);})

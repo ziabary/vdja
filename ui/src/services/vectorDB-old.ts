@@ -8,7 +8,7 @@ import configManager from "../utils/configManager";
 import type { IntfChunkPayload } from "../interfaces/llm";
 import type { IntfExHttp } from "../interfaces/exHttp";
 import type { IntfChunk } from "../interfaces/file";
-import { RAG_CRAWLED_RSS_NEWS } from "./ragService";
+const RAG_CRAWLED_RSS_NEWS = "RAG_CRAWLED_RSS_NEWS";
 
 
 type FieldCondition = Schemas["FieldCondition"];
@@ -286,7 +286,7 @@ export default function vectorDB() {
         });
       }
 
-      return filteredChunks.map((r: QdrantSearchPoint) => r.payload as IntfChunkPayload);
+      return filteredChunks.map((r: QdrantSearchPoint) => ({ ...(r.payload as IntfChunkPayload), _score: r.score }));
     } catch (ex: unknown) {
       if ((ex as IntfExHttp).status === 400) {
         logger.error("Maybe the filter is buggy. New syntax needed");

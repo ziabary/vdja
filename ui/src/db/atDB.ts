@@ -10,6 +10,10 @@ import sampleQuestions from "./tables/tblSampleQuestions";
 import user from "./tables/tblUser";
 import sharedFiles from "./tables/tblSharedFiles";
 import sharedFileRequests from "./tables/tblSharedFileRequests";
+import widgets from "./tables/tblWidgets";
+import widgetOperators from "./tables/tblWidgetOperators";
+import widgetSessions from "./tables/tblWidgetSessions";
+import widgetHumanReplies from "./tables/tblWidgetHumanReplies";
 
 const atDB =  {
   log,
@@ -23,7 +27,11 @@ const atDB =  {
   perUserStats,
   news,
   sharedFiles,
-  sharedFileRequests
+  sharedFileRequests,
+  widgets,
+  widgetOperators,
+  widgetSessions,
+  widgetHumanReplies
 };
 
 export default atDB

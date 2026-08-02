@@ -100,6 +100,28 @@ export default {
     return count;
   },
 
+  /** Add a single user/assistant message (used by human widget operators). */
+  addMessage: async (
+    chatID: number,
+    requestId: string,
+    role: enuRoles,
+    content: string,
+    status: enuMsgStatus = enuMsgStatus.Finished
+  ): Promise<number> => {
+    const db = await getDB();
+    const result = await db<IntfMessage>(tblName)
+      .insert({
+        [cols.key]: requestId,
+        [cols.related_chtID]: chatID,
+        [cols.role]: role,
+        [cols.content]: content,
+        [cols.status]: status,
+      })
+      .returning(cols.id);
+    const row = Array.isArray(result) ? result[0] : result;
+    return typeof row === 'number' ? row : Number((row as unknown as Record<string, unknown>)?.[cols.id] ?? 0);
+  },
+
   /** Add a dialogue (user + bot messages) */
   addDialogue: async (
     chatSpecs: TypChatListItem,
