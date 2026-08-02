@@ -37,14 +37,21 @@ export type IntfDBChat = {
   : string;
 };
 
-export type TypChatListItem = Pick<IntfDBChat, 
-  typeof cols.id | typeof cols.title | typeof cols.last_msgID | typeof cols.createdAt
+export type TypChatListItem = Pick<IntfDBChat,
+  typeof cols.id | typeof cols.key | typeof cols.title | typeof cols.last_msgID | typeof cols.createdAt
 >;
 
 export interface IntfChatListResult {
   totalChats: number
   totalTokens: number
   chats: TypChatListItem[]
+}
+
+function firstId(result: unknown): number {
+  if (!Array.isArray(result)) return Number(result);
+  const row = result[0] as Record<string, unknown> | number | undefined;
+  if (typeof row === 'number') return row;
+  return Number(row?.[cols.id] ?? 0);
 }
 
 /* =======================
@@ -95,7 +102,7 @@ export default {
       throw new exHttpAccessDenied("you are not admin!")  
 
     const row = await db<IntfDBChat>(tblName)
-      .select(cols.id, cols.title, cols.last_msgID, cols.createdAt, cols.status)
+      .select(cols.id, cols.key, cols.title, cols.last_msgID, cols.createdAt, cols.status)
       .where(qb=>userID ? qb.where(cols.owner_usrID, userID) : qb.whereNotNull(cols.owner_usrID))
       .andWhere(qb => 
         qb.where(cols.key, typeof chatId === "string" ? chatId :  null)
@@ -110,14 +117,15 @@ export default {
   new: async(service:string, userID: number, chatKey: string): Promise<number | undefined> => {
     const db = await getDB();
 
-    const [row] = await db<IntfDBChat>(tblName)
+    const result = await db<IntfDBChat>(tblName)
       .insert({
         [cols.service]: service,
         [cols.owner_usrID]: userID,
         [cols.key]: chatKey
       }).returning(cols.id);
 
-    return row?.[cols.id];
+    const id = firstId(result);
+    return id > 0 ? id : undefined;
   },
 
   /** Delete a chat */

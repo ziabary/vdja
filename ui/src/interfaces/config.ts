@@ -69,7 +69,9 @@ export enum enuLLMServices {
   RAG = "rag",
   Translate = "translate",
   Summarize = "summarize",
-  Thinker = "thinker",
+  FAQ = "faq",
+  Think = "think",
+  Thinker = "think",
   Rahbari = "rahbari"
 }
 
@@ -89,8 +91,8 @@ export interface IntfConfigs {
     gwSecret: string 
   }
   llmServers: {
-    [key in enuLLMServices]: IntfLLMServerConfig
-  };
+    [key in Exclude<enuLLMServices, enuLLMServices.FAQ>]: IntfLLMServerConfig
+  } & { faq?: IntfLLMServerConfig };
 
   embedding: {
     server : IntfLLMServerConfig;
@@ -110,4 +112,3 @@ export interface IntfConfigs {
   newsDb?: boolean | IntfDBConfig;
   specialDb?: boolean | IntfDBConfig;
 }
-

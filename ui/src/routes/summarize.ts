@@ -94,7 +94,7 @@ router.post("/summarize", async (apiReq: Request<{}, {}, SummarizeRequestBody>, 
   const summaryServer = configs.llmServers.summarize
   
   if (!api_text?.trim()) throw new exHttpInvalidParams("متن خالی است");
-
+    
   // TODO: handle special user word count logic
   const trimmed_text = api_text.slice(0, summaryServer?.maxInputChars || 2000).trim();
   const strippedText = stripText(trimmed_text);

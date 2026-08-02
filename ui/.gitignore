@@ -5,3 +5,5 @@ dist
 logs
 package-lock.json
 yarn.lock
+db/data
+*.zip

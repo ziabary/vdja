@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>سایت نمونه نصب ویجت فاپا</title>
+  <link rel="stylesheet" href="css/bootstrap/bootstrap.rtl.min.css" />
+  <link rel="stylesheet" href="fonts/IranSansX/fontiran.css" />
+  <style>
+    body{font-family:"IRANSansX",sans-serif;background:#f5f7fb;color:#172033;min-height:100vh}
+    .demo-nav{background:#fff;border-bottom:1px solid #dde3ed}.demo-logo{width:54px}.hero{padding:90px 0;background:linear-gradient(135deg,#eef4ff,#fff)}
+    .hero h1{font-weight:900}.product-card{height:100%;border:0;box-shadow:0 12px 30px rgba(26,44,83,.08)}
+    .icon{width:52px;height:52px;display:grid;place-items:center;border-radius:16px;background:#e9f1ff;color:#0d6efd;font-size:1.35rem}
+  </style>
+</head>
+<body>
+  <nav class="demo-nav py-3"><div class="container d-flex align-items-center"><img src="/img/logo-light.png" class="demo-logo" alt="فاپا"><strong class="me-3">راهکارهای فناوری اطلاعات فاپا</strong><div class="me-auto d-flex gap-3"><a href="#" class="text-decoration-none">محصولات</a><a href="#" class="text-decoration-none">خدمات</a><a href="#" class="text-decoration-none">پشتیبانی</a></div></div></nav>
+  <section class="hero"><div class="container"><div class="row align-items-center"><div class="col-lg-7"><span class="badge text-bg-primary mb-3">سایت نمونه مقصد</span><h1>نرم‌افزار، سخت‌افزار و خدمات سازمانی در یک مجموعه</h1><p class="lead text-secondary mt-3">این صفحه برای نمایش نحوه نصب واقعی ویجت پشتیبان ساخته شده است. ویجت از گوشه صفحه باز می‌شود.</p><button class="btn btn-primary btn-lg">مشاهده محصولات</button></div><div class="col-lg-5 text-center"><div style="font-size:9rem">🧩</div></div></div></div></section>
+  <main class="container py-5"><div class="row g-4"><div class="col-md-4"><div class="card product-card p-4"><div class="icon">🖥️</div><h4 class="mt-3">نرم‌افزارهای سازمانی</h4><p class="text-secondary">اتوماسیون، خدمات مشتریان و مدیریت فرایندهای سازمانی.</p></div></div><div class="col-md-4"><div class="card product-card p-4"><div class="icon">🛡️</div><h4 class="mt-3">تجهیزات و امنیت شبکه</h4><p class="text-secondary">تجهیزات سخت‌افزاری، امنیت، نصب و پشتیبانی تخصصی.</p></div></div><div class="col-md-4"><div class="card product-card p-4"><div class="icon">🎧</div><h4 class="mt-3">خدمات پس از فروش</h4><p class="text-secondary">گارانتی، نگهداری، آموزش و پاسخ‌گویی فنی.</p></div></div></div></main>
+  <script>var page = { serviceName: "rag" }; var auth;</script>
+  <script src="js/vendors/bootstrap.bundle.min.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    setupAuth("rag", false).then(r => {
+      auth = r;
+      if (!auth.token()) {
+        const back = location.pathname.replace(/^\//, "") + location.search;
+        window.location.href = `/login?back=${encodeURIComponent(back)}&service=rag`;
+      }
+    });
+    (function(){
+      const params = new URLSearchParams(location.search);
+      const widgetId = params.get('widget');
+      if (!widgetId) {
+        const notice = document.createElement('div');
+        notice.className = 'alert alert-warning position-fixed top-0 start-50 translate-middle-x mt-4 shadow';
+        notice.style.zIndex = '2000';
+        notice.innerHTML = 'شناسه ویجت در نشانی صفحه وجود ندارد. این صفحه را از تب «آزمایش» یک ویجت باز کنید.';
+        document.body.appendChild(notice);
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = 'js/widget.js';
+      script.async = true;
+      script.dataset.widgetId = widgetId;
+      script.dataset.preview = 'true';
+      document.body.appendChild(script);
+    })();
+  </script>
+</body>
+</html>

@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="fonts/IranSansX/fontiran.css" />
   <link rel="stylesheet" href="fonts/fontawesome/active/all.css" />
   <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/app-nav.css" />
 
   <style>
     body {
@@ -55,7 +56,7 @@
   </style>
 </head>
 
-<body class="d-flex flex-column min-vh-100">
+<body data-service="/" class="d-flex flex-column min-vh-100">
   <main class="flex-grow-1">
     <div class="container py-3">
       <div class="d-flex flex-row align-items-center mb-5 position-relative">
@@ -63,13 +64,12 @@
         <div class="w-100"></div>
         <div class="left-side">
           <i class="fa fa-moon fa-lg btn" id=btnToggleDarkMode></i>
-          <a href="/login?back=/" class="btn btn-outline-primary" id=btnLogin>ورود به سامانه</a>
-          <a class="btn btn-outline-secondary hidden" id=backToLogin>خروج از سامانه</a>
+          <span data-app-account data-service="/" data-login-back="/"></span>
         </div>
       </div>
 
       <h1 class="text-center mb-1 text-primary">دستیار هوشمند فارسی</h1>
-      <h2 class="text-center mb-3 text-secondary">نسخه آزمایشی</h2>
+      <!-- <h2 class="text-center mb-3 text-secondary">نسخه آزمایشی</h2> -->
 
       <div class="row g-4 justify-content-center">
         <div class="col-md-4 col-6 col-6">
@@ -92,7 +92,7 @@
           </a>
         </div>
 
-        <div class="col-md-4 col-6">
+        <!-- <div class="col-md-4 col-6">
           <a href="/rahbari" class="text-decoration-none" disabled>
             <div class="card text-center shadow-sm">
               <div class="card-icon mb-3"><img src="img/rahbar.svg" alt=""></div>
@@ -100,7 +100,7 @@
               <p class="text-muted on-desktop">چت با اندیشه و گفتار شهید آیت‌الله خامنه‌ای</p>
             </div>
           </a>
-        </div>
+        </div> -->
 
         <div class="col-md-4 col-6">
           <a href="/summarize" class="text-decoration-none">
@@ -111,6 +111,38 @@
             </div>
           </a>
         </div>
+
+        <div class="col-md-4 col-6">
+          <a href="/faq" class="text-decoration-none">
+            <div class="card text-center shadow-sm">
+              <div class="card-icon mb-3 text-primary"><i class="fa-solid fa-circle-question"></i></div>
+              <h4>مولد FAQ</h4>
+              <p class="text-muted on-desktop">ساخت پرسش و پاسخ متداول از کل فایل</p>
+            </div>
+          </a>
+        </div>
+
+        <div class="col-md-4 col-6">
+          <a href="/crm" class="text-decoration-none">
+            <div class="card text-center shadow-sm">
+              <div class="card-icon mb-3 text-primary"><i class="fa-solid fa-building"></i></div>
+              <h4>CRM هوشمند</h4>
+              <p class="text-muted on-desktop">مدیریت مشتریان، فروش محصولات و پیگیری هوشمند</p>
+            </div>
+          </a>
+        </div>
+
+
+        <div class="col-md-4 col-6">
+          <a href="/webwidget" class="text-decoration-none">
+            <div class="card text-center shadow-sm">
+              <div class="card-icon mb-3 text-primary"><i class="fa-solid fa-puzzle-piece"></i></div>
+              <h4>ویجت پشتیبان هوشمند</h4>
+              <p class="text-muted on-desktop">ساخت چت‌بات قابل نصب، آموزش با فایل و پاسخ‌گویی انسانی</p>
+            </div>
+          </a>
+        </div>
+
 
         <div class="col-md-4 col-6">
           <a href="/shares" class="text-decoration-none">
@@ -146,10 +178,9 @@
   </main>
   <footer class="footer-sticky">
     <div class="container text-center">
-      <div class="text-center mb-2"><small>قدرت‌گرفته از GPUهای <a target=blank
-            href="https://afranet.ir/fa/services/gpu">افرانت</a></small></div>
+      <div class="text-center mb-2"></div>
       <div class="text-center mb-3"><small>کلیه حقوق برای <a target="blank" href="https://tip.co.ir">
-            شرکت پردازش هوشمند ترگمان
+            شرکت فناوران پارسیان
           </a> محفوظ است</small>
       </div>
     </div>
@@ -157,6 +188,7 @@
   <script src="js/vendors/bootstrap.bundle.min.js"></script>
   <script src="js/common.js"></script>
   <script src="js/auth.js"></script>
+  <script src="js/app-nav.js"></script>
   <script>let auth; setupAuth("/", false).then(r => auth = r)</script>
 </body>
 

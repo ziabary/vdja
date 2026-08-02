@@ -9,8 +9,8 @@ import * as oidc from "openid-client";
 import atDB from "../db/atDB";
 import logger from "../utils/logger"
 import configManager from "../utils/configManager"
-import { exHttpAccessDenied, exHttpInternalServerError, exHttpInvalidParams, exHttpUnauthorized, type IntfExHttp } from "../interfaces/exHttp";
-import { createAccessToken, createRefreshToken, verifyRefreshToken } from "../services/authService";
+import { exHttpAccessDenied, exHttpConflict, exHttpInternalServerError, exHttpInvalidParams, exHttpUnauthorized, type IntfExHttp } from "../interfaces/exHttp";
+import { createAccessToken, createRefreshToken, getAuthInfo, verifyRefreshToken } from "../services/authService";
 import type { IntfUser } from "../db/tables/tblUser";
 import { parseQueryToString } from "../utils/common";
 
@@ -369,6 +369,70 @@ router.post("/auth/refresh", async (apiReq: Request, apiRes: Response) => {
     throw new exHttpAccessDenied("شما به این سرویس دسترسی ندارید")
 
   await sendJWT(user, apiRes)
+});
+
+
+function normalizeProfileAvatar(value: unknown): string {
+  const source = String(value || '').trim();
+  if (!source) return '';
+  if (source.length > 350000) throw new exHttpInvalidParams('تصویر پروفایل بیش از حد بزرگ است');
+  if (/^data:image\/(?:png|jpe?g|webp);base64,[a-z0-9+/=]+$/i.test(source)) return source;
+  try {
+    const url = new URL(source);
+    if (url.protocol !== 'https:' || url.username || url.password) throw new Error('invalid image URL');
+    return url.href;
+  } catch {
+    throw new exHttpInvalidParams('تصویر پروفایل باید PNG، JPEG یا WebP بارگذاری‌شده یا نشانی HTTPS معتبر باشد');
+  }
+}
+
+function profileDTO(user: Partial<IntfUser>) {
+  return {
+    id: user.usrID,
+    name: user.usrName || '',
+    username: user.usrUsername || '',
+    avatar: user.usrAvatar || '',
+    organization: user.usrOrganization || '',
+    title: user.usrTitle || '',
+    email: user.usrEmail || '',
+    mobile: user.usrMobile || '',
+    createdAt: user.usrCreatedAt,
+  };
+}
+
+router.get('/auth/profile', async (apiReq: Request, apiRes: Response) => {
+  const auth = await getAuthInfo(apiReq);
+  const user = await atDB.user.getByID(auth.uid, true);
+  if (!user) throw new exHttpUnauthorized('کاربر یافت نشد');
+  apiRes.json({ profile: profileDTO(user) });
+});
+
+router.put('/auth/profile', async (apiReq: Request, apiRes: Response) => {
+  const auth = await getAuthInfo(apiReq);
+  const body = apiReq.body || {};
+  const name = body.name === undefined ? undefined : String(body.name || '').trim();
+  const username = body.username === undefined ? undefined : String(body.username || '').trim().toLowerCase();
+  const avatar = body.avatar === undefined ? undefined : normalizeProfileAvatar(body.avatar);
+  const organization = body.organization === undefined ? undefined : String(body.organization || '').trim();
+  const title = body.title === undefined ? undefined : String(body.title || '').trim();
+
+  if (name !== undefined && name.length > 50) throw new exHttpInvalidParams('نام حداکثر می‌تواند ۵۰ کاراکتر باشد');
+  if (username !== undefined) {
+    if (username && !/^[a-z][a-z0-9_-]{2,31}$/.test(username))
+      throw new exHttpInvalidParams('نام کاربری باید ۳ تا ۳۲ کاراکتر و شامل حروف انگلیسی، عدد، خط تیره یا زیرخط باشد');
+    if (username.startsWith('widget-')) throw new exHttpInvalidParams('پیشوند widget- برای کاربران سیستمی رزرو شده است');
+    if (username) {
+      const existing = await atDB.user.findByUsername(username, true);
+      if (existing && existing.usrID !== auth.uid) throw new exHttpConflict('این نام کاربری قبلاً استفاده شده است');
+    }
+  }
+  if (organization !== undefined && organization.length > 100) throw new exHttpInvalidParams('نام سازمان حداکثر می‌تواند ۱۰۰ کاراکتر باشد');
+  if (title !== undefined && title.length > 100) throw new exHttpInvalidParams('عنوان شغلی حداکثر می‌تواند ۱۰۰ کاراکتر باشد');
+
+  await atDB.user.updateProfile(auth.uid, { name, username, avatar, organization, title });
+  const user = await atDB.user.getByID(auth.uid, true);
+  if (!user) throw new exHttpUnauthorized('کاربر یافت نشد');
+  apiRes.json({ profile: profileDTO(user), accessToken: createAccessToken(user) });
 });
 
 function normalizePhone(mobile: string) {

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>چت با تفکر - دستیار هوشمند فارسی</title>
+    
+    <link rel="stylesheet" href="css/bootstrap.rtl.min.css" />
+    <link rel="stylesheet" href="fonts/IranSansX/fontiran.css" />
+    <link rel="stylesheet" href="fonts/fontawesome/active/all.css" />
+
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/rag-common.css" />    
+  </head>
+  <body class="new-chat">
+    <span id="loading"><div class=marquee></div></span>
+    <nav class="navbar shadow-sm">
+      <div class="container">
+        <a href="/"><img src="/img/logo-light.png" class="bi-color" alt="لوگو"/></a>
+        <span class="navbar-brand mx-auto h4 mb-0">چت با تفکر</span>
+        <span class="burger" onclick="document.body.classList.add('side-open')"><i class="fa fa-bars"></i></span>
+        <span class="close-sidebar-cross" onclick="document.body.classList.remove('side-open')"><i class="fa fa-close"></i></span>
+      </div>
+    </nav>
+    <div class="sidebar p-3">
+      <span class="close-sidebar-cross" onclick="document.body.classList.remove('side-open')"><i class="fa fa-close"></i></span>
+      <div class="logo">
+        <a href="/"><img alt="targoman-logo" src="img/logo-light.png" class="bi-color"/></a>
+      </div>
+
+      <h5 class="mb-3 mt-2">
+        چت‌های شما
+        <button id="btnNewChat" disabled class="btn btn-outline-primary btn-sm float-end" title="ایجاد چت جدید"><i class="fa fa-edit"></i> جدید</button>
+        <button id="btnDeleteAllChats" class="btn btn-sm btn-outline-danger float-start float-end mx-1" title="حذف همه چت‌ها"><i class="fa fa-trash-can"></i> حذف همه</button>
+      </h5>
+      <div id="chatsList" class="mb-4" style="max-height: calc(100vh / 2 - 8em); overflow: auto"></div>
+
+      <div id="backToLogin" class="push-top"><button class="btn btn-outline-secondary" title="خروج"><i  class="fa fa-door-open"></i></button></div>
+      <div id="userInfo"></div>
+    </div>
+
+    <!-- Main Chat -->
+    <div class="main-chat" >
+      <div class="chat-header d-flex justify-content-between align-items-center mb-3">
+        <h4 id="lblChatTitle"  class="clickable-title" style="cursor: pointer; display: inline-block">چت متفکرانه با فاپی‌چت</h4>
+        <i class="fa fa-moon fa-lg btn" id=btnToggleDarkMode></i>
+      </div>
+      <div id="chatContainer" class="chat-container border p-3 rounded" manual-scroll-allowed></div>
+      <div class="message-input">
+      <div class="chat-helper row mb-5 text-center">
+        <h5>با فاپی‌چت می‌تونی راجع به هرچی حرف بزنی. البته ترجیحا به انگلیسی</h5>
+      </div>
+      <div class="input-group mt-3 w-100">
+        <textarea type="text" id="messageInput" class="form-control ltr" placeholder="هر چی می‌خوای بپرس&hellip;"></textarea>
+        <div class="message-buttons">
+          <button id="btnSend" class="btn btn-text" title="ارسال"><i class="fa fa-send fa-reverse"></i></button>
+          <button id="btnStop" class="btn btn-text hidden" title="توقف"><i class="fa fa-stop fa-reverse"></i></button>
+        </div>
+      </div>
+      <div id="chat-helper-container" class="chat-helper mt-3 px-2 ltr">
+      </div>
+      </div>
+    </div>
+
+    <script src="js/vendors/bootstrap.bundle.min.js"></script>
+    <script src="js/vendors/marked.min.js"></script>
+    <script src="js/vendors/md5.min.js"></script>
+    <!-- MathJax -->
+    <script src="js/vendors/mathjax/config.js"></script>
+    <script src="js/vendors/polyfill.min.js?features=es6"></script>
+    <script src="js/vendors/mathjax/es5/tex-mml-chtml.js"></script>
+
+    <script src="js/common.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/llm.js"></script>
+    <script src="js/rag.js"></script>
+
+    <script>
+      //if(!localStorage.getItem("tgmn-banner-shown")) document.querySelector('.banner').classList.remove('hidden')
+
+      const page = {
+        serviceName: "think",
+        userContainer: document.getElementById("userInfo"),
+        chatsList: document.getElementById("chatsList"),
+        chatContainer: document.getElementById("chatContainer"),
+        messageInput: document.getElementById("messageInput"),
+        btnSend: document.getElementById("btnSend"),
+        btnStop: document.getElementById("btnStop"),
+        lblChatTitle: document.getElementById("lblChatTitle"),
+        btnNewChat: document.getElementById("btnNewChat"),
+        backToLogin: document.getElementById("backToLogin"),
+        btnDeleteAllChats: document.getElementById("btnDeleteAllChats"),
+        chatHelper: document.getElementById("chat-helper-container"),
+        useFiles: false,
+        chatHistory: []
+      }
+
+      const SAMPLE_MESSAGES = [
+        "A code in python",
+        "give me docker command",
+      ]
+      
+      /*********************************/
+      function updateQuestions(questions, filesEnabled){
+        page.chatHelper.innerHTML = ""
+        SAMPLE_MESSAGES.sort((a,b)=>Math.random()>.5 ? -1 : 1).slice(0, 5).forEach(rag.addHelpItem)
+        rag.addHelpItem("Help please!!!")
+      }
+
+      /*********************************/
+      function disableInputs(state)   {
+        messageInput.disabled = state;
+        setClass(btnSend, "hidden", state)
+        setClass(btnStop, "hidden", !state)
+        btnNewChat.disabled = state
+      }
+
+      async function updateAppState(state, whatToUpadte = null) {
+          switch(state) {
+            case enuStates.newChat:
+              lblChatTitle.innerHTML = "چت متفکرانه با فاپی‌چت"
+              document.body.classList.add('new-chat')
+              page.chatHistory = [];
+              chatContainer.innerHTML = "";
+              btnNewChat.setAttribute('disabled', true)
+              document.body.classList.remove('side-open')
+              rag.setCurrChatId('')
+              break;
+            case enuStates.chatStarted:
+              page.chatHistory = [];
+              chatContainer.innerHTML = "";
+            case enuStates.chatContinues:
+              document.body.classList.remove('side-open')
+              btnNewChat.removeAttribute('disabled')
+              document.body.classList.remove('new-chat')
+              messageInput.focus()
+          }
+          if(whatToUpadte === "chats" || whatToUpadte === "all") await rag.loadChats();
+      }
+      
+      const rag = setupRAG(page, {updateAppState, disableInputs, updateQuestions})
+    </script>
+  </body>
+</html>

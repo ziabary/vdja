@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" data-bs-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="مدیریت ویجت‌های پشتیبان هوشمند وب فاپا" />
+  <title>ویجت‌های پشتیبان هوشمند - فاپا</title>
+
+  <link rel="stylesheet" href="css/bootstrap/bootstrap.rtl.min.css" />
+  <link rel="stylesheet" href="fonts/IranSansX/fontiran.css" />
+  <link rel="stylesheet" href="fonts/fontawesome/active/all.css" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/app-nav.css" />
+  <link rel="stylesheet" href="css/webwidget.css" />
+</head>
+<body data-service="rag" class="ww-admin-page">
+  <span id="loading" class="hidden" aria-live="polite"><span class="marquee"></span></span>
+
+  <nav class="navbar ww-topbar shadow-sm" id="navbar">
+    <div class="ww-topbar-inner">
+      <div class="d-flex align-items-center gap-2 min-width-0">
+        <button class="btn btn-sm btn-outline-secondary ww-mobile-menu" id="btnWidgetMenu" type="button" aria-label="نمایش منو">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+        <a href="/" class="ww-brand" aria-label="بازگشت به خدمات فاپا">
+          <img src="/img/logo-light.png" class="bi-color" alt="لوگوی فاپا" />
+        </a>
+        <div class="ww-title-wrap">
+          <strong>ویجت‌های پشتیبان هوشمند</strong>
+          <small>ساخت، آموزش، انتشار و مدیریت پاسخ‌گویی انسانی</small>
+        </div>
+      </div>
+
+      <div class="ww-topbar-center">
+        <div class="ww-owner-pill" title="حسابی که ویجت‌ها را ایجاد و مدیریت می‌کند">
+          <i class="fa-solid fa-user-shield"></i>
+          <span>مالک سامانه:</span>
+          <strong id="wwOwnerUsername">owner-fapco</strong>
+        </div>
+      </div>
+
+      <div class="ww-topbar-actions">
+        <button class="btn btn-sm btn-primary" id="btnCreateWidgetTop" type="button">
+          <i class="fa-solid fa-plus"></i><span class="on-desktop">ویجت جدید</span>
+        </button>
+        <i class="btn btn-sm fa-solid fa-moon fa-lg" id="btnToggleDarkMode" title="تغییر حالت نمایش"></i>
+        <span data-app-services></span>
+        <span data-app-account data-service="rag" data-login-back="webwidget"></span>
+      </div>
+    </div>
+  </nav>
+
+  <div class="ww-mobile-backdrop" id="wwMobileBackdrop"></div>
+
+  <aside class="ww-sidebar" id="wwSidebar">
+    <div class="ww-sidebar-profile">
+      <div class="ww-owner-avatar"><i class="fa-solid fa-user-shield"></i></div>
+      <div class="min-width-0">
+        <strong>کنسول مالک ویجت</strong>
+        <small>مالک با کاربر اختصاصی هر ویجت متفاوت است</small>
+      </div>
+    </div>
+
+    <nav class="ww-nav" aria-label="منوی مدیریت ویجت‌ها">
+      <a href="#widgets" data-route="widgets" class="ww-nav-item active">
+        <i class="fa-solid fa-window-restore"></i><span>ویجت‌های من</span>
+        <span class="badge text-bg-primary" id="wwNavWidgetCount">۰</span>
+      </a>
+      <a href="#inbox" data-route="inbox" class="ww-nav-item">
+        <i class="fa-solid fa-headset"></i><span>پاسخ‌گویی انسانی</span>
+        <span class="badge text-bg-danger" id="wwNavPendingCount">۰</span>
+      </a>
+      <a href="#analytics" data-route="analytics" class="ww-nav-item">
+        <i class="fa-solid fa-chart-column"></i><span>آمار استفاده</span>
+      </a>
+    </nav>
+
+    <!-- <div class="ww-sidebar-note">
+      <i class="fa-solid fa-circle-info"></i>
+      <div>
+        <strong>سه هویت مستقل</strong>
+        <small>مالک ویجت، نام کاربری اختصاصی ویجت و اپراتورهای پاسخ‌گو از یکدیگر جدا هستند.</small>
+      </div>
+    </div> -->
+
+    <div class="ww-sidebar-footer">
+      <a class="btn btn-sm btn-outline-secondary w-100" href="/profile">
+        <i class="fa-solid fa-user-pen"></i> تکمیل پروفایل و نام کاربری
+      </a>
+      <!-- <small>داده‌ها از API واقعی و فضای RAG اختصاصی هر ویجت خوانده می‌شوند.</small> -->
+    </div>
+  </aside>
+
+  <main class="ww-main" id="webWidgetApp">
+    <div class="ww-page-container">
+      <div id="wwView" aria-live="polite"></div>
+      <footer class="ww-footer">
+        <small>کلیه حقوق برای <a target="_blank" href="https://tip.co.ir">شرکت فن‌آوران پارسیان</a> محفوظ است</small>
+      </footer>
+    </div>
+  </main>
+
+  <div class="ww-dialog-backdrop hidden" id="wwDialogBackdrop">
+    <section class="ww-dialog" role="dialog" aria-modal="true" aria-labelledby="wwDialogTitle">
+      <header class="ww-dialog-header">
+        <h5 id="wwDialogTitle"></h5>
+        <button class="btn btn-sm btn-outline-secondary" id="btnCloseWwDialog" type="button"><i class="fa-solid fa-xmark"></i></button>
+      </header>
+      <div class="ww-dialog-body" id="wwDialogBody"></div>
+    </section>
+  </div>
+
+  <script>
+    var page = { serviceName: "rag" };
+    var auth;
+  </script>
+  <script src="js/vendors/bootstrap.bundle.min.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/app-nav.js"></script>
+  <script>
+    setupAuth("rag", false).then(r => {
+      auth = r;
+      if (!auth.token()) window.location.href = "/login?back=webwidget&service=rag";
+    });
+  </script>
+  <script src="js/widget.js"></script>
+</body>
+</html>

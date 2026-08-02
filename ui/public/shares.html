@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="css/bootstrap/bootstrap.rtl.min.css" />
   <link rel="stylesheet" href="fonts/IranSansX/fontiran.css" />
   <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/app-nav.css" />
   <link rel="stylesheet" href="fonts/fontawesome/active/all.css" />
 
   <style>
@@ -76,7 +77,7 @@
   </style>
 </head>
 
-<body>
+<body data-service="shares">
   <span id="loading">
     <div class=marquee></div>
   </span>
@@ -91,33 +92,21 @@
       <div class="left-side mx-2">
         <i class="btn btn-sm fa fa-moon fa-lg btn" id=btnToggleDarkMode></i>
         <div class="on-mobile" title="منو"><i class="btn btn-sm fa fa-lg fa-bars" id="btnMenu"></i></div>
-        <div class="on-desktop">
-          <a href="/" class="btn btn-sm btn-outline-secondary" title="سایر خدمات">
-            <i class="fa fa-boxes"></i> سایر خدمات
-          </a>
-          <button class="btn btn-sm btn-outline-secondary" title="خروج" id="backToLogin">
-            <i class="fa fa-door-open"></i> خروج
-          </button>
-          <a href="/login?back=shares" class="btn btn-sm btn-primary" title="ورود به سامانه" id=btnLogin>
-            <i class="fa fa-user"></i> ورود به سامانه
-          </a>
+        <div class="on-desktop d-flex gap-2">
+          <span data-app-services></span>
+          <span data-app-account data-service="shares" data-login-back="shares"></span>
         </div>
       </div>
     </div>
   </nav>
   <div class="collapsed" id="menu">
-    <a href="/" class="btn btn-sm btn-outline-secondary" title="سایر خدمات">
-      <i class="fa fa-boxes"></i> سایر خدمات
-    </a>
-    <button class="btn btn-sm btn-outline-secondary" title="خروج" id="backToLogin">
-      <i class="fa fa-door-open"></i> خروج
-    </button>
+    <span data-app-services></span>
+    <span data-app-account data-service="shares" data-login-back="shares"></span>
   </div>
 
   <!-- CONTAINER -->
   <div class="main container">
-    <p>این فایل‌ها در شرایط جنگ تحمیلی رژیم صهیونستی و آمریکا، توسط یک گروه جهادی در پیام‌رسان بله
-      گردآوری شده و برای استفاده پژوهش‌گران و متخصصان در اختیار آن‌ها قرار گرفته است.
+    <p>در شرایط قطعی اینترنت و یا برای افزایش سرعت دسترسی از این فایل‌ها استفاده کنید. در صورتی که فایل مورد نیاز شما در این لیست وجود ندارد می‌توانید آن را درخواست کنید. پس از دانلود فایل به شما اطلاع داده خواهد شد
     </p>
 
     <ul class="nav nav-tabs" id="myTab" role="tablist">
@@ -243,6 +232,7 @@
   <script src="js/vendors/bootstrap.bundle.min.js"></script>
   <script src="js/common.js"></script>
   <script src="js/auth.js"></script>
+  <script src="js/app-nav.js"></script>
 
   <script>
     const btnReqDownload = document.getElementById('btnReqDownload')

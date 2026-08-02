@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" data-bs-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="پروفایل کاربری دستیار هوشمند فاپا" />
+  <title>پروفایل کاربری - دستیار هوشمند فاپا</title>
+  <link rel="stylesheet" href="css/bootstrap/bootstrap.rtl.min.css" />
+  <link rel="stylesheet" href="fonts/IranSansX/fontiran.css" />
+  <link rel="stylesheet" href="fonts/fontawesome/active/all.css" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/app-nav.css" />
+  <link rel="stylesheet" href="css/profile.css" />
+</head>
+<body data-service="rag" class="profile-page d-flex flex-column min-vh-100">
+  <span id="loading" class="hidden"><span class="marquee"></span></span>
+
+  <nav class="navbar shadow-sm" id="navbar">
+    <div class="container profile-navbar">
+      <a href="/" class="d-flex align-items-center"><img src="/img/logo-light.png" alt="لوگوی فاپا" class="bi-color logo" /></a>
+      <span class="navbar-brand mx-auto h4 mb-0">پروفایل کاربری</span>
+      <div class="d-flex align-items-center gap-2">
+        <i class="btn btn-sm fa-solid fa-moon fa-lg" id="btnToggleDarkMode" title="تغییر حالت نمایش"></i>
+        <span data-app-services></span>
+        <span data-app-account data-service="rag" data-login-back="profile"></span>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container profile-main flex-grow-1 py-4">
+    <div class="profile-heading mb-4">
+      <div>
+        <h1>مشخصات حساب</h1>
+        <p>این اطلاعات اختیاری است؛ اما برای شناسایی شما در پنل پاسخ‌گویی انسانی، ثبت نام کاربری توصیه می‌شود.</p>
+      </div>
+      <span class="profile-security"><i class="fa-solid fa-shield-halved"></i> اطلاعات ورود شما تغییر نمی‌کند</span>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-lg-4">
+        <section class="card shadow-sm profile-preview-card">
+          <div class="card-body p-4 text-center">
+            <div class="profile-avatar" id="profileAvatarPreview"><i class="fa-solid fa-user"></i></div>
+            <h3 id="profileNamePreview">کاربر سامانه</h3>
+            <div class="profile-username ltr" id="profileUsernamePreview">نام کاربری ثبت نشده</div>
+            <p id="profileRolePreview" class="text-muted mb-1"></p>
+            <p id="profileOrganizationPreview" class="text-muted"></p>
+            <div class="d-grid gap-2 mt-4">
+              <label for="profileAvatarInput" class="btn btn-outline-primary"><i class="fa-solid fa-image"></i> انتخاب تصویر</label>
+              <input id="profileAvatarInput" type="file" class="d-none" accept="image/png,image/jpeg,image/webp" />
+              <button id="btnRemoveAvatar" class="btn btn-outline-danger" type="button"><i class="fa-solid fa-trash-can"></i> حذف تصویر</button>
+            </div>
+            <small class="text-muted d-block mt-3">تصویر به‌صورت مربعی و حداکثر ۲۵۶ پیکسل ذخیره می‌شود.</small>
+          </div>
+        </section>
+
+        <div class="alert alert-info mt-3 small">
+          <i class="fa-solid fa-circle-info ms-1"></i>
+          مالک ویجت، اپراتورها را با همین نام کاربری به پنل پاسخ‌گویی اضافه می‌کند. نام کاربری پس از ثبت نیز قابل تغییر است، اما بهتر است پایدار بماند.
+        </div>
+      </div>
+
+      <div class="col-lg-8">
+        <section class="card shadow-sm">
+          <div class="card-body p-4 p-lg-5">
+            <form id="profileForm" novalidate>
+              <div class="profile-section-title"><i class="fa-solid fa-id-card"></i><div><h2>اطلاعات عمومی</h2><p>هیچ‌یک از این موارد برای استفاده عادی از سامانه اجباری نیست.</p></div></div>
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label for="profileName" class="form-label">نام و نام خانوادگی</label>
+                  <input id="profileName" class="form-control" maxlength="50" autocomplete="name" placeholder="مثلاً سارا محمدی" />
+                </div>
+                <div class="col-md-6">
+                  <label for="profileUsername" class="form-label">نام کاربری</label>
+                  <div class="input-group" dir="ltr">
+                    <span class="input-group-text"><i class="fa-solid fa-at"></i></span>
+                    <input id="profileUsername" class="form-control ltr" maxlength="32" autocomplete="username" placeholder="sara-mohammadi" pattern="[a-z][a-z0-9_-]{2,31}" />
+                  </div>
+                  <div class="form-text">۳ تا ۳۲ کاراکتر؛ حروف کوچک انگلیسی، عدد، خط تیره یا زیرخط.</div>
+                </div>
+                <div class="col-md-6">
+                  <label for="profileOrganization" class="form-label">سازمان یا شرکت</label>
+                  <input id="profileOrganization" class="form-control" maxlength="100" autocomplete="organization" placeholder="شرکت فناوران پارسیان" />
+                </div>
+                <div class="col-md-6">
+                  <label for="profileTitle" class="form-label">عنوان شغلی</label>
+                  <input id="profileTitle" class="form-control" maxlength="100" autocomplete="organization-title" placeholder="کارشناس پشتیبانی" />
+                </div>
+              </div>
+
+              <hr class="my-4" />
+              <div class="profile-section-title"><i class="fa-solid fa-lock"></i><div><h2>اطلاعات حساب</h2><p>این موارد فقط برای اطلاع نمایش داده می‌شوند و از این صفحه قابل تغییر نیستند.</p></div></div>
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label">ایمیل</label>
+                  <input id="profileEmail" class="form-control ltr" readonly />
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">شماره همراه</label>
+                  <input id="profileMobile" class="form-control ltr" readonly />
+                </div>
+              </div>
+
+              <div class="d-flex flex-wrap justify-content-end gap-2 mt-4">
+                <a href="/webwidget" class="btn btn-outline-secondary">بازگشت</a>
+                <button id="btnSaveProfile" class="btn btn-primary px-4" type="submit"><i class="fa-solid fa-floppy-disk"></i> ذخیره پروفایل</button>
+              </div>
+            </form>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <footer class="text-center py-3"><small>کلیه حقوق برای <a target="_blank" href="https://tip.co.ir">شرکت فناوران پارسیان</a> محفوظ است</small></footer>
+
+  <script>var page = { serviceName: "rag" }; var auth;</script>
+  <script src="js/vendors/bootstrap.bundle.min.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/app-nav.js"></script>
+  <script src="js/profile.js"></script>
+  <script>
+    setupAuth("rag", false).then(async r => {
+      auth = r;
+      if (!auth.token()) {
+        window.location.href = "/login?back=profile&service=rag";
+        return;
+      }
+      await initProfilePage();
+    });
+  </script>
+</body>
+</html>

@@ -29,6 +29,9 @@ import rahbari from './routes/rahbari';
 import stats from './routes/stats';
 import admin from './routes/admin';
 import files from './routes/shares';
+import widget from './routes/widget';
+import faq from './routes/faq';
+import { publicWidgetCors } from './services/widgetService';
 import type { IntfExHttp } from './interfaces/exHttp';
 import { enuLLMServices } from './interfaces/config';
 import setupAPICallLogger from './utils/apiCallLog';
@@ -51,7 +54,14 @@ async function init() {
     optionsSuccessStatus: 200,
   };
 
-  app.use(cors(corsOptions));
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    Promise.resolve(publicWidgetCors(req, res, next)).catch(next);
+  });
+  const defaultCors = cors(corsOptions);
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    if (req.path.startsWith('/api/widget/public/')) return next();
+    return defaultCors(req, res, next);
+  });
   app.use(cookieParser());
   app.set("trust proxy", "172.17.0.0/16");
 
@@ -122,7 +132,9 @@ app.use((req, res, next) => {
     rahbari,
     stats,
     admin,
-    files
+    files,
+    widget
+    ,faq
   ])
 
 
