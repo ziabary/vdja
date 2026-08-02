@@ -19,12 +19,12 @@
         "minify:html": "npx html-minifier-next --input-dir public --output-dir public-dist --file-ext html --collapse-whitespace --remove-comments --remove-optional-tags --remove-redundant-attributes --remove-script-type-attributes --remove-tag-whitespace --minify-css true --minify-js true",
         "minify:css": "cleancss --batch --batch-suffix .min public/**/*.css -o public-dist",
         "obfuscate:js": "node scripts/obfuscate-frontend.js",
-        "db:migrate:old": "tsx ./db/knexfile.ts migrate:latest --verbose",
-        "db:migrate": "tsx db/migrate.ts",
-        "db:rollback": "tsx ./db/knexfile.ts migrate:rollback",
-        "db:reset": "tsx ./db/knexfile.ts migrate:rollback --all && tsx ./db/knexfile.ts migrate:latest && tsx ./db/knexfile.ts seed:run",
-        "db:make": "tsx ./db/knexfile.ts migrate:make -x ts",
-        "db:check": "tsx ./db/check-tables.ts"
+        "db:migrate:old": "node ./node_modules/tsx/dist/cli.mjs ./db/knexfile.ts migrate:latest --verbose",
+        "db:migrate": "node ./node_modules/tsx/dist/cli.mjs db/migrate.ts",
+        "db:rollback": "node ./node_modules/tsx/dist/cli.mjs ./db/knexfile.ts migrate:rollback",
+        "db:reset": "node ./node_modules/tsx/dist/cli.mjs ./db/knexfile.ts migrate:rollback --all && node ./node_modules/tsx/dist/cli.mjs ./db/knexfile.ts migrate:latest && node ./node_modules/tsx/dist/cli.mjs ./db/knexfile.ts seed:run",
+        "db:make": "node ./node_modules/tsx/dist/cli.mjs ./db/knexfile.ts migrate:make -x ts",
+        "db:check": "node ./node_modules/tsx/dist/cli.mjs ./db/check-tables.ts"
     },
     "keywords": [
         "LLM",
