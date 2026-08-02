@@ -54,7 +54,10 @@
             <li><a class="dropdown-item" href="/translate"><i class="fa-solid fa-language ms-2"></i>ترجمه</a></li>
           </ul>
         </div>
-        <a href="/login?back=webwidget" class="btn btn-sm btn-outline-primary on-desktop" id="btnLogin">
+        <a href="/profile" class="btn btn-sm btn-outline-secondary on-desktop" title="پروفایل و نام کاربری">
+          <i class="fa-solid fa-address-card"></i> پروفایل
+        </a>
+        <a href="/login?back=webwidget&service=rag" class="btn btn-sm btn-outline-primary on-desktop" id="btnLogin">
           <i class="fa-solid fa-user"></i> ورود
         </a>
         <button class="btn btn-sm btn-outline-secondary hidden on-desktop" id="backToLogin" type="button">
@@ -98,10 +101,10 @@
     </div>
 
     <div class="ww-sidebar-footer">
-      <button class="btn btn-sm btn-outline-secondary w-100" id="btnResetWidgetDemo" type="button">
-        <i class="fa-solid fa-rotate-left"></i> بازنشانی داده‌های دمو
-      </button>
-      <small>API فعلاً در مرورگر و با localStorage شبیه‌سازی شده است.</small>
+      <a class="btn btn-sm btn-outline-secondary w-100" href="/profile">
+        <i class="fa-solid fa-user-pen"></i> تکمیل پروفایل و نام کاربری
+      </a>
+      <small>داده‌ها از API واقعی و فضای RAG اختصاصی هر ویجت خوانده می‌شوند.</small>
     </div>
   </aside>
 
@@ -125,13 +128,18 @@
   </div>
 
   <script>
-    var page = { serviceName: "webwidget" };
+    var page = { serviceName: "rag" };
     var auth;
   </script>
   <script src="js/vendors/bootstrap.bundle.min.js"></script>
   <script src="js/common.js"></script>
   <script src="js/auth.js"></script>
-  <script>setupAuth("webwidget", false).then(r => auth = r);</script>
+  <script>
+    setupAuth("rag", false).then(r => {
+      auth = r;
+      if (!auth.token()) window.location.href = "/login?back=webwidget&service=rag";
+    });
+  </script>
   <script src="js/widget.js"></script>
 </body>
 </html>

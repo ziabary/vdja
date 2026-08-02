@@ -258,7 +258,11 @@
 
   <script>
     const queries = parseQuery(window.location.search)
-    const service = queries.back || "rag";
+    // `service` controls access/privileges; `back` is only the destination page.
+    // Keeping them separate lets composite pages such as WebWidget reuse RAG
+    // privileges without inventing a new service in the authorization model.
+    const service = queries.service || queries.back || "rag";
+    const returnTo = queries.back || service;
 
     let auth; setupAuth(service, false).then(async r => {
       auth = r;
@@ -266,7 +270,7 @@
         && (!queries.mustAdmin || auth.info()?.privs?.isAdmin)
         && (!queries.mustVerified || auth.info()?.privs?.isVerified)
       )
-        window.location.pathname = "/" + service
+        window.location.href = (returnTo.startsWith('/') ? '' : '/') + returnTo
     })
 
     const inpUserToken = document.getElementById("userToken");
@@ -309,7 +313,7 @@
         setTimeout(auth.logout(window.location.href), 2000)
       } else {
         inpUserToken.value = "";
-        window.location.href = (service.startsWith('/') ? "" : "/") + service
+        window.location.href = (returnTo.startsWith('/') ? "" : "/") + returnTo
       }
     }
 
@@ -327,7 +331,7 @@
     });
 
     btnOidc.addEventListener("click", () => {
-      window.location.href = "/api/auth/oidc/login";
+      window.location.href = `/api/auth/oidc/login?service=${encodeURIComponent(service)}`;
     });
 
     btnEnter.addEventListener("click", () => {
