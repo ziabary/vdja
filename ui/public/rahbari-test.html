@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>اندیشه رهبر شهید - دستیار هوشمند فارسی</title>
+
+  <link rel="stylesheet" href="css/bootstrap/bootstrap.rtl.min.css" />
+  <link rel="stylesheet" href="fonts/IranSansX/fontiran.css" />
+  <link rel="stylesheet" href="fonts/fontawesome/active/all.css" />
+
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/rag-common.css" />
+</head>
+
+<body class="new-chat">
+  <span id="loading">
+    <div class=marquee></div>
+  </span>
+  <nav class="navbar shadow-sm" id="navbar">
+    <div class="container">
+      <img src="/img/logo-light.png" class="bi-color" alt="لوگو" />
+      <span class="navbar-brand mx-auto h4 mb-0">چت اندیشمندانه</span>
+      <span class="burger" onclick="document.body.classList.add('side-open')"><i class="fa fa-bars"></i></span>
+      <span class="close-sidebar-cross" onclick="document.body.classList.remove('side-open')"><i
+          class="fa fa-close"></i></span>
+    </div>
+  </nav>
+  <div class="sidebar p-3">
+    <span class="close-sidebar-cross" onclick="document.body.classList.remove('side-open')"><i
+        class="fa fa-close"></i></span>
+    <div class="logo">
+      <a href="/"><img alt="targoman-logo" src="img/logo-light.png" class="bi-color" /></a>
+    </div>
+    <div class="top-left">
+      <i class="fa fa-moon fa-lg btn on-mobile" id=btnToggleDarkMode2></i>
+      <a href="/login?back=rahbari" class="btn btn-outline-primary on-mobile" id=btnLogin><i class="fa fa-user"></i>
+        ورود
+        به سامانه</a>
+    </div>
+
+
+    <h5 class="mb-3 mt-2">
+      چت‌های شما
+      <button id="btnNewChat" disabled class="btn btn-outline-primary btn-sm float-end" title="ایجاد چت جدید"><i
+          class="fa fa-edit"></i> جدید</button>
+      <button id="btnDeleteAllChats" class="btn btn-sm btn-outline-danger float-start float-end mx-1"
+        title="حذف همه چت‌ها"><i class="fa fa-trash-can"></i> حذف همه</button>
+    </h5>
+    <div id="chatsList" class="mb-4" style="max-height: calc(100vh / 2 - 8em); overflow: auto"></div>
+
+
+    <div class="side-bar-footer">
+      <h2>نسخه آزمایشی</h2>
+      <div id="userInfo"></div>
+      <a href="/" class="btn btn-outline-secondary"><i class="fa fa-boxes"></i> سایر خدمات</a>
+      <button id="backToLogin" class="btn btn-outline-secondary hidden" title="خروج"><i class="fa fa-door-open"></i>
+        خروج از
+        سامانه</button>
+      <div class="mt-3">
+        <small>کلیه حقوق برای <a target="blank" href="https://tip.co.ir">شرکت پردازش هوشمند
+            ترگمان</a> محفوظ است</small>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Main Chat -->
+  <div class="main-chat">
+    <div class="bg-image"><img src="img/rahbar-bg-light.png" class="bi-color" alt=""></div>
+    <div class="chat-header position-relative d-flex justify-content-between align-items-center mb-3">
+      <h4 id="lblChatTitle" class="clickable-title" style="cursor: pointer; display: inline-block">چت با اندیشه رهبر
+        شهید</h4>
+      <div class="on-desktop left-side">
+        <i class="fa fa-moon fa-lg btn" id=btnToggleDarkMode></i>
+        <a href="/login?back=rahbari" class="btn btn-outline-primary" id=btnLogin2>ورود به سامانه</a>
+      </div>
+      <div class="on-mobile left-side">
+        <button id="btnNewChatMobile" class="hidden btn btn-outline-primary btn-sm float-end" title="ایجاد چت جدید"><i
+            class="fa fa-edit"></i> جدید</button>
+      </div>
+    </div>
+    <div id="chatContainer" class="chat-container border p-3 rounded" manual-scroll-allowed></div>
+    <div class="message-input">
+      <div class="input-group mt-3 w-100" style="opacity:0.7">
+        <textarea type="text" id="messageInput" class="form-control"
+          placeholder="هر چی می‌خوای بپرس&hellip;"></textarea>
+        <div class="message-buttons">
+          <button id="btnSend" class="btn btn-text" title="ارسال"><i class="fa fa-send fa-reverse"></i></button>
+          <button id="btnStop" class="btn btn-text hidden" title="توقف"><i class="fa fa-stop fa-reverse"></i></button>
+        </div>
+      </div>
+      <div id="chat-helper-container" class="chat-helper mt-3 px-2">
+      </div>
+    </div>
+  </div>
+
+  <script src="js/vendors/bootstrap.bundle.min.js"></script>
+  <script src="js/vendors/marked.min.js"></script>
+  <script src="js/vendors/md5.min.js"></script>
+  <!-- MathJax -->
+  <script src="js/vendors/mathjax/config.js"></script>
+  <script src="js/vendors/polyfill.min.js?features=es6"></script>
+  <script src="js/vendors/mathjax/es5/tex-mml-chtml.js"></script>
+
+  <script src="js/common.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/llm.js"></script>
+  <script src="js/rag.js"></script>
+
+  <script>
+    const page = {
+      serviceName: "rahbari",
+      userContainer: document.getElementById("userInfo"),
+      chatsList: document.getElementById("chatsList"),
+      chatContainer: document.getElementById("chatContainer"),
+      messageInput: document.getElementById("messageInput"),
+      btnSend: document.getElementById("btnSend"),
+      btnStop: document.getElementById("btnStop"),
+      lblChatTitle: document.getElementById("lblChatTitle"),
+      btnNewChat: document.getElementById("btnNewChat"),
+      btnNewChatMobile: document.getElementById("btnNewChatMobile"),
+      backToLogin: document.getElementById("backToLogin"),
+      btnDeleteAllChats: document.getElementById("btnDeleteAllChats"),
+      chatHelper: document.getElementById("chat-helper-container"),
+      useFiles: false,
+      chatHistory: []
+    }
+
+    const SAMPLE_MESSAGES = [
+      "رهبری سوم انقلاب اسلامی کیست",
+    ]
+
+    /*********************************/
+    function updateQuestions(questions, filesEnabled) {
+      page.chatHelper.innerHTML = ""
+      questions.forEach(item => rag.addHelpItem(item.smqQuestion || item))
+      rag.addHelpItem("رهبری سوم انقلاب اسلامی کیست")
+    }
+
+    /*********************************/
+    /*confirmDialog({
+      title: 'به‌روزرسانی',
+      message: 'سامانه در حال به‌روزرسانی است.<br/> فعلا از سایر سرویس‌های ترگمان استفاده کنید',
+      confirmText: 'فهمیدم',
+      showCancel: false
+    }).then(()=>window.location.href="/");
+    */
+    const rag = setupRAG(page, {
+      updateQuestions,
+      defaultTitle: {
+        noFile: "چت با اندیشه رهبر شهید"
+      },
+      generateQuestions: true,
+      chatBanner: "توجه داشته باشید که هوش مصنوعی می‌تواند در تولید پاسخ خطا داشته و یا بر اساس توهم پاسخ اشتباهی تولید کند. هرگز به پاسخ‌های تولید شده در این سامانه استناد ننموده و حتما منابع اصلی را بررسی کنید."
+    })
+
+  </script>
+</body>
+
+</html>

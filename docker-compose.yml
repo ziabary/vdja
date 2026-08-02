@@ -1,0 +1,212 @@
+version: '3.9'
+
+# Reusable base config
+x-vllm_base: &vllm_base
+  image: targoman-llm-server:25.11
+  restart: unless-stopped
+  environment:
+    - HF_HUB_OFFLINE=1
+    - TRANSFORMERS_OFFLINE=1
+    - HF_HUB_ENABLE_HF_TRANSFER=0
+    - VLLM_SKIP_WARMUP=true
+    - VLLM_ENABLE_RESPONSES_API_STORE=1
+  volumes:
+    - ./models:/models:ro
+  command: >
+    python -m vllm.entrypoints.openai.api_server
+    --model /models/aya-expanse-8b
+    --served-model-name targoman
+    --tensor-parallel-size 1
+    --dtype auto
+    --max-model-len 7400
+    --gpu-memory-utilization 0.80
+    --block-size 16
+    --enable-chunked-prefill
+    --max-num-batched-tokens 8192
+    --port 8001
+  shm_size: '32gb'
+  ipc: host
+  healthcheck:
+    test: ["CMD", "curl", "-f", "http://localhost:8001/v1/models"]
+    interval: 30s
+    timeout: 10s
+    retries: 5
+  networks:
+    - net
+    
+x-ui_base: &ui_base
+    image: targoman-llm-ui:2.1
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3300:3000"
+    command: 
+        /app/dist/index.js
+    volumes:
+      - ./config.json:/app/.config.json
+      - /etc/localtime:/etc/localtime:ro
+      - /usr/share/zoneinfo:/usr/share/zoneinfo:ro
+    environment:
+      - "TZ='Asia/Tehran'"
+    networks:
+      - net
+      
+services:
+  vllm1:
+    <<: *vllm_base
+    ports:
+      - "127.0.0.1:8001:8001"    
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ['0']
+              capabilities: [gpu]
+
+  vllm2:
+    <<: *vllm_base
+    ports:
+      - "127.0.0.1:8002:8001"    
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ['2']
+              capabilities: [gpu]
+
+  vllm3:
+    <<: *vllm_base
+    ports:
+      - "127.0.0.1:8003:8001"    
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ['3']
+              capabilities: [gpu]
+
+              
+  embedding:
+    image: targoman-llm-server:25.11
+    restart: unless-stopped
+    environment:
+      - HF_HUB_OFFLINE=1
+      - TRANSFORMERS_OFFLINE=1
+      - HF_HUB_ENABLE_HF_TRANSFER=0
+      - VLLM_SKIP_WARMUP=true
+    volumes:
+      - ./models:/models:ro
+    command: >
+      python -m vllm.entrypoints.openai.api_server
+      --model /models/multilingual-e5-large-instruct
+      --served-model-name multilingual-e5-large-instruct
+      --port 8001
+      --tensor-parallel-size 1
+      --dtype half
+      --max-model-len 512
+      --enforce-eager
+      --gpu-memory-utilization 0.65
+    shm_size: '32gb'
+    ipc: host
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/v1/models"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ['1']
+              capabilities: [gpu]
+    networks:
+      - net
+
+  vectordb:
+    image: qdrant/qdrant:latest
+    restart: unless-stopped
+    volumes:
+      - ./vdb:/qdrant/storage
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ['1']
+              capabilities: [gpu]
+    networks:
+      - net
+
+  ui:
+    <<: *ui_base
+    ports:
+      - "127.0.0.1:3300:3000"
+    volumes:
+      - ./config.json:/app/.config.json
+      - ./logs/ui:/app/logs
+      - /etc/localtime:/etc/localtime:ro
+      - /usr/share/zoneinfo:/usr/share/zoneinfo:ro  
+
+  api-rag:
+    <<: *ui_base
+    ports:
+      - "127.0.0.1:23310:3000"
+    volumes:
+      - ./logs/rag:/app/logs
+      - /etc/localtime:/etc/localtime:ro
+      - /usr/share/zoneinfo:/usr/share/zoneinfo:ro  
+
+  api-trnsl:
+    <<: *ui_base
+    ports:
+      - "127.0.0.1:23311:3000"
+    volumes:
+      - ./logs/transl:/app/logs
+      - /etc/localtime:/etc/localtime:ro
+      - /usr/share/zoneinfo:/usr/share/zoneinfo:ro  
+
+  api-sum:
+    <<: *ui_base
+    ports:
+      - "127.0.0.1:23312:3000"
+    volumes:
+      - ./logs/sum:/app/logs
+      - /etc/localtime:/etc/localtime:ro
+      - /usr/share/zoneinfo:/usr/share/zoneinfo:ro  
+      
+  ui-dev:
+    <<: *ui_base
+    ports:
+      - "127.0.0.1:3301:3000"
+    volumes:
+      - ./app:/app
+      - /etc/localtime:/etc/localtime:ro
+      - /usr/share/zoneinfo:/usr/share/zoneinfo:ro      
+    command: >
+        npm run dev
+
+  mysql:
+    image: mysql:8.4.5
+    restart: unless-stopped
+    ports:
+       - "127.0.0.1:33011:3306"
+    volumes:
+      - ./mysql/data:/var/lib/mysql
+      - ./mysql/conf/enable_native.cnf:/etc/mysql/conf.d/enable_native.cnf
+      - /etc/localtime:/etc/localtime:ro
+      - /usr/share/zoneinfo:/usr/share/zoneinfo:ro
+    environment:
+      - "MYSQL_ROOT_PASSWORD=mehran@1234"
+      - "MYSQL_CHARACTER_SET_SERVER=utf8mb4"
+      - "MYSQL_COLLATION_SERVER=utf8mb4_unicode_ci"
+      - "TZ=Asia/Tehran"
+    networks:
+      - net
+
+networks:
+  net:
+    driver: bridge
+

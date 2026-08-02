@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ورود به چت خصوصی</title>
+  <link rel="stylesheet" href="css/bootstrap/bootstrap.rtl.min.css" />
+  <link rel="stylesheet" href="fonts/IranSansX/fontiran.css" />
+  <link rel="stylesheet" href="fonts/fontawesome/active/all.css" />
+  <link rel="stylesheet" href="css/style.css" />
+
+  <style>
+    body {
+      background: linear-gradient(135deg, #3a6daa 0%, #2c3b88 100%);
+      min-height: 100vh;
+    }
+
+    .card {
+      max-width: 540px;
+      margin: 100px auto;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .input-group-text {
+      cursor: pointer;
+    }
+
+    .logo {
+      width: 140px;
+      margin-bottom: 20px;
+    }
+
+    .faded-line-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      /* space between the elements */
+      width: 100%;
+      max-width: 400px;
+      /* adjust as needed */
+      margin: 0 auto;
+    }
+
+    .faded-line {
+      flex: 1;
+      /* auto-growing */
+      height: 1px;
+      background: linear-gradient(to right, transparent, #222, transparent);
+      background-size: 100% 100%;
+      background-repeat: no-repeat;
+      position: relative;
+    }
+
+    .faded-line::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 100%;
+      background: linear-gradient(to right, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.2));
+      background-size: 100% 100%;
+      background-repeat: no-repeat;
+      z-index: 1;
+    }
+
+    .faded-line::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 100%;
+      background: linear-gradient(to right, transparent, #222, transparent);
+      background-size: 100% 100%;
+      background-repeat: no-repeat;
+      z-index: 0;
+    }
+
+    .or-by {
+      font-size: 14px;
+      font-weight: normal;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-body p-3 pb-1 text-center">
+            <a href="/"><img src="img/logo-light.png" alt="لوگو" class="bi-color logo" /></a>
+            <h3 class="mb-4" id="title">ورود به گفتگو</h3>
+            <div id="blkBaseLogin">
+              <div class="mb-4">
+                <label class="form-label fw-bold">کلید اختصاصی (حداقل ۱۶ کاراکتر)</label>
+                <div class="input-group">
+                  <input type="password" id="userToken" class="form-control form-control-lg"
+                    placeholder="کلید را وارد یا تولید کنید ..." />
+                  <span class="input-group-text" id="togglePass">
+                    <i class="fa fa-thin fa-eye" id="eyeIcon"></i>
+                  </span>
+                </div>
+                <small class="text-muted d-block mt-1">کلید را ایمن نگه دارید، قابل بازیابی نیست</small>
+              </div>
+              <div class="d-flex gap-2 mb-3">
+                <button id="generateBtn" class="btn btn-outline-primary flex-fill">
+                  تولید کلید جدید
+                </button>
+                <button id="enterBtn" class="btn btn-primary flex-fill">
+                  ورود به چت
+                </button>
+              </div>
+              <div id="blkBaleOTP">
+                <div class="d-flex mb-3">
+                  <div class="faded-line-container">
+                    <span class="faded-line"></span>
+                    <span class="or-by">و یا</span>
+                    <span class="faded-line"></span>
+                  </div>
+                </div>
+                <div class="d-flex mb-3 ">
+                  <button id="btnBale" class="btn w-100 mb-2 btn-outline-success">
+                    <img src="img/bale.png" width="24" class="mx-2" />ورود با بله
+                  </button>
+                </div>
+              </div>
+
+              <div id="blkOIDC" class="hidden">
+                <div class="d-flex mb-3">
+                  <style>
+                    .faded-line-container {
+                      display: flex;
+                      align-items: center;
+                      gap: 10px;
+                      /* space between the elements */
+                      width: 100%;
+                      max-width: 400px;
+                      /* adjust as needed */
+                      margin: 0 auto;
+                    }
+
+                    .faded-line {
+                      flex: 1;
+                      /* auto-growing */
+                      height: 1px;
+                      background: linear-gradient(to right, transparent, #222, transparent);
+                      background-size: 100% 100%;
+                      background-repeat: no-repeat;
+                      position: relative;
+                    }
+
+                    .faded-line::before {
+                      content: '';
+                      position: absolute;
+                      top: 0;
+                      left: 0;
+                      right: 0;
+                      height: 100%;
+                      background: linear-gradient(to right, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.2));
+                      background-size: 100% 100%;
+                      background-repeat: no-repeat;
+                      z-index: 1;
+                    }
+
+                    .faded-line::after {
+                      content: '';
+                      position: absolute;
+                      top: 0;
+                      left: 0;
+                      right: 0;
+                      height: 100%;
+                      background: linear-gradient(to right, transparent, #222, transparent);
+                      background-size: 100% 100%;
+                      background-repeat: no-repeat;
+                      z-index: 0;
+                    }
+
+                    .or-by {
+                      font-size: 14px;
+                      font-weight: normal;
+                    }
+                  </style>
+                  <div class="faded-line-container">
+                    <span class="faded-line"></span>
+                    <span class="or-by">و یا</span>
+                    <span class="faded-line"></span>
+                  </div>
+                </div>
+                <div class="d-flex mb-3 ">
+                  <button id="oidcBtn" class="btn btn-light w-100 mb-2">
+                    ورود با حساب سازمانی
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div id="secBaleOTP" class="hidden">
+              <div class="mb-4 text-center">
+                <label class="form-label fw-bold fa-num" id="lblBale">شماره تلفن روی پیام‌رسان بله</label>
+                <div class="input-group">
+                  <input type="text" id="balePhoneNumber" class="fa-num ltr text-center form-control form-control-lg mb-2"
+                    placeholder="09123456789" />
+                  <input type="text" id="baleOTP" class="fa-num form-control text-center form-control-lg"
+                    placeholder="12345" />
+                </div>
+                <small id=baleTimer class="rtl fa-num text-center text-muted d-block mt-1 mb-2">02:00</small>
+                <div><div class="text-muted mb-2">کد ورود در پیام رسان بله از طریق بات و با پیامی مشابه زیر ظاهر می‌شود</div><img  class="bi-color w-75" src="img/bale-login-light.jpg" alt=""></div>
+              </div>
+              <div class="d-flex gap-2 mb-3">
+                <button id="btnCancelOTP" class="btn btn-outline-secondary flex-fill">
+                  لغو
+                </button>
+                <button id="btnSendBaleOTP" class="btn btn-primary flex-fill">
+                  ارسال کد
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="alert alert-warning guidelines text-start m-4 mt-0 rtl">
+            <p>
+              <span class="me-2 d-inline-block">ℹ️</span>
+              کلید ورود به‌عنوان جایگزین امن نام کاربری و رمز عبور مورد استفاده
+              است
+            </p>
+            <p>
+              <span class="me-2 d-inline-block">⚠️</span>
+
+              کلید ورود را به خاطر بسپارید یا یادداشت کنید. در صورت فراموشی به
+              هیچ روشی قابل بازیابی نخواهد بود.
+            </p>
+            <p>
+              <span class="me-2 d-inline-block">❗</span>
+              تمام داده‌های ارائه‌شده و چت‌ها در صورتی که توسط خودتان حذف
+              نشوند، پس از ۷ روز از آخرین ورود به سامانه حذف خواهند شد.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <span id="loading">
+      <div class=marquee></div>
+    </span>
+  </div>
+  <div class="text-center mb-2" style="color:white"><small>قدرت‌گرفته از GPUهای <a target=blank style="color:white"
+        href="https://afranet.ir/fa/services/gpu">افرانت</a></small></div>
+  <div class="text-center mb-3" style="color:white"><small>کلیه حقوق برای <a style="color:white" target="blank"
+        href="https://tip.co.ir">
+        شرکت پردازش هوشمند ترگمان
+      </a> محفوظ است</small>
+  </div>
+
+  <script src="js/vendors/bootstrap.bundle.min.js"></script>
+  <script src="js/vendors/md5.min.js"></script>
+
+  <script src="js/common.js"></script>
+  <script src="js/auth.js"></script>
+
+  <script>
+    const queries = parseQuery(window.location.search)
+    const service = queries.back || "rag";
+
+    let auth; setupAuth(service, false).then(async r => {
+      auth = r;
+      if (auth.token()
+        && (!queries.mustAdmin || auth.info()?.privs?.isAdmin)
+        && (!queries.mustVerified || auth.info()?.privs?.isVerified)
+      )
+        window.location.pathname = "/" + service
+    })
+
+    const inpUserToken = document.getElementById("userToken");
+    const togglePass = document.getElementById("togglePass");
+    const icoEye = document.getElementById("eyeIcon");
+    const btnGenerate = document.getElementById("generateBtn");
+    const btnEnter = document.getElementById("enterBtn");
+    const btnOidc = document.getElementById("oidcBtn");
+    const btnBale = document.getElementById("btnBale");
+    const blkBaseLogin = document.getElementById("blkBaseLogin");
+    const blkBaleOTP = document.getElementById("blkBaleOTP");
+    const blkOIDC = document.getElementById("blkOIDC");
+    const secBaleOTP = document.getElementById("secBaleOTP");
+    const cancelOTP = document.getElementById("cancelOTP");
+    const sendBaleOTP = document.getElementById("sendBaleOTP");
+    const balePhoneNumber = document.getElementById("balePhoneNumber");
+    const baleOTP = document.getElementById("baleOTP");
+    const baleTimer = document.getElementById("baleTimer");
+    const btnSendBaleOTP = document.getElementById("btnSendBaleOTP");
+    const btnCancelOTP = document.getElementById("btnCancelOTP");
+    const lblBale = document.getElementById("lblBale");
+
+    let otpTimer = null
+    let isPasswordVisible = false;
+
+
+    togglePass.addEventListener("click", () => {
+      isPasswordVisible = !isPasswordVisible;
+      inpUserToken.type = isPasswordVisible ? "text" : "password";
+      icoEye.className = isPasswordVisible ? "fa fa-thin fa-eye-slash" : "fa fa-thin fa-eye";
+    });
+
+    function finalizeLogin(data) {
+      auth.setAccessToken(data.accessToken);
+      if (queries.mustAdmin && !auth.info()?.privs?.isAdmin) {
+        showError("لازم است تا کاربر ادمین وارد شود");
+        setTimeout(auth.logout(window.location.href), 2000)
+      } else if (queries.mustVerified && !auth.info()?.privs?.isVerified) {
+        showError("لازم است تا کاربر ادمین وارد شود");
+        setTimeout(auth.logout(window.location.href), 2000)
+      } else {
+        inpUserToken.value = "";
+        window.location.href = (service.startsWith('/') ? "" : "/") + service
+      }
+    }
+
+    btnGenerate.addEventListener("click", () => {
+      const chars =
+        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@!~%$";
+      let key = "";
+      for (let i = 0; i < 24; i++) {
+        key += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      inpUserToken.value = key;
+      inpUserToken.type = "text";
+      isPasswordVisible = true;
+      icoEye.className = "fa fa-thin  fa-eye-slash";
+    });
+
+    btnOidc.addEventListener("click", () => {
+      window.location.href = "/api/auth/oidc/login";
+    });
+
+    btnEnter.addEventListener("click", () => {
+      const key = inpUserToken.value.trim();
+      if (key.length < 16) {
+        showError("کلید باید حداقل ۱۶ کاراکتر باشد!");
+        return;
+      }
+
+      login(key);
+    });
+
+    inpUserToken.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") btnEnter.click();
+    });
+
+    async function login(userRawKey) {
+      document.getElementById("loading")?.classList.remove("hidden")
+      btnEnter.disabled = true;
+
+      try {
+        const hashedKey = md5(userRawKey);
+        const res = await fetch("/api/auth/loginByKey", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userKeyMD5: hashedKey, service }),
+        });
+
+        const data = await res.json();
+
+        if (data.accessToken)
+          finalizeLogin(data)
+        else
+          showError(data.error || "خطا در ورود. کلید نامعتبر است.");
+      } catch (err) {
+        showError("خطا در ارتباط با سرور. لطفاً دوباره تلاش کنید.");
+        console.error(err);
+      } finally {
+        document.getElementById("loading")?.classList.add("hidden")
+        btnEnter.disabled = false;
+        btnEnter.textContent = "ورود به چت";
+      }
+    }
+    function backToPhoneInput() {
+      clearInterval(otpTimer)
+      otpTimer = null
+      setClass(balePhoneNumber, 'hidden', false)
+      setClass(baleOTP, 'hidden')
+      setClass(baleTimer, 'hidden')
+      btnSendBaleOTP.innerHTML = 'ارسال کد'
+      lblBale.innerText = 'شماره تلفن روی پیام‌رسان بله'
+      baleOTP.value = ''
+      balePhoneNumber.focus()
+    }
+
+    btnBale.onclick = () => {
+      setClass(blkBaseLogin, 'hidden')
+      setClass(secBaleOTP, 'hidden', false)
+      backToPhoneInput()
+      balePhoneNumber.value = ''
+      balePhoneNumber.onkeydown = ev => { if (ev.key === "Enter") btnSendBaleOTP.click() }
+      baleOTP.onkeydown = ev => { if (ev.key === "Enter") btnSendBaleOTP.click() }
+    }
+
+    btnCancelOTP.onclick = () => {
+      setClass(blkBaseLogin, 'hidden', false)
+      setClass(secBaleOTP, 'hidden', true)
+      otpTimer && clearInterval(otpTimer)
+      otpTimer = null
+    }
+
+    btnSendBaleOTP.onclick = async () => {
+      if (otpTimer) {
+        const otpCode = num2arabic(baleOTP.value)
+        if (otpCode.length != 5)
+          return showError("کد واردشده معتبر نیست")
+        fetch("/api/auth/verifyOTP", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ mobile: num2arabic(balePhoneNumber.value), otp: otpCode, service }),
+        }).catch(err => {
+          showError(err.message)
+        }).then(d => d.json()).then(data => {
+          if (data.error) return showError(data.error.message)
+          if (data.accessToken) {
+            finalizeLogin(data)
+          }
+        });
+      } else {
+        let phonNo = num2arabic(balePhoneNumber.value)
+        if ((!phonNo.startsWith("+98") && !phonNo.startsWith("0"))
+          || (phonNo.startsWith("+98") && phonNo.length != 13)
+          || (phonNo.startsWith("0") && phonNo.length != 11)
+        )
+          return showError("شماره تلفن معتبر نمی‌باشد")
+
+        phonNo = (phonNo.startsWith('0') ? '98' : '') + phonNo.substring(1)
+
+        fetch("/api/auth/sendBaleOTP", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ mobile: "+" + phonNo }),
+        }).catch(err => {
+          showError(err.message)
+          backToPhoneInput()
+        }).then(d => d.json()).then(data => data.error && showError(data.error.message));
+
+        setClass(balePhoneNumber, 'hidden')
+        setClass(baleOTP, 'hidden', false)
+        setClass(baleTimer, 'hidden', false)
+        lblBale.innerHTML = `کد ارسال‌شده به پیام‌رسان بله<br/><small class="fw-normal">0${phonNo.substring(2)}</small>`
+
+        baleTimer.innerText = "02:00"
+        otpTimer && clearInterval(otpTimer)
+        otpTimer = setInterval(() => {
+          const time = baleTimer.innerText.split(":")
+          if (time[1] === "00") {
+            if (time[0] === "00") {
+              backToPhoneInput()
+            } else {
+              time[0] = '0' + (str2Num(time[0]) - 1)
+              time[1] = '59'
+            }
+          } else {
+            const sec = str2Num(time[1]) - 1
+            time[1] = (sec > 9 ? "" : "0") + `${sec}`
+          }
+          baleTimer.innerText = time.join(":")
+        }, 1000)
+        btnSendBaleOTP.innerHTML = 'ورود'
+      }
+    }
+
+    if(queries.mustVerified)
+      setTimeout(()=>btnBale.click())
+
+  </script>
+</body>
+
+</html>

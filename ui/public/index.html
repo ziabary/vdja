@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" data-bs-theme="light">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>دستیار هوشمند فارسی</title>
+  <link rel="stylesheet" href="css/bootstrap/bootstrap.rtl.min.css" />
+  <link rel="stylesheet" href="fonts/IranSansX/fontiran.css" />
+  <link rel="stylesheet" href="fonts/fontawesome/active/all.css" />
+  <link rel="stylesheet" href="css/style.css" />
+
+  <style>
+    body {
+      font-family: "IRANSansX", sans-serif;
+      /* background: #f8f9fa;*/
+    }
+
+    .logo {
+      width: 120px;
+    }
+
+    .card-icon {
+      font-size: 4rem;
+    }
+
+    .card-icon img {
+      height: 4rem;
+    }
+
+    .card {
+      transition: transform 0.3s;
+      height: 100%;
+      padding: 1.5rem;
+    }
+
+    .card:hover {
+      transform: translateY(-10px);
+    }
+
+    h1 {
+      font-weight: 900;
+    }
+
+    a[disabled] {
+      pointer-events: none;
+      opacity: 50%;
+    }
+
+    @media (max-width: 640px) {
+      .card {
+        padding: .25rem;
+      }
+    }
+  </style>
+</head>
+
+<body class="d-flex flex-column min-vh-100">
+  <main class="flex-grow-1">
+    <div class="container py-3">
+      <div class="d-flex flex-row align-items-center mb-5 position-relative">
+        <img src="/img/logo-light.png" alt="لوگو" class="bi-color logo me-3" />
+        <div class="w-100"></div>
+        <div class="left-side">
+          <i class="fa fa-moon fa-lg btn" id=btnToggleDarkMode></i>
+          <a href="/login?back=/" class="btn btn-outline-primary" id=btnLogin>ورود به سامانه</a>
+          <a class="btn btn-outline-secondary hidden" id=backToLogin>خروج از سامانه</a>
+        </div>
+      </div>
+
+      <h1 class="text-center mb-1 text-primary">دستیار هوشمند فارسی</h1>
+      <h2 class="text-center mb-3 text-secondary">نسخه آزمایشی</h2>
+
+      <div class="row g-4 justify-content-center">
+        <div class="col-md-4 col-6 col-6">
+          <a href="/rag" class="text-decoration-none">
+            <div class="card text-center shadow-sm">
+              <div class="card-icon mb-3"><img class="bi-color" src="img/tip-bot-light.svg"></div>
+              <h4>چت‌بات عمومی</h4>
+              <p class="text-muted on-desktop on-desktop">چت عمومی یا مبتنی بر فایل‌های شخصی</p>
+            </div>
+          </a>
+        </div>
+
+        <div class="col-md-4 col-6">
+          <a href="/translate" class="text-decoration-none">
+            <div class="card text-center shadow-sm">
+              <div class="card-icon mb-3"><img class="bi-color" src="img/Fa-En-light.svg" alt=""></div>
+              <h4>ترجمه</h4>
+              <p class="text-muted on-desktop">ترجمه متن به/از فارسی با دقت بالا</p>
+            </div>
+          </a>
+        </div>
+
+        <div class="col-md-4 col-6">
+          <a href="/rahbari" class="text-decoration-none" disabled>
+            <div class="card text-center shadow-sm">
+              <div class="card-icon mb-3"><img src="img/rahbar.svg" alt=""></div>
+              <h4>اندیشه رهبر شهید</h4>
+              <p class="text-muted on-desktop">چت با اندیشه و گفتار شهید آیت‌الله خامنه‌ای</p>
+            </div>
+          </a>
+        </div>
+
+        <div class="col-md-4 col-6">
+          <a href="/summarize" class="text-decoration-none">
+            <div class="card text-center shadow-sm">
+              <div class="card-icon mb-3"><img class="bi-color" src="img/summarization-light.svg" alt=""></div>
+              <h4>خلاصه‌سازی</h4>
+              <p class="text-muted on-desktop">خلاصه متون و فایل‌ها با دقت بالا</p>
+            </div>
+          </a>
+        </div>
+
+        <div class="col-md-4 col-6">
+          <a href="/shares" class="text-decoration-none">
+            <div class="card text-center shadow-sm">
+              <div class="card-icon mb-3"><img class="bi-color" src="img/files-cloud.png" alt=""></div>
+              <h4>فایل‌های کاربردی</h4>
+              <p class="text-muted on-desktop">مجموعه‌ای از فایل‌ها و مدل‌های هوش مصنوعی</p>
+            </div>
+          </a>
+        </div>
+
+        <div class="col-md-4 col-6">
+          <a href="/devdocs" class="text-decoration-none">
+            <div class="card text-center shadow-sm">
+              <div class="card-icon mb-3"><img class="bi-color" src="/img/DevDocs-light.png" alt=""></div>
+              <h4>راهنمای توسعه‌دهندگان</h4>
+              <p class="text-muted on-desktop">راهنمای انواع کتابخانه‌ها و زبان‌های برنامه‌نویسی</p>
+            </div>
+          </a>
+        </div>
+
+        <div class="col-md-4 col-6">
+          <a href="/sklearn" class="text-decoration-none">
+            <div class="card text-center shadow-sm">
+              <div class="card-icon mb-3"><img class="bi-color" src="/img/scikit-light.svg" alt=""></div>
+              <h4>راهنمای scikit</h4>
+              <p class="text-muted on-desktop">راهنمای کتابخانه‌ scikit-learn</p>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+  </main>
+  <footer class="footer-sticky">
+    <div class="container text-center">
+      <div class="text-center mb-2"><small>قدرت‌گرفته از GPUهای <a target=blank
+            href="https://afranet.ir/fa/services/gpu">افرانت</a></small></div>
+      <div class="text-center mb-3"><small>کلیه حقوق برای <a target="blank" href="https://tip.co.ir">
+            شرکت پردازش هوشمند ترگمان
+          </a> محفوظ است</small>
+      </div>
+    </div>
+  </footer>
+  <script src="js/vendors/bootstrap.bundle.min.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/auth.js"></script>
+  <script>let auth; setupAuth("/", false).then(r => auth = r)</script>
+</body>
+
+</html>

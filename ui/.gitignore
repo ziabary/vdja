@@ -1,0 +1,8 @@
+node_modules
+.*
+Old
+dist
+logs
+package-lock.json
+yarn.lock
+db/data
