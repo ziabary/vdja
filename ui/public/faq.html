@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>مولد پرسش و پاسخ - دستیار هوشمند فارسی</title>
+  <link rel="stylesheet" href="css/bootstrap/bootstrap.rtl.min.css">
+  <link rel="stylesheet" href="fonts/IranSansX/fontiran.css">
+  <link rel="stylesheet" href="fonts/fontawesome/active/all.css">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/app-nav.css">
+  <link rel="stylesheet" href="css/faq.css">
+</head>
+<body data-service="faq" class="d-flex flex-column min-vh-100">
+  <span id="loading"><span class="marquee"></span></span>
+  <nav class="navbar shadow-sm" id="navbar"><div class="container">
+    <img src="/img/logo-light.png" alt="لوگو" class="bi-color logo">
+    <span class="navbar-brand mx-auto h4 mb-0">مولد پرسش و پاسخ</span>
+    <div class="left-side mx-2"><i class="btn btn-sm fa fa-moon fa-lg" id="btnToggleDarkMode"></i><div class="on-mobile" title="منو"><i class="btn btn-sm fa fa-bars fa-lg" id="btnMenu"></i></div><div class="on-desktop d-flex gap-2"><span data-app-services></span><span data-app-account data-service="faq" data-login-back="faq"></span></div></div>
+  </div></nav>
+  <div class="collapsed" id="menu"><span data-app-services></span><span data-app-account data-service="faq" data-login-back="faq"></span></div>
+
+  <main class="main container faq-shell flex-grow-1">
+    <div class="row g-4">
+      <section class="col-lg-5"><div class="card shadow-sm"><div class="card-body p-4">
+        <h5 class="mb-3">فایل و تنظیمات</h5>
+        <div id="dropZone" class="faq-drop" role="button" tabindex="0">
+          <i class="fa-solid fa-cloud-arrow-up mb-2"></i><div class="fw-bold">فایل را اینجا رها کنید یا انتخاب کنید</div>
+          <small class="text-muted">PDF، DOC، DOCX، ODT، TXT و Markdown</small><div id="fileName" class="mt-2 text-primary"></div>
+        </div>
+        <input id="inpFile" type="file" hidden accept=".pdf,.doc,.docx,.odt,.txt,.md">
+        <div id="progressWrap" class="mt-3 d-none"><div class="d-flex align-items-center gap-2 mb-1"><span id="progressLabel" class="small faq-progress-label">در حال آماده‌سازی</span><span id="progressCount" class="small text-muted fa-num"></span></div><div class="progress" role="progressbar"><div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated" style="width:0"></div></div></div>        
+        <div class="row g-3 mt-1">
+          <div class="col-6"><label for="answerLength" class="form-label">طول پاسخ</label><select id="answerLength" class="form-select"><option value="50">کوتاه (تا ۵۰ کلمه)</option><option value="100" selected>متوسط (تا ۱۰۰ کلمه)</option><option value="180">مفصل (تا ۱۸۰ کلمه)</option><option value="250">حداکثری (تا ۲۵۰ کلمه)</option></select></div>
+          <div class="col-6"><label for="language" class="form-label">زبان خروجی</label><select id="language" class="form-select"><option value="source">زبان فایل</option><option value="fa">فارسی</option><option value="en">انگلیسی</option></select></div>
+          <div class="col-6"><label for="tone" class="form-label">گفتار خروجی</label><select id="tone" class="form-select"><option value="formal" selected>رسمی</option><option value="conversational">محاوره‌ای</option></select></div>
+          <div class="col-6"><label for="scope" class="form-label">محدوده سند</label><select id="scope" class="form-select"><option value="all">کل سند</option><option value="range">بازه صفحه/بخش</option><option value="focus">موضوعات مشخص</option></select></div>
+        </div>
+        <div id="advanced" class="advanced-fields mt-3 d-none">
+          <div id="rangeFields" class="row g-2 d-none"><div class="col-6"><label class="form-label" for="from">از</label><input id="from" type="number" min="1" value="1" class="form-control fa-num"></div><div class="col-6"><label class="form-label" for="to">تا</label><input id="to" type="number" min="1" value="1" class="form-control fa-num"></div><div class="col-12"><small id="rangeHint" class="text-muted fa-num">ابتدا فایل را انتخاب کنید.</small></div></div>
+          <div id="focusFields" class="d-none"><label for="focus" class="form-label">موضوعات یا عنوان‌ها</label><input id="focus" class="form-control" maxlength="500" placeholder="مثلاً امنیت، قیمت‌گذاری، شرایط ضمانت"><small class="text-muted">عبارت‌ها را با ویرگول جدا کنید.</small></div>
+        </div>
+        <button id="generate" class="btn btn-primary w-100 mt-4" disabled><i class="fa-solid fa-wand-magic-sparkles ms-2"></i>ساخت ۱۰ پرسش و پاسخ</button>
+      </div></div></section>
+      <section class="col-lg-7"><div class="card shadow-sm"><div class="card-header bg-transparent d-flex justify-content-between align-items-center"><h5 class="mb-0">پیش‌نمایش</h5><div class="d-flex gap-2"><button id="copy" class="btn btn-sm btn-outline-secondary d-none"><i class="fa-regular fa-copy ms-1"></i>کپی</button><div id="downloadMenu" class="dropdown d-none"><button class="btn btn-sm btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown" type="button"><i class="fa-solid fa-download ms-1"></i>دریافت</button><ul class="dropdown-menu dropdown-menu-end"><li><button class="dropdown-item" type="button" data-download-format="markdown">Markdown</button></li><li><button class="dropdown-item" type="button" data-download-format="json">JSON</button></li></ul></div></div></div><div id="preview" class="card-body faq-preview"><div class="faq-empty"><i class="fa-regular fa-circle-question fa-3x mb-3"></i><div>پرسش و پاسخهای ساخته‌شده به‌تدریج اینجا نمایش داده می‌شوند.</div></div></div><div id="moreWrap" class="card-footer bg-transparent text-center d-none"><button id="generateMore" class="btn btn-outline-primary px-4"><i class="fa-solid fa-plus ms-2"></i>۱۰ تای دیگر بساز</button><div id="faqLimit" class="small text-muted mt-2 fa-num"></div></div></div></section>
+    </div>
+    <div class="alert alert-info small mt-4"><p class="mb-2">فایل به‌طور کامل خوانده می‌شود و پرسش و پاسخها حداکثر در بسته‌های ۱۰تایی ساخته و نمایش داده می‌شوند..</p><p class="mb-0">فایل و پرسش و پاسخ ساخته‌شده در سامانه ذخیره نمی‌شوند. فایل موقت پس از پایان یا بروز خطا حذف می‌شود. از بارگذاری اسناد طبقه‌بندی‌شده خودداری کنید.</p></div>
+  </main>
+  <div id="busyOverlay" class="faq-busy-overlay d-none" aria-live="polite" aria-busy="true"><div class="faq-busy-card"><div id="busyLabel" class="fw-bold mb-3">در حال خواندن و تبدیل فایل…</div><div class="progress faq-progress-indeterminate"><div class="progress-bar progress-bar-striped"></div></div></div></div>
+  <footer class="footer-sticky"><div class="container text-center mb-3"><small>کلیه حقوق برای <a target="blank" href="https://tip.co.ir">شرکت فناوران پارسیان</a> محفوظ است</small></div></footer>
+  <script src="js/vendors/bootstrap.bundle.min.js"></script><script src="js/common.js"></script><script src="js/auth.js"></script><script src="js/app-nav.js"></script>
+  <script>let auth; setupAuth("faq", false).then(r => { auth = r; window.dispatchEvent(new Event("faq-auth-ready")); })</script>
+  <script src="js/faq.js"></script>
+</body></html>

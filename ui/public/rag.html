@@ -64,7 +64,6 @@
     <div class="side-bar-footer">
       <div id="userInfo"></div>
       <span data-app-services></span>
-      <span data-app-account data-service="rag" data-login-back="rag"></span>
       <div class="mt-3">
         <small>کلیه حقوق برای <a target="blank" href="https://tip.co.ir">شرکت فناوران پارسیان</a> محفوظ است</small>
       </div>
@@ -74,12 +73,11 @@
   <!-- Main Chat -->
   <div class="main-chat">
     <div class="chat-header d-flex justify-content-between align-items-center mb-3">
-      <h4 id="lblChatTitle" class="clickable-title" style="cursor: pointer; display: inline-block">چت عمومی با فاپی‌چت
+      <h4 id="lblChatTitle" class="clickable-title" style="cursor: pointer; display: inline-block">چت عمومی با فاپاچت
       </h4>
       <div class="on-desktop left-side">
         <i class="fa fa-moon fa-lg btn" id=btnToggleDarkMode></i>
-        <span data-app-services data-compact></span>
-        <span data-app-account data-compact data-service="rag" data-login-back="rag"></span>
+        <span data-app-account data-service="rag" data-login-back="rag"></span>
       </div>
       <div class="on-mobile left-side">
         <button id="btnNewChatMobile" class="hidden btn btn-outline-primary btn-sm float-end" title="ایجاد چت جدید"><i
@@ -89,7 +87,7 @@
     <div id="chatContainer" class="chat-container border p-3 rounded" manual-scroll-allowed></div>
     <div class="message-input">
       <div class="row mb-5 text-center" id="chat-banner">
-        با فاپی‌چت می‌تونی راجع به هرچی حرف بزنی.<br />حتی می‌تونی فایل‌های خودت رو آپلود کنی و ازشون اطلاعات بگیری!
+        با فاپاچت می‌تونی راجع به هرچی حرف بزنی.<br />حتی می‌تونی فایل‌های خودت رو آپلود کنی و ازشون اطلاعات بگیری!
       </div>
       <div class="input-group mt-3 w-100">
         <textarea type="text" id="messageInput" class="form-control"
@@ -224,7 +222,7 @@
       if (filesEnabled)
         page.chatBanner.innerHTML = "حالا می‌تونی با استفاده از فایل‌هایی که آپلود کردی چت کنی و ازشون اطلاعات در بیاری<br/>اگه می‌خوای به چت عمومی برگردی کافیه فایل‌ها رو پاک کنی یا اون‌ها  رو از توی پنل غیرفعال کنی"
       else
-        page.chatBanner.innerHTML = "با فاپی‌چت می‌تونی راجع به هرچی حرف بزنی.<br/> حتی می‌تونی فایل‌های خودت رو آپلود کنی و ازشون اطلاعات بگیری!"
+        page.chatBanner.innerHTML = "با فاپاچت می‌تونی راجع به هرچی حرف بزنی.<br/> حتی می‌تونی فایل‌های خودت رو آپلود کنی و ازشون اطلاعات بگیری!"
 
       page.chatHelper.innerHTML = ""
       if (filesEnabled) {
@@ -240,7 +238,7 @@
       updateQuestions,
       defaultTitle: {
         onFile: "چت با اسناد بارگذاری‌شده",
-        noFile: "چت عمومی با فاپی‌چت"
+        noFile: "چت عمومی با فاپاچت"
       },
       generateQuestions: true
     })

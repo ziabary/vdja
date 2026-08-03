@@ -42,13 +42,13 @@
     <!-- Main Chat -->
     <div class="main-chat" >
       <div class="chat-header d-flex justify-content-between align-items-center mb-3">
-        <h4 id="lblChatTitle"  class="clickable-title" style="cursor: pointer; display: inline-block">چت متفکرانه با فاپی‌چت</h4>
+        <h4 id="lblChatTitle"  class="clickable-title" style="cursor: pointer; display: inline-block">چت متفکرانه با فاپاچت</h4>
         <i class="fa fa-moon fa-lg btn" id=btnToggleDarkMode></i>
       </div>
       <div id="chatContainer" class="chat-container border p-3 rounded" manual-scroll-allowed></div>
       <div class="message-input">
       <div class="chat-helper row mb-5 text-center">
-        <h5>با فاپی‌چت می‌تونی راجع به هرچی حرف بزنی. البته ترجیحا به انگلیسی</h5>
+        <h5>با فاپاچت می‌تونی راجع به هرچی حرف بزنی. البته ترجیحا به انگلیسی</h5>
       </div>
       <div class="input-group mt-3 w-100">
         <textarea type="text" id="messageInput" class="form-control ltr" placeholder="هر چی می‌خوای بپرس&hellip;"></textarea>
@@ -118,7 +118,7 @@
       async function updateAppState(state, whatToUpadte = null) {
           switch(state) {
             case enuStates.newChat:
-              lblChatTitle.innerHTML = "چت متفکرانه با فاپی‌چت"
+              lblChatTitle.innerHTML = "چت متفکرانه با فاپاچت"
               document.body.classList.add('new-chat')
               page.chatHistory = [];
               chatContainer.innerHTML = "";

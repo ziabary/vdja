@@ -30,6 +30,8 @@ import stats from './routes/stats';
 import admin from './routes/admin';
 import files from './routes/shares';
 import widget from './routes/widget';
+import crm from './routes/crm';
+import faq from './routes/faq';
 import { publicWidgetCors } from './services/widgetService';
 import type { IntfExHttp } from './interfaces/exHttp';
 import { enuLLMServices } from './interfaces/config';
@@ -132,7 +134,9 @@ app.use((req, res, next) => {
     stats,
     admin,
     files,
-    widget
+    widget,
+    crm,
+    faq
   ])
 
 

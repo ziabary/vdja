@@ -1,5 +1,5 @@
 [data-app-services],[data-app-account]{display:inline-flex;align-items:center}
-.app-services-button,.app-login-button,.app-account-button{display:inline-flex;align-items:center;gap:.45rem;white-space:nowrap}
+.app-services-button,.app-login-button,.app-account-button{display:inline-flex;align-items:center;gap:.45rem;white-space:nowrap;min-height:37px}
 .app-account-button{padding-block:.22rem;padding-inline:.35rem .6rem}
 .app-account-avatar{width:28px;height:28px;display:inline-grid;place-items:center;overflow:hidden;color:var(--bs-secondary-color);background:var(--bs-tertiary-bg);border:1px solid var(--bs-border-color);border-radius:50%}
 .app-account-avatar.compact{width:25px;height:25px}

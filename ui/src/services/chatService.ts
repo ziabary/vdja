@@ -62,6 +62,11 @@ const activeRequests = new Map<string, Map<string,  TypActiveRequest>>();
 const totalRequests = new Map<string, number>();
 const stoppedRequests = new Map<string, number>();
 
+function serviceServer(service: enuLLMServices): IntfLLMServerConfig {
+  const servers = configManager.active().llmServers;
+  return servers[service] || servers.summarize || servers.rag;
+}
+
 /* ------------------ Public API ------------------ */
 function effectiveReqId(service: enuLLMServices, api_reqId: string|undefined) {
   if(!api_reqId || api_reqId.length !== 32 || api_reqId.includes("-"))
@@ -80,7 +85,8 @@ export async function generate(
   systemPrompt: string,
   userPrompt: string,
   maxTokens: number,
-  temperature: number
+  temperature: number,
+  options: { store?: boolean; background?: boolean; throwOnError?: boolean } = {}
 ): Promise<string> {
   let fullRespMarkdown = "";
   let errorMessage: string | undefined;
@@ -168,7 +174,7 @@ export async function generate(
       messages,
       [], // refrences
       {}, // options / context?
-      { temperature, maxTokens }
+      { temperature, maxTokens, store: options.store, background: options.background }
     );
 
     // Wait until streaming is done (in case startNewChat is async but doesn't await write/end)
@@ -177,9 +183,11 @@ export async function generate(
       await new Promise(resolve => setTimeout(resolve, 100));
     }
 
+    if (errorMessage && options.throwOnError) throw new Error(errorMessage);
     return errorMessage ?? fullRespMarkdown.trim();
   } catch (err) {
     logger.error(`generate failed for action "${action}":`, err);
+    if (options.throwOnError) throw err;
     return `${action} با خطای سیستمی مواجه شد.`;
   }
 }
@@ -192,15 +200,15 @@ export async function startNewChat(
   messages: IntfLLMMessage[],
   references: IntfRefrence[],
   handlers: TypStreamHandlers = {},
-  params: {maxTokens?: number, temperature?: number} = {}
+  params: {maxTokens?: number, temperature?: number, store?: boolean, background?: boolean} = {}
 ) {
-  const server = configManager.active().llmServers[service]
+  const server = serviceServer(service);
   const activeReqId = effectiveReqId(service, reqId)
   const llmParams = {
     temperature: params?.temperature || server.temperature,
     stream: true,
-    store: true,
-    background: true,
+    store: params.store ?? true,
+    background: params.background ?? true,
     max_output_tokens: Math.min(
       params?.maxTokens || 10000,
       server.maxTokens || 10000, 
@@ -278,7 +286,7 @@ export async function startNewChat(
 /* ------------------ Helpers ------------------ */
 
 function removeActiveRequest(service: enuLLMServices, reqID: string) {
-  const server = configManager.active().llmServers[service]
+  const server = serviceServer(service)
 
   if (configManager.active().log.isDebugging)
     logger.deepDebug({ removeActiveRequest: { service, url: server.url, reqID } });
@@ -303,7 +311,7 @@ async function checkRequestState(
 }
 
 export async function stopRequest(service: enuLLMServices, reqId: string|undefined) {
-  const server = configManager.active().llmServers[service]
+  const server = serviceServer(service)
   const activeReqId = effectiveReqId(service, reqId)
 
   try {
@@ -444,7 +452,7 @@ async function showMetrics(server: IntfLLMServerConfig): Promise<void> {
 }
 
 export function installMonitor(service: enuLLMServices) {
-  const server = configManager.active().llmServers[service]
+  const server = serviceServer(service)
   if (!server?.url) return
   if (installedMonitors.has(server.url)) return
  
@@ -479,7 +487,7 @@ export function installMonitor(service: enuLLMServices) {
         else if (age > 10 * 1000) over10Sec++;
         else if (age > 5 * 1000) over5Sec++;
 
-        const relatedServer = configManager.active().llmServers[req.service]
+        const relatedServer = serviceServer(req.service)
         if (
           relatedServer.maxDelayed &&
           age > relatedServer.maxDelayed * 1000
