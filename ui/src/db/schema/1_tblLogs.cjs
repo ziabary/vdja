@@ -19,7 +19,7 @@ exports.up = async function (knex) {
       .comment('Intentionally no FK');       // comment supported in MySQL & PostgreSQL
 
     table
-      .string('logAction', 6)
+      .string('logAction', 64)
       .notNullable();
 
     table

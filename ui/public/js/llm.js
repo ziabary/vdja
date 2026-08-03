@@ -7,6 +7,27 @@ const allowedFileTypes = {
   docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
 };
 
+function isAllowedFile(file, ragService = false) {
+  const name = file?.name?.toLowerCase?.() || '';
+  const ext = name.split('.').pop();
+  const allowedMime = allowedFileTypes[ext];
+
+  if (allowedMime && file.type === allowedMime) {
+    return true;
+  }
+
+  if (ragService) {
+    return /(?:\.jsonl|\.rag\.jsonl)$/i.test(name)
+      || ['application/json', 'application/x-ndjson'].includes(file.type)
+      || ext === 'jsonl';
+  }
+
+  return /\.(txt|md|csv|log)$/i.test(name)
+    || ['text/plain', 'text/markdown'].includes(file.type)
+    || ext === 'csv'
+    || ext === 'log';
+}
+
 async function setupFileConverter({ inpFile, blckFileUploadInfo, txtInput, lblStatus, maxChars, onLoad }) {
   inpFile.addEventListener('change', async () => {
     const file = inpFile.files[0];
@@ -17,8 +38,9 @@ async function setupFileConverter({ inpFile, blckFileUploadInfo, txtInput, lblSt
 }
 
 async function convertFile(file, { blckFileUploadInfo, txtInput, lblStatus, maxChars = Infinity, onLoad, ragService }) {
-  if (!Object.values(allowedFileTypes).includes(file.type)) {
-    showError(`نوع فایل مجاز نیست (فقط ${Object.keys(allowedFileTypes)})`);
+  if (!isAllowedFile(file, ragService)) {
+    const allowed = Object.keys(allowedFileTypes).join('، ');
+    showError(`نوع فایل مجاز نیست (فقط ${allowed}${ragService ? '، rag.jsonl و jsonl ساخت‌یافته' : ''})`);
     return;
   }
 

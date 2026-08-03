@@ -20,6 +20,7 @@ interface Group {
 export const ANONYMOUS_GROUP_ID = 2
 export const DEFAULT_GROUP_ID = 2
 export const VERIFIED_GROUP_ID = 3
+export const WIDGET_GROUP_ID = 4
 /* =======================
    Export
 ======================= */

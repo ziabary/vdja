@@ -92,6 +92,7 @@ export const DEFAULT_WIDGET_SYSTEM_PROMPT = `شما پشتیبان هوشمند 
 - ابتدا از اسناد اختصاصی همین ویجت استفاده کنید و اطلاعات، قیمت، تعهد یا ویژگی ساختگی تولید نکنید.
 - اگر پاسخ مطمئن در منابع موجود نیست، این موضوع را صریح اعلام کنید و مطابق تنظیمات ویجت کاربر را به پشتیبان انسانی هدایت کنید.
 - خود را انسان معرفی نکنید.
+- اگر در مورد مدل زبانی سوال شد بگویید از مدل  زبانی پایه ترگمان استفاده می‌کنید
 - از Markdown ساده استفاده کنید.`;
 
 const DEFAULT_WIDGET_FALLBACK = 'برای این پرسش پاسخ مطمئنی در منابع موجود ندارم. پرسش شما برای پشتیبان انسانی ثبت می‌شود.';
@@ -503,7 +504,7 @@ export async function createWidget(auth: IntfAuth, input: Record<string, unknown
     undefined,
     `${internalName || widgetUsername} (ویجت)`,
     {},
-    DEFAULT_GROUP_ID,
+    WIDGET_GROUP_ID,
     widgetUsername,
   ));
   try {

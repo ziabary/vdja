@@ -78,6 +78,14 @@ async function init() {
   //@TODO store logs in access.log
 
   app.use(express.json({ limit: configs.app.maxJson }));
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    if (req.path.startsWith('/fonts/IranSansX/')) {
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    }
+    next();
+  });
+
   app.use(express.static("public"));
   app.use(async (req: Request, res: Response, next: NextFunction) => {
     const htmlPath = path.join(__dirname, '..', 'public', `${req.path}.html`);

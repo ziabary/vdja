@@ -54,12 +54,16 @@ export default {
     resultCode?: number,
     result?: unknown
   ): Promise<{ logID: number }> => {
+    const normalizedAction = String(action || '').trim();
+    if (!normalizedAction || normalizedAction.length > 64)
+      throw new exHttpInternalServerError('Invalid log action');
+
     const db = await getLogDB();
 
     const res = await db(tblName)
       .insert({
         [cols.by_usrKey]: userKey,
-        [cols.action]: action,
+        [cols.action]: normalizedAction,
         [cols.info]: JSON.stringify(info),
         [cols.msgLen]: msgLen,
         [cols.resultCode]: resultCode ?? null,

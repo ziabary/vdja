@@ -29,7 +29,8 @@
     changed: { label: "تغییرات منتشرنشده", cls: "changed", icon: "fa-triangle-exclamation" },
     disabled: { label: "غیرفعال", cls: "disabled", icon: "fa-circle-pause" }
   };
-  const FILE_TYPES = ["pdf", "odt", "txt", "md", "doc", "docx"];
+  const FILE_TYPES = ["pdf", "odt", "txt", "md", "doc", "docx", "jsonl"];
+  const STRUCTURED_RAG_SUFFIX = ".rag.jsonl";
 
   const esc = value => String(value ?? "")
     .replaceAll("&", "&amp;")
@@ -37,6 +38,101 @@
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
+
+
+  let markdownRendererPromise;
+
+  function sanitizeMarkdownHTML(html) {
+    const template = document.createElement("template");
+    template.innerHTML = String(html || "");
+
+    template.content
+      .querySelectorAll("script,style,iframe,object,embed,link,meta,form,input,button,textarea,select,svg,math")
+      .forEach(node => node.remove());
+
+    const allowedTags = new Set([
+      "P", "BR", "STRONG", "B", "EM", "I", "DEL", "S",
+      "UL", "OL", "LI", "BLOCKQUOTE", "CODE", "PRE",
+      "H1", "H2", "H3", "H4", "H5", "H6", "A", "HR",
+      "TABLE", "THEAD", "TBODY", "TR", "TH", "TD"
+    ]);
+
+    template.content.querySelectorAll("*").forEach(node => {
+      if (!allowedTags.has(node.tagName)) {
+        node.replaceWith(...Array.from(node.childNodes));
+        return;
+      }
+
+      Array.from(node.attributes).forEach(attribute => {
+        const name = attribute.name.toLowerCase();
+        const keep = node.tagName === "A" && ["href", "title"].includes(name);
+        if (!keep) node.removeAttribute(attribute.name);
+      });
+
+      if (node.tagName === "A") {
+        const href = String(node.getAttribute("href") || "").trim();
+        if (!/^(https?:|mailto:|tel:|#|\/)/i.test(href)) node.removeAttribute("href");
+        if (node.hasAttribute("href")) {
+          node.setAttribute("target", "_blank");
+          node.setAttribute("rel", "noopener noreferrer nofollow");
+        }
+      }
+    });
+
+    return template.innerHTML;
+  }
+
+  function renderMarkdown(markdown) {
+    const source = String(markdown || "").trim();
+    if (!source) return "";
+    if (typeof globalThis.marked === "undefined" || typeof globalThis.marked.parse !== "function") {
+      return `<p>${esc(source).replaceAll("\n", "<br>")}</p>`;
+    }
+    return sanitizeMarkdownHTML(globalThis.marked.parse(source, { gfm: true, breaks: true }));
+  }
+
+  function ensureMarkdownRenderer(baseUrl = location.origin) {
+    if (typeof globalThis.marked !== "undefined" && typeof globalThis.marked.parse === "function") {
+      return Promise.resolve(true);
+    }
+    if (markdownRendererPromise) return markdownRendererPromise;
+
+    const src = `${String(baseUrl || location.origin).replace(/\/$/, "")}/js/marked.min.js`;
+    markdownRendererPromise = new Promise(resolve => {
+      const existing = Array.from(document.scripts).find(script => script.src === src);
+      const script = existing || document.createElement("script");
+      const finish = () => resolve(
+        typeof globalThis.marked !== "undefined" && typeof globalThis.marked.parse === "function"
+      );
+
+      if (!existing) {
+        script.src = src;
+        script.async = true;
+        script.dataset.fapcoMarkdown = "1";
+        document.head.appendChild(script);
+      }
+      const timeout = window.setTimeout(() => resolve(false), 4000);
+      const finishWithCleanup = () => {
+        window.clearTimeout(timeout);
+        finish();
+      };
+      script.addEventListener("load", finishWithCleanup, { once: true });
+      script.addEventListener("error", () => {
+        window.clearTimeout(timeout);
+        resolve(false);
+      }, { once: true });
+      if (existing?.dataset.loaded === "1") finishWithCleanup();
+      else script.addEventListener("load", () => { script.dataset.loaded = "1"; }, { once: true });
+    });
+
+    return markdownRendererPromise;
+  }
+
+  function messageContentHTML(sender, text) {
+    return ["assistant", "operator", "ai"].includes(String(sender || ""))
+      ? renderMarkdown(text)
+      : esc(text).replaceAll("\n", "<br>");
+  }    
   const fa = value => Number(value || 0).toLocaleString("fa-IR");
   const formatDate = value => value ? new Date(value).toLocaleDateString("fa-IR", { year: "numeric", month: "short", day: "numeric" }) : "—";
   const formatDateTime = value => value ? new Date(value).toLocaleString("fa-IR", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "—";
@@ -52,6 +148,12 @@
     if (n >= 1024) return `${Math.round(n / 1024)} KB`;
     return `${n} B`;
   };
+  const fileExtension = fileName => String(fileName || "").trim().toLowerCase().split(".").pop() || "";
+  const isSupportedKnowledgeFile = file => {
+    const name = String(file?.name || "").trim().toLowerCase();
+    return name.endsWith(STRUCTURED_RAG_SUFFIX) || FILE_TYPES.includes(fileExtension(name));
+  };
+  const supportedKnowledgeFilesText = "PDF، DOC، DOCX، ODT، TXT، Markdown و Structured JSONL";
   const normalizeOrigin = value => {
     const raw = String(value || "").trim();
     if (!raw) return "";
@@ -75,6 +177,93 @@
     welcomeMessage: appearance?.welcomeMessage || EFFECTIVE_APPEARANCE.welcomeMessage,
     inputPlaceholder: appearance?.inputPlaceholder || EFFECTIVE_APPEARANCE.inputPlaceholder
   });
+
+  function normalizeHexColor(value, fallback = "#0d6efd") {
+    const color = String(value || "").trim();
+    return /^#[0-9a-f]{6}$/i.test(color) ? color.toLowerCase() : fallback;
+  }
+
+  function hexToRGB(hex) {
+    const color = normalizeHexColor(hex).slice(1);
+    return {
+      r: Number.parseInt(color.slice(0, 2), 16),
+      g: Number.parseInt(color.slice(2, 4), 16),
+      b: Number.parseInt(color.slice(4, 6), 16)
+    };
+  }
+
+  function relativeLuminance(hex) {
+    const { r, g, b } = hexToRGB(hex);
+    const channel = value => {
+      const normalized = value / 255;
+      return normalized <= 0.04045
+        ? normalized / 12.92
+        : Math.pow((normalized + 0.055) / 1.055, 2.4);
+    };
+    return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
+  }
+
+  function contrastRatio(first, second) {
+    const a = relativeLuminance(first);
+    const b = relativeLuminance(second);
+    return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+  }
+
+  function mixHex(first, second, ratio) {
+    const a = hexToRGB(first);
+    const b = hexToRGB(second);
+    const amount = Math.max(0, Math.min(1, Number(ratio || 0)));
+    const value = channel => Math.round(a[channel] + (b[channel] - a[channel]) * amount)
+      .toString(16).padStart(2, "0");
+    return `#${value("r")}${value("g")}${value("b")}`;
+  }
+
+  function ensureContrast(foreground, background, minimum = 4.5) {
+    const color = normalizeHexColor(foreground);
+    const surface = normalizeHexColor(background, "#ffffff");
+    if (contrastRatio(color, surface) >= minimum) return color;
+    const target = relativeLuminance(surface) > 0.45 ? "#111827" : "#ffffff";
+    for (let step = 1; step <= 20; step += 1) {
+      const candidate = mixHex(color, target, step / 20);
+      if (contrastRatio(candidate, surface) >= minimum) return candidate;
+    }
+    return target;
+  }
+
+  function widgetPalette(value) {
+    const primary = normalizeHexColor(value);
+    const lightText = "#ffffff";
+    const darkText = "#182033";
+    const onPrimary = contrastRatio(primary, lightText) >= contrastRatio(primary, darkText)
+      ? lightText
+      : darkText;
+    return {
+      primary,
+      onPrimary,
+      accentLight: ensureContrast(primary, "#ffffff", 4.5),
+      accentDark: ensureContrast(primary, "#20262c", 4.5),
+      borderLight: ensureContrast(primary, "#ffffff", 3),
+      borderDark: ensureContrast(primary, "#20262c", 3)
+    };
+  }
+
+  function widgetPaletteVariables(value) {
+    const palette = widgetPalette(value);
+    return [
+      `--widget-color:${palette.primary}`,
+      `--widget-on-color:${palette.onPrimary}`,
+      `--widget-accent-light:${palette.accentLight}`,
+      `--widget-accent-dark:${palette.accentDark}`,
+      `--widget-border-light:${palette.borderLight}`,
+      `--widget-border-dark:${palette.borderDark}`
+    ].join(";");
+  }
+
+  function widgetThemeClass(theme) {
+    if (theme === "dark") return "dark";
+    if (theme === "auto") return "auto";
+    return "light";
+  }
   const splitList = value => [...new Set(String(value || "").split(/[،,؛;\n\r]+/).map(item => item.trim()).filter(Boolean))];
   const requiredBadge = () => '<span class="ww-field-required">الزامی</span>';
   const optionalBadge = () => '<span class="ww-field-optional">اختیاری</span>';
@@ -240,15 +429,24 @@
     return { answer: answer.trim(), references, ...meta };
   }
 
-  async function uploadSingleWidgetFile(widgetId, file, onProgress) {
-    const currentAuth = await authReady();
-    const tempId = `upload-${Math.random().toString(36).slice(2, 10)}`;
-    const base = {
-      id: tempId, name: file.name, size: file.size,
+  function makeWidgetUploadItem(file, tempId, queueIndex, queueTotal) {
+    return {
+      id: tempId,
+      name: file.name,
+      size: file.size,
       type: file.name.split(".").pop()?.toLowerCase() || "file",
-      status: "uploading", progress: 0, chunks: 0, uploadedAt: new Date().toISOString()
-    };
-    await onProgress?.(base);
+      status: "queued",
+      progress: 0,
+      chunks: 0,
+      uploadedAt: new Date().toISOString(),
+      queueIndex,
+      queueTotal
+     };
+  }
+
+  async function uploadSingleWidgetFile(widgetId, file, base, onProgress) {
+    const currentAuth = await authReady();
+    await onProgress?.({ ...base, status: "uploading", progress: 0 });
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
       xhr.open("POST", `/api/widget/${widgetId}/files`, true);
@@ -318,8 +516,37 @@
     async updateWidget(widgetId, changes) { return (await apiJSON(`/api/widget/${widgetId}`, { method: "PUT", body: JSON.stringify(changes || {}) })).widget; },
     async deleteWidget(widgetId) { return apiJSON(`/api/widget/${widgetId}`, { method: "DELETE" }); },
     async uploadFiles(widgetId, files, onProgress) {
-      for (const file of Array.from(files || [])) await uploadSingleWidgetFile(widgetId, file, onProgress);
-      return { ok: true };
+      const queue = Array.from(files || []).map((file, index, all) => ({
+        file,
+        base: makeWidgetUploadItem(
+          file,
+          `upload-${Math.random().toString(36).slice(2, 10)}`,
+          index + 1,
+          all.length
+        )
+      }));
+
+      for (const item of queue) await onProgress?.(item.base);
+
+      const results = [];
+      for (const item of queue) {
+        try {
+          const result = await uploadSingleWidgetFile(widgetId, item.file, item.base, onProgress);
+          results.push({ ok: true, file: item.file, base: item.base, result });
+        } catch (error) {
+          const message = error?.message || "بارگذاری فایل ناموفق بود";
+          await onProgress?.({ ...item.base, status: "failed", progress: 100, error: message });
+          results.push({ ok: false, file: item.file, base: item.base, error: message });
+        }
+      }
+
+      const failed = results.filter(item => !item.ok);
+      return {
+        ok: failed.length === 0,
+        succeeded: results.length - failed.length,
+        failed: failed.length,
+        results
+      };
     },
     async deleteFile(widgetId, fileId) { return apiJSON(`/api/widget/${widgetId}/files/${encodeURIComponent(fileId)}`, { method: "DELETE" }); },
     async retryFile(widgetId, fileId) { return apiJSON(`/api/widget/${widgetId}/files/${encodeURIComponent(fileId)}/retry`, { method: "POST", body: "{}" }); },
@@ -426,7 +653,8 @@
     const root = host.attachShadow ? host.attachShadow({ mode: "open" }) : host;
     const ap = effectiveAppearance(config.appearance);
     const position = ap.position === "left" ? "left" : "right";
-    root.innerHTML = runtimeTemplate(config, position);
+    await ensureMarkdownRenderer(publicBase(widgetId));
+    root.innerHTML = runtimeTemplate(config, position, publicBase(widgetId));
     const launcher = root.querySelector(".fw-launcher");
     const panel = root.querySelector(".fw-panel");
     const greeting = root.querySelector(".fw-greeting");
@@ -440,7 +668,11 @@
     const append = (sender, text, refs = []) => {
       const el = document.createElement("div");
       el.className = `fw-message ${sender}`;
-      el.textContent = text;
+      const content = document.createElement("div");
+      content.className = "fw-message-content";
+      if (["assistant", "operator", "ai"].includes(sender)) content.innerHTML = renderMarkdown(text);
+      else content.textContent = String(text || "");
+      el.appendChild(content);
       if (refs?.length) {
         const r = document.createElement("div"); r.className = "fw-refs"; r.textContent = `منبع: ${refs.map(item => item.name).join("، ")}`; el.appendChild(r);
       }
@@ -500,27 +732,38 @@
     return id;
   }
 
-  function runtimeTemplate(config, position) {
+  function runtimeTemplate(config, position, assetBase) {
     const ap = effectiveAppearance(config.appearance);
+    const palette = widgetPalette(ap.primaryColor);
+    const themeClass = widgetThemeClass(ap.theme);
     const quick = (ap.quickQuestions || []).slice(0, 4).map(item => `<button type="button" data-q="${esc(item)}">${esc(item)}</button>`).join("");
     const logo = ap.logoDataUrl ? `<img src="${esc(ap.logoDataUrl)}" alt="">` : `<span>${esc(initials(ap.assistantName))}</span>`;
     const sendIcon = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M3.4 20.4 21 12 3.4 3.6l.1 6.5 11.8 1.9-11.8 1.9-.1 6.5Z"/></svg>';
     const chatIcon = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 4h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9l-5 4v-4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Zm2 5h12V7H6v2Zm0 4h9v-2H6v2Z"/></svg>';
+    const fontCssUrl = `${String(assetBase || location.origin).replace(/\/$/, "")}/fonts/IranSansX/fontiran.css`;
     return `
       <style>
-        :host{all:initial}.fw-wrap,.fw-wrap *{box-sizing:border-box}.fw-wrap{font-family:Tahoma,Arial,sans-serif;direction:rtl;color:#1d2636;--c:${esc(ap.primaryColor || "#0d6efd")};color-scheme:light}.fw-wrap button,.fw-wrap input,.fw-wrap textarea{font:inherit}
-        .fw-launcher{position:fixed;z-index:2147483001;${position}:22px;bottom:22px;width:60px;height:60px;display:grid;place-items:center;padding:16px;border:0;border-radius:50%;color:#fff;background:var(--c);box-shadow:0 13px 30px rgba(0,0,0,.28);cursor:pointer}.fw-launcher svg{width:100%;height:100%}.fw-launcher.hidden,.fw-greeting.hidden{display:none}.fw-greeting{position:fixed;z-index:2147483000;${position}:92px;bottom:30px;max-width:min(250px,calc(100vw - 120px));padding:9px 12px;overflow-wrap:anywhere;color:#263042;background:#fff;border:1px solid #dce3ec;border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,.16);font-size:11px}
-        .fw-panel{position:fixed;z-index:2147483002;${position}:22px;bottom:22px;width:min(370px,calc(100vw - 24px));height:min(545px,calc(100vh - 24px));min-width:0;display:none;flex-direction:column;overflow:hidden;background:#fff;color:#1d2636;border:1px solid #dce3ec;border-radius:18px;box-shadow:0 20px 60px rgba(0,0,0,.3)}.fw-panel.open{display:flex}.fw-panel.dark{color-scheme:dark;color:#e9edf3;background:#20262c;border-color:#39424c}.fw-panel.dark .fw-messages{background:#181d22}.fw-panel.dark .fw-message.assistant{background:#262d34;border-color:#39424c}.fw-panel.dark .fw-quick,.fw-panel.dark .fw-form,.fw-panel.dark .fw-contact{background:#20262c;border-color:#39424c}.fw-panel.dark .fw-quick button{background:#20262c}.fw-panel.dark .fw-input,.fw-panel.dark .fw-contact input{color:#e9edf3;background:#262d34;border-color:#39424c}
-        .fw-head{flex:0 0 auto;padding:13px 14px;display:flex;align-items:center;gap:10px;color:#fff;background:var(--c)}.fw-avatar{width:39px;height:39px;flex:0 0 39px;display:grid;place-items:center;overflow:hidden;background:rgba(255,255,255,.2);border-radius:11px;font-weight:bold}.fw-avatar img{width:100%;height:100%;object-fit:cover}.fw-head-text{min-width:0;display:flex;flex:1;flex-direction:column}.fw-head-text strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}.fw-head-text small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px;opacity:.86}.fw-close{flex:0 0 auto;padding:4px 8px;color:#fff;background:transparent;border:0;font-size:20px;cursor:pointer}
-        .fw-messages{min-width:0;min-height:0;flex:1;padding:13px;overflow-y:auto;overflow-x:hidden;background:#f5f7fa}.fw-message{max-width:88%;margin-bottom:9px;padding:9px 11px;overflow-wrap:anywhere;word-break:break-word;border-radius:13px;font-size:12px;line-height:1.8;white-space:pre-wrap}.fw-message.assistant{margin-left:auto;background:#fff;border:1px solid #e0e5eb;border-bottom-right-radius:4px}.fw-message.visitor{margin-right:auto;color:#fff;background:var(--c);border-bottom-left-radius:4px}.fw-message.operator{margin-left:auto;background:#e7f7ee;border:1px solid #b9e2ca;border-bottom-right-radius:4px}.fw-refs{margin-top:7px;padding-top:7px;overflow-wrap:anywhere;color:#6d7786;border-top:1px dashed #d4dae2;font-size:10px}
-        .fw-quick{flex:0 0 auto;max-height:126px;padding:8px 10px;display:grid;gap:6px;overflow-y:auto;overflow-x:hidden;border-top:1px solid #edf0f4}.fw-quick button{width:100%;padding:7px 9px;white-space:normal;overflow-wrap:anywhere;color:var(--c);background:#fff;border:1px solid var(--c);border-radius:10px;cursor:pointer;text-align:right;font-size:10px;line-height:1.55}.fw-form{flex:0 0 auto;width:100%;padding:10px;display:grid;grid-template-columns:minmax(0,1fr) 44px;gap:7px;overflow:hidden;border-top:1px solid #e5e9ef;background:#fff}.fw-input{width:100%;min-width:0;height:42px;min-height:42px;max-height:86px;padding:9px;color:#1d2636;background:#fff;border:1px solid #d8dee7;border-radius:10px;resize:none;outline:none}.fw-send{width:44px;height:42px;display:grid;place-items:center;padding:11px;border:0;color:#fff;background:var(--c);border-radius:10px;cursor:pointer}.fw-send svg{width:100%;height:100%;transform:scaleX(-1)}.fw-send:disabled{opacity:.55;cursor:not-allowed}.fw-brand{flex:0 0 auto;padding:0 10px 8px;color:#8a94a2;text-align:center;font-size:9px}
-        .fw-contact{padding:9px;background:#fff;border-top:1px solid #e6eaf0}.fw-contact-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr) auto;gap:6px}.fw-contact input{min-width:0;width:100%;padding:7px;color:#1d2636;background:#fff;border:1px solid #d8dee7;border-radius:8px;font-size:10px}.fw-contact button{padding:7px 9px;color:#fff;background:var(--c);border:0;border-radius:8px;cursor:pointer;font-size:10px}.fw-contact-error{margin-top:5px;color:#dc3545;font-size:9px}.fw-typing{display:inline-flex;gap:4px}.fw-typing i{width:5px;height:5px;background:#8993a1;border-radius:50%;animation:fwt 1s infinite alternate}.fw-typing i:nth-child(2){animation-delay:.2s}.fw-typing i:nth-child(3){animation-delay:.4s}@keyframes fwt{to{transform:translateY(-4px);opacity:.45}}
+        :host{all:initial}
+        .fw-wrap,.fw-wrap *{box-sizing:border-box}
+        .fw-wrap{font-family:"IRANSansX",Tahoma,Arial,sans-serif;direction:rtl;--c:${palette.primary};--on-c:${palette.onPrimary};--accent-light:${palette.accentLight};--accent-dark:${palette.accentDark};--accent-border-light:${palette.borderLight};--accent-border-dark:${palette.borderDark}}
+        .fw-wrap button,.fw-wrap input,.fw-wrap textarea,.fw-wrap select{font:inherit}
+        .fw-launcher{position:fixed;z-index:2147483001;${position}:22px;bottom:22px;width:60px;height:60px;display:grid;place-items:center;padding:16px;color:var(--on-c);background:var(--c);border:1px solid var(--accent-border-light);border-radius:50%;box-shadow:0 13px 30px rgba(0,0,0,.28);cursor:pointer}.fw-launcher svg{width:100%;height:100%}.fw-launcher.hidden,.fw-greeting.hidden{display:none}
+        .fw-greeting{position:fixed;z-index:2147483000;${position}:92px;bottom:30px;max-width:min(250px,calc(100vw - 120px));padding:9px 12px;overflow-wrap:anywhere;color:#263042;background:#fff;border:1px solid #dce3ec;border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,.16);font-size:11px}
+        .fw-panel{--bg:#fff;--surface:#fff;--surface-2:#f5f7fa;--border:#dce3ec;--text:#1d2636;--muted:#6d7786;--operator-bg:#e7f7ee;--operator-border:#b9e2ca;--accent:var(--accent-light);--accent-border:var(--accent-border-light);position:fixed;z-index:2147483002;${position}:22px;bottom:22px;width:min(370px,calc(100vw - 24px));height:min(570px,calc(100vh - 24px));height:min(570px,calc(100dvh - 24px));min-width:0;display:none;flex-direction:column;overflow:hidden;color-scheme:light;color:var(--text);background:var(--bg);border:1px solid var(--border);border-radius:18px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+        .fw-panel.open{display:flex}
+        .fw-panel.dark{--bg:#20262c;--surface:#20262c;--surface-2:#181d22;--border:#39424c;--text:#e9edf3;--muted:#a5afbc;--operator-bg:#17392c;--operator-border:#2d6a4f;--accent:var(--accent-dark);--accent-border:var(--accent-border-dark);color-scheme:dark}
+        @media(prefers-color-scheme:dark){.fw-panel.auto{--bg:#20262c;--surface:#20262c;--surface-2:#181d22;--border:#39424c;--text:#e9edf3;--muted:#a5afbc;--operator-bg:#17392c;--operator-border:#2d6a4f;--accent:var(--accent-dark);--accent-border:var(--accent-border-dark);color-scheme:dark}}
+        .fw-head{flex:0 0 auto;padding:13px 14px;display:flex;align-items:center;gap:10px;color:var(--on-c);background:var(--c);border-bottom:1px solid var(--accent-border)}.fw-avatar{width:39px;height:39px;flex:0 0 39px;display:grid;place-items:center;overflow:hidden;color:inherit;background:rgba(127,127,127,.18);border-radius:11px;font-weight:bold}.fw-avatar img{width:100%;height:100%;object-fit:cover}.fw-head-text{min-width:0;display:flex;flex:1;flex-direction:column}.fw-head-text strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}.fw-head-text small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px;opacity:.86}.fw-close{flex:0 0 auto;padding:4px 8px;color:inherit;background:transparent;border:0;font-size:20px;cursor:pointer}
+        .fw-messages{min-width:0;min-height:0;flex:1;padding:13px;overflow-y:auto;overflow-x:hidden;background:var(--surface-2)}.fw-message{max-width:88%;margin-bottom:9px;padding:9px 11px;overflow-wrap:anywhere;word-break:break-word;border-radius:13px;font-size:12px;line-height:1.8;white-space:normal}.fw-message.assistant{margin-left:auto;color:var(--text);background:var(--surface);border:1px solid var(--border);border-bottom-right-radius:4px}.fw-message.visitor{margin-right:auto;color:var(--on-c);background:var(--c);border:1px solid var(--accent-border);border-bottom-left-radius:4px;white-space:pre-wrap}.fw-message.operator{margin-left:auto;color:var(--text);background:var(--operator-bg);border:1px solid var(--operator-border);border-bottom-right-radius:4px}.fw-message-content{min-width:0;overflow-wrap:anywhere}.fw-message-content>:first-child{margin-top:0}.fw-message-content>:last-child{margin-bottom:0}.fw-message-content p{margin:0 0 .65em}.fw-message-content h1,.fw-message-content h2,.fw-message-content h3,.fw-message-content h4,.fw-message-content h5,.fw-message-content h6{margin:.8em 0 .35em;font:inherit;font-weight:800}.fw-message-content ul,.fw-message-content ol{margin:.45em 0;padding-inline-start:1.5em}.fw-message-content li+li{margin-top:.2em}.fw-message-content blockquote{margin:.6em 0;padding:.25em .75em;color:var(--muted);border-inline-start:3px solid var(--accent-border)}.fw-message-content code,.fw-message-content pre{font-family:"IRANSansX",Tahoma,Arial,sans-serif}.fw-message-content code{padding:.08em .3em;background:var(--surface-2);border:1px solid var(--border);border-radius:4px}.fw-message-content pre{max-width:100%;margin:.6em 0;padding:.65em;overflow:auto;direction:ltr;text-align:left;white-space:pre;background:var(--surface-2);border:1px solid var(--border);border-radius:7px}.fw-message-content pre code{padding:0;background:transparent;border:0}.fw-message-content a{color:var(--accent);text-decoration:underline;text-underline-offset:2px}.fw-message-content table{display:block;max-width:100%;margin:.6em 0;overflow-x:auto;border-collapse:collapse}.fw-message-content th,.fw-message-content td{padding:.35em .5em;border:1px solid var(--border);white-space:nowrap}.fw-message-content hr{margin:.7em 0;border:0;border-top:1px solid var(--border)}.fw-refs{margin-top:7px;padding-top:7px;overflow-wrap:anywhere;color:var(--muted);border-top:1px dashed var(--border);font-size:10px}
+        .fw-quick{flex:0 0 auto;max-height:126px;padding:8px 10px;display:grid;gap:6px;overflow-y:auto;overflow-x:hidden;background:var(--surface);border-top:1px solid var(--border)}.fw-quick button{width:100%;padding:7px 9px;white-space:normal;overflow-wrap:anywhere;color:var(--accent);background:var(--surface);border:1px solid var(--accent-border);border-radius:10px;cursor:pointer;text-align:right;font-size:10px;line-height:1.55}.fw-quick button:hover,.fw-quick button:focus-visible{color:var(--on-c);background:var(--c);outline:none}
+        .fw-form{flex:0 0 auto;width:100%;padding:10px;display:grid;grid-template-columns:minmax(0,1fr) 44px;gap:7px;overflow:hidden;background:var(--surface);border-top:1px solid var(--border)}.fw-input{width:100%;min-width:0;height:42px;min-height:42px;max-height:86px;padding:9px;color:var(--text);background:var(--surface);border:1px solid var(--border);border-radius:10px;resize:none;outline:none}.fw-input::placeholder{color:var(--muted)}.fw-input:focus{border-color:var(--accent);box-shadow:0 0 0 2px rgba(127,127,127,.16)}.fw-send{width:44px;height:42px;display:grid;place-items:center;padding:11px;color:var(--on-c);background:var(--c);border:1px solid var(--accent-border);border-radius:10px;cursor:pointer}.fw-send svg{width:100%;height:100%;transform:scaleX(-1)}.fw-send:disabled{opacity:.55;cursor:not-allowed}.fw-brand{flex:0 0 auto;padding:0 10px 8px;color:var(--muted);text-align:center;font-size:9px}
+        .fw-contact{padding:9px;background:var(--surface);border-top:1px solid var(--border)}.fw-contact-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr) auto;gap:6px}.fw-contact input{min-width:0;width:100%;padding:7px;color:var(--text);background:var(--surface);border:1px solid var(--border);border-radius:8px;font-size:10px}.fw-contact input::placeholder{color:var(--muted)}.fw-contact button{padding:7px 9px;color:var(--on-c);background:var(--c);border:1px solid var(--accent-border);border-radius:8px;cursor:pointer;font-size:10px}.fw-contact-error{margin-top:5px;color:#dc3545;font-size:9px}.fw-typing{display:inline-flex;gap:4px}.fw-typing i{width:5px;height:5px;background:var(--muted);border-radius:50%;animation:fwt 1s infinite alternate}.fw-typing i:nth-child(2){animation-delay:.2s}.fw-typing i:nth-child(3){animation-delay:.4s}@keyframes fwt{to{transform:translateY(-4px);opacity:.45}}
         @media(max-width:520px){.fw-panel{inset:8px;width:auto;height:auto;border-radius:14px}.fw-launcher{${position}:14px;bottom:14px}.fw-greeting{${position}:82px;bottom:22px}.fw-contact-row{grid-template-columns:1fr}.fw-contact button{min-height:34px}}
       </style>
       <div class="fw-wrap">
         <button class="fw-launcher" aria-label="بازکردن پشتیبان">${chatIcon}</button>
         ${ap.greetingBubble ? `<div class="fw-greeting">${esc(ap.greetingBubble)}</div>` : ""}
-        <section class="fw-panel ${ap.theme === "dark" ? "dark" : ""}" role="dialog" aria-label="${esc(ap.title)}">
+        <section class="fw-panel ${themeClass}" role="dialog" aria-label="${esc(ap.title)}">
           <header class="fw-head"><div class="fw-avatar">${logo}</div><div class="fw-head-text"><strong>${esc(ap.title)}</strong><small>${esc(ap.subtitle)}</small></div><button class="fw-close" aria-label="بستن">×</button></header>
           <div class="fw-messages"></div>
           ${quick ? `<div class="fw-quick">${quick}</div>` : ""}
@@ -578,7 +821,8 @@
     testMessages: [],
     testConversationId: null,
     owner: null,
-    saving: false
+    saving: false,
+    knowledgeUploadRunning: false
   };
 
   const view = document.getElementById("wwView");
@@ -807,15 +1051,28 @@
 
   function renderKnowledgeTab(widget) {
     return `<div class="ww-stack"><div class="ww-knowledge-owner"><i class="fa-solid fa-database"></i><div>فایل‌های این بخش در فضای اختصاصی کاربر <code>${esc(widget.username)}</code> بارگذاری می‌شوند. بازدیدکنندگان سایت فقط می‌توانند بر مبنای آن‌ها سؤال بپرسند و امکان بارگذاری یا حذف فایل ندارند.</div></div>
-      <section class="ww-card ww-card-flat ww-card-body"><div class="ww-section-head"><div><h3>افزودن منابع دانش</h3><p>فایل‌ها پس از بارگذاری، استخراج متن و ایندکس برای پاسخ‌گویی آماده می‌شوند.</p></div></div><label class="ww-dropzone" id="wwDropzone" for="wwFileInput"><div><i class="fa-solid fa-cloud-arrow-up"></i><h3>فایل‌ها را اینجا رها کنید یا کلیک کنید</h3><p>PDF، DOC، DOCX، ODT، TXT و Markdown — امکان انتخاب چند فایل</p></div></label><input id="wwFileInput" class="hidden" type="file" multiple accept=".pdf,.doc,.docx,.odt,.txt,.md"></section>
+      <section class="ww-card ww-card-flat ww-card-body"><div class="ww-section-head"><div><h3>افزودن منابع دانش</h3><p>فایل‌ها پس از بارگذاری، استخراج متن و ایندکس برای پاسخ‌گویی آماده می‌شوند.</p></div></div><label class="ww-dropzone" id="wwDropzone" for="wwFileInput"><div><i class="fa-solid fa-cloud-arrow-up"></i><h3>فایل‌ها را اینجا رها کنید یا کلیک کنید</h3><p>${supportedKnowledgeFilesText} — امکان انتخاب چند فایل</p><small>برای داده‌های ساخت‌یافته از پسوند <code>.rag.jsonl</code> استفاده کنید. فایل <code>.jsonl</code> عادی باید manifest معتبر داشته باشد.</small><small data-upload-queue-status>فایل‌ها یکی‌یکی و به‌ترتیب انتخاب پردازش می‌شوند.</small></div></label><input id="wwFileInput" class="hidden" type="file" multiple accept=".pdf,.doc,.docx,.odt,.txt,.md,.rag.jsonl,.jsonl,application/json,application/x-ndjson"></section>
       <section class="ww-card ww-card-flat ww-card-body"><div class="ww-section-head"><div><h3>فایل‌های ویجت</h3><p>${fa(widget.files.length)} فایل ثبت شده؛ ${fa(widget.files.filter(file => file.status === "ready").length)} فایل آماده است.</p></div></div><div class="ww-file-list" id="wwFileList">${renderFiles(widget.files)}</div></section></div>`;
   }
 
   function renderFiles(files) {
     if (!files.length) return `<div class="ww-empty-state" style="min-height:190px"><div><i class="fa-solid fa-file-circle-plus"></i><h3>هنوز فایلی افزوده نشده است</h3><p>دانش ویجت از فایل‌های همین بخش ساخته می‌شود.</p></div></div>`;
     return files.map(file => {
-      const meta = file.status === "ready" ? ["آماده", "text-success", "fa-circle-check"] : file.status === "failed" ? ["ناموفق", "text-danger", "fa-circle-xmark"] : file.status === "processing" ? ["در حال پردازش", "text-warning", "fa-gears"] : ["در حال بارگذاری", "text-primary", "fa-cloud-arrow-up"];
-      return `<div class="ww-file-item" data-file-id="${file.id}"><div class="ww-file-icon"><i class="fa-solid fa-file-${file.type === "pdf" ? "pdf" : file.type === "txt" || file.type === "md" ? "lines" : "word"}"></i></div><div class="ww-file-main"><strong>${esc(file.name)}</strong><small>${bytesHuman(file.size)} · ${file.status === "ready" ? `${fa(file.chunks)} بخش دانشی · ${formatDate(file.uploadedAt)}` : meta[0]}</small>${file.status !== "ready" ? `<div class="ww-progress"><span style="width:${Number(file.progress || 0)}%"></span></div>` : ""}</div><div class="ww-file-actions"><span class="ww-file-status ${meta[1]}"><i class="fa-solid ${meta[2]}"></i> ${meta[0]}</span>${file.status === "failed" ? `<button class="btn btn-sm btn-outline-warning" data-action="retry-file" data-id="${file.id}"><i class="fa-solid fa-rotate"></i></button>` : ""}<button class="btn btn-sm btn-outline-danger" data-action="delete-file" data-id="${file.id}"><i class="fa-solid fa-trash-can"></i></button></div></div>`;
+    const meta = file.status === "ready"
+        ? ["آماده", "text-success", "fa-circle-check"]
+        : file.status === "failed"
+          ? ["ناموفق", "text-danger", "fa-circle-xmark"]
+          : file.status === "processing"
+            ? ["در حال پردازش", "text-warning", "fa-gears"]
+            : file.status === "queued"
+              ? ["در صف", "text-secondary", "fa-clock"]
+              : ["در حال بارگذاری", "text-primary", "fa-cloud-arrow-up"];
+      const icon = file.type === "pdf" ? "pdf" : file.type === "txt" || file.type === "md" ? "lines" : file.type === "jsonl" ? "code" : "word";
+      const transient = String(file.id || "").startsWith("upload-");
+      const actions = transient
+        ? ""
+        : `${file.status === "failed" ? `<button class="btn btn-sm btn-outline-warning" data-action="retry-file" data-id="${file.id}"><i class="fa-solid fa-rotate"></i></button>` : ""}<button class="btn btn-sm btn-outline-danger" data-action="delete-file" data-id="${file.id}"><i class="fa-solid fa-trash-can"></i></button>`;
+      return `<div class="ww-file-item" data-file-id="${file.id}"><div class="ww-file-icon"><i class="fa-solid fa-file-${icon}"></i></div><div class="ww-file-main"><strong>${esc(file.name)}</strong><small>${bytesHuman(file.size)} · ${file.status === "ready" ? `${fa(file.chunks)} بخش دانشی · ${formatDate(file.uploadedAt)}` : meta[0]}</small>${file.status !== "ready" ? `<div class="ww-progress"><span style="width:${Number(file.progress || 0)}%"></span></div>` : ""}</div><div class="ww-file-actions"><span class="ww-file-status ${meta[1]}"><i class="fa-solid ${meta[2]}"></i> ${meta[0]}</span>${actions}</div></div>`;
     }).join("");
   }
 
@@ -872,13 +1129,14 @@
   function renderTestWidget(widget) {
     const ap = effectiveAppearance(widget.appearance);
     const position = ap.position === "left" ? "left" : "right";
+    const themeClass = widgetThemeClass(ap.theme);
     const logo = ap.logoDataUrl ? `<img src="${esc(ap.logoDataUrl)}" alt="">` : esc(initials(ap.assistantName));
-    return `<div class="ww-test-widget-layer" style="--widget-color:${esc(ap.primaryColor || "#0d6efd")}"><button class="ww-test-launcher ${position} ${app.testOpen ? "hidden" : ""}" id="wwTestLauncher" type="button"><i class="fa-solid fa-comments"></i></button>${ap.greetingBubble ? `<div class="ww-test-greeting ${position} ${app.testOpen ? "hidden" : ""}" id="wwTestGreeting">${esc(ap.greetingBubble)}</div>` : ""}<section class="ww-test-chat ${position} ${ap.theme === "dark" ? "dark" : ""} ${app.testOpen ? "" : "hidden"}" id="wwTestChat"><header class="ww-test-chat-head"><div class="ww-test-chat-avatar">${logo}</div><div><strong>${esc(ap.title)}</strong><small>${esc(ap.subtitle)}</small></div><button id="wwTestClose" type="button" aria-label="بستن"><i class="fa-solid fa-xmark"></i></button></header><div class="ww-test-messages" id="wwTestMessages">${app.testMessages.map(renderTestMessage).join("")}</div>${(ap.quickQuestions || []).length ? `<div class="ww-test-quick">${ap.quickQuestions.slice(0, 4).map(q => `<button type="button" data-test-question="${esc(q)}">${esc(q)}</button>`).join("")}</div>` : ""}<div id="wwTestContactSlot">${app.testConversationId && widget.behavior.humanHandoff.collectContact ? renderTestContact() : ""}</div><form class="ww-test-input" id="wwTestForm"><textarea id="wwTestInput" rows="1" placeholder="${esc(ap.inputPlaceholder)}"></textarea><button type="submit" id="wwTestSend" aria-label="ارسال"><i class="fa-solid fa-paper-plane"></i></button></form>${ap.showBranding ? '<div class="ww-test-branding">قدرت‌گرفته از دستیار هوشمند فاپا</div>' : ""}</section></div>`;
+    return `<div class="ww-test-widget-layer" style="${widgetPaletteVariables(ap.primaryColor)}"><button class="ww-test-launcher ${position} ${app.testOpen ? "hidden" : ""}" id="wwTestLauncher" type="button"><i class="fa-solid fa-comments"></i></button>${ap.greetingBubble ? `<div class="ww-test-greeting ${position} ${app.testOpen ? "hidden" : ""}" id="wwTestGreeting">${esc(ap.greetingBubble)}</div>` : ""}<section class="ww-test-chat ${position} ${themeClass} ${app.testOpen ? "" : "hidden"}" id="wwTestChat"><header class="ww-test-chat-head"><div class="ww-test-chat-avatar">${logo}</div><div><strong>${esc(ap.title)}</strong><small>${esc(ap.subtitle)}</small></div><button id="wwTestClose" type="button" aria-label="بستن"><i class="fa-solid fa-xmark"></i></button></header><div class="ww-test-messages" id="wwTestMessages">${app.testMessages.map(renderTestMessage).join("")}</div>${(ap.quickQuestions || []).length ? `<div class="ww-test-quick">${ap.quickQuestions.slice(0, 4).map(q => `<button type="button" data-test-question="${esc(q)}">${esc(q)}</button>`).join("")}</div>` : ""}<div id="wwTestContactSlot">${app.testConversationId && widget.behavior.humanHandoff.collectContact ? renderTestContact() : ""}</div><form class="ww-test-input" id="wwTestForm"><textarea id="wwTestInput" rows="1" placeholder="${esc(ap.inputPlaceholder)}"></textarea><button type="submit" id="wwTestSend" aria-label="ارسال"><i class="fa-solid fa-paper-plane"></i></button></form>${ap.showBranding ? '<div class="ww-test-branding">قدرت‌گرفته از دستیار هوشمند فاپا</div>' : ""}</section></div>`;
   }
 
   function renderTestMessage(message) {
     const refs = message.references?.length ? `<div class="ww-refs">منبع: ${message.references.map(ref => esc(ref.name)).join("، ")}</div>` : "";
-    return `<div class="ww-test-message ${message.sender}">${esc(message.text)}${refs}</div>`;
+    return `<div class="ww-test-message ${message.sender}"><div class="ww-test-message-content">${messageContentHTML(message.sender, message.text)}</div>${refs}</div>`;
   }
 
   function renderTestContact() {
@@ -924,10 +1182,14 @@
 
   function bindKnowledge(widget) {
     const input = document.getElementById("wwFileInput"), zone = document.getElementById("wwDropzone");
-    input.onchange = () => uploadFiles(widget.id, input.files);
+    input.onchange = () => {
+      const files = Array.from(input.files || []);
+      input.value = "";
+      uploadFiles(widget.id, files);
+    };
     ["dragenter", "dragover"].forEach(name => zone.addEventListener(name, event => { event.preventDefault(); zone.classList.add("dragover"); }));
     ["dragleave", "drop"].forEach(name => zone.addEventListener(name, event => { event.preventDefault(); zone.classList.remove("dragover"); }));
-    zone.addEventListener("drop", event => uploadFiles(widget.id, event.dataTransfer.files));
+    zone.addEventListener("drop", event => uploadFiles(widget.id, Array.from(event.dataTransfer.files || [])));
     document.getElementById("wwFileList").onclick = async event => {
       const button = event.target.closest("[data-action]"); if (!button) return;
       if (button.dataset.action === "delete-file") { const ok = await confirmSafe("حذف فایل", "این فایل از دانش اختصاصی ویجت حذف شود؟"); if (ok) { await WidgetAPI.deleteFile(widget.id, button.dataset.id); app.widget = await WidgetAPI.getWidget(widget.id); renderEditor(); } }
@@ -937,23 +1199,62 @@
 
   async function uploadFiles(widgetId, files) {
     if (!files?.length) return;
+    if (app.knowledgeUploadRunning) {
+      toastSafe("یک صف بارگذاری در حال پردازش است؛ پس از پایان دوباره تلاش کنید", "warning");
+      return;
+    }
+    
+    const selectedFiles = Array.from(files);
+    const unsupported = selectedFiles.filter(file => !isSupportedKnowledgeFile(file));
+    const supported = selectedFiles.filter(isSupportedKnowledgeFile);
+
+    if (unsupported.length) {
+      toastSafe(`فرمت این فایل‌ها پشتیبانی نمی‌شود: ${unsupported.map(file => file.name).join("، ")}. فرمت‌های مجاز: ${supportedKnowledgeFilesText}`, "warning");
+    }
+    if (!supported.length) return;
+    
     const list = document.getElementById("wwFileList");
+    const input = document.getElementById("wwFileInput");
+    const zone = document.getElementById("wwDropzone");
+    const queueStatus = zone?.querySelector("[data-upload-queue-status]");
+    app.knowledgeUploadRunning = true;
+    if (input) input.disabled = true;
+    zone?.classList.add("uploading");
+    zone?.setAttribute("aria-busy", "true");
+    
     try {
-      await WidgetAPI.uploadFiles(widgetId, files, file => {
+      const summary = await WidgetAPI.uploadFiles(widgetId, supported, file => {
         const empty = list.querySelector(".ww-empty-state");
         if (empty) empty.remove();
         const current = list.querySelector(`[data-file-id="${CSS.escape(String(file.id))}"]`);
         const html = renderFiles([file]);
         if (current) current.outerHTML = html;
-        else list.insertAdjacentHTML("afterbegin", html);
+        else list.insertAdjacentHTML("beforeend", html);
+
+        if (queueStatus && file.status !== "queued") {
+          queueStatus.textContent = `در حال پردازش فایل ${fa(file.queueIndex)} از ${fa(file.queueTotal)}: ${file.name}`;
+        }
       });
       app.widget = await WidgetAPI.getWidget(widgetId);
       list.innerHTML = renderFiles(app.widget.files);
-      toastSafe("فایل‌ها پردازش و به دانش ویجت افزوده شدند", "success");
+
+      if (summary.failed === 0) {
+        toastSafe(`${fa(summary.succeeded)} فایل به‌ترتیب پردازش و به دانش ویجت افزوده شد`, "success");
+      } else {
+        const failedNames = summary.results.filter(item => !item.ok).map(item => item.file.name).join("، ");
+        const level = summary.succeeded ? "warning" : "danger";
+        toastSafe(`${fa(summary.succeeded)} فایل پردازش شد و ${fa(summary.failed)} فایل ناموفق بود: ${failedNames}`, level);
+      }      
     } catch (error) {
       app.widget = await WidgetAPI.getWidget(widgetId).catch(() => app.widget);
       list.innerHTML = renderFiles(app.widget?.files || []);
-      toastSafe(error.message, "danger");
+      +      toastSafe(error.message || "پردازش صف فایل‌ها ناموفق بود", "danger");
+    } finally {
+      app.knowledgeUploadRunning = false;
+      if (input) input.disabled = false;
+      zone?.classList.remove("uploading");
+      zone?.removeAttribute("aria-busy");
+      if (queueStatus) queueStatus.textContent = "فایل‌ها یکی‌یکی و به‌ترتیب انتخاب پردازش می‌شوند.";
     }
   }
 
