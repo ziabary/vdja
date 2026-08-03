@@ -205,13 +205,13 @@ export async function startNewChat(
   const server = serviceServer(service);
   const activeReqId = effectiveReqId(service, reqId)
   const llmParams = {
-    temperature: params?.temperature || server.temperature,
+    temperature: params?.temperature ?? server.temperature,
     stream: true,
     store: params.store ?? true,
     background: params.background ?? true,
     max_output_tokens: Math.min(
-      params?.maxTokens || 10000,
-      server.maxTokens || 10000, 
+      params?.maxTokens ?? 10000,
+      server.maxTokens ?? 10000, 
       2000
     ),
   };

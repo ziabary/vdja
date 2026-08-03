@@ -41,11 +41,10 @@
         <section class="card shadow-sm profile-preview-card">
           <div class="card-body p-4 text-center">
             <div class="profile-avatar" id="profileAvatarPreview"><i class="fa-solid fa-user"></i></div>
-            <h3 id="profileNamePreview">کاربر سامانه</h3>
-            <div class="profile-username ltr" id="profileUsernamePreview">نام کاربری ثبت نشده</div>
-            <p id="profileRolePreview" class="text-muted mb-1"></p>
-            <p id="profileOrganizationPreview" class="text-muted"></p>
-            <div class="d-grid gap-2 mt-4">
+            <h3 id="profileNamePreview" class="profile-preview-placeholder">نام و نام خانوادگی</h3>
+            <div class="profile-username profile-preview-placeholder" id="profileUsernamePreview">نام کاربری</div>
+            <p id="profileRolePreview" class="text-muted profile-preview-placeholder mb-1">عنوان شغلی</p>
+            <p id="profileOrganizationPreview" class="text-muted profile-preview-placeholder">سازمان یا شرکت</p>            <div class="d-grid gap-2 mt-4">
               <label for="profileAvatarInput" class="btn btn-outline-primary"><i class="fa-solid fa-image"></i> انتخاب تصویر</label>
               <input id="profileAvatarInput" type="file" class="d-none" accept="image/png,image/jpeg,image/webp" />
               <button id="btnRemoveAvatar" class="btn btn-outline-danger" type="button"><i class="fa-solid fa-trash-can"></i> حذف تصویر</button>
@@ -93,11 +92,11 @@
               <div class="row g-3">
                 <div class="col-md-6">
                   <label class="form-label">ایمیل</label>
-                  <input id="profileEmail" class="form-control ltr" readonly />
+                  <input id="profileEmail" class="form-control ltr" placeholder="ثبت نشده" readonly />
                 </div>
                 <div class="col-md-6">
                   <label class="form-label">شماره همراه</label>
-                  <input id="profileMobile" class="form-control ltr" readonly />
+                  <input id="profileMobile" class="form-control ltr" placeholder="ثبت نشده" readonly />
                 </div>
               </div>
 

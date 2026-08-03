@@ -22,6 +22,25 @@ interface AuthRequestBody {
   [key: string]: string
 }
 
+function normalizeEmail(value: unknown): string | undefined {
+  if (value === undefined || value === null || value === '') return undefined;
+  const email = String(value).trim().toLowerCase();
+  if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+    throw new exHttpInvalidParams('نشانی ایمیل معتبر نیست');
+  return email;
+}
+
+function isUniqueConstraintError(error: unknown): boolean {
+  const item = error as { code?: string | number; number?: number; errno?: number; message?: string };
+  return item?.code === '23505'
+    || item?.code === 'ER_DUP_ENTRY'
+    || item?.errno === 1062
+    || item?.number === 2601
+    || item?.number === 2627
+    || /unique constraint|duplicate key|duplicate entry/i.test(item?.message || '');
+}
+
+
 /**
  * @swagger
  * components:
@@ -272,13 +291,26 @@ router.get("/auth/oidc/callback", async (apiReq: Request, apiRes: Response) => {
       throw new exHttpAccessDenied("امکان ارتباط با سرور احراز هویت وجود ندارد")
 
     // You can also read email/name from claims instead of separate userinfo call
-    const email = typeof claims.email === 'string' ? claims.email : undefined;
+    const email = normalizeEmail(claims.email);
     const name = typeof claims.name === 'string' ? claims.name : undefined;
 
     let user: Partial<IntfUser> | undefined = await atDB.user.getDigesting(openId, true);
     if (!user) {
-      await atDB.user.addUser(md5(randomUUID()), email, undefined, openId, name),
-        user = await atDB.user.getDigesting(openId, true);
+      if (email) {
+        const emailOwner = await atDB.user.findByEmail(email);
+        if (emailOwner)
+          throw new exHttpConflict('این ایمیل قبلاً برای حساب دیگری ثبت شده است');
+      }
+      try {
+        await atDB.user.addUser(md5(randomUUID()), email, undefined, openId, name);
+      } catch (error) {
+        if (isUniqueConstraintError(error))
+          throw new exHttpConflict(email
+            ? 'این ایمیل قبلاً برای حساب دیگری ثبت شده است'
+            : 'شناسه این حساب قبلاً ثبت شده است');
+        throw error;
+      }
+      user = await atDB.user.getDigesting(openId, true);
       if (!user)
         throw new exHttpInternalServerError("امکان ایجاد کاربر جدید به دلایل فنی وجود ندارد")
       await atDB.perUserStats.initialize(service, user.usrID!)
@@ -429,20 +461,28 @@ router.put('/auth/profile', async (apiReq: Request, apiRes: Response) => {
   if (organization !== undefined && organization.length > 100) throw new exHttpInvalidParams('نام سازمان حداکثر می‌تواند ۱۰۰ کاراکتر باشد');
   if (title !== undefined && title.length > 100) throw new exHttpInvalidParams('عنوان شغلی حداکثر می‌تواند ۱۰۰ کاراکتر باشد');
 
-  await atDB.user.updateProfile(auth.uid, { name, username, avatar, organization, title });
+  try {
+    await atDB.user.updateProfile(auth.uid, { name, username, avatar, organization, title });
+  } catch (error) {
+    // The database unique index closes the race between validation and update.
+    if (isUniqueConstraintError(error)) throw new exHttpConflict('این نام کاربری قبلاً استفاده شده است');
+    throw error;
+  }
   const user = await atDB.user.getByID(auth.uid, true);
   if (!user) throw new exHttpUnauthorized('کاربر یافت نشد');
   apiRes.json({ profile: profileDTO(user), accessToken: createAccessToken(user) });
 });
 
-function normalizePhone(mobile: string) {
-  if ((!mobile.startsWith("+98") && !mobile.startsWith("0"))
-    || (mobile.startsWith("+98") && mobile.length != 13)
-    || (mobile.startsWith("0") && mobile.length != 11)
-  )
-    throw new exHttpInvalidParams("شماره موبایل نامعتبر است")
-
-  return (mobile.startsWith("0") ? `98` : "") + mobile.substring(1)
+function normalizePhone(mobile: unknown) {
+  const faDigits = '۰۱۲۳۴۵۶۷۸۹';
+  const arDigits = '٠١٢٣٤٥٦٧٨٩';
+  const source = String(mobile || '')
+    .replace(/[۰-۹]/g, digit => String(faDigits.indexOf(digit)))
+    .replace(/[٠-٩]/g, digit => String(arDigits.indexOf(digit)))
+    .replace(/[\s()-]/g, '');
+  const match = source.match(/^(?:\+98|0)?(9\d{9})$/);
+  if (!match) throw new exHttpInvalidParams("شماره موبایل نامعتبر است");
+  return `98${match[1]}`;
 }
 
 /**
@@ -557,7 +597,7 @@ router.post("/auth/sendBaleOTP", async (apiReq: Request, apiRes: Response) => {
     }).then(r => r.json());
 
     const otpCode = Math.floor(10000 + Math.random() * 90000)
-    atDB.user.setOTP(phone, `${otpCode}`)
+    await atDB.user.setOTP(phone, `${otpCode}`)
 
     const resp = await fetch("https://safir.bale.ai/api/v2/send_otp", {
       method: "POST",

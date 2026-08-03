@@ -71,7 +71,9 @@
     modalBody: document.getElementById("crmModalBody"),
     navTaskBadge: document.getElementById("navTaskBadge"),
     navOpportunityBadge: document.getElementById("navOpportunityBadge"),
-    navConversationBadge: document.getElementById("navConversationBadge")
+    navConversationBadge: document.getElementById("navConversationBadge"),
+    busyOverlay: document.getElementById("crmBusyOverlay"),
+    busyText: document.getElementById("crmBusyText")
   };
 
   const escapeHtml = (value = "") => String(value)
@@ -96,34 +98,21 @@
   }
 
   function formatDate(value, withTime = false) {
-    if (!value) return "—";
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return "—";
-    const options = { calendar: "persian", year: "numeric", month: "short", day: "numeric" };
-    if (withTime) Object.assign(options, { hour: "2-digit", minute: "2-digit" });
-    return date.toLocaleString("fa-IR", options);
+    return window.JalaliDatePicker?.format(value, { withTime }) || "—";
   }
 
   function formatShortDate(value) {
-    if (!value) return "—";
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return "—";
-    return date.toLocaleDateString("fa-IR", { calendar: "persian", month: "short", day: "numeric" });
+    return window.JalaliDatePicker?.format(value, { short: true }) || "—";
   }
 
+  // Date values stay Gregorian in the API/database, but forms always expose a
+  // Jalali text value. This avoids native Gregorian date controls entirely.
   function toDateInput(value) {
-    if (!value) return "";
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return "";
-    return date.toISOString().slice(0, 10);
+    return window.JalaliDatePicker?.inputValue(value, false) || "";
   }
 
   function toDateTimeInput(value) {
-    if (!value) return "";
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return "";
-    const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
-    return local.toISOString().slice(0, 16);
+    return window.JalaliDatePicker?.inputValue(value, true) || "";
   }
 
   function initials(name = "") {
@@ -179,6 +168,29 @@
     }
   }
 
+  let aiBusyDepth = 0;
+  function setAiBusy(active, message = "در حال پردازش هوشمند...") {
+    aiBusyDepth = Math.max(0, aiBusyDepth + (active ? 1 : -1));
+    const visible = aiBusyDepth > 0;
+    if (dom.busyText && message) dom.busyText.textContent = message;
+    dom.busyOverlay?.classList.toggle("hidden", !visible);
+    dom.busyOverlay?.setAttribute("aria-hidden", visible ? "false" : "true");
+    document.body.classList.toggle("crm-busy", visible);
+  }
+
+  async function withAiBlock(work, message) {
+    setAiBusy(true, message);
+    try {
+      return await work();
+    } catch (error) {
+      console.error(error);
+      notify(error?.message || "عملیات هوشمند با خطا مواجه شد.", "danger");
+      throw error;
+    } finally {
+      setAiBusy(false);
+    }
+  }
+
   function routeTo(route) {
     const normalized = String(route || "dashboard").replace(/^#/, "");
     if (location.hash === `#${normalized}`) renderRoute();
@@ -220,6 +232,9 @@
   function openModal(title, html, onOpen) {
     dom.modalTitle.textContent = title;
     dom.modalBody.innerHTML = html;
+    // Do not wait for the MutationObserver: transform date and numeric controls
+    // before the modal becomes interactive, so no Gregorian/native control flashes.
+    applyCrmInputConventions(dom.modalBody);
     dom.modalBackdrop.classList.remove("hidden");
     document.body.style.overflow = "hidden";
     if (onOpen) requestAnimationFrame(() => onOpen(dom.modalBody));
@@ -268,11 +283,108 @@
     return `${includeEmpty ? '<option value="">بدون محصول مشخص</option>' : '<option value="">انتخاب محصول</option>'}${array(products).map(product => `<option value="${product.id}" ${product.id === selected ? "selected" : ""}>${escapeHtml(product.shortName)} — ${productTypeLabel(product.type)}</option>`).join("")}`;
   }
 
+  const PERSIAN_DIGITS = "۰۱۲۳۴۵۶۷۸۹";
+  const ARABIC_DIGITS = "٠١٢٣٤٥٦٧٨٩";
+
+  function toLatinDigits(value) {
+    return String(value ?? "")
+      .replace(/[۰-۹]/g, digit => String(PERSIAN_DIGITS.indexOf(digit)))
+      .replace(/[٠-٩]/g, digit => String(ARABIC_DIGITS.indexOf(digit)));
+  }
+
+  function toPersianDigits(value) {
+    return String(value ?? "").replace(/[0-9]/g, digit => PERSIAN_DIGITS[Number(digit)]);
+  }
+
+  function normalizeNumber(value) {
+    return toLatinDigits(value)
+      .trim()
+      .replace(/[٬,\s]/g, "")
+      .replace(/٫/g, ".");
+  }
+
   function readForm(form) {
     const output = {};
     new FormData(form).forEach((value, key) => { output[key] = typeof value === "string" ? value.trim() : value; });
     form.querySelectorAll('input[type="checkbox"][name]').forEach(input => { output[input.name] = input.checked; });
+    form.querySelectorAll('input[data-crm-jalali-kind][name]').forEach(input => {
+      output[input.name] = window.JalaliDatePicker.readValue(input);
+    });
+    form.querySelectorAll('input[data-crm-number-kind][name]').forEach(input => {
+      const normalized = normalizeNumber(input.value);
+      if (!normalized) {
+        output[input.name] = "";
+        return;
+      }
+      const number = Number(normalized);
+      const min = input.dataset.crmNumberMin === "" || input.dataset.crmNumberMin == null ? null : Number(input.dataset.crmNumberMin);
+      const max = input.dataset.crmNumberMax === "" || input.dataset.crmNumberMax == null ? null : Number(input.dataset.crmNumberMax);
+      if (!Number.isFinite(number) || (min != null && number < min) || (max != null && number > max)) {
+        input.setCustomValidity("مقدار عددی واردشده معتبر نیست.");
+        input.reportValidity();
+        throw new Error("مقدار عددی واردشده معتبر نیست.");
+      }
+      input.setCustomValidity("");
+      output[input.name] = number;
+    });
     return output;
+  }
+
+  const latinFieldNames = new Set(["email", "username", "code", "icon", "sku", "url", "website"]);
+
+  function enhanceNumericInput(input) {
+    if (!input || input.dataset.crmNumberEnhanced === "1") return;
+    if (String(input.type || "").toLowerCase() !== "number") return;
+    input.dataset.crmNumberKind = "number";
+    input.dataset.crmNumberMin = input.getAttribute("min") ?? "";
+    input.dataset.crmNumberMax = input.getAttribute("max") ?? "";
+    input.dataset.crmNumberStep = input.getAttribute("step") ?? "";
+    const initial = input.value;
+    input.type = "text";
+    input.inputMode = input.dataset.crmNumberStep && input.dataset.crmNumberStep !== "1" ? "decimal" : "numeric";
+    input.autocomplete = "off";
+    input.classList.remove("ltr");
+    input.classList.add("fa-num", "crm-number-input");
+    input.value = toPersianDigits(initial);
+    input.dataset.crmNumberEnhanced = "1";
+    input.addEventListener("input", () => {
+      const latin = toLatinDigits(input.value)
+        .replace(/٫/g, ".")
+        .replace(/[^0-9.\-٬,\s]/g, "")
+        .replace(/(?!^)-/g, "");
+      const firstDot = latin.indexOf(".");
+      const normalized = firstDot < 0 ? latin : latin.slice(0, firstDot + 1) + latin.slice(firstDot + 1).replace(/\./g, "");
+      input.value = toPersianDigits(normalized);
+      input.setCustomValidity("");
+    });
+  }
+
+  function applyCrmInputConventions(root = document) {
+    window.JalaliDatePicker?.enhanceAll(root);
+    const controls = [];
+    if (root.matches?.("input, textarea")) controls.push(root);
+    root.querySelectorAll?.("input, textarea").forEach(control => controls.push(control));
+    controls.forEach(control => {
+      enhanceNumericInput(control);
+      const type = String(control.type || "text").toLowerCase();
+      if (["checkbox", "radio", "file", "hidden", "color", "range"].includes(type)) return;
+      const name = String(control.name || control.id || "");
+      const productLatinName = control.closest("#productForm") && ["name", "shortName"].includes(control.name);
+      const latin = type === "email" || latinFieldNames.has(name) || productLatinName || control.classList.contains("crm-latin-input");
+      control.classList.toggle("fa-num", !latin);
+      control.classList.toggle("ltr", latin);
+    });
+  }
+
+  function installCrmInputObserver() {
+    applyCrmInputConventions(document);
+    const observer = new MutationObserver(mutations => {
+      mutations.forEach(mutation => mutation.addedNodes.forEach(node => {
+        if (node.nodeType !== Node.ELEMENT_NODE) return;
+        applyCrmInputConventions(node);
+      }));
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
   }
 
   function updateRoleUi() {
@@ -398,13 +510,13 @@
     const activeValue = array(customer.opportunities).filter(item => activeStages.includes(item.stage)).reduce((sum, item) => sum + Number(item.value || 0), 0);
     const contactRows = array(customer.contacts).map(contact => `<div class="crm-contact"><span class="crm-avatar">${escapeHtml(initials(contact.name))}</span><span><strong>${escapeHtml(contact.name)} ${contact.isPrimary ? '<i class="fa-solid fa-star text-warning" title="فرد اصلی"></i>' : ""}</strong><small>${escapeHtml([contact.title, contact.decisionRole].filter(Boolean).join(" · ") || "بدون عنوان")}</small></span><div class="d-flex gap-1">${contact.phone ? `<a class="btn btn-sm btn-outline-secondary" href="tel:${escapeHtml(contact.phone)}"><i class="fa-solid fa-phone"></i></a>` : ""}${contact.email ? `<a class="btn btn-sm btn-outline-secondary" href="mailto:${escapeHtml(contact.email)}"><i class="fa-solid fa-envelope"></i></a>` : ""}${canWrite() ? `<button class="btn btn-sm btn-outline-secondary" data-action="edit-contact" data-id="${contact.id}" data-customer-id="${customer.id}"><i class="fa-solid fa-pen"></i></button><button class="btn btn-sm btn-outline-danger" data-action="delete-contact" data-id="${contact.id}" data-customer-id="${customer.id}"><i class="fa-solid fa-trash"></i></button>` : ""}</div></div>`).join("");
     const assetRows = array(customer.assets).map(asset => `<div class="crm-product-asset"><i class="fa-solid ${safeIcon(asset.product?.icon)}"></i><span><strong>${escapeHtml(asset.name || asset.product?.shortName || "محصول/خدمت")}</strong><small>${faNumber(asset.quantity)} واحد · ${escapeHtml(asset.contract || "بدون قرارداد")} ${asset.expiresAt ? `· انقضا ${formatShortDate(asset.expiresAt)}` : ""}</small></span><div class="d-flex align-items-center gap-1"><span class="badge text-bg-success">${escapeHtml(asset.status || "فعال")}</span>${canWrite() ? `<button class="btn btn-sm btn-outline-danger" data-action="delete-asset" data-id="${asset.id}" data-customer-id="${customer.id}"><i class="fa-solid fa-trash"></i></button>` : ""}</div></div>`).join("");
-    const activityRows = array(customer.activities).map(activity => { const meta = channelIcon(activity.type); return `<div class="crm-timeline-item"><span class="crm-timeline-icon"><i class="fa-solid ${meta.icon}"></i></span><div class="crm-timeline-content"><div class="crm-timeline-meta"><strong>${escapeHtml(activity.title)}</strong><span>${formatDate(activity.createdAt, true)}</span></div><p>${escapeHtml(activity.detail || "")}</p></div></div>`; }).join("");
+    const activityRows = array(customer.activities).map(activity => { const meta = channelIcon(activity.type); return `<div class="crm-timeline-item"><span class="crm-timeline-icon"><i class="fa-solid ${meta.icon}"></i></span><div class="crm-timeline-content"><div class="crm-timeline-meta"><strong>${escapeHtml(activity.title)}</strong><span>${formatDate(activity.createdAt, true)}</span></div><div class="crm-markdown crm-timeline-markdown">${renderAssistantMarkdown(activity.detail || "")}</div></div></div>`; }).join("");
     const oppRows = array(customer.opportunities).map(item => `<tr data-action="open-opportunity" data-id="${item.id}"><td><strong>${escapeHtml(item.title)}</strong></td><td>${escapeHtml(item.product?.shortName || "—")}</td><td>${escapeHtml(stageMeta[item.stage]?.label || item.stage)}</td><td class="fa-num">${formatMoney(item.value)}</td><td>${faNumber(item.probability)}٪</td><td><button class="btn btn-sm btn-outline-secondary" data-action="open-opportunity" data-id="${item.id}"><i class="fa-solid fa-chevron-left"></i></button></td></tr>`).join("");
     const tickets = array(customer.tickets).map(ticket => `<div class="crm-list-item"><span class="crm-channel-icon"><i class="fa-solid fa-ticket"></i></span><span class="crm-list-item-main"><strong>${escapeHtml(ticket.title)}</strong><span>${formatShortDate(ticket.createdAt)} · اولویت ${escapeHtml(ticket.priority)}${ticket.externalRef ? ` · ${escapeHtml(ticket.externalRef)}` : ""}</span></span><div class="d-flex align-items-center gap-1"><span class="badge ${ticket.status === "باز" ? "text-bg-danger" : ticket.status === "بسته" ? "text-bg-success" : "text-bg-warning"}">${escapeHtml(ticket.status)}</span>${canWrite() ? `<button class="btn btn-sm btn-outline-secondary" data-action="edit-ticket" data-id="${ticket.id}" data-customer-id="${customer.id}"><i class="fa-solid fa-pen"></i></button>` : ""}</div></div>`).join("");
     const headerActions = canWrite() ? `<button class="btn btn-outline-secondary" data-action="edit-customer" data-id="${customer.id}"><i class="fa-solid fa-pen"></i> ویرایش</button><button class="btn btn-outline-primary" data-action="new-task" data-customer-id="${customer.id}"><i class="fa-solid fa-list-check"></i> پیگیری</button><button class="btn btn-primary" data-action="new-opportunity" data-customer-id="${customer.id}"><i class="fa-solid fa-plus"></i> فرصت جدید</button>` : "";
     dom.view.innerHTML = `${pageHeader('<a href="#customers" class="small ms-2"><i class="fa-solid fa-arrow-right"></i></a> پرونده مشتری', "نمای ۳۶۰ درجه از خرید، محصولات مستقر، مکالمات، خدمات و فرصت‌های فروش", headerActions)}
       <section class="crm-card crm-customer-hero"><div class="crm-customer-identity"><span class="crm-customer-logo">${escapeHtml(customer.short)}</span><div><h1>${escapeHtml(customer.name)}</h1><p>${escapeHtml([customer.industry, customer.city, customer.owner?.name ? `مسئول: ${customer.owner.name}` : ""].filter(Boolean).join(" · "))}</p><div class="mt-2">${array(customer.tags).map(tag => `<span class="badge text-bg-secondary ms-1">${escapeHtml(tag)}</span>`).join("")}</div></div></div><div class="crm-customer-metric"><small>سلامت رابطه</small><strong class="${healthClass(customer.health) === "danger" ? "text-danger" : healthClass(customer.health) === "warning" ? "text-warning" : "text-success"}">${faNumber(customer.health)} از ۱۰۰</strong></div><div class="crm-customer-metric"><small>ارزش رابطه</small><strong>${formatMoney(customer.lifetimeValue)}</strong></div><div class="crm-customer-metric"><small>فرصت فعال</small><strong>${formatMoney(activeValue)}</strong></div><div class="crm-customer-metric"><small>تمدید بعدی</small><strong>${formatShortDate(customer.renewalDate)}</strong></div></section>
-      <section class="crm-ai-brief mb-3"><div class="crm-ai-brief-head"><span class="crm-ai-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></span><strong>خلاصه هوشمند پرونده</strong></div><p>${escapeHtml(customer.aiSummary || "برای این مشتری هنوز خلاصه هوشمند تولید نشده است.")}</p><div class="crm-inline-actions">${canWrite() ? `<button class="btn btn-sm btn-primary" data-action="generate-customer-summary" data-id="${customer.id}"><i class="fa-solid fa-arrows-rotate"></i> تولید/به‌روزرسانی خلاصه</button>` : ""}<button class="btn btn-sm btn-outline-primary" data-ai-prompt="وضعیت این مشتری را تحلیل کن" data-customer-id="${customer.id}" data-customer-name="${escapeHtml(customer.name)}"><i class="fa-solid fa-wand-magic-sparkles"></i> تحلیل عمیق‌تر</button></div></section>
+      <section class="crm-ai-brief mb-3"><div class="crm-ai-brief-head"><span class="crm-ai-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></span><strong>خلاصه هوشمند پرونده</strong></div><div class="crm-markdown crm-ai-summary">${renderAssistantMarkdown(customer.aiSummary || "برای این مشتری هنوز خلاصه هوشمند تولید نشده است.")}</div><div class="crm-inline-actions">${canWrite() ? `<button class="btn btn-sm btn-primary" data-action="generate-customer-summary" data-id="${customer.id}"><i class="fa-solid fa-arrows-rotate"></i> تولید/به‌روزرسانی خلاصه</button>` : ""}<button class="btn btn-sm btn-outline-primary" data-ai-prompt="وضعیت این مشتری را تحلیل کن" data-customer-id="${customer.id}" data-customer-name="${escapeHtml(customer.name)}"><i class="fa-solid fa-wand-magic-sparkles"></i> تحلیل عمیق‌تر</button></div></section>
       <div class="crm-grid-equal mb-3"><section class="crm-card"><div class="crm-card-body"><div class="crm-section-head"><h2 class="crm-section-title">افراد کلیدی</h2>${canWrite() ? `<button class="btn btn-sm btn-outline-primary" data-action="new-contact" data-customer-id="${customer.id}"><i class="fa-solid fa-plus"></i></button>` : ""}</div><div class="crm-contact-list">${contactRows || empty("fa-address-book", "فرد تماسی ثبت نشده است.", true)}</div></div></section><section class="crm-card"><div class="crm-card-body"><div class="crm-section-head"><h2 class="crm-section-title">محصولات و قراردادهای فعال</h2>${canWrite() ? `<button class="btn btn-sm btn-outline-primary" data-action="new-asset" data-customer-id="${customer.id}"><i class="fa-solid fa-plus"></i></button>` : ""}</div><div class="crm-product-assets">${assetRows || empty("fa-box-open", "محصول یا خدمتی ثبت نشده است.", true)}</div></div></section></div>
       <div class="crm-grid-equal mb-3"><section class="crm-card"><div class="crm-card-body"><div class="crm-section-head"><h2 class="crm-section-title">تیکت‌ها و مسائل باز</h2>${canWrite() ? `<button class="btn btn-sm btn-outline-primary" data-action="new-ticket" data-customer-id="${customer.id}"><i class="fa-solid fa-plus"></i></button>` : ""}</div><div class="crm-list">${tickets || empty("fa-ticket", "تیکتی ثبت نشده است.", true)}</div></div></section><section class="crm-card"><div class="crm-card-body"><div class="crm-section-head"><h2 class="crm-section-title">خط زمانی تعاملات</h2>${canWrite() ? `<button class="btn btn-sm btn-outline-primary" data-action="new-note" data-customer-id="${customer.id}"><i class="fa-solid fa-note-sticky"></i> یادداشت</button>` : ""}</div><div class="crm-timeline">${activityRows || empty("fa-clock-rotate-left", "هنوز رویدادی ثبت نشده است.", true)}</div></div></section></div>
       <section class="crm-card"><div class="crm-card-body"><div class="crm-section-head"><h2 class="crm-section-title">فرصت‌های فروش این مشتری</h2>${canWrite() ? `<button class="btn btn-sm btn-primary" data-action="new-opportunity" data-customer-id="${customer.id}"><i class="fa-solid fa-plus"></i> فرصت جدید</button>` : ""}</div><div class="crm-table-wrap"><table class="crm-table"><thead><tr><th>عنوان</th><th>محصول</th><th>مرحله</th><th>ارزش</th><th>احتمال</th><th></th></tr></thead><tbody>${oppRows || `<tr><td colspan="6">${empty("fa-handshake", "فرصتی ثبت نشده است.", true)}</td></tr>`}</tbody></table></div></div></section>`;
@@ -465,7 +577,7 @@
     let analysis = "";
     if (selected) {
       const messages = array(selected.messages).length ? selected.messages : [{ direction: "incoming", body: selected.body, createdAt: selected.createdAt }];
-      const thread = messages.map(message => `<div class="crm-thread-message ${message.direction === "outgoing" ? "outgoing" : "incoming"}"><div>${escapeHtml(message.body).replaceAll("\n", "<br>")}</div><small>${message.direction === "outgoing" ? "پاسخ تیم" : escapeHtml(selected.contact?.name || selected.customer?.name || "مشتری")} · ${formatDate(message.createdAt, true)}</small></div>`).join("");
+      const thread = messages.map(message => `<div class="crm-thread-message ${message.direction === "outgoing" ? "outgoing" : "incoming"}"><div class="crm-markdown">${renderAssistantMarkdown(message.body || "")}</div><small>${message.direction === "outgoing" ? "پاسخ تیم" : escapeHtml(selected.contact?.name || selected.customer?.name || "مشتری")} · ${formatDate(message.createdAt, true)}</small></div>`).join("");
       reader = `<div class="crm-conversation-reader-header"><button class="btn btn-sm btn-outline-secondary on-mobile mb-2" data-action="close-mobile-reader"><i class="fa-solid fa-arrow-right"></i> بازگشت</button><div class="d-flex justify-content-between align-items-start gap-2"><div><span class="badge text-bg-secondary">${escapeHtml(channelIcon(selected.channel).label)}</span><span class="badge text-bg-light text-dark me-1">${escapeHtml(selected.status || "Open")}</span><h2>${escapeHtml(selected.subject)}</h2><div class="small text-muted">${escapeHtml(selected.customer?.name || "")} ${selected.contact?.name ? `· ${escapeHtml(selected.contact.name)}` : ""} · ${formatDate(selected.createdAt, true)}</div></div>${selected.customerId ? `<button class="btn btn-sm btn-outline-secondary" data-action="open-customer" data-id="${selected.customerId}"><i class="fa-solid fa-building"></i> پرونده مشتری</button>` : ""}</div></div><div class="crm-thread">${thread}</div><div class="crm-conversation-actions">${canWrite() ? `<button class="btn btn-primary" data-action="draft-reply" data-id="${selected.id}"><i class="fa-solid fa-reply"></i> تهیه پاسخ</button><button class="btn btn-outline-primary" data-action="analyze-conversation" data-id="${selected.id}"><i class="fa-solid fa-wand-magic-sparkles"></i> تحلیل دوباره</button><button class="btn btn-outline-secondary" data-action="conversation-to-opportunity" data-id="${selected.id}" data-customer-id="${selected.customerId}"><i class="fa-solid fa-handshake"></i> تبدیل به فرصت</button><button class="btn btn-outline-secondary" data-action="edit-conversation" data-id="${selected.id}"><i class="fa-solid fa-user-pen"></i> وضعیت و مسئول</button>` : ""}</div>`;
       const ai = selected.ai || {};
       analysis = `<div class="crm-analysis-block"><h3>تحلیل مکالمه</h3><div class="crm-analysis-row"><span>قصد مشتری</span><strong>${escapeHtml(ai.intent || "تحلیل نشده")}</strong></div><div class="crm-analysis-row"><span>احساس</span><strong>${escapeHtml(ai.sentiment || "—")}</strong></div><div class="crm-analysis-row"><span>فوریت</span><strong>${escapeHtml(ai.urgency || "—")}</strong></div><div class="crm-analysis-row"><span>بودجه</span><strong>${escapeHtml(ai.budget || "—")}</strong></div><div class="crm-analysis-row"><span>زمان تصمیم</span><strong>${escapeHtml(ai.decisionDate || "—")}</strong></div></div><div class="crm-analysis-block"><h3>محصولات مرتبط</h3><div>${array(ai.products).length ? ai.products.map(product => `<span class="badge text-bg-primary ms-1 mb-1">${escapeHtml(product)}</span>`).join("") : '<span class="text-muted small">محصولی استخراج نشده است.</span>'}</div></div><div class="crm-analysis-block"><h3>تعهدات استخراج‌شده</h3>${array(ai.commitments).length ? `<ul class="small mb-0">${ai.commitments.map(item => `<li class="mb-2">${escapeHtml(item)}</li>`).join("")}</ul>` : '<span class="text-muted small">تعهدی استخراج نشده است.</span>'}</div><div class="alert alert-primary small"><strong>اقدام بعدی:</strong><br>${escapeHtml(ai.nextAction || "تحلیل مکالمه را اجرا کنید.")}</div>`;
@@ -521,7 +633,7 @@
 
   async function customerModal(customer = null) {
     const isEdit = Boolean(customer);
-    openModal(isEdit ? "ویرایش مشتری" : "ایجاد مشتری", `<form id="customerForm"><div class="crm-form-grid"><label class="form-label full">نام مشتری <span class="text-danger">*</span><input class="form-control mt-1" name="name" required value="${escapeHtml(customer?.name || "")}" placeholder="نام شرکت یا سازمان"></label><label class="form-label">نام کوتاه<input class="form-control mt-1" name="short" maxlength="16" value="${escapeHtml(customer?.short || "")}" placeholder="مثلاً فاپا"></label><label class="form-label">مسئول حساب<select class="form-select mt-1" name="ownerId">${userOptions(customer?.ownerId || state.bootstrap.currentUser?.id, true)}</select></label><label class="form-label">صنعت<input class="form-control mt-1" name="industry" value="${escapeHtml(customer?.industry || "")}" placeholder="بانکداری، صنعت، سلامت..."></label><label class="form-label">شهر<input class="form-control mt-1" name="city" value="${escapeHtml(customer?.city || "")}"></label><label class="form-label">گروه<select class="form-select mt-1" name="tier">${["مشتری کلیدی", "سازمانی", "متوسط", "دولتی"].map(value => `<option ${value === (customer?.tier || "سازمانی") ? "selected" : ""}>${value}</option>`).join("")}</select></label><label class="form-label">سلامت رابطه (۰ تا ۱۰۰)<input class="form-control mt-1" type="number" min="0" max="100" name="health" value="${Number(customer?.health ?? 75)}"></label><label class="form-label">ارزش عمر مشتری<input class="form-control mt-1 ltr" type="number" min="0" name="lifetimeValue" value="${Number(customer?.lifetimeValue || 0)}"></label><label class="form-label">درآمد سالانه تقریبی<input class="form-control mt-1 ltr" type="number" min="0" name="annualRevenue" value="${Number(customer?.annualRevenue || 0)}"></label><label class="form-label">تاریخ تمدید<input class="form-control mt-1 ltr" type="date" name="renewalDate" value="${toDateInput(customer?.renewalDate)}"></label><label class="form-label">مهلت اقدام بعدی<input class="form-control mt-1 ltr" type="datetime-local" name="nextActionDue" value="${toDateTimeInput(customer?.nextActionDue)}"></label><label class="form-label full">اقدام بعدی<textarea class="form-control mt-1" rows="2" name="nextAction">${escapeHtml(customer?.nextAction || "")}</textarea></label><label class="form-label full">برچسب‌ها<textarea class="form-control mt-1" rows="2" name="tags" placeholder="با ویرگول یا سطر جدید جدا کنید">${escapeHtml(array(customer?.tags).join("، "))}</textarea></label></div><div class="crm-form-actions">${isEdit && canManage() ? '<button class="btn btn-outline-danger ms-auto" type="button" data-action="delete-customer" data-id="' + customer.id + '"><i class="fa-solid fa-trash"></i> بایگانی</button>' : ""}<button class="btn btn-outline-secondary" type="button" data-action="close-modal">انصراف</button><button class="btn btn-primary" type="submit"><i class="fa-solid fa-floppy-disk"></i> ذخیره</button></div></form>`, root => root.querySelector("#customerForm").addEventListener("submit", async event => { event.preventDefault(); const input = readForm(event.currentTarget); input.tags = input.tags.split(/[،,؛;\n]+/).map(item => item.trim()).filter(Boolean); const saved = await withLoading(() => isEdit ? api.updateCustomer(customer.id, input) : api.createCustomer(input)); closeModal(); await reloadBootstrap(); notify(isEdit ? "پرونده مشتری به‌روزرسانی شد." : "مشتری جدید ایجاد شد."); routeTo(`customer/${saved.id}`); }));
+    openModal(isEdit ? "ویرایش مشتری" : "ایجاد مشتری", `<form id="customerForm"><div class="crm-form-grid"><label class="form-label full">نام مشتری <span class="text-danger">*</span><input class="form-control mt-1" name="name" required value="${escapeHtml(customer?.name || "")}" placeholder="نام شرکت یا سازمان"></label><label class="form-label">نام کوتاه<input class="form-control mt-1" name="short" maxlength="16" value="${escapeHtml(customer?.short || "")}" placeholder="مثلاً فاپا"></label><label class="form-label">مسئول حساب<select class="form-select mt-1" name="ownerId">${userOptions(customer?.ownerId || state.bootstrap.currentUser?.id, true)}</select></label><label class="form-label">صنعت<input class="form-control mt-1" name="industry" value="${escapeHtml(customer?.industry || "")}" placeholder="بانکداری، صنعت، سلامت..."></label><label class="form-label">شهر<input class="form-control mt-1" name="city" value="${escapeHtml(customer?.city || "")}"></label><label class="form-label">گروه<select class="form-select mt-1" name="tier">${["مشتری کلیدی", "سازمانی", "متوسط", "دولتی"].map(value => `<option ${value === (customer?.tier || "سازمانی") ? "selected" : ""}>${value}</option>`).join("")}</select></label><label class="form-label">سلامت رابطه (۰ تا ۱۰۰)<input class="form-control mt-1" type="number" min="0" max="100" name="health" value="${Number(customer?.health ?? 75)}"></label><label class="form-label">ارزش عمر مشتری<input class="form-control mt-1 ltr" type="number" min="0" name="lifetimeValue" value="${Number(customer?.lifetimeValue || 0)}"></label><label class="form-label">درآمد سالانه تقریبی<input class="form-control mt-1 ltr" type="number" min="0" name="annualRevenue" value="${Number(customer?.annualRevenue || 0)}"></label><label class="form-label">تاریخ تمدید<input class="form-control mt-1 fa-num" type="text" data-crm-jalali-kind="date" name="renewalDate" value="${toDateInput(customer?.renewalDate)}"></label><label class="form-label">مهلت اقدام بعدی<input class="form-control mt-1 fa-num" type="text" data-crm-jalali-kind="datetime" name="nextActionDue" value="${toDateTimeInput(customer?.nextActionDue)}"></label><label class="form-label full">اقدام بعدی<textarea class="form-control mt-1" rows="2" name="nextAction">${escapeHtml(customer?.nextAction || "")}</textarea></label><label class="form-label full">برچسب‌ها<textarea class="form-control mt-1" rows="2" name="tags" placeholder="با ویرگول یا سطر جدید جدا کنید">${escapeHtml(array(customer?.tags).join("، "))}</textarea></label></div><div class="crm-form-actions">${isEdit && canManage() ? '<button class="btn btn-outline-danger ms-auto" type="button" data-action="delete-customer" data-id="' + customer.id + '"><i class="fa-solid fa-trash"></i> بایگانی</button>' : ""}<button class="btn btn-outline-secondary" type="button" data-action="close-modal">انصراف</button><button class="btn btn-primary" type="submit"><i class="fa-solid fa-floppy-disk"></i> ذخیره</button></div></form>`, root => root.querySelector("#customerForm").addEventListener("submit", async event => { event.preventDefault(); const input = readForm(event.currentTarget); input.tags = input.tags.split(/[،,؛;\n]+/).map(item => item.trim()).filter(Boolean); const saved = await withLoading(() => isEdit ? api.updateCustomer(customer.id, input) : api.createCustomer(input)); closeModal(); await reloadBootstrap(); notify(isEdit ? "پرونده مشتری به‌روزرسانی شد." : "مشتری جدید ایجاد شد."); routeTo(`customer/${saved.id}`); }));
   }
 
   async function productModal(product = null) {
@@ -535,7 +647,7 @@
   }
 
   async function assetModal(customer) {
-    openModal("افزودن محصول، خدمت یا قرارداد", `<form id="assetForm"><div class="crm-form-grid"><label class="form-label full">محصول یا خدمت<select class="form-select mt-1" name="productId">${productOptions(state.bootstrap.products)}</select></label><label class="form-label">عنوان سفارشی<input class="form-control mt-1" name="name" placeholder="در صورت نیاز"></label><label class="form-label">تعداد/مجوز<input class="form-control mt-1 ltr" type="number" step="0.01" min="0" name="quantity" value="1"></label><label class="form-label">وضعیت<input class="form-control mt-1" name="status" value="فعال"></label><label class="form-label">شماره یا عنوان قرارداد<input class="form-control mt-1" name="contract"></label><label class="form-label">تاریخ انقضا<input class="form-control mt-1 ltr" type="date" name="expiresAt"></label></div><div class="crm-form-actions"><button class="btn btn-outline-secondary" type="button" data-action="close-modal">انصراف</button><button class="btn btn-primary" type="submit">ثبت</button></div></form>`, root => root.querySelector("#assetForm").addEventListener("submit", async event => { event.preventDefault(); await withLoading(() => api.addAsset(customer.id, readForm(event.currentTarget))); closeModal(); notify("محصول یا قرارداد به پرونده افزوده شد."); renderCustomer(customer.id); }));
+    openModal("افزودن محصول، خدمت یا قرارداد", `<form id="assetForm"><div class="crm-form-grid"><label class="form-label full">محصول یا خدمت<select class="form-select mt-1" name="productId">${productOptions(state.bootstrap.products)}</select></label><label class="form-label">عنوان سفارشی<input class="form-control mt-1" name="name" placeholder="در صورت نیاز"></label><label class="form-label">تعداد/مجوز<input class="form-control mt-1 ltr" type="number" step="0.01" min="0" name="quantity" value="1"></label><label class="form-label">وضعیت<input class="form-control mt-1" name="status" value="فعال"></label><label class="form-label">شماره یا عنوان قرارداد<input class="form-control mt-1" name="contract"></label><label class="form-label">تاریخ انقضا<input class="form-control mt-1 fa-num" type="text" data-crm-jalali-kind="date" name="expiresAt"></label></div><div class="crm-form-actions"><button class="btn btn-outline-secondary" type="button" data-action="close-modal">انصراف</button><button class="btn btn-primary" type="submit">ثبت</button></div></form>`, root => root.querySelector("#assetForm").addEventListener("submit", async event => { event.preventDefault(); await withLoading(() => api.addAsset(customer.id, readForm(event.currentTarget))); closeModal(); notify("محصول یا قرارداد به پرونده افزوده شد."); renderCustomer(customer.id); }));
   }
 
   async function ticketModal(customer, ticket = null) {
@@ -552,14 +664,14 @@
     const products = state.bootstrap.products || await api.listProducts();
     const value = opportunity || preset;
     const isEdit = Boolean(opportunity);
-    openModal(isEdit ? "ویرایش فرصت فروش" : "فرصت فروش جدید", `<form id="opportunityForm"><div class="crm-form-grid"><label class="form-label">مشتری <span class="text-danger">*</span><select class="form-select mt-1" name="customerId" required ${isEdit ? "disabled" : ""}>${customerOptions(customers, value.customerId)}</select></label><label class="form-label">محصول یا راهکار<select class="form-select mt-1" name="productId">${productOptions(products, value.productId)}</select></label><label class="form-label full">عنوان فرصت <span class="text-danger">*</span><input class="form-control mt-1" name="title" required value="${escapeHtml(value.title || "")}" placeholder="مثلاً تأمین تجهیزات و خدمات استقرار"></label><label class="form-label">ارزش تقریبی<input class="form-control mt-1 ltr" type="number" min="0" name="value" value="${Number(value.value || 0)}"></label><label class="form-label">تعداد/مجوز<input class="form-control mt-1 ltr" type="number" step="0.01" min="0" name="quantity" value="${Number(value.quantity || 1)}"></label><label class="form-label">مرحله<select class="form-select mt-1" name="stage">${allStages.map(stage => `<option value="${stage}" ${stage === (value.stage || "lead") ? "selected" : ""}>${stageMeta[stage].label}</option>`).join("")}</select></label><label class="form-label">احتمال موفقیت<input class="form-control mt-1 ltr" type="number" min="0" max="100" name="probability" value="${Number(value.probability ?? stageMeta[value.stage || "lead"].probability)}"></label><label class="form-label">مسئول<select class="form-select mt-1" name="ownerId">${userOptions(value.ownerId || state.bootstrap.currentUser?.id, true)}</select></label><label class="form-label">تاریخ پیش‌بینی اختتام<input class="form-control mt-1 ltr" type="date" name="expectedClose" value="${toDateInput(value.expectedClose)}"></label><label class="form-label">منبع فرصت<input class="form-control mt-1" name="source" value="${escapeHtml(value.source || "")}"></label><label class="form-label full">اقدام بعدی<textarea class="form-control mt-1" rows="2" name="nextAction">${escapeHtml(value.nextAction || "")}</textarea></label><label class="form-label full">ریسک یا مانع<textarea class="form-control mt-1" rows="2" name="risk">${escapeHtml(value.risk || "")}</textarea></label></div><div class="crm-form-actions">${isEdit ? `<button class="btn btn-outline-danger ms-auto" type="button" data-action="delete-opportunity" data-id="${opportunity.id}"><i class="fa-solid fa-trash"></i> بایگانی</button>` : ""}<button class="btn btn-outline-secondary" type="button" data-action="close-modal">انصراف</button><button class="btn btn-primary" type="submit">ذخیره</button></div></form>`, root => root.querySelector("#opportunityForm").addEventListener("submit", async event => { event.preventDefault(); const input = readForm(event.currentTarget); if (isEdit) delete input.customerId; const saved = await withLoading(() => isEdit ? api.updateOpportunity(opportunity.id, input) : api.createOpportunity(input)); closeModal(); notify(isEdit ? "فرصت به‌روزرسانی شد." : "فرصت جدید ثبت شد."); await refreshBadges(); if (state.currentRoute.view === "customer") renderCustomer(state.currentRoute.id); else renderOpportunities(); }));
+    openModal(isEdit ? "ویرایش فرصت فروش" : "فرصت فروش جدید", `<form id="opportunityForm"><div class="crm-form-grid"><label class="form-label">مشتری <span class="text-danger">*</span><select class="form-select mt-1" name="customerId" required ${isEdit ? "disabled" : ""}>${customerOptions(customers, value.customerId)}</select></label><label class="form-label">محصول یا راهکار<select class="form-select mt-1" name="productId">${productOptions(products, value.productId)}</select></label><label class="form-label full">عنوان فرصت <span class="text-danger">*</span><input class="form-control mt-1" name="title" required value="${escapeHtml(value.title || "")}" placeholder="مثلاً تأمین تجهیزات و خدمات استقرار"></label><label class="form-label">ارزش تقریبی<input class="form-control mt-1 ltr" type="number" min="0" name="value" value="${Number(value.value || 0)}"></label><label class="form-label">تعداد/مجوز<input class="form-control mt-1 ltr" type="number" step="0.01" min="0" name="quantity" value="${Number(value.quantity || 1)}"></label><label class="form-label">مرحله<select class="form-select mt-1" name="stage">${allStages.map(stage => `<option value="${stage}" ${stage === (value.stage || "lead") ? "selected" : ""}>${stageMeta[stage].label}</option>`).join("")}</select></label><label class="form-label">احتمال موفقیت<input class="form-control mt-1 ltr" type="number" min="0" max="100" name="probability" value="${Number(value.probability ?? stageMeta[value.stage || "lead"].probability)}"></label><label class="form-label">مسئول<select class="form-select mt-1" name="ownerId">${userOptions(value.ownerId || state.bootstrap.currentUser?.id, true)}</select></label><label class="form-label">تاریخ پیش‌بینی اختتام<input class="form-control mt-1 fa-num" type="text" data-crm-jalali-kind="date" name="expectedClose" value="${toDateInput(value.expectedClose)}"></label><label class="form-label">منبع فرصت<input class="form-control mt-1" name="source" value="${escapeHtml(value.source || "")}"></label><label class="form-label full">اقدام بعدی<textarea class="form-control mt-1" rows="2" name="nextAction">${escapeHtml(value.nextAction || "")}</textarea></label><label class="form-label full">ریسک یا مانع<textarea class="form-control mt-1" rows="2" name="risk">${escapeHtml(value.risk || "")}</textarea></label></div><div class="crm-form-actions">${isEdit ? `<button class="btn btn-outline-danger ms-auto" type="button" data-action="delete-opportunity" data-id="${opportunity.id}"><i class="fa-solid fa-trash"></i> بایگانی</button>` : ""}<button class="btn btn-outline-secondary" type="button" data-action="close-modal">انصراف</button><button class="btn btn-primary" type="submit">ذخیره</button></div></form>`, root => root.querySelector("#opportunityForm").addEventListener("submit", async event => { event.preventDefault(); const input = readForm(event.currentTarget); if (isEdit) delete input.customerId; const saved = await withLoading(() => isEdit ? api.updateOpportunity(opportunity.id, input) : api.createOpportunity(input)); closeModal(); notify(isEdit ? "فرصت به‌روزرسانی شد." : "فرصت جدید ثبت شد."); await refreshBadges(); if (state.currentRoute.view === "customer") renderCustomer(state.currentRoute.id); else renderOpportunities(); }));
   }
 
   async function taskModal(task = null, preset = {}) {
     const customers = state.bootstrap.customers || await api.listCustomers();
     const value = task || preset;
     const isEdit = Boolean(task);
-    openModal(isEdit ? "ویرایش وظیفه" : "وظیفه جدید", `<form id="taskForm"><div class="crm-form-grid"><label class="form-label full">عنوان وظیفه <span class="text-danger">*</span><input class="form-control mt-1" name="title" required value="${escapeHtml(value.title || "")}"></label><label class="form-label">مشتری<select class="form-select mt-1" name="customerId">${customerOptions(customers, value.customerId, true)}</select></label><label class="form-label">مسئول<select class="form-select mt-1" name="assignedId">${userOptions(value.assigned?.id || state.bootstrap.currentUser?.id, true)}</select></label><label class="form-label">مهلت<input class="form-control mt-1 ltr" type="datetime-local" name="dueAt" value="${toDateTimeInput(value.dueAt)}"></label><label class="form-label">اولویت<select class="form-select mt-1" name="priority"><option value="high" ${value.priority === "high" ? "selected" : ""}>بالا</option><option value="medium" ${!value.priority || value.priority === "medium" ? "selected" : ""}>متوسط</option><option value="low" ${value.priority === "low" ? "selected" : ""}>کم</option></select></label>${isEdit ? `<label class="form-check full"><input class="form-check-input" type="checkbox" name="done" ${value.done ? "checked" : ""}><span class="form-check-label">انجام‌شده</span></label>` : ""}</div><div class="crm-form-actions">${isEdit ? `<button class="btn btn-outline-danger ms-auto" type="button" data-action="delete-task" data-id="${task.id}"><i class="fa-solid fa-trash"></i> حذف</button>` : ""}<button class="btn btn-outline-secondary" type="button" data-action="close-modal">انصراف</button><button class="btn btn-primary" type="submit">ذخیره</button></div></form>`, root => root.querySelector("#taskForm").addEventListener("submit", async event => { event.preventDefault(); const input = readForm(event.currentTarget); await withLoading(() => isEdit ? api.updateTask(task.id, input) : api.createTask(input)); closeModal(); notify("وظیفه ذخیره شد."); await refreshBadges(); renderDashboard(); }));
+    openModal(isEdit ? "ویرایش وظیفه" : "وظیفه جدید", `<form id="taskForm"><div class="crm-form-grid"><label class="form-label full">عنوان وظیفه <span class="text-danger">*</span><input class="form-control mt-1" name="title" required value="${escapeHtml(value.title || "")}"></label><label class="form-label">مشتری<select class="form-select mt-1" name="customerId">${customerOptions(customers, value.customerId, true)}</select></label><label class="form-label">مسئول<select class="form-select mt-1" name="assignedId">${userOptions(value.assigned?.id || state.bootstrap.currentUser?.id, true)}</select></label><label class="form-label">مهلت<input class="form-control mt-1 fa-num" type="text" data-crm-jalali-kind="datetime" name="dueAt" value="${toDateTimeInput(value.dueAt)}"></label><label class="form-label">اولویت<select class="form-select mt-1" name="priority"><option value="high" ${value.priority === "high" ? "selected" : ""}>بالا</option><option value="medium" ${!value.priority || value.priority === "medium" ? "selected" : ""}>متوسط</option><option value="low" ${value.priority === "low" ? "selected" : ""}>کم</option></select></label>${isEdit ? `<label class="form-check full"><input class="form-check-input" type="checkbox" name="done" ${value.done ? "checked" : ""}><span class="form-check-label">انجام‌شده</span></label>` : ""}</div><div class="crm-form-actions">${isEdit ? `<button class="btn btn-outline-danger ms-auto" type="button" data-action="delete-task" data-id="${task.id}"><i class="fa-solid fa-trash"></i> حذف</button>` : ""}<button class="btn btn-outline-secondary" type="button" data-action="close-modal">انصراف</button><button class="btn btn-primary" type="submit">ذخیره</button></div></form>`, root => root.querySelector("#taskForm").addEventListener("submit", async event => { event.preventDefault(); const input = readForm(event.currentTarget); await withLoading(() => isEdit ? api.updateTask(task.id, input) : api.createTask(input)); closeModal(); notify("وظیفه ذخیره شد."); await refreshBadges(); renderDashboard(); }));
   }
 
   async function conversationModal() {
@@ -568,7 +680,7 @@
       const customerSelect = root.querySelector("#conversationCustomer");
       const contactSelect = root.querySelector("#conversationContact");
       customerSelect.addEventListener("change", async () => { contactSelect.innerHTML = '<option value="">در حال دریافت...</option>'; if (!customerSelect.value) { contactSelect.innerHTML = '<option value="">بدون فرد مشخص</option>'; return; } const customer = await api.getCustomer(customerSelect.value); contactSelect.innerHTML = `<option value="">بدون فرد مشخص</option>${array(customer.contacts).map(contact => `<option value="${contact.id}">${escapeHtml(contact.name)} — ${escapeHtml(contact.title || "")}</option>`).join("")}`; });
-      root.querySelector("#conversationForm").addEventListener("submit", async event => { event.preventDefault(); const saved = await withLoading(() => api.createConversation(readForm(event.currentTarget))); closeModal(); notify("مکالمه ثبت شد."); routeTo(`conversations/${saved.id}`); });
+      root.querySelector("#conversationForm").addEventListener("submit", async event => { event.preventDefault(); const saved = await withAiBlock(() => api.createConversation(readForm(event.currentTarget)), "در حال ثبت و تحلیل اولیه مکالمه..."); closeModal(); notify("مکالمه ثبت شد."); routeTo(`conversations/${saved.id}`); });
     });
   }
 
@@ -592,8 +704,11 @@
     if (!textarea) return;
     textarea.value = "در حال تهیه پاسخ پیشنهادی...";
     textarea.disabled = true;
-    try { textarea.value = await api.generateReply(id, tone); }
-    finally { textarea.disabled = false; }
+    try {
+      textarea.value = await withAiBlock(() => api.generateReply(id, tone), "در حال تولید پاسخ پیشنهادی...");
+    } finally {
+      textarea.disabled = false;
+    }
   }
 
   async function conversationToOpportunity(conversationId, customerId) {
@@ -607,10 +722,40 @@
   /* Assistant and search                                                   */
   /* ---------------------------------------------------------------------- */
 
-  function appendAssistantMessage(role, html, links = []) {
+  function sanitizeAssistantHTML(html) {
+    const template = document.createElement("template");
+    template.innerHTML = String(html || "");
+
+    template.content.querySelectorAll("script,style,iframe,object,embed,link,meta,form,input,button,textarea,select").forEach(node => node.remove());
+    template.content.querySelectorAll("*").forEach(node => {
+      Array.from(node.attributes).forEach(attribute => {
+        const name = attribute.name.toLowerCase();
+        const value = attribute.value.trim();
+        if (name.startsWith("on") || name === "style" || name === "srcdoc") {
+          node.removeAttribute(attribute.name);
+          return;
+        }
+        if (["href", "src"].includes(name) && !/^(https?:|mailto:|tel:|#|\/)/i.test(value)) {
+          node.removeAttribute(attribute.name);
+        }
+      });
+    });
+    return template.innerHTML;
+  }
+
+  function renderAssistantMarkdown(markdown) {
+    const source = String(markdown || "").trim();
+    if (!source) return "";
+    if (typeof marked === "undefined" || typeof marked.parse !== "function") {
+      return `<p>${escapeHtml(source).replaceAll("\n", "<br>")}</p>`;
+    }
+    return sanitizeAssistantHTML(marked.parse(source, { gfm: true, breaks: true }));
+  }
+
+  function appendAssistantMessage(role, content, links = [], options = {}) {
     const message = document.createElement("div");
     message.className = `crm-ai-message ${role}`;
-    message.innerHTML = html;
+    message.innerHTML = options.markdown ? renderAssistantMarkdown(content) : String(content || "");
     if (links.length) {
       const row = document.createElement("div"); row.className = "crm-inline-actions mt-2";
       links.forEach(link => { const button = document.createElement("button"); button.className = "btn btn-sm btn-outline-primary"; button.textContent = link.label; button.addEventListener("click", () => { routeTo(link.route); closeAssistant(); }); row.appendChild(button); });
@@ -623,7 +768,14 @@
     const clean = String(prompt || "").trim(); if (!clean) return;
     openAssistant(context); appendAssistantMessage("user", escapeHtml(clean)); dom.assistantInput.value = "";
     const loading = appendAssistantMessage("assistant loading", '<i class="fa-solid fa-circle-notch fa-spin"></i> در حال تحلیل داده‌های CRM...');
-    try { const result = await api.askAssistant(clean, context || {}); loading.remove(); appendAssistantMessage("assistant", result.html, result.links || []); }
+    try {
+      const result = await withAiBlock(
+        () => api.askAssistant(clean, context || {}),
+        "دستیار هوشمند در حال تحلیل داده‌های CRM است..."
+      );
+      loading.remove();
+      appendAssistantMessage("assistant", result.markdown ?? result.text ?? "", result.links || [], { markdown: true });
+    }
     catch (error) { loading.innerHTML = escapeHtml(error?.message || "پاسخ‌گویی با خطا مواجه شد."); }
   }
 
@@ -689,7 +841,7 @@
       case "new-ticket": ticketModal(await api.getCustomer(target.dataset.customerId)); break;
       case "edit-ticket": { const customer = await api.getCustomer(target.dataset.customerId); ticketModal(customer, array(customer.tickets).find(item => item.id === id)); break; }
       case "new-note": noteModal(await api.getCustomer(target.dataset.customerId)); break;
-      case "generate-customer-summary": await withLoading(() => api.generateCustomerSummary(id)); notify("خلاصه پرونده به‌روزرسانی شد."); renderCustomer(id); break;
+      case "generate-customer-summary": await withAiBlock(() => api.generateCustomerSummary(id), "در حال تولید خلاصه هوشمند پرونده..."); notify("خلاصه پرونده به‌روزرسانی شد."); renderCustomer(id); break;
       case "new-opportunity": opportunityModal(null, { customerId: target.dataset.customerId, productId: target.dataset.productId }); break;
       case "edit-opportunity": { const opportunity = (await api.listOpportunities()).find(item => item.id === id); closeModal(); opportunityModal(opportunity); break; }
       case "delete-opportunity": if (await confirmAction("این فرصت بایگانی شود؟")) { await withLoading(() => api.deleteOpportunity(id)); closeModal(); notify("فرصت بایگانی شد."); await refreshBadges(); renderOpportunities(); } break;
@@ -699,7 +851,7 @@
       case "toggle-task": await withLoading(() => api.toggleTask(id)); notify("وضعیت وظیفه به‌روزرسانی شد."); await renderDashboard(); break;
       case "new-conversation": conversationModal(); break;
       case "edit-conversation": conversationSettingsModal(await api.getConversation(id)); break;
-      case "analyze-conversation": await withLoading(() => api.analyzeConversation(id)); notify("تحلیل مکالمه به‌روزرسانی شد."); renderConversations(id); break;
+      case "analyze-conversation": await withAiBlock(() => api.analyzeConversation(id), "در حال تحلیل مکالمه..."); notify("تحلیل مکالمه به‌روزرسانی شد."); renderConversations(id); break;
       case "draft-reply": draftReplyModal(id); break;
       case "conversation-to-opportunity": conversationToOpportunity(id, target.dataset.customerId); break;
       case "close-mobile-reader": routeTo("conversations"); break;
@@ -744,6 +896,7 @@
   }
 
   async function init() {
+    installCrmInputObserver();
     bindEvents(); await initAuth(); await reloadBootstrap();
     if (!location.hash) location.hash = "dashboard"; else await renderRoute();
   }

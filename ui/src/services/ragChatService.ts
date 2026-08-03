@@ -5,7 +5,13 @@ import { exHttpAccessDenied, exHttpInvalidParams, exHttpPayloadTooLarge, exHttpP
 import { startNewChat, generate, type IntfRefrence } from './chatService';
 import { getEmbedding } from './embedService';
 import { stripText } from '../utils/common';
-import vectorDB, { approximateTokenCount } from './vectorDB-old';
+import vectorDB, { approximateTokenCount } from './vectorDB';
+import {
+  isStructuredChunk,
+  parseStructuredRagQuery,
+  structuredChunkToContext,
+  type StructuredChunkPayload,
+} from './structuredRag';
 import logger from '../utils/logger';
 import configManager from '../utils/configManager';
 import type { enuLLMServices } from '../interfaces/config';
@@ -79,17 +85,24 @@ function countMessageTokens(messages: IntfLLMMessage[] | undefined) {
 function countContextTokens(context: IntfRagContext | undefined) {
   if (!context || !context.chunks.length) return 0;
   let count = 0;
-  for (const msg of context.chunks) count += approximateTokenCount(msg.text);
+  for (const msg of context.chunks) {
+    const text = isStructuredChunk(msg as StructuredChunkPayload)
+      ? structuredChunkToContext(msg as StructuredChunkPayload)
+      : msg.text;
+    count += approximateTokenCount(text);
+  }
   return count;
 }
 
 async function getMatchingContexts(
   collection: string,
   embeddedQuery: number[],
+  queryText: string,
   reportSource = false,
   maxItems = 8,
   mustBeNew = false,
   minSimilarity = 0.8,
+  structuredAware = false,
 ): Promise<IntfRagContext> {
   const vectorDBResults = await vectorDB().findChunks(
     collection,
@@ -98,6 +111,10 @@ async function getMatchingContexts(
     maxItems,
     mustBeNew ? 7 : 0,
     minSimilarity,
+    {
+      queryText,
+      structured: structuredAware ? parseStructuredRagQuery(queryText) : undefined,
+    },
   );
   const uniqueActiveSources: string[] = [];
   for (const row of vectorDBResults) {
@@ -180,28 +197,64 @@ export async function runRagChat(options: IntfRunRagChatOptions): Promise<void> 
     return { filteredHistory, allKeywords };
   }
 
-  async function embedUserMessage(filteredHistory: IntfLLMMessage[], _keywords: string[], currentQuestion: string) {
-    const summary = filteredHistory.length
-      ? await generate(
-        'auto-sum',
-        service,
-        'محتوای کلیدی مکالمه رو بده',
-        filteredHistory.map(h => `${h.role === enuRoles.user ? 'کاربر' : 'پاسخ'}: ${h.content.replace(/\n/, ' ')}`).join('\n'),
-        100,
-        0.5,
-      ) + '\nکاربر: '
-      : '';
+  function needsContextualRewrite(currentQuestion: string) {
+    return /(?:^|\s)(این|آن|همان|قبلی|مورد قبلی|بالا|پایین|اون|اونو|آن را)(?:\s|$)/.test(currentQuestion)
+      || currentQuestion.trim().length < 12;
+  }
 
-    if (configManager.active().log.isDebugging) logger.deepDebug({ embedding: { summary, question: currentQuestion } });
-    const embeddedQuery = await getEmbedding(summary + currentQuestion);
+  async function embedUserMessage(
+    filteredHistory: IntfLLMMessage[],
+    _keywords: string[],
+    currentQuestion: string,
+  ) {
+    let retrievalQuery = currentQuestion.trim();
+
+    if (filteredHistory.length && needsContextualRewrite(currentQuestion)) {
+      try {
+        const rewritten = await generate(
+          'query-rewrite',
+          service,
+          [
+            'سؤال آخر کاربر را به یک پرسش مستقل برای جست‌وجوی اسناد تبدیل کن.',
+            'همه تاریخ‌ها، مبلغ‌ها، درصدها، نام‌ها و کدها را عیناً حفظ کن.',
+            'اطلاعات جدید اضافه نکن و فقط یک پرسش بازنویسی‌شده برگردان.',
+          ].join('\n'),
+          [
+            ...filteredHistory.map(h => `${h.role === enuRoles.user ? 'کاربر' : 'پاسخ'}: ${h.content}`),
+            `سؤال آخر: ${currentQuestion}`,
+          ].join('\n'),
+          180,
+          0,
+          { store: false, background: false, throwOnError: true },
+        );
+        if (rewritten.trim()) retrievalQuery = rewritten.trim();
+      } catch (ex) {
+        // Rewriting is an optimization. A temporary LLM failure must not turn
+        // the retrieval query into an error message or block normal RAG.
+        logger.warn({ queryRewriteFallback: (ex as Error).message });
+        retrievalQuery = currentQuestion.trim();
+      }
+    }
+
+    if (configManager.active().log.isDebugging)
+      logger.deepDebug({ embedding: { retrievalQuery, question: currentQuestion } });
+
+    const embeddedQuery = await getEmbedding(retrievalQuery, 'query');
     if (!embeddedQuery) throw new Error('Unable to generate embedding');
-    return embeddedQuery;
+    return { embeddedQuery, retrievalQuery };
   }
 
   function contextToText(context: IntfRagContext) {
-    return context.chunks?.length
-      ? context.chunks.map(r => `\n   - ${r.text.replace(/\n/g, ' ')}${context.reportSource ? ` (منبع: ${r.file_name})` : ''}`).join('\n')
-      : '';
+    if (!context.chunks?.length) return '';
+
+    return context.chunks.map((chunk, index) => {
+      const structured = isStructuredChunk(chunk as StructuredChunkPayload);
+      const body = structured
+        ? structuredChunkToContext(chunk as StructuredChunkPayload)
+        : chunk.text;
+      const source = context.reportSource ? `\nمنبع: ${chunk.file_name}` : '';
+      return `\n\n### منبع ${index + 1}\n${body}${source}`;
+    }).join('');
   }
 
   function makeSystemPrompt(params: {
@@ -216,13 +269,26 @@ export async function runRagChat(options: IntfRunRagChatOptions): Promise<void> 
 
     if (params.userContext.chunks.length || params.specialContext.chunks.length) {
       systemPrompt += '\n## منابع مرجع (فقط این منابع معتبر هستند)';
-      if (params.userContext.chunks.length) {
-        systemPrompt += contextToText(params.userContext);
-        if (params.allSources?.files?.length) {
-          systemPrompt += `\n## فایل‌های آپلود شده کاربر \n- **تعداد کل**: ${params.allSources.count} فایل\n- **آخرین و جدیدترین فایل‌ها**:\n${params.allSources.files.map((s, i) => `    ${i + 1}. ${s}`).join('\n')}`;
-        }
-      } else {
-        systemPrompt += contextToText(params.specialContext);
+      if (params.userContext.chunks.length)
+        systemPrompt += '\n### منابع فایل‌های کاربر' + contextToText(params.userContext);
+      if (params.specialContext.chunks.length)
+        systemPrompt += '\n### منابع تخصصی' + contextToText(params.specialContext);
+
+      const hasStructuredRecords = [...params.userContext.chunks, ...params.specialContext.chunks]
+        .some(chunk => isStructuredChunk(chunk as StructuredChunkPayload));
+      if (hasStructuredRecords) {
+        systemPrompt += `
+## قواعد رکوردهای ساخت‌یافته
+- مبلغ، کد، درصد و تاریخ را عیناً از فراداده رکورد نقل کن.
+- تاریخ اجرا و تاریخ سند را با هم اشتباه نگیر.
+- رکوردها پیش از ارسال از نظر نسخه زمانی پالایش شده‌اند؛ نسخه‌های مختلف را با هم ترکیب نکن.
+- اگر نوع مرکز، فرانشیز یا وضعیت قرارداد متفاوت است، هر مورد را جداگانه بیان کن.
+- عدد یا تاریخ ناموجود را حدس نزن.
+- در پاسخ، تاریخ اعتبار و منبع رکورد را ذکر کن.`;
+      }
+
+      if (params.userContext.chunks.length && params.allSources?.files?.length) {
+        systemPrompt += `\n## فایل‌های آپلود شده کاربر \n- **تعداد کل**: ${params.allSources.count} فایل\n- **آخرین و جدیدترین فایل‌ها**:\n${params.allSources.files.map((s, i) => `    ${i + 1}. ${s}`).join('\n')}`;
       }
     }
 
@@ -243,18 +309,33 @@ export async function runRagChat(options: IntfRunRagChatOptions): Promise<void> 
       : undefined;
 
     const emptyContext = (): IntfRagContext => ({ chunks: [], reportSource: false });
-    const embeddedQuery = await embedUserMessage(filteredHistory, allKeywords, question);
+    const { embeddedQuery, retrievalQuery } = await embedUserMessage(filteredHistory, allKeywords, question);
     const userContext = !isSummarizing && useFiles
-      ? await getMatchingContexts(userCollection(service, auth), embeddedQuery, true, 16, false, userContextMinSimilarity)
+      ? await getMatchingContexts(
+        userCollection(service, auth), embeddedQuery, retrievalQuery, true, 16, false,
+        userContextMinSimilarity, true,
+      )
       : emptyContext();
     const globalContext = !isSummarizing && useGeneralKnowledge
-      ? userContext.chunks.length > 3 ? emptyContext() : await getMatchingContexts('RAG_GLOBAL_INFORMATION', embeddedQuery, false, 8, false, special?.minSimilarity)
+      ? userContext.chunks.length > 3
+        ? emptyContext()
+        : await getMatchingContexts(
+          'RAG_GLOBAL_INFORMATION', embeddedQuery, retrievalQuery, false, 8, false, 0.8, false,
+        )
       : emptyContext();
     const newsContext = !isSummarizing && useNews
-      ? userContext.chunks.length > 3 ? emptyContext() : await getMatchingContexts('RAG_CRAWLED_RSS_NEWS', embeddedQuery, false, 8, question.startsWith('آخرین خبرها') || question.endsWith(' چه خبره'))
+      ? userContext.chunks.length > 3
+        ? emptyContext()
+        : await getMatchingContexts(
+          'RAG_CRAWLED_RSS_NEWS', embeddedQuery, retrievalQuery, false, 8,
+          question.startsWith('آخرین خبرها') || question.endsWith(' چه خبره'), 0.8, false,
+        )
       : emptyContext();
     const specialContext = special?.collection
-      ? await getMatchingContexts(special.collection, embeddedQuery, true, 16)
+      ? await getMatchingContexts(
+        special.collection, embeddedQuery, retrievalQuery, true, 16, false,
+        special.minSimilarity, true,
+      )
       : emptyContext();
 
     const runtimeContext: IntfRagBeforeGenerateContext = {
@@ -313,8 +394,17 @@ export async function runRagChat(options: IntfRunRagChatOptions): Promise<void> 
 
     const references: IntfRefrence[] = [];
     if (showReferences) {
-      const refContext = userContext.chunks.length ? userContext : specialContext.chunks.length ? specialContext : emptyContext();
-      refContext.chunks.forEach(chunk => references.push({ text: referenceText ? chunk.text : '', title: chunk.title, url: chunk.file_name }));
+      const seenReferences = new Set<string>();
+      for (const chunk of [...userContext.chunks, ...specialContext.chunks]) {
+        const key = `${chunk.file_name}\0${chunk.title || ''}\0${chunk.text}`;
+        if (seenReferences.has(key)) continue;
+        seenReferences.add(key);
+        references.push({
+          text: referenceText ? chunk.text : '',
+          title: chunk.title,
+          url: chunk.file_name,
+        });
+      }
     }
 
     await startNewChat(apiRes, service, requestId, messages, references, {

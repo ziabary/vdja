@@ -1,4 +1,6 @@
 import * as fs from "fs/promises";
+import { createReadStream } from "fs";
+import { createInterface } from "readline";
 import * as path from "path";
 import { extractFromPDFInteractive } from "../utils/fileProcessors/pdf";
 import { extractFromPDFInteractive as simpleExtractFromPDFInteractive } from "../utils/fileProcessors/pdf-simple"
@@ -9,6 +11,115 @@ import { exHttpInvalidParams } from "../interfaces/exHttp";
 import { sleep } from "../utils/common";
 import logger from "../utils/logger";
 import configManager from "../utils/configManager";
+
+import {
+  isStructuredRagManifest,
+  isStructuredRagRecord,
+  normalizeStructuredMetadata,
+  STRUCTURED_RAG_FORMAT,
+  type StructuredRagRecord,
+} from "./structuredRag";
+
+
+
+type StructuredChunkMeta = IntfChunkMeta & {
+  structuredRag?: boolean;
+  recordId?: string;
+  ragMetadata?: Record<string, unknown>;
+};
+
+async function countNonEmptyLines(filePath: string): Promise<number> {
+  const input = createReadStream(filePath, { encoding: "utf8" });
+  const reader = createInterface({ input, crlfDelay: Infinity });
+  let count = 0;
+  for await (const line of reader) {
+    if (line.trim()) count++;
+  }
+  return count;
+}
+
+async function importStructuredRagJsonl(
+  file: IntfFileMeta,
+  fileKey: string,
+  onChunk: (chunks: IntfChunk[]) => Promise<number>,
+  onProgress?: (record: number, total: number) => void,
+): Promise<{ totalChunks: number; totalContent: number; totalPoints: number }> {
+  const isDedicatedExtension = file.originalname.toLowerCase().endsWith(".rag.jsonl");
+  const totalLines = await countNonEmptyLines(file.path);
+  const input = createReadStream(file.path, { encoding: "utf8" });
+  const reader = createInterface({ input, crlfDelay: Infinity });
+
+  let totalChunks = 0;
+  let totalContent = 0;
+  let totalPoints = 0;
+  let lineNumber = 0;
+  let sawManifest = false;
+  let sawRecord = false;
+  let batch: IntfChunk[] = [];
+
+  const flush = async () => {
+    if (!batch.length) return;
+    totalPoints += await onChunk(batch);
+    batch = [];
+  };
+
+  for await (const rawLine of reader) {
+    const line = rawLine.trim();
+    if (!line) continue;
+    lineNumber++;
+    totalContent += line.length;
+
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(line);
+    } catch {
+      throw new exHttpInvalidParams(`JSONL نامعتبر در خط ${lineNumber}`);
+    }
+
+    if (isStructuredRagManifest(parsed)) {
+      if (sawRecord)
+        throw new exHttpInvalidParams("rag_manifest باید پیش از اولین رکورد باشد");
+      sawManifest = true;
+      continue;
+    }
+
+    if (!isStructuredRagRecord(parsed))
+      throw new exHttpInvalidParams(`رکورد RAG نامعتبر در خط ${lineNumber}`);
+
+    if (!isDedicatedExtension && !sawManifest) {
+      throw new exHttpInvalidParams(
+        `فایل JSONL عمومی باید با manifest قالب ${STRUCTURED_RAG_FORMAT} آغاز شود یا پسوند .rag.jsonl داشته باشد`,
+      );
+    }
+
+    sawRecord = true;
+    const record = parsed as StructuredRagRecord;
+    const meta: StructuredChunkMeta = {
+      fileKey,
+      title: record.title,
+      structuredRag: true,
+      recordId: record.id,
+      ragMetadata: normalizeStructuredMetadata(record.metadata),
+    };
+
+    batch.push({
+      text: record.text.trim(),
+      meta,
+    } as IntfChunk);
+    totalChunks++;
+
+    if (batch.length >= 64) await flush();
+    if (onProgress && (totalChunks % 64 === 0 || lineNumber === totalLines))
+      onProgress(lineNumber, totalLines);
+  }
+
+  await flush();
+
+  if (!sawRecord)
+    throw new exHttpInvalidParams("هیچ رکورد ساخت‌یافته‌ای در فایل یافت نشد");
+
+  return { totalChunks, totalContent, totalPoints };
+}
 
 function splitSentences(text: string): string[] {
   return text
@@ -133,6 +244,10 @@ export default async function file2DB(
     throw new Error("file2DB requires onChunk callback (vector upsert)");
 
   const ext = path.extname(file.originalname).toLowerCase();
+
+  if (ext === ".jsonl")
+    return importStructuredRagJsonl(file, fileKey, onChunk, onProgress);
+  
   let totalChunks = 0
   let totalContent = 0
   let totalPoints = 0

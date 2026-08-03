@@ -8,10 +8,54 @@ interface EmbeddingResponse {
   }[];
 }
 
-export async function getEmbedding(text: string): Promise<number[] | null> {
-  //console.log({text})
-  text = text.replace(/\n/g, " ").trim();
-  if (!text) return null;
+export type EmbeddingPurpose = "document" | "query";
+
+const DEFAULT_E5_QUERY_INSTRUCTION =
+  "Given a Persian user question, retrieve the passages or structured records that directly answer it. Preserve exact names, identifiers, dates, amounts, percentages, and other factual constraints.";
+
+function prepareEmbeddingInput(
+  text: string,
+  purpose: EmbeddingPurpose,
+  model: string,
+): string {
+  const normalized = text
+    .replace(/\r\n/g, "\n")
+    .replace(/[ \t]+/g, " ")
+    .trim();
+
+  if (!normalized) return "";
+
+  // multilingual-e5-large-instruct requires an instruction on queries only.
+  // Other embedding models keep the old input format.
+  const modelName = model.toLowerCase();
+  if (
+    purpose === "query"
+    && modelName.includes("e5")
+    && modelName.includes("instruct")
+  ) {
+    return `Instruct: ${DEFAULT_E5_QUERY_INSTRUCTION}\nQuery: ${normalized}`;
+  }
+
+  return normalized.replace(/\n+/g, " ");
+}
+
+export async function getEmbedding(
+  text: string,
+  purpose: EmbeddingPurpose = "document",
+): Promise<number[] | null> {
+  const embeddingConfig = configManager.active().embedding;
+  const model = embeddingConfig.server.model;
+  if (!model) {
+    logger.error("Embedding model is not configured");
+    return null;
+  }
+
+  // Some OpenAI-compatible servers expose a short alias as `model` while the
+  // actual model family is only visible in modelPath. Use both for safe
+  // backward-compatible E5-instruct auto-detection.
+  const modelIdentity = `${model} ${embeddingConfig.modelPath || ""}`;
+  const input = prepareEmbeddingInput(text, purpose, modelIdentity);
+  if (!input) return null;
 
   try {
     const res = await fetch(
@@ -20,8 +64,8 @@ export async function getEmbedding(text: string): Promise<number[] | null> {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: configManager.active().embedding.server.model,
-          input: text,
+          model,
+          input,
         }),
       }
     );
@@ -31,7 +75,8 @@ export async function getEmbedding(text: string): Promise<number[] | null> {
       logger.error(`Error embedding: ${res.status} → ${errorText}`);
       try {
         const errJson = JSON.parse(errorText);
-        return errJson.error?.message ?? null;
+        logger.error(errJson.error?.message ?? errorText);
+        return null;
       } catch {
         return null;
       }

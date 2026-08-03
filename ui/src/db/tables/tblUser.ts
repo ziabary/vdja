@@ -71,6 +71,25 @@ export interface IntfUserListOptions<TCols extends Record<string, string>>
   isAdmin?: boolean;
 }
 
+const identityOutputCols = [cols.id, cols.username, cols.email, cols.mobile, cols.openID, cols.status];
+
+function canonicalMobile(value?: string): string | undefined {
+  if (!value) return undefined;
+  const source = value.trim().replace(/[\s()-]/g, '');
+  if (/^09\d{9}$/.test(source)) return `98${source.slice(1)}`;
+  if (/^\+989\d{9}$/.test(source)) return source.slice(1);
+  if (/^989\d{9}$/.test(source)) return source;
+  if (/^9\d{9}$/.test(source)) return `98${source}`;
+  return source;
+}
+
+function mobileVariants(value: string): string[] {
+  const canonical = canonicalMobile(value) || value;
+  if (!/^989\d{9}$/.test(canonical)) return [canonical];
+  const local = canonical.slice(2);
+  return [canonical, `+${canonical}`, `0${local}`, local];
+}
+
 /* =======================
    Actions
 ======================= */
@@ -146,17 +165,28 @@ export default {
 
   findByUsername: async (username: string, isAdmin = false): Promise<Partial<IntfUser> | undefined> => {
     const db = await getDB();
-    const colsToOutput = resolveCols(undefined, isAdmin, public_cols, cols).map(c => cols[c as keyof typeof cols]);
-    const user = await db<IntfUser>(tblName)
+    const colsToOutput = isAdmin ? identityOutputCols : [cols.id, cols.username];
+    return db<IntfUser>(tblName)
       .select(colsToOutput)
-      .leftJoin(group.tblName, group.cols.id, cols.assigned_grpID)
       .whereRaw('LOWER(??) = ?', [cols.username, username.trim().toLowerCase()])
-      .andWhere(group.cols.status, enuBannableStatus.active)
-      .andWhere(cols.status, enuBannableStatus.active)
       .first();
-    if (user) user.privs = deepMerge(user[cols.groupPrivs], user[cols.specialPrivs]);
-    return user;
   },
+
+  findByEmail: async (email: string): Promise<Partial<IntfUser> | undefined> => {
+    const db = await getDB();
+    return db<IntfUser>(tblName)
+      .select(identityOutputCols)
+      .whereRaw('LOWER(??) = ?', [cols.email, email.trim().toLowerCase()])
+      .first();
+  },
+
+  findByMobile: async (mobile: string): Promise<Partial<IntfUser> | undefined> => {
+    const db = await getDB();
+    return db<IntfUser>(tblName)
+      .select(identityOutputCols)
+      .whereIn(cols.mobile, mobileVariants(mobile))
+      .first();
+   },  
 
   updateProfile: async (
     userID: number,
@@ -216,11 +246,11 @@ export default {
     const res = await db(tblName)
       .insert({
         [cols.key]: userTokenMD5 || null,
-        [cols.email]: userEmail || null,
-        [cols.mobile]: userMobile || null,
+        [cols.email]: userEmail?.trim().toLowerCase() || null,
+        [cols.mobile]: canonicalMobile(userMobile) || null,       
         [cols.openID]: userOpenID || null,
         [cols.name]: userFullname || null,
-        [cols.username]: userUsername || null,
+        [cols.username]: userUsername?.trim().toLowerCase() || null,
         [cols.specialPrivs]: JSON.stringify(usrPrivs),
         [cols.assigned_grpID]: grpId
       })
@@ -230,33 +260,41 @@ export default {
 
   setOTP: async (mobile: string, otp: string) => {
     const db = await getDB();
+    const normalizedMobile = canonicalMobile(mobile)!;
+    const variants = mobileVariants(normalizedMobile);    
     const res = await db(tblName)
-      .select(cols.otp)
-      .where(cols.mobile, mobile)
+      .select(cols.id)
+      .whereIn(cols.mobile, variants)
       .first()
 
     if (res)
       await db(tblName)
-        .update({ usrOTP: otp })
-        .where(cols.mobile, mobile)
-    else
-      await db(tblName)
-        .insert({
+        .update({ [cols.otp]: otp })
+        .where(cols.id, res[cols.id])
+    else {
+      try {
+        await db(tblName).insert({
           [cols.key]: md5(crypto.randomUUID()),
-          [cols.mobile]: mobile,
+          [cols.mobile]: normalizedMobile,
           [cols.otp]: otp,
           [cols.assigned_grpID]: VERIFIED_GROUP_ID
-        })
+        });
+      } catch (error) {
+        // A simultaneous OTP request may have inserted this unique mobile first.
+        const updated = await db(tblName)
+          .update({ [cols.otp]: otp })
+          .whereIn(cols.mobile, variants);
+        if (!updated) throw error;
+      }
+    } 
   },
 
   verifyOTP: async (mobile: string, otp: string) => {
     const db = await getDB();
     const res = await db(tblName)
       .select(cols.otp, cols.key)
-      .where(cols.mobile, mobile)
+      .whereIn(cols.mobile, mobileVariants(mobile))
       .first()
-
-      console.log({res, mobile, otp})
 
     if(res && res.usrOTP === otp)
       return res

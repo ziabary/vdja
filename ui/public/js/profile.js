@@ -23,14 +23,19 @@ function setProfileLoading(active) {
 }
 
 function renderProfilePreview() {
-  const name = document.getElementById("profileName").value.trim() || "کاربر سامانه";
+  const setPreview = (previewId, value, placeholder, formatter = item => item) => {
+    const preview = document.getElementById(previewId);
+    preview.textContent = value ? formatter(value) : placeholder;
+    preview.classList.toggle("profile-preview-placeholder", !value);
+  };
+  const name = document.getElementById("profileName").value.trim();
   const username = document.getElementById("profileUsername").value.trim();
   const organization = document.getElementById("profileOrganization").value.trim();
   const title = document.getElementById("profileTitle").value.trim();
-  document.getElementById("profileNamePreview").textContent = name;
-  document.getElementById("profileUsernamePreview").textContent = username ? `@${username}` : "نام کاربری ثبت نشده";
-  document.getElementById("profileRolePreview").textContent = title;
-  document.getElementById("profileOrganizationPreview").textContent = organization;
+  setPreview("profileNamePreview", name, "نام و نام خانوادگی");
+  setPreview("profileUsernamePreview", username, "نام کاربری", item => `@${item}`);
+  setPreview("profileRolePreview", title, "عنوان شغلی");
+  setPreview("profileOrganizationPreview", organization, "سازمان یا شرکت");
   document.getElementById("profileAvatarPreview").innerHTML = profileState.avatar
     ? `<img src="${profileState.avatar}" alt="تصویر پروفایل">`
     : '<i class="fa-solid fa-user"></i>';
@@ -42,8 +47,8 @@ function fillProfile(profile) {
   document.getElementById("profileUsername").value = profile.username || "";
   document.getElementById("profileOrganization").value = profile.organization || "";
   document.getElementById("profileTitle").value = profile.title || "";
-  document.getElementById("profileEmail").value = profile.email || "ثبت نشده";
-  document.getElementById("profileMobile").value = profile.mobile || "ثبت نشده";
+  document.getElementById("profileEmail").value = profile.email || "";
+  document.getElementById("profileMobile").value = profile.mobile || "";
   renderProfilePreview();
 }
 

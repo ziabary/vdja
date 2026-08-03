@@ -9,7 +9,7 @@ import atDB from "../db/atDB";
 import { exHttpAccessDenied, exHttpInvalidParams } from "../interfaces/exHttp";
 import { generate, stopRequest } from "./chatService";
 import { stripText, parseQueryToNumber, parseQueryToString } from "../utils/common";
-import vectorDB from "./vectorDB-old";
+import vectorDB from "./vectorDB";
 import { date2Hijri, date2Jalali, normalizePersianText } from "../utils/i18n"
 import type { TypFileListItem } from "../db/tables/tblFiles";
 import { enuLLMServices, type IntfLLMServerConfig } from "../interfaces/config";

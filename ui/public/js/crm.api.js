@@ -80,8 +80,13 @@
     async search(query) { return this.request(`/api/crm/search?q=${encodeURIComponent(query || "")}`); }
     async askAssistant(prompt, context = {}) {
       const data = await this.request("/api/crm/assistant", { method: "POST", body: JSON.stringify({ prompt, context }) });
+      const markdown = String(data.text || "");
       return {
-        html: `<div>${escapeHTML(data.text || "").replaceAll("\n", "<br>")}</div>`,
+        // `markdown` is the canonical response. `text` and `html` are kept for
+        // backward compatibility with older CRM UI builds.
+        markdown,
+        text: markdown,
+        html: `<div>${escapeHTML(markdown).replaceAll("\n", "<br>")}</div>`,
         links: data.links || []
       };
     }

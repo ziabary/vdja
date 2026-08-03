@@ -9,7 +9,7 @@ import { enuFileStatus } from '../db/tables/tblFiles';
 import { exHttpAccessDenied, exHttpInvalidParams } from '../interfaces/exHttp';
 import { toMegaByte } from '../utils/common';
 import file2DB from './file2TxtService';
-import vectorDB from './vectorDB-old';
+import vectorDB from './vectorDB';
 import { sendStreamHeadersIfNeeded } from './chatService';
 import logger from '../utils/logger';
 

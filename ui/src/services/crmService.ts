@@ -45,6 +45,15 @@ const ROLE_LABEL: Record<CRMRole, string> = {
 const WRITE_ROLES: CRMRole[] = ['Owner', 'Manager', 'Sales', 'Support'];
 const MANAGE_ROLES: CRMRole[] = ['Owner', 'Manager'];
 
+// CRM prompts must fit models with a relatively small context window.
+// The active Persian model reports a 7,400-token context. Persian JSON in the
+// current data set averages roughly 2.5 characters per token, so these limits
+// leave room for the system prompt and requested output tokens.
+const CRM_LLM_SERVICE = enuLLMServices.RAG;
+const CRM_ASSISTANT_CONTEXT_CHAR_BUDGET = 10_000;
+const CRM_CUSTOMER_CONTEXT_CHAR_BUDGET = 9_000;
+const CRM_CONVERSATION_TEXT_CHAR_BUDGET = 7_000;
+
 interface CRMAccess {
   workspace: Row;
   member: Row;
@@ -1166,8 +1175,8 @@ export async function analyzeCRMConversation(auth: IntfAuth, workspaceKey: strin
   const row = await getConversationRow(access, key); const snapshot = await loadSnapshot(access, auth.uid);
   const customer = snapshot.customers.find(item => Number(item[cols.customer.id]) === Number(row[cols.conversation.customerID]));
   const systemPrompt = `شما تحلیل‌گر مکالمات CRM فارسی هستید. فقط یک شیء JSON معتبر بدون Markdown برگردانید با کلیدهای intent, sentiment, urgency, products, budget, decisionDate, commitments, nextAction. products و commitments آرایه رشته هستند. از حدس قطعی درباره اطلاعات موجود نبودن خودداری کنید.`;
-  const userPrompt = `مشتری: ${customer?.[cols.customer.name] || ''}\nموضوع: ${row[cols.conversation.subject]}\nمتن:\n${row[cols.conversation.body]}`;
-  const generated = await generate('تحلیل مکالمه CRM', enuLLMServices.Think, systemPrompt, userPrompt, 900, 0.1);
+  const userPrompt = `مشتری: ${customer?.[cols.customer.name] || ''}\nموضوع: ${promptText(row[cols.conversation.subject], 300)}\nمتن:\n${promptText(row[cols.conversation.body], CRM_CONVERSATION_TEXT_CHAR_BUDGET)}`;
+  const generated = await generate('تحلیل مکالمه CRM', CRM_LLM_SERVICE, systemPrompt, userPrompt, 900, 0.1);
   const fallback = heuristicConversationAI(String(row[cols.conversation.body]), snapshot.products);
   const parsed = extractJSONObject(generated) || fallback;
   const ai = {
@@ -1186,8 +1195,8 @@ export async function generateCRMReply(auth: IntfAuth, workspaceKey: string | nu
   const tone = text(toneInput, 20) || 'formal';
   const current = await atDB.user.getByID(auth.uid, true);
   const systemPrompt = `شما دستیار نگارش پاسخ CRM شرکت ${access.workspace[cols.workspace.name]} هستید. پاسخ فارسی، دقیق، بدون ادعای تاییدنشده و قابل ویرایش تولید کنید. لحن: ${tone}. تعهد زمانی یا مالی جدید نسازید. فقط متن پاسخ را برگردانید.`;
-  const userPrompt = `مشتری: ${conversation.customer?.name || ''}\nمخاطب: ${conversation.contact?.name || ''}\nموضوع: ${conversation.subject}\nپیام مشتری:\n${conversation.body}\nتحلیل موجود: ${JSON.stringify(conversation.ai)}\nنام پاسخ‌دهنده: ${current?.usrName || auth.name || 'کارشناس CRM'}`;
-  return generate('تولید پاسخ CRM', enuLLMServices.Think, systemPrompt, userPrompt, 1200, 0.25);
+  const userPrompt = `مشتری: ${conversation.customer?.name || ''}\nمخاطب: ${conversation.contact?.name || ''}\nموضوع: ${promptText(conversation.subject, 300)}\nپیام مشتری:\n${promptText(conversation.body, CRM_CONVERSATION_TEXT_CHAR_BUDGET)}\nتحلیل موجود: ${JSON.stringify(conversation.ai)}\nنام پاسخ‌دهنده: ${current?.usrName || auth.name || 'کارشناس CRM'}`;
+  return generate('تولید پاسخ CRM', CRM_LLM_SERVICE, systemPrompt, userPrompt, 1200, 0.25);
 }
 
 export async function saveCRMReply(auth: IntfAuth, workspaceKey: string | null, key: string, bodyInput: unknown): Promise<Row> {
@@ -1204,6 +1213,340 @@ export async function saveCRMReply(auth: IntfAuth, workspaceKey: string | null, 
     await touchCustomer(trx, row[cols.conversation.customerID]);
   });
   return getCRMConversation(auth, access.workspace[cols.workspace.key], key);
+}
+
+
+/* -------------------------------------------------------------------------- */
+/* Prompt budgeting and compact AI context                                    */
+/* -------------------------------------------------------------------------- */
+
+function promptText(value: unknown, max = 500): string {
+  const normalized = String(value ?? '')
+    .replace(/\r\n/g, '\n')
+    .replace(/[ \t]+/g, ' ')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+  if (normalized.length <= max) return normalized;
+  const head = Math.max(1, Math.floor(max * 0.72));
+  const tail = Math.max(1, max - head - 24);
+  return `${normalized.slice(0, head)}\n[… بخش میانی حذف شد …]\n${normalized.slice(-tail)}`;
+}
+
+function assistantTerms(prompt: string): string[] {
+  const stopWords = new Set([
+    'از', 'به', 'با', 'در', 'برای', 'که', 'را', 'این', 'آن', 'چه', 'کدام', 'چطور',
+    'چگونه', 'است', 'هست', 'شود', 'شده', 'کنم', 'کنید', 'باید', 'امروز', 'و', 'یا',
+  ]);
+  return [...new Set(prompt
+    .toLowerCase()
+    .replace(/[،,؛;:.!?؟()\[\]{}"']/g, ' ')
+    .split(/\s+/)
+    .map(item => item.trim())
+    .filter(item => item.length > 1 && !stopWords.has(item)))]
+    .slice(0, 20);
+}
+
+function relevanceScore(value: unknown, terms: string[]): number {
+  if (!terms.length) return 0;
+  const haystack = String(value ?? '').toLowerCase();
+  return terms.reduce((score, term) => score + (haystack.includes(term) ? 1 : 0), 0);
+}
+
+function appendSectionsWithinBudget(
+  context: Row,
+  sections: [string, Row[]][],
+  maxChars: number,
+): void {
+  const indexes = new Map<string, number>();
+  const exhausted = new Set<string>();
+  for (const [key] of sections) {
+    context[key] = [];
+    indexes.set(key, 0);
+  }
+
+  // Add records round-robin so one large section cannot consume the whole prompt.
+  while (exhausted.size < sections.length) {
+    let progressed = false;
+    for (const [key, rows] of sections) {
+      if (exhausted.has(key)) continue;
+      const index = indexes.get(key) || 0;
+      if (index >= rows.length) {
+        exhausted.add(key);
+        continue;
+      }
+      const selected = context[key] as Row[];
+      selected.push(rows[index]);
+      if (JSON.stringify(context).length > maxChars) {
+        selected.pop();
+        exhausted.add(key);
+        continue;
+      }
+      indexes.set(key, index + 1);
+      progressed = true;
+    }
+    if (!progressed) break;
+  }
+}
+
+function compactCustomerForAI(row: Row, snapshot: Record<string, Row[]>): Row {
+  const owner = snapshot.members.find(item => Number(item.usrID) === Number(row[cols.customer.ownerUserID]));
+  return {
+    id: row[cols.customer.key],
+    name: row[cols.customer.name],
+    industry: row[cols.customer.industry] || '',
+    city: row[cols.customer.city] || '',
+    tier: row[cols.customer.tier] || '',
+    health: finiteNumber(row[cols.customer.health], 75),
+    lifetimeValue: finiteNumber(row[cols.customer.lifetimeValue]),
+    lastInteraction: row[cols.customer.lastInteraction] || row[cols.customer.updatedAt],
+    nextAction: promptText(row[cols.customer.nextAction], 220),
+    nextActionDue: row[cols.customer.nextActionDue],
+    renewalDate: row[cols.customer.renewalDate],
+    tags: parseJSON<string[]>(row[cols.customer.tags], []).slice(0, 10),
+    owner: owner?.usrName || owner?.usrUsername || '',
+  };
+}
+
+function compactProductForAI(row: Row, snapshot: Record<string, Row[]>): Row {
+  const dto = productDTO(row, snapshot);
+  return {
+    id: dto.id,
+    code: dto.code,
+    name: dto.name,
+    shortName: dto.shortName,
+    type: dto.type,
+    category: dto.category,
+    price: dto.price,
+    activeCustomers: dto.activeCustomers,
+    installedUnits: dto.installedUnits,
+    openPipeline: dto.openPipeline,
+    supportRenewals: dto.supportRenewals,
+  };
+}
+
+function compactOpportunityForAI(row: Row, snapshot: Record<string, Row[]>): Row {
+  const customer = snapshot.customers.find(item => Number(item[cols.customer.id]) === Number(row[cols.opportunity.customerID]));
+  const product = snapshot.products.find(item => Number(item[cols.product.id]) === Number(row[cols.opportunity.productID]));
+  const owner = snapshot.members.find(item => Number(item.usrID) === Number(row[cols.opportunity.ownerUserID]));
+  return {
+    id: row[cols.opportunity.key],
+    title: row[cols.opportunity.title],
+    customer: customer?.[cols.customer.name] || '',
+    product: product?.[cols.product.shortName] || product?.[cols.product.name] || '',
+    quantity: finiteNumber(row[cols.opportunity.quantity], 1),
+    value: finiteNumber(row[cols.opportunity.value]),
+    stage: row[cols.opportunity.stage],
+    probability: finiteNumber(row[cols.opportunity.probability]),
+    expectedClose: row[cols.opportunity.expectedClose],
+    lastActivity: row[cols.opportunity.lastActivity] || row[cols.opportunity.updatedAt],
+    source: promptText(row[cols.opportunity.source], 100),
+    risk: promptText(row[cols.opportunity.risk], 260),
+    nextAction: promptText(row[cols.opportunity.nextAction], 260),
+    owner: owner?.usrName || owner?.usrUsername || '',
+  };
+}
+
+function compactTaskForAI(row: Row, snapshot: Record<string, Row[]>): Row {
+  const customer = snapshot.customers.find(item => Number(item[cols.customer.id]) === Number(row[cols.task.customerID]));
+  const opportunity = snapshot.opportunities.find(item => Number(item[cols.opportunity.id]) === Number(row[cols.task.opportunityID]));
+  const assigned = snapshot.members.find(item => Number(item.usrID) === Number(row[cols.task.assignedUserID]));
+  return {
+    id: row[cols.task.key],
+    title: promptText(row[cols.task.title], 220),
+    customer: customer?.[cols.customer.name] || '',
+    opportunity: opportunity?.[cols.opportunity.title] || '',
+    dueAt: row[cols.task.dueAt],
+    priority: row[cols.task.priority],
+    assigned: assigned?.usrName || assigned?.usrUsername || '',
+  };
+}
+
+function compactConversationForAI(row: Row, snapshot: Record<string, Row[]>, includeMessages = false): Row {
+  const customer = snapshot.customers.find(item => Number(item[cols.customer.id]) === Number(row[cols.conversation.customerID]));
+  const contact = snapshot.contacts.find(item => Number(item[cols.contact.id]) === Number(row[cols.conversation.contactID]));
+  const messages = includeMessages
+    ? snapshot.messages
+      .filter(item => Number(item[cols.conversationMessage.conversationID]) === Number(row[cols.conversation.id]))
+      .sort((a, b) => new Date(a[cols.conversationMessage.createdAt]).getTime() - new Date(b[cols.conversationMessage.createdAt]).getTime())
+      .slice(-8)
+      .map(item => ({
+        direction: String(item[cols.conversationMessage.direction] || 'Incoming').toLowerCase(),
+        body: promptText(item[cols.conversationMessage.body], 700),
+        createdAt: item[cols.conversationMessage.createdAt],
+      }))
+    : undefined;
+  return {
+    id: row[cols.conversation.key],
+    customer: customer?.[cols.customer.name] || '',
+    contact: contact?.[cols.contact.name] || '',
+    channel: String(row[cols.conversation.channel] || 'email').toLowerCase(),
+    subject: promptText(row[cols.conversation.subject], 220),
+    status: row[cols.conversation.status],
+    updatedAt: row[cols.conversation.updatedAt],
+    preview: promptText(row[cols.conversation.preview] || row[cols.conversation.body], includeMessages ? 500 : 320),
+    ai: { ...defaultConversationAI(), ...parseJSON<Row>(row[cols.conversation.ai], {}) },
+    ...(messages ? { messages } : {}),
+  };
+}
+
+function buildGlobalAssistantContext(
+  snapshot: Record<string, Row[]>,
+  prompt: string,
+): string {
+  const terms = assistantTerms(prompt);
+  const activeOpportunities = snapshot.opportunities.filter(item => ACTIVE_STAGES.includes(item[cols.opportunity.stage]));
+  const openTasks = snapshot.tasks.filter(item => !item[cols.task.doneAt]);
+  const pipelineValue = activeOpportunities.reduce((sum, item) => sum + finiteNumber(item[cols.opportunity.value]), 0);
+  const weightedPipeline = activeOpportunities.reduce((sum, item) => sum + finiteNumber(item[cols.opportunity.value]) * finiteNumber(item[cols.opportunity.probability]) / 100, 0);
+
+  const context: Row = {
+    generatedAt: nowISO(),
+    totals: {
+      customers: snapshot.customers.length,
+      products: snapshot.products.length,
+      activeOpportunities: activeOpportunities.length,
+      openTasks: openTasks.length,
+      conversations: snapshot.conversations.length,
+      pipelineValue,
+      weightedPipeline,
+      atRiskCustomers: snapshot.customers.filter(item => finiteNumber(item[cols.customer.health], 75) < 65).length,
+    },
+  };
+
+  const customers = snapshot.customers
+    .map(row => ({
+      row: compactCustomerForAI(row, snapshot),
+      score: relevanceScore([
+        row[cols.customer.name], row[cols.customer.industry], row[cols.customer.city],
+        row[cols.customer.nextAction], row[cols.customer.tags],
+      ].join(' '), terms) * 100
+        + (finiteNumber(row[cols.customer.health], 75) < 65 ? 25 : 0)
+        + (row[cols.customer.nextActionDue] ? 5 : 0),
+      date: new Date(row[cols.customer.nextActionDue] || row[cols.customer.lastInteraction] || row[cols.customer.updatedAt] || 0).getTime(),
+    }))
+    .sort((a, b) => b.score - a.score || a.date - b.date)
+    .map(item => item.row);
+
+  const opportunities = activeOpportunities
+    .map(row => ({
+      row: compactOpportunityForAI(row, snapshot),
+      score: relevanceScore([
+        row[cols.opportunity.title], row[cols.opportunity.risk], row[cols.opportunity.nextAction],
+      ].join(' '), terms) * 100 + finiteNumber(row[cols.opportunity.probability]),
+      value: finiteNumber(row[cols.opportunity.value]),
+    }))
+    .sort((a, b) => b.score - a.score || b.value - a.value)
+    .map(item => item.row);
+
+  const tasks = openTasks
+    .map(row => ({
+      row: compactTaskForAI(row, snapshot),
+      score: relevanceScore(row[cols.task.title], terms) * 100 + (String(row[cols.task.priority]).toLowerCase() === 'high' ? 20 : 0),
+      date: new Date(row[cols.task.dueAt] || '2999-01-01').getTime(),
+    }))
+    .sort((a, b) => b.score - a.score || a.date - b.date)
+    .map(item => item.row);
+
+  const products = snapshot.products
+    .map(row => ({
+      row: compactProductForAI(row, snapshot),
+      score: relevanceScore([row[cols.product.name], row[cols.product.shortName], row[cols.product.category], row[cols.product.code]].join(' '), terms) * 100,
+    }))
+    .sort((a, b) => b.score - a.score || finiteNumber(b.row.openPipeline) - finiteNumber(a.row.openPipeline))
+    .map(item => item.row);
+
+  const conversations = snapshot.conversations
+    .map(row => ({
+      row: compactConversationForAI(row, snapshot),
+      score: relevanceScore([row[cols.conversation.subject], row[cols.conversation.preview], row[cols.conversation.body]].join(' '), terms) * 100,
+      date: new Date(row[cols.conversation.updatedAt] || row[cols.conversation.createdAt] || 0).getTime(),
+    }))
+    .sort((a, b) => b.score - a.score || b.date - a.date)
+    .map(item => item.row);
+
+  const promptLower = prompt.toLowerCase();
+  const order = /مکالم|پیام|ایمیل|تماس/.test(promptLower)
+    ? [['recentConversations', conversations], ['customers', customers], ['tasks', tasks], ['opportunities', opportunities], ['products', products]]
+    : /محصول|سخت.?افزار|نرم.?افزار|خدمت/.test(promptLower)
+      ? [['products', products], ['opportunities', opportunities], ['customers', customers], ['tasks', tasks], ['recentConversations', conversations]]
+      : /فرصت|فروش|سبد|پایپ|ریسک/.test(promptLower)
+        ? [['opportunities', opportunities], ['customers', customers], ['tasks', tasks], ['products', products], ['recentConversations', conversations]]
+        : [['tasks', tasks], ['customers', customers], ['opportunities', opportunities], ['recentConversations', conversations], ['products', products]];
+
+  appendSectionsWithinBudget(
+    context,
+    (order as [string, Row[]][]).map(([key, rows]) => [key, rows.slice(0, 24)]),
+    CRM_ASSISTANT_CONTEXT_CHAR_BUDGET,
+  );
+  return JSON.stringify(context);
+}
+
+function buildCustomerAssistantContext(
+  customerRow: Row,
+  snapshot: Record<string, Row[]>,
+  maxChars = CRM_CUSTOMER_CONTEXT_CHAR_BUDGET,
+): string {
+  const customerID = Number(customerRow[cols.customer.id]);
+  const context: Row = { customer: compactCustomerForAI(customerRow, snapshot) };
+  const contacts = snapshot.contacts
+    .filter(item => Number(item[cols.contact.customerID]) === customerID)
+    .map(item => ({
+      name: item[cols.contact.name], title: item[cols.contact.title] || '',
+      decisionRole: item[cols.contact.decisionRole] || '', isPrimary: Boolean(item[cols.contact.isPrimary]),
+    }));
+  const assets = snapshot.assets
+    .filter(item => Number(item[cols.asset.customerID]) === customerID)
+    .map(item => {
+      const product = snapshot.products.find(productRow => Number(productRow[cols.product.id]) === Number(item[cols.asset.productID]));
+      return {
+        name: item[cols.asset.name] || product?.[cols.product.shortName] || product?.[cols.product.name] || '',
+        quantity: finiteNumber(item[cols.asset.quantity], 1), status: item[cols.asset.status] || '',
+        contract: promptText(item[cols.asset.contract], 180), expiresAt: item[cols.asset.expiresAt],
+      };
+    });
+  const tickets = snapshot.tickets
+    .filter(item => Number(item[cols.ticket.customerID]) === customerID)
+    .sort((a, b) => new Date(b[cols.ticket.updatedAt] || b[cols.ticket.createdAt]).getTime() - new Date(a[cols.ticket.updatedAt] || a[cols.ticket.createdAt]).getTime())
+    .map(item => ({
+      title: promptText(item[cols.ticket.title], 220), status: item[cols.ticket.status], priority: item[cols.ticket.priority],
+      description: promptText(item[cols.ticket.description], 400), updatedAt: item[cols.ticket.updatedAt],
+    }));
+  const opportunities = snapshot.opportunities
+    .filter(item => Number(item[cols.opportunity.customerID]) === customerID)
+    .sort((a, b) => finiteNumber(b[cols.opportunity.value]) - finiteNumber(a[cols.opportunity.value]))
+    .map(item => compactOpportunityForAI(item, snapshot));
+  const conversations = snapshot.conversations
+    .filter(item => Number(item[cols.conversation.customerID]) === customerID)
+    .sort((a, b) => new Date(b[cols.conversation.updatedAt]).getTime() - new Date(a[cols.conversation.updatedAt]).getTime())
+    .map(item => compactConversationForAI(item, snapshot));
+  const activities = snapshot.activities
+    .filter(item => Number(item[cols.activity.customerID]) === customerID)
+    .slice(0, 20)
+    .map(item => ({
+      type: item[cols.activity.type], title: promptText(item[cols.activity.title], 200),
+      detail: promptText(item[cols.activity.detail], 350), createdAt: item[cols.activity.createdAt],
+    }));
+
+  appendSectionsWithinBudget(context, [
+    ['opportunities', opportunities.slice(0, 16)], ['tickets', tickets.slice(0, 16)],
+    ['assets', assets.slice(0, 16)], ['contacts', contacts.slice(0, 12)],
+    ['recentConversations', conversations.slice(0, 12)], ['recentActivities', activities.slice(0, 16)],
+  ], maxChars);
+  return JSON.stringify(context);
+}
+
+function buildConversationAssistantContext(
+  conversationRow: Row,
+  snapshot: Record<string, Row[]>,
+): string {
+  const context: Row = { conversation: compactConversationForAI(conversationRow, snapshot, true) };
+  const customer = snapshot.customers.find(item => Number(item[cols.customer.id]) === Number(conversationRow[cols.conversation.customerID]));
+  if (customer) context.customer = compactCustomerForAI(customer, snapshot);
+  const serialized = JSON.stringify(context);
+  if (serialized.length <= CRM_CUSTOMER_CONTEXT_CHAR_BUDGET) return serialized;
+  if (context.conversation?.messages) context.conversation.messages = context.conversation.messages.slice(-3);
+  context.conversation.preview = promptText(context.conversation.preview, 250);
+  return JSON.stringify(context);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1284,37 +1627,35 @@ function assistantLinks(prompt: string, context: Row): Row[] {
 }
 
 export async function askCRMAssistant(auth: IntfAuth, workspaceKey: string | null, promptInput: unknown, context: Row = {}): Promise<Row> {
-  const access = await getCRMAccess(auth, workspaceKey); const prompt = text(promptInput, 4000); if (!prompt) throw new exHttpInvalidParams('پرسش خالی است');
+  const access = await getCRMAccess(auth, workspaceKey);
+  const prompt = text(promptInput, 1500);
+  if (!prompt) throw new exHttpInvalidParams('پرسش خالی است');
   const snapshot = await loadSnapshot(access, auth.uid);
-  let contextData: Row;
+  let contextJSON: string;
   if (context.customerId) {
     const customer = snapshot.customers.find(item => item[cols.customer.key] === context.customerId);
-    contextData = customer ? customerDTO(customer, snapshot) : {};
+    contextJSON = customer ? buildCustomerAssistantContext(customer, snapshot) : JSON.stringify({});
   } else if (context.conversationId) {
     const conversation = snapshot.conversations.find(item => item[cols.conversation.key] === context.conversationId);
-    contextData = conversation ? conversationDTO(conversation, snapshot, auth.uid) : {};
+    contextJSON = conversation ? buildConversationAssistantContext(conversation, snapshot) : JSON.stringify({});
   } else {
-    const active = snapshot.opportunities.filter(item => ACTIVE_STAGES.includes(item[cols.opportunity.stage])).map(item => opportunityDTO(item, snapshot));
-    contextData = {
-      customers: snapshot.customers.map(item => basicCustomerDTO(item, snapshot)).slice(0, 80),
-      opportunities: active.slice(0, 80),
-      tasks: snapshot.tasks.filter(item => !item[cols.task.doneAt]).slice(0, 80).map(item => taskDTO(item, snapshot)),
-      products: snapshot.products.map(item => productDTO(item, snapshot)),
-      recentConversations: snapshot.conversations.slice().sort((a, b) => new Date(b[cols.conversation.updatedAt]).getTime() - new Date(a[cols.conversation.updatedAt]).getTime()).slice(0, 20).map(item => conversationDTO(item, snapshot, auth.uid)),
-    };
+    contextJSON = buildGlobalAssistantContext(snapshot, prompt);
   }
   const systemPrompt = `شما دستیار تحلیلی CRM شرکت ${access.workspace[cols.workspace.name]} هستید. فقط براساس JSON داده‌شده پاسخ دهید. اگر داده کافی نیست صریح بگویید. پاسخ فارسی، اجرایی، کوتاه و بدون ساختن نام، عدد یا تعهد باشد. اطلاعات تماس را بی‌دلیل بازگو نکنید.`;
-  const userPrompt = `پرسش: ${prompt}\nداده CRM:\n${JSON.stringify(contextData).slice(0, 60000)}`;
-  const answer = await generate('تحلیل CRM', enuLLMServices.Think, systemPrompt, userPrompt, 1500, 0.15);
+  const userPrompt = `پرسش: ${prompt}\nداده CRM:\n${contextJSON}`;
+  const answer = await generate('تحلیل CRM', CRM_LLM_SERVICE, systemPrompt, userPrompt, 1200, 0.15);
   return { text: answer, links: assistantLinks(prompt, context) };
 }
 
 export async function generateCustomerSummary(auth: IntfAuth, workspaceKey: string | null, customerKey: string): Promise<Row> {
   const access = await getCRMAccess(auth, workspaceKey); requireWrite(access);
-  const customer = await getCRMCustomer(auth, access.workspace[cols.workspace.key], customerKey);
+  const snapshot = await loadSnapshot(access, auth.uid);
+  const row = snapshot.customers.find(item => item[cols.customer.key] === customerKey);
+  if (!row) throw new exHttpInvalidParams('مشتری پیدا نشد');
   const systemPrompt = 'یک خلاصه مدیریتی فارسی، حداکثر ۱۴۰ کلمه، فقط بر اساس داده‌های پرونده مشتری بنویس. وضعیت رابطه، فرصت‌ها، ریسک‌ها و اقدام بعدی را روشن کن. اطلاعاتی نساز.';
-  const summary = await generate('خلاصه پرونده مشتری', enuLLMServices.Think, systemPrompt, JSON.stringify(customer).slice(0, 40000), 700, 0.1);
-  const row = await getCustomerRow(access, customerKey); const db = await getDB();
+  const customerContext = buildCustomerAssistantContext(row, snapshot, CRM_CUSTOMER_CONTEXT_CHAR_BUDGET);
+  const summary = await generate('خلاصه پرونده مشتری', CRM_LLM_SERVICE, systemPrompt, customerContext, 700, 0.1);
+  const db = await getDB();
   await db(tables.customers).where(cols.customer.id, row[cols.customer.id]).update({ [cols.customer.aiSummary]: summary, [cols.customer.updatedAt]: db.fn.now() });
   return getCRMCustomer(auth, access.workspace[cols.workspace.key], customerKey);
 }
