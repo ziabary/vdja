@@ -21,7 +21,8 @@
     unknown: { label: "خارج از دانش", icon: "fa-circle-question" },
     other: { label: "سایر", icon: "fa-message" },
     "low-similarity": { label: "تطابق پایین اسناد", icon: "fa-wave-square" },
-    "no-context": { label: "بدون سند مرتبط", icon: "fa-file-circle-question" }
+    "no-context": { label: "بدون سند مرتبط", icon: "fa-file-circle-question" },
+    "human-request": { label: "درخواست گفت‌وگو با انسان", icon: "fa-headset" }
   };
   const STATUS_META = {
     draft: { label: "پیش‌نویس", cls: "draft", icon: "fa-pen" },
@@ -381,7 +382,7 @@
     return sessionKey;
   }
 
-  async function parseChatStream(response) {
+  async function parseChatStream(response, handlers = {}) {
     if (!response?.ok) return responseJSON(response);
     if (!response.body) throw new Error("پاسخ جریانی از سرور دریافت نشد");
     const reader = response.body.getReader();
@@ -390,6 +391,9 @@
     let answer = "";
     let references = [];
     let meta = { mode: "ai" };
+    const notify = (name, ...args) => {
+      try { handlers?.[name]?.(...args); } catch { /* UI callbacks must not interrupt the stream */ }
+    };
 
     const consumeLine = line => {
       if (!line.startsWith("data: ")) return;
@@ -404,16 +408,21 @@
             url: item.url || ""
           }));
         } catch { references = []; }
+        notify("onReferences", references);
         return;
       }
       if (payload.startsWith("[WIDGET]:")) {
         try { meta = { ...meta, ...JSON.parse(payload.slice(9)) }; } catch { /* ignore malformed metadata */ }
+        notify("onMeta", meta);
         return;
       }
       if (payload.startsWith("[DONE:") || payload.startsWith("[CANCELLED:")) return;
       try {
         const chunk = JSON.parse(payload);
-        if (typeof chunk.delta === "string") answer += chunk.delta;
+        if (typeof chunk.delta === "string") {
+          answer += chunk.delta;
+          notify("onDelta", chunk.delta, answer);
+        }
       } catch { /* ignore non-JSON control lines */ }
     };
 
@@ -426,7 +435,9 @@
       if (done) break;
     }
     if (buffer.trim()) consumeLine(buffer.trim());
-    return { answer: answer.trim(), references, ...meta };
+    const result = { answer: answer.trim(), references, ...meta };
+    notify("onDone", result);
+    return result;
   }
 
   function makeWidgetUploadItem(file, tempId, queueIndex, queueTotal) {
@@ -457,9 +468,10 @@
 
       xhr.upload.onprogress = event => {
         if (!event.lengthComputable) return;
-        const progress = Math.min(78, Math.round(event.loaded / event.total * 78));
+        const progress = Math.max(2, Math.min(74, Math.round(event.loaded / event.total * 74)));
         onProgress?.({ ...base, status: "uploading", progress });
       };
+      xhr.upload.onload = () => onProgress?.({ ...base, status: "processing", progress: 76 });
 
       xhr.onreadystatechange = () => {
         if (![3, 4].includes(xhr.readyState) || xhr.responseText.length <= received.length) return;
@@ -471,7 +483,7 @@
           try {
             const report = JSON.parse(line.slice("progress:".length).trim());
             const fraction = report.total ? Number(report.progress || 0) / Number(report.total) : 0;
-            const progress = Math.min(98, 80 + Math.round(fraction * 18));
+            const progress = Math.min(99, 76 + Math.round(fraction * 23));
             onProgress?.({ ...base, status: "processing", progress });
           } catch { /* incomplete streaming progress */ }
           break;
@@ -559,20 +571,20 @@
       return (await apiJSON(`/api/widget/${widgetId}/operators/${encodeURIComponent(username)}`, { method: "PUT", body: JSON.stringify({ active: !operator?.active }) })).operators;
     },
     async removeOperator(widgetId, username) { return apiJSON(`/api/widget/${widgetId}/operators/${encodeURIComponent(username)}`, { method: "DELETE" }); },
-    async testChat(widgetId, clientSessionId, message) {
+    async testChat(widgetId, clientSessionId, message, handlers = {}) {
       const sessionKey = await ensureServerSession(widgetId, clientSessionId, true);
       const currentAuth = await authReady();
       const response = await currentAuth.apiFetch(`/api/widget/${widgetId}/preview/sessions/${sessionKey}/messages`, {
         method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message })
       });
-      return parseChatStream(response);
+      return parseChatStream(response, handlers);
     },
-    async publicChat(widgetId, clientSessionId, message) {
+    async publicChat(widgetId, clientSessionId, message, handlers = {}) {
       const sessionKey = await ensureServerSession(widgetId, clientSessionId, false);
       const response = await fetch(`${publicBase(widgetId)}/api/widget/public/${widgetId}/sessions/${sessionKey}/messages`, {
         method: "POST", mode: "cors", credentials: "omit", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message })
       });
-      return parseChatStream(response);
+      return parseChatStream(response, handlers);
     },
     async updateVisitorInfo(widgetId, conversationId, visitor) {
       const context = sessionContexts.get(conversationId);
@@ -610,6 +622,7 @@
       if (filters.widgetId) params.set("widgetId", filters.widgetId);
       if (filters.status && filters.status !== "all") params.set("status", filters.status);
       if (filters.operator) params.set("operator", filters.operator);
+      if (filters.mode) params.set("mode", filters.mode);
       return (await apiJSON(`/api/widget/conversations?${params}`)).conversations || [];
     },
     async assignConversation(widgetId, conversationId, operatorUsername) {
@@ -673,10 +686,26 @@
       if (["assistant", "operator", "ai"].includes(sender)) content.innerHTML = renderMarkdown(text);
       else content.textContent = String(text || "");
       el.appendChild(content);
-      if (refs?.length) {
-        const r = document.createElement("div"); r.className = "fw-refs"; r.textContent = `منبع: ${refs.map(item => item.name).join("، ")}`; el.appendChild(r);
-      }
-      messages.appendChild(el); messages.scrollTop = messages.scrollHeight;
+      const setReferences = items => {
+        el.querySelector(".fw-refs")?.remove();
+        if (!items?.length) return;
+        const r = document.createElement("div");
+        r.className = "fw-refs";
+        r.textContent = `منبع: ${items.map(item => item.name).join("، ")}`;
+        el.appendChild(r);
+      };
+      setReferences(refs);
+      messages.appendChild(el);
+      messages.scrollTop = messages.scrollHeight;
+      return {
+        element: el,
+        content,
+        setText(value) {
+          content.innerHTML = renderMarkdown(value);
+          messages.scrollTop = messages.scrollHeight;
+        },
+        setReferences
+      };
     };
     append("assistant", ap.welcomeMessage);
     const openPanel = () => { panel.classList.add("open"); launcher.classList.add("hidden"); greeting?.classList.add("hidden"); input.focus(); };
@@ -692,18 +721,28 @@
       input.disabled = true;
       send.disabled = true;
       append("visitor", text);
-      const typing = document.createElement("div");
-      typing.className = "fw-message assistant";
-      typing.innerHTML = '<span class="fw-typing"><i></i><i></i><i></i></span>';
-      messages.appendChild(typing); messages.scrollTop = messages.scrollHeight;
+      const streamMessage = append("assistant", "");
+      streamMessage.content.innerHTML = '<span class="fw-typing"><i></i><i></i><i></i></span>';
+      let receivedText = "";
+      const streamHandlers = {
+        onDelta(_delta, fullText) {
+          receivedText = fullText;
+          streamMessage.setText(fullText);
+        },
+        onReferences(refs) { streamMessage.setReferences(refs); }
+      };      
       try {
-        const result = await (preview ? WidgetAPI.testChat(widgetId, sessionId, text) : WidgetAPI.publicChat(widgetId, sessionId, text));
-        typing.remove();
-        append("assistant", result.answer || "پاسخی دریافت نشد.", result.references);
-        if (result.mode === "handoff" && config.behavior.humanHandoff.collectContact) showRuntimeContact(root, widgetId, result.conversationId);
+        const result = await (preview
+          ? WidgetAPI.testChat(widgetId, sessionId, text, streamHandlers)
+          : WidgetAPI.publicChat(widgetId, sessionId, text, streamHandlers));
+        streamMessage.setText(result.answer || receivedText || "پاسخی دریافت نشد.");
+        streamMessage.setReferences(result.references);
+        if (result.mode === "handoff" && (result.collectContact ?? config.behavior.humanHandoff.collectContact)) {
+          showRuntimeContact(root, widgetId, result.conversationId);
+        }        
       } catch (error) {
         typing.remove();
-        append("assistant", error?.message || "در ارتباط با سامانه خطایی رخ داد. لطفاً دوباره تلاش کنید.");
+        streamMessage.setText(error?.message || "در ارتباط با سامانه خطایی رخ داد. لطفاً دوباره تلاش کنید.");
       } finally {
         input.disabled = false;
         send.disabled = false;
@@ -814,12 +853,15 @@
     selectedConversationId: null,
     inboxStatus: "all",
     inboxWidget: "",
+    inboxMode: "public",
     analyticsWidget: "all",
     testDevice: "desktop",
     testOpen: true,
     testSessionId: `test-${Math.random().toString(36).slice(2, 10)}`,
     testMessages: [],
     testConversationId: null,
+    testPollTimer: null,
+    testSeenMessageIds: new Set(),    
     owner: null,
     saving: false,
     knowledgeUploadRunning: false
@@ -1051,7 +1093,7 @@
 
   function renderKnowledgeTab(widget) {
     return `<div class="ww-stack"><div class="ww-knowledge-owner"><i class="fa-solid fa-database"></i><div>فایل‌های این بخش در فضای اختصاصی کاربر <code>${esc(widget.username)}</code> بارگذاری می‌شوند. بازدیدکنندگان سایت فقط می‌توانند بر مبنای آن‌ها سؤال بپرسند و امکان بارگذاری یا حذف فایل ندارند.</div></div>
-      <section class="ww-card ww-card-flat ww-card-body"><div class="ww-section-head"><div><h3>افزودن منابع دانش</h3><p>فایل‌ها پس از بارگذاری، استخراج متن و ایندکس برای پاسخ‌گویی آماده می‌شوند.</p></div></div><label class="ww-dropzone" id="wwDropzone" for="wwFileInput"><div><i class="fa-solid fa-cloud-arrow-up"></i><h3>فایل‌ها را اینجا رها کنید یا کلیک کنید</h3><p>${supportedKnowledgeFilesText} — امکان انتخاب چند فایل</p><small>برای داده‌های ساخت‌یافته از پسوند <code>.rag.jsonl</code> استفاده کنید. فایل <code>.jsonl</code> عادی باید manifest معتبر داشته باشد.</small><small data-upload-queue-status>فایل‌ها یکی‌یکی و به‌ترتیب انتخاب پردازش می‌شوند.</small></div></label><input id="wwFileInput" class="hidden" type="file" multiple accept=".pdf,.doc,.docx,.odt,.txt,.md,.rag.jsonl,.jsonl,application/json,application/x-ndjson"></section>
+      <section class="ww-card ww-card-flat ww-card-body"><div class="ww-section-head"><div><h3>افزودن منابع دانش</h3><p>فایل‌ها پس از بارگذاری، استخراج متن و ایندکس برای پاسخ‌گویی آماده می‌شوند.</p></div></div><label class="ww-dropzone" id="wwDropzone" for="wwFileInput"><div><i class="fa-solid fa-cloud-arrow-up"></i><h3>فایل‌ها را اینجا رها کنید یا کلیک کنید</h3><p>${supportedKnowledgeFilesText} — امکان انتخاب چند فایل</p><small>برای داده‌های ساخت‌یافته از پسوند <code>.rag.jsonl</code> استفاده کنید. فایل <code>.jsonl</code> عادی باید manifest معتبر داشته باشد.</small></div></label><input id="wwFileInput" class="hidden" type="file" multiple accept=".pdf,.doc,.docx,.odt,.txt,.md,.rag.jsonl,.jsonl,application/json,application/x-ndjson"></section>
       <section class="ww-card ww-card-flat ww-card-body"><div class="ww-section-head"><div><h3>فایل‌های ویجت</h3><p>${fa(widget.files.length)} فایل ثبت شده؛ ${fa(widget.files.filter(file => file.status === "ready").length)} فایل آماده است.</p></div></div><div class="ww-file-list" id="wwFileList">${renderFiles(widget.files)}</div></section></div>`;
   }
 
@@ -1072,7 +1114,11 @@
       const actions = transient
         ? ""
         : `${file.status === "failed" ? `<button class="btn btn-sm btn-outline-warning" data-action="retry-file" data-id="${file.id}"><i class="fa-solid fa-rotate"></i></button>` : ""}<button class="btn btn-sm btn-outline-danger" data-action="delete-file" data-id="${file.id}"><i class="fa-solid fa-trash-can"></i></button>`;
-      return `<div class="ww-file-item" data-file-id="${file.id}"><div class="ww-file-icon"><i class="fa-solid fa-file-${icon}"></i></div><div class="ww-file-main"><strong>${esc(file.name)}</strong><small>${bytesHuman(file.size)} · ${file.status === "ready" ? `${fa(file.chunks)} بخش دانشی · ${formatDate(file.uploadedAt)}` : meta[0]}</small>${file.status !== "ready" ? `<div class="ww-progress"><span style="width:${Number(file.progress || 0)}%"></span></div>` : ""}</div><div class="ww-file-actions"><span class="ww-file-status ${meta[1]}"><i class="fa-solid ${meta[2]}"></i> ${meta[0]}</span>${actions}</div></div>`;
+      const progress = Math.max(0, Math.min(100, Number(file.progress || 0)));
+      const progressBar = active
+        ? `<div class="ww-progress ${file.status}" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${progress}"><span style="width:${progress}%"></span></div>`
+        : "";
+      return `<div class="ww-file-item ${active ? "is-active" : ""}" data-file-id="${file.id}"><div class="ww-file-icon"><i class="fa-solid fa-file-${icon}"></i></div><div class="ww-file-main"><strong>${esc(file.name)}</strong><small>${bytesHuman(file.size)} · ${file.status === "ready" ? `${fa(file.chunks)} بخش دانشی · ${formatDate(file.uploadedAt)}` : meta[0]}</small>${progressBar}</div><div class="ww-file-actions"><span class="ww-file-status ${meta[1]}"><i class="fa-solid ${meta[2]}"></i> ${meta[0]}</span>${actions}</div></div>`;
     }).join("");
   }
 
@@ -1216,7 +1262,6 @@
     const list = document.getElementById("wwFileList");
     const input = document.getElementById("wwFileInput");
     const zone = document.getElementById("wwDropzone");
-    const queueStatus = zone?.querySelector("[data-upload-queue-status]");
     app.knowledgeUploadRunning = true;
     if (input) input.disabled = true;
     zone?.classList.add("uploading");
@@ -1230,10 +1275,6 @@
         const html = renderFiles([file]);
         if (current) current.outerHTML = html;
         else list.insertAdjacentHTML("beforeend", html);
-
-        if (queueStatus && file.status !== "queued") {
-          queueStatus.textContent = `در حال پردازش فایل ${fa(file.queueIndex)} از ${fa(file.queueTotal)}: ${file.name}`;
-        }
       });
       app.widget = await WidgetAPI.getWidget(widgetId);
       list.innerHTML = renderFiles(app.widget.files);
@@ -1254,7 +1295,6 @@
       if (input) input.disabled = false;
       zone?.classList.remove("uploading");
       zone?.removeAttribute("aria-busy");
-      if (queueStatus) queueStatus.textContent = "فایل‌ها یکی‌یکی و به‌ترتیب انتخاب پردازش می‌شوند.";
     }
   }
 
@@ -1293,6 +1333,36 @@
     };
   }
 
+  function stopTestOperatorPolling() {
+    if (app.testPollTimer) window.clearInterval(app.testPollTimer);
+    app.testPollTimer = null;
+  }
+
+  function startTestOperatorPolling(widget) {
+    stopTestOperatorPolling();
+    if (!app.testConversationId) return;
+    app.testPollTimer = window.setInterval(async () => {
+      if (app.route !== "editor" || app.editorTab !== "test" || !app.testConversationId) {
+        stopTestOperatorPolling();
+        return;
+      }
+      try {
+        const data = await WidgetAPI.getTestSession(widget.id, app.testSessionId);
+        const box = document.getElementById("wwTestMessages");
+        if (!box) return;
+        for (const message of data.conversation?.messages || []) {
+          const id = Number(message.id || 0);
+          if (message.sender !== "operator" || (id && app.testSeenMessageIds.has(id))) continue;
+          app.testMessages.push({ sender: "operator", text: message.text, references: [] });
+          box.insertAdjacentHTML("beforeend", renderTestMessage({ sender: "operator", text: message.text }));
+          if (id) app.testSeenMessageIds.add(id);
+        }
+        box.scrollTop = box.scrollHeight;
+      } catch { /* preview polling is best-effort */ }
+    }, 2500);
+  }
+
+
   function bindTestContact(widget) {
     const button = document.getElementById("btnSaveTestContact");
     if (!button) return;
@@ -1315,12 +1385,21 @@
 
   function bindTest(widget) {
     document.querySelectorAll("[data-device]").forEach(button => button.onclick = () => { app.testDevice = button.dataset.device; renderEditor(); });
-    document.getElementById("btnResetTest").onclick = async () => { await WidgetAPI.resetTestSession(widget.id, app.testSessionId); app.testSessionId = `test-${Math.random().toString(36).slice(2, 10)}`; app.testMessages = [{ sender: "assistant", text: effectiveAppearance(widget.appearance).welcomeMessage }]; app.testConversationId = null; renderEditor(); };
+    document.getElementById("btnResetTest").onclick = async () => {
+      stopTestOperatorPolling();
+      await WidgetAPI.resetTestSession(widget.id, app.testSessionId);
+      app.testSessionId = `test-${Math.random().toString(36).slice(2, 10)}`;
+      app.testMessages = [{ sender: "assistant", text: effectiveAppearance(widget.appearance).welcomeMessage }];
+      app.testConversationId = null;
+      app.testSeenMessageIds.clear();
+      renderEditor();
+    };
     document.getElementById("wwTestLauncher")?.addEventListener("click", () => { app.testOpen = true; document.getElementById("wwTestChat").classList.remove("hidden"); document.getElementById("wwTestLauncher").classList.add("hidden"); document.getElementById("wwTestGreeting")?.classList.add("hidden"); });
     document.getElementById("wwTestClose")?.addEventListener("click", () => { app.testOpen = false; document.getElementById("wwTestChat").classList.add("hidden"); document.getElementById("wwTestLauncher").classList.remove("hidden"); document.getElementById("wwTestGreeting")?.classList.remove("hidden"); });
     document.querySelectorAll("[data-test-question]").forEach(button => button.onclick = () => { document.getElementById("wwTestInput").value = button.dataset.testQuestion; document.getElementById("wwTestForm").requestSubmit(); });
     document.getElementById("wwTestForm")?.addEventListener("submit", event => sendTestMessage(event, widget));
     bindTestContact(widget);
+    startTestOperatorPolling(widget);
   }
 
   async function sendTestMessage(event, widget) {
@@ -1334,26 +1413,50 @@
     send.disabled = true;
     app.testMessages.push({ sender: "visitor", text });
     const box = document.getElementById("wwTestMessages");
-    box.insertAdjacentHTML("beforeend", renderTestMessage({ sender: "visitor", text }) + '<div class="ww-test-message assistant" id="wwTestTyping"><span class="ww-typing"><i></i><i></i><i></i></span></div>');
+    const streamId = `wwTestStream-${Math.random().toString(36).slice(2, 10)}`;
+    box.insertAdjacentHTML("beforeend", renderTestMessage({ sender: "visitor", text }) + `<div class="ww-test-message assistant" id="${streamId}"><div class="ww-test-message-content"><span class="ww-typing"><i></i><i></i><i></i></span></div></div>`);
+    const streamElement = document.getElementById(streamId);
+    const streamContent = streamElement.querySelector(".ww-test-message-content");
+    const setStreamText = value => {
+      streamContent.innerHTML = messageContentHTML("assistant", value);
+      box.scrollTop = box.scrollHeight;
+    };
+    const setStreamReferences = references => {
+      streamElement.querySelector(".ww-refs")?.remove();
+      if (!references?.length) return;
+      streamElement.insertAdjacentHTML("beforeend", `<div class="ww-refs">منبع: ${references.map(ref => esc(ref.name)).join("، ")}</div>`);
+    };
     box.scrollTop = box.scrollHeight;
+    let receivedText = "";
+
     try {
-      const result = await WidgetAPI.testChat(widget.id, app.testSessionId, text);
-      document.getElementById("wwTestTyping")?.remove();
-      const answer = result.answer || "پاسخی دریافت نشد.";
+      const result = await WidgetAPI.testChat(widget.id, app.testSessionId, text, {
+        onDelta(_delta, fullText) {
+          receivedText = fullText;
+          setStreamText(fullText);
+        },
+        onReferences: setStreamReferences
+      });
+      const answer = result.answer || receivedText || "پاسخی دریافت نشد.";
+      setStreamText(answer);
+      setStreamReferences(result.references);
       app.testMessages.push({ sender: "assistant", text: answer, references: result.references });
-      box.insertAdjacentHTML("beforeend", renderTestMessage({ sender: "assistant", text: answer, references: result.references }));
+      
       if (result.mode === "handoff") {
         app.testConversationId = result.conversationId;
-        document.getElementById("wwTestContactSlot").innerHTML = widget.behavior.humanHandoff.collectContact ? renderTestContact() : "";
+        const collectContact = result.collectContact ?? widget.behavior.humanHandoff.collectContact;
+        document.getElementById("wwTestContactSlot").innerHTML = collectContact ? renderTestContact() : "";
         bindTestContact(widget);
-        toastSafe("شرایط ارجاع انسانی در حالت آزمایش فعال شد؛ نشست آزمایشی وارد صندوق واقعی اپراتورها نمی‌شود.", "info");
+        app.inboxMode = "preview";
+        startTestOperatorPolling(widget);
+        toastSafe("ارجاع آزمایشی ثبت شد؛ در صندوق پاسخ‌گویی، فیلتر «گفتگوهای آزمایشی» را انتخاب کنید.", "info");
       }
       box.scrollTop = box.scrollHeight;
     } catch (error) {
-      document.getElementById("wwTestTyping")?.remove();
       const message = error?.message || "خطا در ارتباط با سامانه";
+      setStreamText(message);
+
       app.testMessages.push({ sender: "assistant", text: message });
-      box.insertAdjacentHTML("beforeend", renderTestMessage({ sender: "assistant", text: message }));
       toastSafe(message, "danger");
     } finally {
       input.disabled = false;
@@ -1448,11 +1551,12 @@
     setLoading(true);
     app.owner = app.owner || await WidgetAPI.getOwner();
     app.widgets = await WidgetAPI.listWidgets();
-    app.conversations = await WidgetAPI.listConversations({ widgetId: app.inboxWidget, status: app.inboxStatus });
+    app.conversations = await WidgetAPI.listConversations({ widgetId: app.inboxWidget, status: app.inboxStatus, mode: app.inboxMode });
     if (!app.selectedConversationId || !app.conversations.some(item => item.id === app.selectedConversationId)) app.selectedConversationId = app.conversations[0]?.id || null;
     const selected = app.conversations.find(item => item.id === app.selectedConversationId);
-    view.innerHTML = `<div class="ww-page-header"><div><h1>پاسخ‌گویی انسانی</h1><p>سؤال‌هایی که ویجت پاسخ مطمئن نداده یا طبق قواعد نیازمند انسان بوده‌اند در این بخش قرار می‌گیرند.</p></div></div><div class="ww-card ww-inbox-layout ${selected ? "thread-open" : ""}" id="wwInboxLayout"><aside class="ww-inbox-list"><div class="ww-inbox-list-head"><div class="d-grid gap-2"><select class="form-select form-select-sm" id="wwInboxWidget"><option value="">همه ویجت‌ها</option>${app.widgets.map(widget => `<option value="${widget.id}" ${app.inboxWidget === widget.id ? "selected" : ""}>${esc(widget.internalName || "ویجت بدون نام")}</option>`).join("")}</select><select class="form-select form-select-sm" id="wwInboxStatus"><option value="all" ${app.inboxStatus === "all" ? "selected" : ""}>همه وضعیت‌ها</option><option value="queued" ${app.inboxStatus === "queued" ? "selected" : ""}>ذخیره‌شده خارج ساعت</option><option value="pending" ${app.inboxStatus === "pending" ? "selected" : ""}>در انتظار واگذاری</option><option value="assigned" ${app.inboxStatus === "assigned" ? "selected" : ""}>در حال پاسخ‌گویی</option><option value="resolved" ${app.inboxStatus === "resolved" ? "selected" : ""}>بسته‌شده</option></select></div></div><div class="ww-inbox-items">${renderConversationList(app.conversations, app.selectedConversationId)}</div></aside><section class="ww-inbox-thread">${selected ? renderThread(selected) : '<div class="ww-inbox-empty"><div><i class="fa-solid fa-comments" style="font-size:2.5rem"></i><p class="mt-3">گفتگویی برای نمایش انتخاب نشده است.</p></div></div>'}</section><aside class="ww-inbox-details">${selected ? renderConversationDetails(selected) : ""}</aside></div>`;
+    view.innerHTML = `<div class="ww-page-header"><div><h1>پاسخ‌گویی انسانی</h1><p>سؤال‌هایی که ویجت پاسخ مطمئن نداده یا طبق قواعد نیازمند انسان بوده‌اند در این بخش قرار می‌گیرند.</p></div></div><div class="ww-card ww-inbox-layout ${selected ? "thread-open" : ""}" id="wwInboxLayout"><aside class="ww-inbox-list"><div class="ww-inbox-list-head"><div class="d-grid gap-2"><select class="form-select form-select-sm" id="wwInboxWidget"><option value="">همه ویجت‌ها</option>${app.widgets.map(widget => `<option value="${widget.id}" ${app.inboxWidget === widget.id ? "selected" : ""}>${esc(widget.internalName || "ویجت بدون نام")}</option>`).join("")}</select><select class="form-select form-select-sm" id="wwInboxMode"><option value="public" ${app.inboxMode === "public" ? "selected" : ""}>گفتگوهای واقعی</option><option value="preview" ${app.inboxMode === "preview" ? "selected" : ""}>گفتگوهای آزمایشی</option><option value="all" ${app.inboxMode === "all" ? "selected" : ""}>واقعی و آزمایشی</option></select><select class="form-select form-select-sm" id="wwInboxStatus"><option value="all" ${app.inboxStatus === "all" ? "selected" : ""}>همه وضعیت‌ها</option><option value="queued" ${app.inboxStatus === "queued" ? "selected" : ""}>ذخیره‌شده خارج ساعت</option><option value="pending" ${app.inboxStatus === "pending" ? "selected" : ""}>در انتظار واگذاری</option><option value="assigned" ${app.inboxStatus === "assigned" ? "selected" : ""}>در حال پاسخ‌گویی</option><option value="resolved" ${app.inboxStatus === "resolved" ? "selected" : ""}>بسته‌شده</option></select></div></div><div class="ww-inbox-items">${renderConversationList(app.conversations, app.selectedConversationId)}</div></aside><section class="ww-inbox-thread">${selected ? renderThread(selected) : '<div class="ww-inbox-empty"><div><i class="fa-solid fa-comments" style="font-size:2.5rem"></i><p class="mt-3">گفتگویی برای نمایش انتخاب نشده است.</p></div></div>'}</section><aside class="ww-inbox-details">${selected ? renderConversationDetails(selected) : ""}</aside></div>`;
     document.getElementById("wwInboxWidget").onchange = event => { app.inboxWidget = event.target.value; renderInbox(); };
+    document.getElementById("wwInboxMode").onchange = event => { app.inboxMode = event.target.value; app.selectedConversationId = null; renderInbox(); };
     document.getElementById("wwInboxStatus").onchange = event => { app.inboxStatus = event.target.value; renderInbox(); };
     document.querySelector(".ww-inbox-items").onclick = event => { const button = event.target.closest("[data-conversation]"); if (!button) return; app.selectedConversationId = button.dataset.conversation; renderInbox(); };
     if (selected) bindThread(selected);
@@ -1461,7 +1565,7 @@
 
   function renderConversationList(rows, selectedId) {
     if (!rows.length) return `<div class="ww-empty-state" style="min-height:280px"><div><i class="fa-solid fa-inbox"></i><h3>صندوق خالی است</h3><p>در این فیلتر گفتگویی وجود ندارد.</p></div></div>`;
-    return rows.map(item => { const last = item.messages.at(-1); const status = item.status === "pending" ? "text-bg-danger" : item.status === "queued" ? "text-bg-warning" : item.status === "assigned" ? "text-bg-primary" : "text-bg-success"; return `<button class="ww-conversation-item ${selectedId === item.id ? "active" : ""}" data-conversation="${item.id}"><div class="ww-conv-icon"><i class="fa-solid ${topicIcon(item.category)}"></i></div><div class="min-width-0"><strong>${esc(item.visitorName || "بازدیدکننده ناشناس")}</strong><span>${esc(last?.text || "")}</span><span>${esc(item.widgetName)}</span></div><div><time>${formatDateTime(item.updatedAt)}</time><span class="badge ${status} mt-1">${conversationStatus(item.status)}</span></div></button>`; }).join("");
+    return rows.map(item => { const last = item.messages.at(-1); const status = item.status === "pending" ? "text-bg-danger" : item.status === "queued" ? "text-bg-warning" : item.status === "assigned" ? "text-bg-primary" : "text-bg-success"; return `<button class="ww-conversation-item ${selectedId === item.id ? "active" : ""}" data-conversation="${item.id}"><div class="ww-conv-icon"><i class="fa-solid ${topicIcon(item.category)}"></i></div><div class="min-width-0"><strong>${esc(item.visitorName || "بازدیدکننده ناشناس")}</strong><span>${esc(last?.text || "")}</span><span>${esc(item.widgetName)}${item.mode === "preview" ? ' · <strong class="text-warning">آزمایشی</strong>' : ""}</span></div><div><time>${formatDateTime(item.updatedAt)}</time><span class="badge ${status} mt-1">${conversationStatus(item.status)}</span></div></button>`; }).join("");
   }
 
   function conversationStatus(status) { return ({ queued: "ذخیره‌شده", pending: "در انتظار", assigned: "واگذارشده", resolved: "بسته‌شده" })[status] || status; }
@@ -1473,7 +1577,7 @@
     const compose = item.status === "resolved"
       ? `<div class="ww-thread-compose"><div class="alert alert-success border mb-0"><i class="fa-solid fa-circle-check ms-1"></i> این گفتگو بسته شده است. با دریافت پیام جدید از بازدیدکننده، نشست دوباره وارد چرخه پاسخ‌گویی می‌شود.</div></div>`
       : `<div class="ww-thread-compose"><div class="alert alert-light border py-2 px-3 small mb-0"><i class="fa-solid fa-circle-user ms-1"></i> پاسخ با حساب جاری <strong>${esc(app.owner?.displayName || app.owner?.username || "کاربر سامانه")}</strong> ثبت می‌شود.</div><textarea class="form-control" id="wwReplyText" placeholder="پاسخ پشتیبان انسانی..."></textarea><div class="d-grid gap-2"><button class="btn btn-primary" id="btnSendReply"><i class="fa-solid fa-paper-plane"></i> ارسال پاسخ</button><button class="btn btn-outline-success" id="btnResolveConversation"><i class="fa-solid fa-check"></i> بستن گفتگو</button></div></div>`;
-    return `<header class="ww-thread-head"><div><button class="btn btn-sm btn-outline-secondary on-mobile" id="btnBackInbox"><i class="fa-solid fa-arrow-right"></i></button><h3 class="d-inline-block me-2">${esc(item.visitorName || "بازدیدکننده ناشناس")}</h3><small>${esc(item.widgetName)}</small></div><span class="badge ${item.status === "resolved" ? "text-bg-success" : "text-bg-primary"}">${conversationStatus(item.status)}</span></header>${assignment}<div class="ww-thread-messages" id="wwThreadMessages">${item.messages.map(message => `<div class="ww-thread-message ${message.sender}">${esc(message.text)}<small>${message.sender === "operator" ? esc(message.operatorName || message.operatorUsername || "اپراتور") + " · " : ""}${formatDateTime(message.createdAt)}</small></div>`).join("")}</div>${compose}`;
+    return `<header class="ww-thread-head"><div><button class="btn btn-sm btn-outline-secondary on-mobile" id="btnBackInbox"><i class="fa-solid fa-arrow-right"></i></button><h3 class="d-inline-block me-2">${esc(item.visitorName || "بازدیدکننده ناشناس")}</h3><small>${esc(item.widgetName)}</small>${item.mode === "preview" ? '<span class="badge text-bg-warning me-2">آزمایشی</span>' : ""}</div><span class="badge ${item.status === "resolved" ? "text-bg-success" : "text-bg-primary"}">${conversationStatus(item.status)}</span></header>${assignment}<div class="ww-thread-messages" id="wwThreadMessages">${item.messages.map(message => `<div class="ww-thread-message ${message.sender}">${esc(message.text)}<small>${message.sender === "operator" ? esc(message.operatorName || message.operatorUsername || "اپراتور") + " · " : ""}${formatDateTime(message.createdAt)}</small></div>`).join("")}</div>${compose}`;
   }
 
   function renderConversationDetails(item) {

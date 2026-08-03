@@ -68,6 +68,7 @@ router.get('/widget/conversations', async (req: Request, res: Response) => {
     widgetId: parseQueryToString(req.query.widgetId),
     status: parseQueryToString(req.query.status),
     operator: parseQueryToString(req.query.operator),
+    mode: parseQueryToString(req.query.mode),
   }) });
 });
 

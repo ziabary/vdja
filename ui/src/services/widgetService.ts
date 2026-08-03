@@ -147,7 +147,7 @@ export function defaultWidgetConfig(): WidgetConfig {
       humanHandoff: {
         enabled: true,
         saveUnanswered: true,
-        collectContact: false,
+        collectContact: true,
         similarityEnabled: false,
         similarityThreshold: 35,
         topics: [],
@@ -773,20 +773,40 @@ function humanAvailable(config: WidgetConfig, at = new Date()): boolean {
   return current >= row.start || current <= row.end;
 }
 
-type HandoffTrigger = { handoff: boolean; reason: string; topic: string };
+function explicitHumanRequest(question: string): boolean {
+  const normalized = normalizeMatchText(question);
+  if (!normalized) return false;
+
+  const directPhrases = [
+    'وصل کن به اپراتور', 'به اپراتور وصل', 'صحبت با اپراتور', 'حرف با اپراتور',
+    'وصل کن به پشتیبان', 'به پشتیبان وصل', 'صحبت با پشتیبان', 'حرف با پشتیبان',
+    'پشتیبان انسانی', 'اپراتور انسانی', 'کارشناس انسانی', 'آدم واقعی', 'انسان واقعی',
+    'یک نفر واقعی', 'با یک نفر صحبت', 'با یک نفر حرف', 'آدمیزاد',
+    'ربات نمی خوام', 'ربات نمیخوام', 'هوش مصنوعی نمی خوام', 'هوش مصنوعی نمیخوام',
+  ];
+  if (directPhrases.some(phrase => normalized.includes(normalizeMatchText(phrase)))) return true;
+
+  const humanTerms = ['اپراتور', 'پشتیبان', 'کارشناس', 'مسئول', 'انسان', 'آدم', 'آدمیزاد', 'یک نفر'];
+  const requestTerms = ['وصل', 'متصل', 'صحبت', 'حرف', 'گفتگو', 'گفت و گو', 'چت', 'ارتباط', 'تماس'];
+  return humanTerms.some(term => normalized.includes(term))
+    && requestTerms.some(term => normalized.includes(term));
+}
+
+type HandoffTrigger = { handoff: boolean; reason: string; topic: string; forced: boolean };
 
 function handoffTrigger(config: WidgetConfig, question: string, similarity: number, hasContext: boolean): HandoffTrigger {
   const handoff = config.behavior.humanHandoff;
-  if (!handoff.enabled) return { handoff: false, reason: '', topic: 'other' };
+  if (!handoff.enabled) return { handoff: false, reason: '', topic: 'other', forced: false };
+  if (explicitHumanRequest(question)) return { handoff: true, reason: 'درخواست صریح بازدیدکننده برای گفتگو با انسان', topic: 'human-request', forced: true };
   const keyword = findConfiguredPhrase(question, handoff.keywords);
-  if (keyword) return { handoff: true, reason: `عبارت ارجاع اجباری: ${keyword}`, topic: keyword.slice(0, 32) };
+  if (keyword) return { handoff: true, reason: `عبارت ارجاع اجباری: ${keyword}`, topic: keyword.slice(0, 32), forced: true };
   const topic = findConfiguredPhrase(question, handoff.topics);
-  if (topic) return { handoff: true, reason: `موضوع ارجاع انسانی: ${topic}`, topic: topic.slice(0, 32) };
+  if (topic) return { handoff: true, reason: `موضوع ارجاع انسانی: ${topic}`, topic: topic.slice(0, 32), forced: true };
   if (handoff.similarityEnabled && similarity < handoff.similarityThreshold)
-    return { handoff: true, reason: 'امتیاز تطابق اسناد پایین‌تر از آستانه تنظیم‌شده است', topic: 'low-similarity' };
+    return { handoff: true, reason: 'امتیاز تطابق اسناد پایین‌تر از آستانه تنظیم‌شده است', topic: 'low-similarity', forced: false };
   if (!hasContext && config.behavior.answerMode === 'files-only')
-    return { handoff: true, reason: 'پاسخ در اسناد اختصاصی پیدا نشد', topic: 'no-context' };
-  return { handoff: false, reason: '', topic: 'other' };
+    return { handoff: true, reason: 'پاسخ در اسناد اختصاصی پیدا نشد', topic: 'no-context', forced: false };
+  return { handoff: false, reason: '', topic: 'other', forced: false };
 }
 
 function widgetSystemPrompt(config: WidgetConfig): string {
@@ -861,7 +881,7 @@ export async function sendWidgetMessage(
     streamImmediate(response, requestID, answer, {
       mode: 'handoff', conversationId: session.wssKey, category: session.wssCategory || 'unknown',
       similarityScore: Number(session.wssConfidence || 0), confidence: Number(session.wssConfidence || 0), reason: session.wssHandoffReason || '',
-      available: session.wssStatus !== 'Queued',
+      available: session.wssStatus !== 'Queued', collectContact: config.behavior.humanHandoff.collectContact,
     });
     return;
   }
@@ -898,17 +918,17 @@ export async function sendWidgetMessage(
       }
 
       const available = humanAvailable(config);
-      if (!available && config.behavior.humanHandoff.outsideHoursBehavior === 'bot-only' && hasContext) {
+      if (!trigger.forced && !available && config.behavior.humanHandoff.outsideHoursBehavior === 'bot-only' && hasContext) {
         await atDB.widgetSessions.updateAnalysis(session.wssID, topic, similarityScore, 'Bot');
         return false;
       }
 
       const fallback = config.behavior.fallbackMessage || DEFAULT_WIDGET_FALLBACK;
-      if (!config.behavior.humanHandoff.saveUnanswered) {
+      if (!trigger.forced && !config.behavior.humanHandoff.saveUnanswered) {
         await saveImmediateDialogue(row, session, requestID, question, fallback);
         streamImmediate(response, requestID, fallback, {
           mode: 'fallback', topic, category: topic, similarityScore, confidence: similarityScore,
-          reason: trigger.reason, available: false,
+          reason: trigger.reason, available: false, collectContact: config.behavior.humanHandoff.collectContact,
         });
         return true;
       }
@@ -921,7 +941,7 @@ export async function sendWidgetMessage(
       await saveImmediateDialogue(row, session, requestID, question, answer);
       streamImmediate(response, requestID, answer, {
         mode: 'handoff', conversationId: session.wssKey, topic, category: topic,
-        similarityScore, confidence: similarityScore, reason: trigger.reason, available,
+        similarityScore, confidence: similarityScore, reason: trigger.reason, available, collectContact: config.behavior.humanHandoff.collectContact,
       });
       return true;
     },
@@ -991,13 +1011,15 @@ async function assignedIdentity(userID: number | null) {
   return userIdentity(userID);
 }
 
-export async function listConversations(auth: IntfAuth, filters: { widgetId?: string; status?: string; operator?: string } = {}) {
+export async function listConversations(auth: IntfAuth, filters: { widgetId?: string; status?: string; operator?: string; mode?: string } = {}) {
   const accessible = await atDB.widgets.listAccessible(auth.uid);
   const rows = filters.widgetId ? accessible.filter(row => row.wgtKey === filters.widgetId) : accessible;
   if (filters.widgetId && !rows.length) throw new exHttpAccessDenied('به ویجت انتخاب‌شده دسترسی ندارید');
+  const requestedMode = String(filters.mode || 'public').toLowerCase();
+  const sessionMode = requestedMode === 'preview' ? 'Preview' : requestedMode === 'all' ? undefined : 'Public';
   const sessions = (await atDB.widgetSessions.list(rows.map(row => row.wgtID), {
     status: filters.status && filters.status !== 'all' ? statusToDB(filters.status) : undefined,
-    mode: 'Public',
+    mode: sessionMode,
     limit: 500,
   })).filter(session => session.wssStatus !== 'Bot' && Boolean(session.wssHandoffAt));
   const rowByID = new Map(rows.map(row => [row.wgtID, row]));
@@ -1019,6 +1041,7 @@ export async function listConversations(auth: IntfAuth, filters: { widgetId?: st
       visitorName: session.wssVisitorName || '',
       visitorContact: session.wssVisitorContact || '',
       status: session.wssStatus.toLowerCase(),
+      mode: session.wssMode.toLowerCase(),
       category: session.wssCategory || 'unknown',
       assignedTo: assigned.username || (assigned.id ? `user-${assigned.id}` : ''),
       assignedToDisplay: assigned.displayName,
