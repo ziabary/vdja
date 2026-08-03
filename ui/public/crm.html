@@ -45,18 +45,13 @@
       </div>
 
       <div class="crm-topbar-actions">
-        <select id="crmRoleSelector" class="form-select form-select-sm" title="نقش نمایشی">
-          <option value="sales">کارشناس فروش</option>
-          <option value="manager">مدیر فروش</option>
-          <option value="support">کارشناس خدمات مشتریان</option>
-        </select>
         <button class="btn btn-sm btn-primary" id="btnOpenAssistant" type="button" title="دستیار هوشمند CRM">
           <i class="fa-solid fa-wand-magic-sparkles"></i>
           <span class="on-desktop">دستیار هوشمند</span>
         </button>
         <i class="btn btn-sm fa-solid fa-moon fa-lg" id="btnToggleDarkMode" title="تغییر حالت نمایش"></i>
         <span data-app-services></span>
-        <span data-app-account data-service="crm" data-login-back="crm"></span>
+        <span data-app-account data-service="rag" data-login-back="crm"></span>
       </div>
     </div>
   </nav>
@@ -65,34 +60,37 @@
 
   <aside class="crm-sidebar" id="crmSidebar">
     <div class="crm-sidebar-profile">
-      <div class="crm-avatar">س‌م</div>
+      <div class="crm-avatar"><i class="fa-solid fa-user"></i></div>
       <div class="min-width-0">
-        <strong id="crmCurrentUser">سارا محمدی</strong>
-        <small id="crmCurrentRole">کارشناس فروش سازمانی</small>
+        <strong id="crmCurrentUser">کاربر سامانه</strong>
+        <small id="crmCurrentRole">در حال دریافت دسترسی...</small>
       </div>
     </div>
 
     <nav class="crm-nav" aria-label="منوی CRM">
       <a href="#dashboard" data-route="dashboard" class="crm-nav-item active">
         <i class="fa-solid fa-house"></i><span>امروز</span>
-        <span class="badge text-bg-danger" id="navTaskBadge">۵</span>
+        <span class="badge text-bg-danger hidden" id="navTaskBadge">۰</span>
       </a>
       <a href="#customers" data-route="customers" class="crm-nav-item">
         <i class="fa-solid fa-building"></i><span>مشتریان</span>
       </a>
       <a href="#opportunities" data-route="opportunities" class="crm-nav-item">
         <i class="fa-solid fa-handshake"></i><span>فرصت‌های فروش</span>
-        <span class="badge text-bg-primary" id="navOpportunityBadge">۶</span>
+        <span class="badge text-bg-primary hidden" id="navOpportunityBadge">۰</span>
       </a>
       <a href="#conversations" data-route="conversations" class="crm-nav-item">
         <i class="fa-solid fa-inbox"></i><span>مکالمات</span>
-        <span class="badge text-bg-warning" id="navConversationBadge">۳</span>
+        <span class="badge text-bg-warning hidden" id="navConversationBadge">۰</span>
       </a>
       <a href="#products" data-route="products" class="crm-nav-item">
         <i class="fa-solid fa-box-open"></i><span>محصولات و راهکارها</span>
       </a>
       <a href="#reports" data-route="reports" class="crm-nav-item">
         <i class="fa-solid fa-chart-line"></i><span>گزارش مدیریتی</span>
+      </a>
+      <a href="#team" data-route="team" class="crm-nav-item" id="crmTeamNav">
+        <i class="fa-solid fa-users-gear"></i><span>تیم و تنظیمات</span>
       </a>
     </nav>
 
@@ -108,10 +106,7 @@
     </button>
 
     <div class="crm-sidebar-footer">
-      <button class="btn btn-sm btn-outline-secondary w-100" id="btnResetDemo" type="button">
-        <i class="fa-solid fa-rotate-left"></i> بازنشانی داده‌های دمو
-      </button>
-      <small>نسخه نمایشی؛ داده‌ها واقعی نیستند.</small>
+      <small id="crmWorkspaceName">فضای عملیاتی CRM</small>
     </div>
   </aside>
 
@@ -131,7 +126,7 @@
           <span class="crm-ai-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
           <strong>دستیار هوشمند CRM</strong>
         </div>
-        <small>پاسخ‌ها بر اساس داده‌های همین نسخه دمو تولید می‌شوند.</small>
+        <small>پاسخ‌ها فقط بر اساس داده‌های ثبت‌شده در همین CRM تولید می‌شوند.</small>
       </div>
       <button class="btn btn-sm btn-outline-secondary" id="btnCloseAssistant" type="button" aria-label="بستن">
         <i class="fa-solid fa-xmark"></i>
@@ -172,14 +167,14 @@
   </div>
 
   <script>
-    var page = { serviceName: "crm" };
+    var page = { serviceName: "rag" };
     var auth;
   </script>
   <script src="js/vendors/bootstrap.bundle.min.js"></script>
   <script src="js/common.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/app-nav.js"></script>
-  <script src="js/crm.mock.js"></script>
+  <script src="js/crm.api.js"></script>
   <script src="js/crm.js"></script>
 </body>
 

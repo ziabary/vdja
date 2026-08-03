@@ -1,5 +1,10 @@
-async function setupAuth(service, required) {
+async function setupAuth(service, required, backTo = service) {
   let accessToken = localStorage.getItem("accessToken");
+  const loginURL = () => {
+    const params = new URLSearchParams({ back: backTo || service });
+    if (service && service !== (backTo || service)) params.set("service", service);
+    return `/login?${params.toString()}`;
+  };
   const notifyAuthChanged = () => window.dispatchEvent(new CustomEvent("app-auth-changed", {
     detail: { authenticated: Boolean(accessToken), service }
   }));
@@ -95,7 +100,7 @@ async function setupAuth(service, required) {
       if (!refreshed) {
         auth.logout();
         showError('نشست منقضی شده است');
-        window.location.href = `/login?back=${service}`;
+        window.location.href = loginURL();
         document.getElementById("loading")?.classList.add("hidden")
         return null;
       }
@@ -120,7 +125,7 @@ async function setupAuth(service, required) {
 
       if (!token && required) {
         showError('نشست منقضی شده است');
-        window.location.href = `/login?back=${service}`;
+        window.location.href = loginURL();
         return null;
       }
 
