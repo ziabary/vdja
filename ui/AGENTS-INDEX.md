@@ -1,0 +1,37 @@
+# AGENTS file index
+
+- `AGENTS.md`
+- `apps/api/AGENTS.md`
+- `apps/web/AGENTS.md`
+- `apps/worker/AGENTS.md`
+- `deploy/AGENTS.md`
+- `docs/architecture/AGENTS.md`
+- `modules/crm/AGENTS.md`
+- `modules/followup/AGENTS.md`
+- `modules/letter-assistant/AGENTS.md`
+- `modules/secretariat/AGENTS.md`
+- `modules/widget/AGENTS.md`
+- `packages/admission-control/AGENTS.md`
+- `packages/ai-router/AGENTS.md`
+- `packages/audit/AGENTS.md`
+- `packages/authority/AGENTS.md`
+- `packages/branding/AGENTS.md`
+- `packages/calendar-core/AGENTS.md`
+- `packages/calendar-svelte/AGENTS.md`
+- `packages/commercial/AGENTS.md`
+- `packages/contracts/AGENTS.md`
+- `packages/data-governance/AGENTS.md`
+- `packages/documents/AGENTS.md`
+- `packages/file-processing/AGENTS.md`
+- `packages/integrations/AGENTS.md`
+- `packages/jobs/AGENTS.md`
+- `packages/knowledge/AGENTS.md`
+- `packages/notifications/AGENTS.md`
+- `packages/observability/AGENTS.md`
+- `packages/platform/AGENTS.md`
+- `packages/reconciliation/AGENTS.md`
+- `packages/security-telemetry/AGENTS.md`
+- `packages/storage/AGENTS.md`
+- `packages/ticketing/AGENTS.md`
+- `packages/ui-core/AGENTS.md`
+- `packages/usage/AGENTS.md`
