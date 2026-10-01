@@ -27,6 +27,7 @@ const DEFAULT_CONFIGS: IntfConfigs = {
   },
   OIDC: {
     active: false,
+    allowInsecureHttp: false,
     issuer: "sampl-issuer",
     clientId: "my-client-id",
     clientSecret: "my-secret",

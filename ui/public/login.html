@@ -128,7 +128,7 @@
                 </div>
               </div>
 
-              <div id="blkOIDC" class="hidden2">
+              <div id="blkOIDC" class="hidden">
                 <div class="d-flex mb-3">
                   <style>
                     .faded-line-container {
@@ -262,10 +262,39 @@
     // Keeping them separate lets composite pages such as WebWidget reuse RAG
     // privileges without inventing a new service in the authorization model.
     const service = queries.service || queries.back || "rag";
-    const returnTo = queries.back || service;
+    const requestedReturn = queries.back || service;
+    const returnUrl = new URL((requestedReturn.startsWith('/') ? '' : '/') + requestedReturn, location.origin);
+    const returnTo = returnUrl.origin === location.origin ? returnUrl.pathname + returnUrl.search + returnUrl.hash : '/rag';
+    const oidcErrors = {
+      missing_flow: 'نشست ورود سازمانی منقضی شده است. دوباره تلاش کنید.',
+      invalid_flow_state: 'نشست ورود سازمانی معتبر نیست. دوباره تلاش کنید.',
+      oidc_disabled: 'ورود سازمانی در حال حاضر فعال نیست.',
+      oidc_denied: 'امکان ورود به سرویس با این حساب وجود ندارد.',
+      oidc_conflict: 'اطلاعات این حساب سازمانی قبلاً ثبت شده است. با مدیر سامانه تماس بگیرید.',
+      oidc: 'ورود سازمانی کامل نشد. دوباره تلاش کنید.',
+    };
 
     let auth; setupAuth(service, false).then(async r => {
       auth = r;
+      if (queries.error) {
+        showError(oidcErrors[queries.error] || oidcErrors.oidc);
+        return;
+      }
+      if (queries.oidc === 'complete') {
+        // Replace any temporary-account token only after completing organizational login.
+        try {
+          const res = await fetch('/api/auth/refresh?service=' + encodeURIComponent(service), {
+            method: 'POST', credentials: 'include', cache: 'no-store'
+          });
+          const data = await res.json();
+          if (!res.ok || !data.accessToken) throw new Error('Session bootstrap failed');
+          finalizeLogin(data);
+        } catch {
+          localStorage.removeItem('accessToken');
+          showError('دریافت نشست ورود سازمانی ناموفق بود. دوباره وارد شوید.');
+        }
+        return;
+      }
       if (auth.token()
         && (!queries.mustAdmin || auth.info()?.privs?.isAdmin)
         && (!queries.mustVerified || auth.info()?.privs?.isVerified)
@@ -293,6 +322,11 @@
     const btnCancelOTP = document.getElementById("btnCancelOTP");
     const lblBale = document.getElementById("lblBale");
 
+    fetch('/api/auth/methods', { cache: 'no-store' })
+      .then(res => res.ok ? res.json() : { oidc: false })
+      .then(methods => blkOIDC.classList.toggle('hidden', !methods.oidc))
+      .catch(() => blkOIDC.classList.add('hidden'));
+
     let otpTimer = null
     let isPasswordVisible = false;
 
@@ -307,10 +341,10 @@
       auth.setAccessToken(data.accessToken);
       if (queries.mustAdmin && !auth.info()?.privs?.isAdmin) {
         showError("لازم است تا کاربر ادمین وارد شود");
-        setTimeout(auth.logout(window.location.href), 2000)
+        setTimeout(() => auth.logout('/login?' + new URLSearchParams({ service, back: returnTo })), 2000)
       } else if (queries.mustVerified && !auth.info()?.privs?.isVerified) {
         showError("لازم است تا کاربر ادمین وارد شود");
-        setTimeout(auth.logout(window.location.href), 2000)
+        setTimeout(() => auth.logout('/login?' + new URLSearchParams({ service, back: returnTo })), 2000)
       } else {
         inpUserToken.value = "";
         window.location.href = (returnTo.startsWith('/') ? "" : "/") + returnTo
@@ -331,7 +365,10 @@
     });
 
     btnOidc.addEventListener("click", () => {
-      window.location.href = `/api/auth/oidc/login?service=${encodeURIComponent(service)}`;
+      const params = new URLSearchParams({ service, back: returnTo });
+      if (queries.mustAdmin) params.set('mustAdmin', '1');
+      if (queries.mustVerified) params.set('mustVerified', '1');
+      window.location.href = `/api/auth/oidc/login?${params}`;
     });
 
     btnEnter.addEventListener("click", () => {

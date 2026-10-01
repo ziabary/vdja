@@ -80,6 +80,7 @@ export interface IntfConfigs {
   log: IntfAppLog;
   OIDC: { 
     active: boolean
+    allowInsecureHttp?: boolean
     issuer: string
     clientId: string
     clientSecret: string

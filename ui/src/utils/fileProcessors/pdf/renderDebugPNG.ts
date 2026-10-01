@@ -1,4 +1,4 @@
-import { createCanvas, loadImage } from "canvas";
+import { createCanvas, loadImage } from "@napi-rs/canvas";
 import * as fs from "fs";
 import type { IntfBlockBox, IntfXYCutResult } from "./interfaces";
 

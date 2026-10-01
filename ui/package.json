@@ -68,9 +68,9 @@
         "yargs": "^17.7.2"
     },
     "dependencies": {
+        "@napi-rs/canvas": "^0.1.94",
         "@qdrant/js-client-rest": "^1.16.2",
         "arabic-persian-reshaper": "^1.0.1",
-        "canvas": "^3.2.1",
         "cookie-parser": "^1.4.7",
         "cors": "^2.8.5",
         "dotenv": "^17.2.3",

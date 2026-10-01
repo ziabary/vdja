@@ -11,7 +11,7 @@ WORKDIR /app
 RUN sed -i 's|https://dl-cdn.alpinelinux.org/alpine/|https://mirror.arvancloud.ir/alpine/|' /etc/apk/repositories && \
     apk update && apk upgrade --no-cache
 
-# Build tools (needed for esbuild + any native deps during npm ci)
+# Build tools for native dependencies during npm ci.
 RUN apk add --no-cache \
     python3 \
     py3-pip \
@@ -32,13 +32,12 @@ COPY src/               src/
 COPY public/            public/
 COPY cli/               cli/
 COPY tsconfig.json      ./
-COPY tsconfig.cli.json  ./
 COPY eslint.config.js   ./
 COPY obfuscator.config.json ./
 
 # === YOUR PROTECTED BUILD ===
 # tsc → esbuild (single file bundle) → javascript-obfuscator (prompts hidden)
-RUN npm run prod
+RUN npm run prod && npm prune --omit=dev --ignore-scripts
 
 # ================================================
 # Stage 2: Runtime (minimal, production only)
@@ -62,9 +61,13 @@ RUN apk add --no-cache \
     font-noto-hebrew \
     tini
 
-# Fresh production-only node_modules (no devDeps, smaller + safer)
-COPY --from=builder /app/package.json ./
-RUN npm ci --only=production --ignore-scripts --no-audit --no-fund
+# Preserve native addons compiled for the same Node/Alpine version.
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/public ./public
+
+# Verify the native PDF canvas backend in the final runtime image.
+RUN node -e "require('@napi-rs/canvas').createCanvas(1, 1).toBuffer('image/png')"
 
 # Copy the fully bundled + obfuscated single file (prompts are now hidden)
 COPY --from=builder /app/dist/index.js ./dist/index.js

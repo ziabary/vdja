@@ -1,4 +1,5 @@
 import express from "express";
+import { localReturnPath, signOIDCFlow, readOIDCFlow, oidcLoginPage, type OIDCFlow } from "../utils/oidcFlow";
 import type { Request, Response, Router } from "express";
 
 import { randomUUID } from "crypto";
@@ -157,7 +158,9 @@ router.post("/auth/logout", async (apiReq: Request, apiRes: Response) => {
     const payload = verifyRefreshToken(refreshToken);
     atDB.log.add(payload.key, "login", null, 0, 200)
     await atDB.user.logoutByToken(payload.key)
+    await atDB.user.updateRefreshHash(payload.key, "")
   } catch { }
+  apiRes.clearCookie("refreshToken", { path: "/api/", httpOnly: true, secure: true, sameSite: "strict" });
   apiRes.send({ success: "ok" })
 })
 
@@ -180,38 +183,49 @@ router.post("/auth/logout", async (apiReq: Request, apiRes: Response) => {
  *     tags:
  *       - Authentication
  */
+router.get("/auth/methods", (_apiReq: Request, apiRes: Response) => {
+  apiRes.setHeader("Cache-Control", "no-store");
+  apiRes.json({ oidc: Boolean(configManager.active().OIDC.active && openIDClient) });
+});
+
 router.get("/auth/oidc/login", async (apiReq: Request, apiRes: Response) => {
+  if (!configManager.active().OIDC.active || !openIDClient)
+    return apiRes.redirect("/login?error=oidc_disabled");
+
   const codeVerifier = oidc.randomPKCECodeVerifier();
   const codeChallenge = await oidc.calculatePKCECodeChallenge(codeVerifier);
-  const { service } = apiReq.query;
-
-  const nonce = oidc.randomNonce()
-  const state = oidc.randomState();
-
-  const payload = Buffer.from(
-    JSON.stringify({ codeVerifier, state, nonce, service })
-  ).toString("base64url");
-
-
-  apiRes.cookie("oidc_flow", payload, {
-    httpOnly: true,
-    secure: true,
-    sameSite: "lax",
-    maxAge: 5 * 60 * 1000
-  });
+  const service = typeof apiReq.query.service === 'string' && apiReq.query.service
+    ? apiReq.query.service : 'rag';
+  const flow: OIDCFlow = {
+    codeVerifier,
+    state: oidc.randomState(),
+    nonce: oidc.randomNonce(),
+    service,
+    back: localReturnPath(apiReq.query.back || service),
+    mustAdmin: apiReq.query.mustAdmin === '1',
+    mustVerified: apiReq.query.mustVerified === '1',
+  };
 
   const url = oidc.buildAuthorizationUrl(openIDClient, {
     client_id: configManager.active().OIDC.clientId,
     redirect_uri: configManager.active().OIDC.callbackUri,
     response_type: "code",
     scope: configManager.active().OIDC.scope,
-    state,
+    state: flow.state,
     code_challenge: codeChallenge,
     code_challenge_method: "S256",
     response_mode: "query",
-    nonce,
+    nonce: flow.nonce,
   });
 
+  apiRes.cookie("oidc_flow", signOIDCFlow(flow, configManager.active().jwt.baseSecret), {
+    httpOnly: true,
+    secure: !configManager.active().OIDC.allowInsecureHttp,
+    sameSite: "lax",
+    path: "/api/auth/oidc",
+    maxAge: 5 * 60 * 1000
+  });
+  apiRes.setHeader("Cache-Control", "no-store");
   apiRes.redirect(url.toString());
 });
 
@@ -238,10 +252,8 @@ router.get("/auth/oidc/login", async (apiReq: Request, apiRes: Response) => {
  *         required: true
  *         type: string
  *     responses:
- *       200:
- *         description: User was successfully authenticated and a JWT was sent in the response.
  *       302:
- *         description: Redirect to the login page if the authentication process failed or if any required parameters are missing.
+ *         description: Redirect to the login page to complete the internal session, or display an authentication error.
  *         content:
  *           text/html:
  *             example: <a href="/login.html?error=missing_flow">Redirecting...</a>
@@ -249,39 +261,33 @@ router.get("/auth/oidc/login", async (apiReq: Request, apiRes: Response) => {
  *       - Authentication
  */
 router.get("/auth/oidc/callback", async (apiReq: Request, apiRes: Response) => {
-  const OIDC = configManager.active().OIDC
+  apiRes.setHeader("Cache-Control", "no-store");
+  apiRes.clearCookie("oidc_flow", { path: "/api/auth/oidc" });
+  if (!configManager.active().OIDC.active || !openIDClient)
+    return apiRes.redirect("/login?error=oidc_disabled");
   const cookie = apiReq.cookies.oidc_flow;
   if (!cookie)
     return apiRes.redirect("/login.html?error=missing_flow");
 
-  let flow: { codeVerifier: string; state: string; nonce: string; service?: string };
+  let flow: OIDCFlow;
   try {
-    flow = JSON.parse(Buffer.from(cookie, "base64url").toString());
+    flow = readOIDCFlow(cookie, configManager.active().jwt.baseSecret);
   } catch {
-    apiRes.clearCookie("oidc_flow");
     return apiRes.redirect("/login.html?error=invalid_flow_state");
   }
 
   const { codeVerifier, state: savedState, nonce: savedNonce, service } = flow;
 
-  if (!service) {
-    return apiRes.redirect("/login.html?error=missing_service");
-  }
   try {
-    apiRes.clearCookie("oidc_flow");
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const params = new URLSearchParams(apiReq.query as any);
-    const currentUrl = new URL(
-      `${apiReq.protocol}://${apiReq.get("host")}${apiReq.originalUrl}`
-    );
+    // Use the registered public URI, independent of reverse-proxy Host/protocol.
+    const currentUrl = new URL(configManager.active().OIDC.callbackUri);
+    currentUrl.search = new URL(apiReq.originalUrl, 'https://local.invalid').search;
 
     const tokenSet = await oidc.authorizationCodeGrant(openIDClient, currentUrl, {
       pkceCodeVerifier: codeVerifier,
       expectedState: savedState,
       expectedNonce: savedNonce,
-      // idTokenExpected: true,   // optional if you always expect id_token
-      // maxAge: 300,        // optional
+      idTokenExpected: true,
     });
 
     // Optional: access claims directly (id_token is already validated)
@@ -294,7 +300,7 @@ router.get("/auth/oidc/callback", async (apiReq: Request, apiRes: Response) => {
     const email = normalizeEmail(claims.email);
     const name = typeof claims.name === 'string' ? claims.name : undefined;
 
-    let user: Partial<IntfUser> | undefined = await atDB.user.getDigesting(openId, true);
+    let user: Partial<IntfUser> | undefined = await atDB.user.getDigesting(openId, true, true);
     if (!user) {
       if (email) {
         const emailOwner = await atDB.user.findByEmail(email);
@@ -310,41 +316,46 @@ router.get("/auth/oidc/callback", async (apiReq: Request, apiRes: Response) => {
             : 'شناسه این حساب قبلاً ثبت شده است');
         throw error;
       }
-      user = await atDB.user.getDigesting(openId, true);
+      user = await atDB.user.getDigesting(openId, true, true);
       if (!user)
         throw new exHttpInternalServerError("امکان ایجاد کاربر جدید به دلایل فنی وجود ندارد")
       await atDB.perUserStats.initialize(service, user.usrID!)
     } else
-      await atDB.user.updateLastLogin(openId);
+      await atDB.user.updateLastLogin(user.usrKey!);
 
-    if (!user.privs?.services?.hasOwnProperty(service))
+    if (service !== "/" && !user.privs?.services?.hasOwnProperty(service))
       throw new exHttpAccessDenied("شما به این سرویس دسترسی ندارید")
 
     atDB.log.add(user.usrKey!, "login", { service, oidc_flow: "success" }, 0, 200)
 
-    await sendJWT(user, apiRes)
+    await sendJWT(user, apiRes, oidcLoginPage(flow, "complete"))
   } catch (err) {
     atDB.log.add("", "oidc_callback_error", { service, error: String(err) }, 0, 401, String(err))
     logger.error({ oidc: err });
-    apiRes.redirect(`/login.html?error=oidc&msg=${encodeURIComponent((err as Error)?.message || "خطای احراز هویت")}`);
+    const error = err instanceof exHttpConflict ? 'oidc_conflict'
+      : err instanceof exHttpAccessDenied ? 'oidc_denied' : 'oidc';
+    apiRes.redirect(oidcLoginPage(flow, "error", error));
   }
 });
 
-async function sendJWT(user: Partial<IntfUser>, apiRes: Response) {
+async function sendJWT(user: Partial<IntfUser>, apiRes: Response, redirectTo?: string) {
   const accessToken = createAccessToken(user);
   const refreshToken = await createRefreshToken(user);
 
   const ttlRaw = configManager.active().jwt.refreshTTL
-  const expiresInSeconds = (typeof ttlRaw === 'number' ? ttlRaw : ms(ttlRaw as StringValue)) // 1000;
+  const cookieMaxAge = typeof ttlRaw === 'number' ? ttlRaw * 1000 : ms(ttlRaw as StringValue);
 
+  const oidcConfig = configManager.active().OIDC;
   apiRes.cookie("refreshToken", refreshToken, {
     httpOnly: true,
-    secure: true,
+    secure: !oidcConfig.allowInsecureHttp,
     sameSite: "strict",
     path: "/api/",
-    ...(expiresInSeconds ? { maxAge: expiresInSeconds } : {}),
+    ...(cookieMaxAge ? { maxAge: cookieMaxAge } : {}),
   });
-  apiRes.json({ accessToken });
+  apiRes.setHeader("Cache-Control", "no-store");
+  if (redirectTo) apiRes.redirect(redirectTo);
+  else apiRes.json({ accessToken });
 }
 
 /**
@@ -397,7 +408,7 @@ router.post("/auth/refresh", async (apiReq: Request, apiRes: Response) => {
   const user = await atDB.user.verifyRefreshToken(payload.key, refreshToken);
   if (!user) throw new exHttpUnauthorized("کاربر یافت نشد یا متوقف شده");
 
-  if (!user.privs?.services?.hasOwnProperty(parseQueryToString(service) || "not set"))
+  if (service !== "/" && !user.privs?.services?.hasOwnProperty(parseQueryToString(service) || "not set"))
     throw new exHttpAccessDenied("شما به این سرویس دسترسی ندارید")
 
   await sendJWT(user, apiRes)
@@ -678,8 +689,12 @@ async function initOpenID() {
   const OIDC = configManager.active().OIDC
   if (!OIDC?.active) return
 
+  const issuerUrl = new URL(OIDC.issuer);
+  if (issuerUrl.protocol === 'http:' && !OIDC.allowInsecureHttp)
+    throw new Error('OIDC issuer uses HTTP. Set OIDC.allowInsecureHttp=true only for trusted development networks, or configure HTTPS.');
+
   openIDClient = await oidc.discovery(
-    new URL(OIDC.issuer),
+    issuerUrl,
     OIDC.clientId,
     OIDC.clientSecret,
     // optional client auth method (default is ClientSecretPost if secret present)
@@ -687,8 +702,8 @@ async function initOpenID() {
     // optional options object
     {
       // algorithm: 'oidc',           // default, can be 'oauth2' for plain OAuth
-      timeout: 30,                    // seconds
-      // execute: [allowInsecureRequests], // only if testing with http
+      timeout: 30,
+      ...(OIDC.allowInsecureHttp ? { execute: [oidc.allowInsecureRequests] } : {}),
     }
   );
   logger.info(`OIDC discovered issuer: ${openIDClient.serverMetadata().issuer}`);

@@ -1,0 +1,134 @@
+{
+  "app": {
+    "listen": {
+      "port": 3000,
+      "ip": "0.0.0.0"
+    },
+    "corsOrigin": "https://demo-llm.targoman.ir",
+    "maxJson": "50mb",
+    "limiter": {
+      "window": 60000,
+      "maxReq": 1000,
+      "errorMessage": "تعداد درخواست‌های وارد از این IP بیش از حد مجاز بوده. اندکی صبر و مجددا تلاش کند"
+    },
+    "watchdogMaxTrigger": 3,
+    "softDelete": true,
+    "legacyPDFParser": true
+  },
+  "log": {
+    "accessPath": "/app/logs/access.log",
+    "errorsPath": "/app/logs/errors.log",
+    "showAPICalls": false,
+    "isDebugging": false,
+    "noMonitor": false
+  },
+  "llmServers": {
+    "rag": {
+      "url": "http://vllm1:8001",
+      "model": "targoman",
+      "temperature": 0.55,
+      "maxTokens": 3000,
+      "maxDelayed": 60
+    },
+    "rahbari": {
+      "url": "http://vllm1:8001",
+      "model": "targoman",
+      "temperature": 0.55,
+      "maxTokens": 3000,
+      "maxDelayed": 60
+    },
+    "translate": {
+      "url": "http://vllm1:8001",
+      "model": "targoman",
+      "temperature": 0.3,
+      "maxTokens": 2000,
+      "maxDelayed": 30,
+      "dictionary": "/app/db/dic.json"
+    },
+    "summarize": {
+      "url": "http://vllm1:8001",
+      "model": "targoman",
+      "temperature": 0.35,
+      "maxTokens": 3000,
+      "maxDelayed": 30
+    },
+    "think": {
+      "url": "http://31.14.120.138:8000",
+      "model": "targoman",
+      "temperature": 0.51,
+      "maxTokens": 10000,
+      "maxDelayed": 60
+    },
+    "thinker": {
+      "url": "http://31.14.120.138:8000",
+      "model": "targoman",
+      "temperature": 0.51,
+      "maxTokens": 10000,
+      "maxDelayed": 60
+    }
+  },
+  "embedding": {
+    "server": {
+      "url": "http://embedding:8001",
+      "model": "multilingual-e5-large-instruct"
+    },
+    "modelPath": "/app/models/multilingual-e5-large-instruct/",
+    "maxTokens": 480
+  },
+  "RAGDB": {
+    "url": "http://vectordb:6333"
+  },
+  "db": {
+    "activeType": "mysql",
+    "sqlite": {
+      "paths": {
+        "base": "db/vdja.db",
+        "news": "db/news.db",
+        "logs": "db/logs.db"
+      },
+      "timeout": 5000
+    },
+    "mysql": {
+      "host": "mysql",
+      "user": "llmaccess",
+      "password": "DByG$0gR@aGplc$Xt2H~XT4M",
+      "database": "TargomanLLM",
+      "port": 3306
+    },
+    "mssql": {
+      "server": "localhost",
+      "user": "llmaccess",
+      "password": "DByG$0gR@aGplc$Xt2H~XT4M",
+      "database": "TargomanLLM",
+      "options": {
+        "encrypt": false
+      }
+    },
+    "pgsql": {
+      "host": "localhost",
+      "user": "user",
+      "password": "password",
+      "database": "dbname",
+      "port": 5432
+    }
+  },
+  "baleOTP": {
+    "gwID": "NwanBaOwwQTdwRwtzGSwccwkGglfJFib",
+    "gwSecret": "pBlqrfnNJIlYcVYKgWdxZwSirkPVheKP"
+  },
+  "jwt": {
+    "baseSecret": "secret",
+    "refreshSecret": "secret2",
+    "accessTTL": "15m",
+    "refreshTTL": "7d"
+  },
+  "OIDC": {
+    "active": true,
+    "issuer": "https://192.168.50.59",
+    "clientId": "AITargomanCode",
+    "clientSecret": "&@vss)z._#6914^%><|qd39",
+    "scope": "openid profile TargomanApi UserManagementApi",
+    "callbackUri": "http://localhost:3000/api/auth/oidc/callback",
+    "allowInsecureHttp": false
+  }
+}

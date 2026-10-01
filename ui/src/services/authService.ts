@@ -21,7 +21,7 @@ export function createAccessToken(user: Partial<IntfUser>) {
     privs: user.privs || null
   };
   const ttlRaw = configManager.active().jwt.accessTTL
-  const expiresInSeconds = (typeof ttlRaw === 'number' ? ttlRaw : ms(ttlRaw as StringValue)) // 1000;
+  const expiresInSeconds = typeof ttlRaw === 'number' ? ttlRaw : Math.floor(ms(ttlRaw as StringValue) / 1000);
 
   return jwt.sign(payload, configManager.active().jwt.baseSecret, { expiresIn: expiresInSeconds });
 }
@@ -33,7 +33,7 @@ export async function createRefreshToken(user: Partial<IntfUser>) {
   };
 
   const ttlRaw = configManager.active().jwt.refreshTTL
-  const expiresInSeconds = (typeof ttlRaw === 'number' ? ttlRaw : ms(ttlRaw as StringValue)) // 1000;
+  const expiresInSeconds = typeof ttlRaw === 'number' ? ttlRaw : Math.floor(ms(ttlRaw as StringValue) / 1000);
   const token = jwt.sign(payload, configManager.active().jwt.refreshSecret, { expiresIn: expiresInSeconds });
   await atDB.user.updateRefreshHash(user.usrKey!, token)
 
