@@ -1,0 +1,1935 @@
+{
+  "schemaVersion": 1,
+  "run": {
+    "category": "all",
+    "scope": [
+      "src",
+      "db",
+      "apps",
+      "packages",
+      "modules"
+    ],
+    "source": "static TypeScript and SQL"
+  },
+  "ruleCounts": {
+    "ARCH-DEP-001": 0,
+    "ARCH-DEP-002": 0,
+    "ARCH-DEP-003": 0,
+    "ARCH-DEP-004": 0,
+    "ARCH-DB-001": 39,
+    "ARCH-DB-002": 0,
+    "ARCH-DB-003": 11,
+    "ARCH-DB-004": 0,
+    "ARCH-DB-005": 0,
+    "ARCH-DB-006": 0,
+    "ARCH-DB-NAME-001": 0,
+    "ARCH-DB-NAME-002": 0,
+    "ARCH-DB-NAME-003": 0,
+    "ARCH-DB-NAME-004": 0,
+    "ARCH-DB-NAME-005": 0,
+    "ARCH-DB-NAME-006": 0,
+    "ARCH-TS-NAME-001": 0,
+    "ARCH-TS-NAME-002": 70,
+    "ARCH-TS-NAME-003": 0,
+    "ARCH-TS-NAME-004": 51,
+    "ARCH-TS-NAME-005": 0,
+    "ARCH-TS-NAME-006": 7,
+    "ARCH-TS-NAME-007": 0,
+    "ARCH-TS-001": 25,
+    "ARCH-TS-002": 5,
+    "ARCH-TS-003": 0,
+    "ARCH-TS-004": 0,
+    "ARCH-AUTH-001": 2,
+    "ARCH-AUTH-002": 0,
+    "ARCH-AUTH-003": 0,
+    "ARCH-AI-001": 0,
+    "ARCH-AI-002": 0,
+    "ARCH-AI-003": 2,
+    "ARCH-AI-004": 0,
+    "ARCH-PROVIDER-001": 0,
+    "ARCH-PROVIDER-002": 0,
+    "ARCH-PROVIDER-003": 0,
+    "ARCH-DOC-001": 0,
+    "ARCH-DOC-002": 0,
+    "ARCH-MOD-001": 5,
+    "ARCH-MOD-002": 0,
+    "ARCH-MOD-003": 24
+  },
+  "classificationCounts": {
+    "ARCHITECTURE_VIOLATION": 212,
+    "TARGET_NOT_IMPLEMENTED": 29,
+    "TEST_INFRA_FAILURE": 0
+  },
+  "violations": [
+    {
+      "ruleId": "ARCH-AI-003",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/vectorDB-old.ts",
+      "line": 2,
+      "column": 1,
+      "message": "Qdrant client outside Knowledge adapter @qdrant/js-client-rest"
+    },
+    {
+      "ruleId": "ARCH-AI-003",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/vectorDB-old.ts",
+      "line": 3,
+      "column": 1,
+      "message": "Qdrant client outside Knowledge adapter @qdrant/js-client-rest"
+    },
+    {
+      "ruleId": "ARCH-AUTH-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/crmService.ts",
+      "line": 530,
+      "column": 22,
+      "message": "Authorization fact interpreted outside Authority"
+    },
+    {
+      "ruleId": "ARCH-AUTH-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/ragResourceService.ts",
+      "line": 66,
+      "column": 9,
+      "message": "Authorization fact interpreted outside Authority"
+    },
+    {
+      "ruleId": "ARCH-DB-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/index.ts",
+      "line": 16,
+      "column": 1,
+      "message": "Database dependency outside owning persistence: ./db/index"
+    },
+    {
+      "ruleId": "ARCH-DB-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/routes/admin.ts",
+      "line": 4,
+      "column": 1,
+      "message": "Database dependency outside owning persistence: ../db/atDB"
+    },
+    {
+      "ruleId": "ARCH-DB-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/routes/auth.ts",
+      "line": 10,
+      "column": 1,
+      "message": "Database dependency outside owning persistence: ../db/atDB"
+    },
+    {
+      "ruleId": "ARCH-DB-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/routes/auth.ts",
+      "line": 15,
+      "column": 1,
+      "message": "Database dependency outside owning persistence: ../db/tables/tblUser"
+    },
+    {
+      "ruleId": "ARCH-DB-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/routes/shares.ts",
+      "line": 6,
+      "column": 1,
+      "message": "Database dependency outside owning persistence: ../db/atDB"
+    },
+    {
+      "ruleId": "ARCH-DB-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/routes/shares.ts",
+      "line": 9,
+      "column": 1,
+      "message": "Database dependency outside owning persistence: ../db/tables/tblSharedFileRequests"
+    },
+    {
+      "ruleId": "ARCH-DB-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/routes/summarize.ts",
+      "line": 4,
+      "column": 1,
+      "message": "Database dependency outside owning persistence: ../db/atDB"
+    },
+    {
+      "ruleId": "ARCH-DB-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/routes/summarize.ts",
+      "line": 9,
+      "column": 1,
+      "message": "Database dependency outside owning persistence: ../db/tables/tblLog"
+    },
+    {
+      "ruleId": "ARCH-DB-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/routes/translate.ts",
+      "line": 7,
+      "column": 1,
+      "message": "Database dependency outside owning persistence: ../db/atDB"
+    },
+    {
+      "ruleId": "ARCH-DB-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/routes/translate.ts",
+      "line": 8,
+      "column": 1,
+      "message": "Database dependency outside owning persistence: ../db/tables/tblLog"
+    },
+    {
+      "ruleId": "ARCH-DB-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/routes/translate.ts",
+      "line": 9,
+      "column": 1,
+      "message": "Database dependency outside owning persistence: ../db/tables/tblDic"
+    },
+    {
+      "ruleId": "ARCH-DB-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/routes/widget.ts",
+      "line": 36,
+      "column": 1,
+      "message": "Database dependency outside owning persistence: ../db/atDB"
+    },
+    {
+      "ruleId": "ARCH-DB-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/authService.ts",
+      "line": 8,
+      "column": 1,
+      "message": "Database dependency outside owning persistence: ../db/tables/tblUser"
+    },
+    {
+      "ruleId": "ARCH-DB-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/authService.ts",
+      "line": 9,
+      "column": 1,
+      "message": "Database dependency outside owning persistence: ../db/atDB"
+    },
+    {
+      "ruleId": "ARCH-DB-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/crmService.ts",
+      "line": 3,
+      "column": 1,
+      "message": "Database dependency outside owning persistence: knex"
+    },
+    {
+      "ruleId": "ARCH-DB-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/crmService.ts",
+      "line": 12,
+      "column": 1,
+      "message": "Database dependency outside owning persistence: ../db/atDB"
+    },
+    {
+      "ruleId": "ARCH-DB-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/crmService.ts",
+      "line": 13,
+      "column": 1,
+      "message": "Database dependency outside owning persistence: ../db/index"
+    },
+    {
+      "ruleId": "ARCH-DB-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/crmService.ts",
+      "line": 14,
+      "column": 1,
+      "message": "Database dependency outside owning persistence: ../db/tables/tblCRM"
+    },
+    {
+      "ruleId": "ARCH-DB-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/crmService.ts",
+      "line": 194,
+      "column": 10,
+      "message": "Database execution db.transaction outside persistence"
+    },
+    {
+      "ruleId": "ARCH-DB-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/crmService.ts",
+      "line": 1121,
+      "column": 24,
+      "message": "Database execution db.transaction outside persistence"
+    },
+    {
+      "ruleId": "ARCH-DB-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/crmService.ts",
+      "line": 1206,
+      "column": 9,
+      "message": "Database execution db.transaction outside persistence"
+    },
+    {
+      "ruleId": "ARCH-DB-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/ragChatService.ts",
+      "line": 3,
+      "column": 1,
+      "message": "Database dependency outside owning persistence: ../db/atDB"
+    },
+    {
+      "ruleId": "ARCH-DB-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/ragChatService.ts",
+      "line": 20,
+      "column": 1,
+      "message": "Database dependency outside owning persistence: ../db/tables/tblChats"
+    },
+    {
+      "ruleId": "ARCH-DB-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/ragChatService.ts",
+      "line": 21,
+      "column": 1,
+      "message": "Database dependency outside owning persistence: ../db/tables/tblMessages"
+    },
+    {
+      "ruleId": "ARCH-DB-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/ragChatService.ts",
+      "line": 22,
+      "column": 1,
+      "message": "Database dependency outside owning persistence: ../db/tables/tblLog"
+    },
+    {
+      "ruleId": "ARCH-DB-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/ragResourceService.ts",
+      "line": 4,
+      "column": 1,
+      "message": "Database dependency outside owning persistence: ../db/atDB"
+    },
+    {
+      "ruleId": "ARCH-DB-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/ragResourceService.ts",
+      "line": 7,
+      "column": 1,
+      "message": "Database dependency outside owning persistence: ../db/tables/tblFiles"
+    },
+    {
+      "ruleId": "ARCH-DB-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/ragResourceService.ts",
+      "line": 8,
+      "column": 1,
+      "message": "Database dependency outside owning persistence: ../db/tables/tblFiles"
+    },
+    {
+      "ruleId": "ARCH-DB-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/ragResourceService.ts",
+      "line": 33,
+      "column": 11,
+      "message": "Database execution atDB.files.delete outside persistence"
+    },
+    {
+      "ruleId": "ARCH-DB-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/ragService.ts",
+      "line": 8,
+      "column": 1,
+      "message": "Database dependency outside owning persistence: ../db/atDB"
+    },
+    {
+      "ruleId": "ARCH-DB-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/ragService.ts",
+      "line": 14,
+      "column": 1,
+      "message": "Database dependency outside owning persistence: ../db/tables/tblFiles"
+    },
+    {
+      "ruleId": "ARCH-DB-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/ragService.ts",
+      "line": 245,
+      "column": 34,
+      "message": "Database execution atDB.chats.delete outside persistence"
+    },
+    {
+      "ruleId": "ARCH-DB-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/widgetService.ts",
+      "line": 5,
+      "column": 1,
+      "message": "Database dependency outside owning persistence: ../db/atDB"
+    },
+    {
+      "ruleId": "ARCH-DB-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/widgetService.ts",
+      "line": 6,
+      "column": 1,
+      "message": "Database dependency outside owning persistence: ../db/index"
+    },
+    {
+      "ruleId": "ARCH-DB-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/widgetService.ts",
+      "line": 16,
+      "column": 1,
+      "message": "Database dependency outside owning persistence: ../db/tables/tblGroup"
+    },
+    {
+      "ruleId": "ARCH-DB-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/widgetService.ts",
+      "line": 17,
+      "column": 1,
+      "message": "Database dependency outside owning persistence: ../db/tables/tblMessages"
+    },
+    {
+      "ruleId": "ARCH-DB-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/widgetService.ts",
+      "line": 18,
+      "column": 1,
+      "message": "Database dependency outside owning persistence: ../db/tables/tblWidgets"
+    },
+    {
+      "ruleId": "ARCH-DB-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/widgetService.ts",
+      "line": 19,
+      "column": 1,
+      "message": "Database dependency outside owning persistence: ../db/tables/tblWidgets"
+    },
+    {
+      "ruleId": "ARCH-DB-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/widgetService.ts",
+      "line": 20,
+      "column": 1,
+      "message": "Database dependency outside owning persistence: ../db/tables/tblWidgetSessions"
+    },
+    {
+      "ruleId": "ARCH-DB-003",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/routes/admin.ts",
+      "line": 4,
+      "column": 1,
+      "message": "Transport imports database dependency ../db/atDB"
+    },
+    {
+      "ruleId": "ARCH-DB-003",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/routes/auth.ts",
+      "line": 10,
+      "column": 1,
+      "message": "Transport imports database dependency ../db/atDB"
+    },
+    {
+      "ruleId": "ARCH-DB-003",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/routes/auth.ts",
+      "line": 15,
+      "column": 1,
+      "message": "Transport imports database dependency ../db/tables/tblUser"
+    },
+    {
+      "ruleId": "ARCH-DB-003",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/routes/shares.ts",
+      "line": 6,
+      "column": 1,
+      "message": "Transport imports database dependency ../db/atDB"
+    },
+    {
+      "ruleId": "ARCH-DB-003",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/routes/shares.ts",
+      "line": 9,
+      "column": 1,
+      "message": "Transport imports database dependency ../db/tables/tblSharedFileRequests"
+    },
+    {
+      "ruleId": "ARCH-DB-003",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/routes/summarize.ts",
+      "line": 4,
+      "column": 1,
+      "message": "Transport imports database dependency ../db/atDB"
+    },
+    {
+      "ruleId": "ARCH-DB-003",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/routes/summarize.ts",
+      "line": 9,
+      "column": 1,
+      "message": "Transport imports database dependency ../db/tables/tblLog"
+    },
+    {
+      "ruleId": "ARCH-DB-003",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/routes/translate.ts",
+      "line": 7,
+      "column": 1,
+      "message": "Transport imports database dependency ../db/atDB"
+    },
+    {
+      "ruleId": "ARCH-DB-003",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/routes/translate.ts",
+      "line": 8,
+      "column": 1,
+      "message": "Transport imports database dependency ../db/tables/tblLog"
+    },
+    {
+      "ruleId": "ARCH-DB-003",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/routes/translate.ts",
+      "line": 9,
+      "column": 1,
+      "message": "Transport imports database dependency ../db/tables/tblDic"
+    },
+    {
+      "ruleId": "ARCH-DB-003",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/routes/widget.ts",
+      "line": 36,
+      "column": 1,
+      "message": "Transport imports database dependency ../db/atDB"
+    },
+    {
+      "ruleId": "ARCH-MOD-001",
+      "classification": "TARGET_NOT_IMPLEMENTED",
+      "file": "modules/crm/manifest.ts",
+      "message": "Typed module manifest missing"
+    },
+    {
+      "ruleId": "ARCH-MOD-001",
+      "classification": "TARGET_NOT_IMPLEMENTED",
+      "file": "modules/followup/manifest.ts",
+      "message": "Typed module manifest missing"
+    },
+    {
+      "ruleId": "ARCH-MOD-001",
+      "classification": "TARGET_NOT_IMPLEMENTED",
+      "file": "modules/letter-assistant/manifest.ts",
+      "message": "Typed module manifest missing"
+    },
+    {
+      "ruleId": "ARCH-MOD-001",
+      "classification": "TARGET_NOT_IMPLEMENTED",
+      "file": "modules/secretariat/manifest.ts",
+      "message": "Typed module manifest missing"
+    },
+    {
+      "ruleId": "ARCH-MOD-001",
+      "classification": "TARGET_NOT_IMPLEMENTED",
+      "file": "modules/widget/manifest.ts",
+      "message": "Typed module manifest missing"
+    },
+    {
+      "ruleId": "ARCH-MOD-003",
+      "classification": "TARGET_NOT_IMPLEMENTED",
+      "file": "packages/admission-control/package.json",
+      "message": "Package manifest missing"
+    },
+    {
+      "ruleId": "ARCH-MOD-003",
+      "classification": "TARGET_NOT_IMPLEMENTED",
+      "file": "packages/ai-router/package.json",
+      "message": "Package manifest missing"
+    },
+    {
+      "ruleId": "ARCH-MOD-003",
+      "classification": "TARGET_NOT_IMPLEMENTED",
+      "file": "packages/audit/package.json",
+      "message": "Package manifest missing"
+    },
+    {
+      "ruleId": "ARCH-MOD-003",
+      "classification": "TARGET_NOT_IMPLEMENTED",
+      "file": "packages/authority/package.json",
+      "message": "Package manifest missing"
+    },
+    {
+      "ruleId": "ARCH-MOD-003",
+      "classification": "TARGET_NOT_IMPLEMENTED",
+      "file": "packages/branding/package.json",
+      "message": "Package manifest missing"
+    },
+    {
+      "ruleId": "ARCH-MOD-003",
+      "classification": "TARGET_NOT_IMPLEMENTED",
+      "file": "packages/calendar-core/package.json",
+      "message": "Package manifest missing"
+    },
+    {
+      "ruleId": "ARCH-MOD-003",
+      "classification": "TARGET_NOT_IMPLEMENTED",
+      "file": "packages/calendar-svelte/package.json",
+      "message": "Package manifest missing"
+    },
+    {
+      "ruleId": "ARCH-MOD-003",
+      "classification": "TARGET_NOT_IMPLEMENTED",
+      "file": "packages/commercial/package.json",
+      "message": "Package manifest missing"
+    },
+    {
+      "ruleId": "ARCH-MOD-003",
+      "classification": "TARGET_NOT_IMPLEMENTED",
+      "file": "packages/contracts/package.json",
+      "message": "Package manifest missing"
+    },
+    {
+      "ruleId": "ARCH-MOD-003",
+      "classification": "TARGET_NOT_IMPLEMENTED",
+      "file": "packages/data-governance/package.json",
+      "message": "Package manifest missing"
+    },
+    {
+      "ruleId": "ARCH-MOD-003",
+      "classification": "TARGET_NOT_IMPLEMENTED",
+      "file": "packages/documents/package.json",
+      "message": "Package manifest missing"
+    },
+    {
+      "ruleId": "ARCH-MOD-003",
+      "classification": "TARGET_NOT_IMPLEMENTED",
+      "file": "packages/file-processing/package.json",
+      "message": "Package manifest missing"
+    },
+    {
+      "ruleId": "ARCH-MOD-003",
+      "classification": "TARGET_NOT_IMPLEMENTED",
+      "file": "packages/integrations/package.json",
+      "message": "Package manifest missing"
+    },
+    {
+      "ruleId": "ARCH-MOD-003",
+      "classification": "TARGET_NOT_IMPLEMENTED",
+      "file": "packages/jobs/package.json",
+      "message": "Package manifest missing"
+    },
+    {
+      "ruleId": "ARCH-MOD-003",
+      "classification": "TARGET_NOT_IMPLEMENTED",
+      "file": "packages/knowledge/package.json",
+      "message": "Package manifest missing"
+    },
+    {
+      "ruleId": "ARCH-MOD-003",
+      "classification": "TARGET_NOT_IMPLEMENTED",
+      "file": "packages/notifications/package.json",
+      "message": "Package manifest missing"
+    },
+    {
+      "ruleId": "ARCH-MOD-003",
+      "classification": "TARGET_NOT_IMPLEMENTED",
+      "file": "packages/observability/package.json",
+      "message": "Package manifest missing"
+    },
+    {
+      "ruleId": "ARCH-MOD-003",
+      "classification": "TARGET_NOT_IMPLEMENTED",
+      "file": "packages/platform/package.json",
+      "message": "Package manifest missing"
+    },
+    {
+      "ruleId": "ARCH-MOD-003",
+      "classification": "TARGET_NOT_IMPLEMENTED",
+      "file": "packages/reconciliation/package.json",
+      "message": "Package manifest missing"
+    },
+    {
+      "ruleId": "ARCH-MOD-003",
+      "classification": "TARGET_NOT_IMPLEMENTED",
+      "file": "packages/security-telemetry/package.json",
+      "message": "Package manifest missing"
+    },
+    {
+      "ruleId": "ARCH-MOD-003",
+      "classification": "TARGET_NOT_IMPLEMENTED",
+      "file": "packages/storage/package.json",
+      "message": "Package manifest missing"
+    },
+    {
+      "ruleId": "ARCH-MOD-003",
+      "classification": "TARGET_NOT_IMPLEMENTED",
+      "file": "packages/ticketing/package.json",
+      "message": "Package manifest missing"
+    },
+    {
+      "ruleId": "ARCH-MOD-003",
+      "classification": "TARGET_NOT_IMPLEMENTED",
+      "file": "packages/ui-core/package.json",
+      "message": "Package manifest missing"
+    },
+    {
+      "ruleId": "ARCH-MOD-003",
+      "classification": "TARGET_NOT_IMPLEMENTED",
+      "file": "packages/usage/package.json",
+      "message": "Package manifest missing"
+    },
+    {
+      "ruleId": "ARCH-TS-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "db/check-tables.ts",
+      "line": 6,
+      "column": 31,
+      "message": "Explicit any type"
+    },
+    {
+      "ruleId": "ARCH-TS-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "db/check-tables.ts",
+      "line": 26,
+      "column": 36,
+      "message": "Explicit any type"
+    },
+    {
+      "ruleId": "ARCH-TS-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "db/check-tables.ts",
+      "line": 34,
+      "column": 33,
+      "message": "Explicit any type"
+    },
+    {
+      "ruleId": "ARCH-TS-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "db/check-tables.ts",
+      "line": 61,
+      "column": 21,
+      "message": "Explicit any type"
+    },
+    {
+      "ruleId": "ARCH-TS-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "db/check-tables.ts",
+      "line": 83,
+      "column": 19,
+      "message": "Explicit any type"
+    },
+    {
+      "ruleId": "ARCH-TS-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "db/check-tables.ts",
+      "line": 87,
+      "column": 17,
+      "message": "Explicit any type"
+    },
+    {
+      "ruleId": "ARCH-TS-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "db/knexfile.ts",
+      "line": 10,
+      "column": 17,
+      "message": "Explicit any type"
+    },
+    {
+      "ruleId": "ARCH-TS-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "db/migrate.ts",
+      "line": 28,
+      "column": 17,
+      "message": "Explicit any type"
+    },
+    {
+      "ruleId": "ARCH-TS-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/db/index.ts",
+      "line": 30,
+      "column": 41,
+      "message": "Explicit any type"
+    },
+    {
+      "ruleId": "ARCH-TS-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/crmService.ts",
+      "line": 21,
+      "column": 27,
+      "message": "Explicit any type"
+    },
+    {
+      "ruleId": "ARCH-TS-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/utils/common.ts",
+      "line": 48,
+      "column": 52,
+      "message": "Explicit any type"
+    },
+    {
+      "ruleId": "ARCH-TS-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/utils/common.ts",
+      "line": 55,
+      "column": 40,
+      "message": "Explicit any type"
+    },
+    {
+      "ruleId": "ARCH-TS-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/utils/common.ts",
+      "line": 56,
+      "column": 40,
+      "message": "Explicit any type"
+    },
+    {
+      "ruleId": "ARCH-TS-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/utils/fileProcessors/doc.ts",
+      "line": 11,
+      "column": 7,
+      "message": "Explicit any type"
+    },
+    {
+      "ruleId": "ARCH-TS-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/utils/fileProcessors/doc.ts",
+      "line": 21,
+      "column": 38,
+      "message": "Explicit any type"
+    },
+    {
+      "ruleId": "ARCH-TS-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/utils/fileProcessors/doc.ts",
+      "line": 21,
+      "column": 44,
+      "message": "Explicit any type"
+    },
+    {
+      "ruleId": "ARCH-TS-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/utils/fileProcessors/doc.ts",
+      "line": 30,
+      "column": 25,
+      "message": "Explicit any type"
+    },
+    {
+      "ruleId": "ARCH-TS-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/utils/fileProcessors/doc.ts",
+      "line": 42,
+      "column": 16,
+      "message": "Explicit any type"
+    },
+    {
+      "ruleId": "ARCH-TS-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/utils/fileProcessors/doc.ts",
+      "line": 95,
+      "column": 59,
+      "message": "Explicit any type"
+    },
+    {
+      "ruleId": "ARCH-TS-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/utils/fileProcessors/pdf-simple.ts",
+      "line": 62,
+      "column": 30,
+      "message": "Explicit any type"
+    },
+    {
+      "ruleId": "ARCH-TS-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/utils/fileProcessors/pdf-simple.ts",
+      "line": 66,
+      "column": 8,
+      "message": "Explicit any type"
+    },
+    {
+      "ruleId": "ARCH-TS-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/utils/fileProcessors/pdf-simple.ts",
+      "line": 128,
+      "column": 37,
+      "message": "Explicit any type"
+    },
+    {
+      "ruleId": "ARCH-TS-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/utils/fileProcessors/pdf-simple.ts",
+      "line": 260,
+      "column": 9,
+      "message": "Explicit any type"
+    },
+    {
+      "ruleId": "ARCH-TS-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/utils/fileProcessors/pdf/getPageInfo.ts",
+      "line": 16,
+      "column": 24,
+      "message": "Explicit any type"
+    },
+    {
+      "ruleId": "ARCH-TS-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/utils/fileProcessors/pdf/getPageInfo.ts",
+      "line": 26,
+      "column": 21,
+      "message": "Explicit any type"
+    },
+    {
+      "ruleId": "ARCH-TS-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/authService.ts",
+      "line": 54,
+      "column": 3,
+      "message": "Raw string in stable decision logic"
+    },
+    {
+      "ruleId": "ARCH-TS-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/chatService.ts",
+      "line": 269,
+      "column": 9,
+      "message": "Raw string in stable decision logic"
+    },
+    {
+      "ruleId": "ARCH-TS-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/chatService.ts",
+      "line": 325,
+      "column": 9,
+      "message": "Raw string in stable decision logic"
+    },
+    {
+      "ruleId": "ARCH-TS-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/crmService.ts",
+      "line": 569,
+      "column": 3,
+      "message": "Raw string in stable decision logic"
+    },
+    {
+      "ruleId": "ARCH-TS-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/crmService.ts",
+      "line": 597,
+      "column": 3,
+      "message": "Raw string in stable decision logic"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/db/common.ts",
+      "line": 21,
+      "column": 1,
+      "message": "Interface IntfGenericListOptions lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/db/tables/tblChats.ts",
+      "line": 44,
+      "column": 1,
+      "message": "Interface IntfChatListResult lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/db/tables/tblGroup.ts",
+      "line": 14,
+      "column": 1,
+      "message": "Interface Group lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/db/tables/tblLog.ts",
+      "line": 35,
+      "column": 1,
+      "message": "Interface IntfLogByActionStats lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/db/tables/tblUser.ts",
+      "line": 69,
+      "column": 1,
+      "message": "Interface IntfUserListOptions lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/db/tables/tblWidgetOperators.ts",
+      "line": 15,
+      "column": 1,
+      "message": "Interface IntfWidgetOperatorRow lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/db/tables/tblWidgets.ts",
+      "line": 31,
+      "column": 1,
+      "message": "Interface IntfWidgetRow lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/db/tables/tblWidgetSessions.ts",
+      "line": 12,
+      "column": 1,
+      "message": "Interface IntfWidgetSessionRow lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/interfaces/auth.ts",
+      "line": 1,
+      "column": 1,
+      "message": "Interface IntfServiceAccess lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/interfaces/auth.ts",
+      "line": 16,
+      "column": 1,
+      "message": "Interface IntfPrivileges lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/interfaces/auth.ts",
+      "line": 24,
+      "column": 1,
+      "message": "Interface IntfAuth lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/interfaces/auth.ts",
+      "line": 31,
+      "column": 1,
+      "message": "Interface IntfRefreshTokenPayload lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/interfaces/common.ts",
+      "line": 1,
+      "column": 1,
+      "message": "Interface IntfFileMeta lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/interfaces/common.ts",
+      "line": 13,
+      "column": 1,
+      "message": "Interface IntfLLMMessage lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/interfaces/config.ts",
+      "line": 1,
+      "column": 1,
+      "message": "Interface IntfAppConfig lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/interfaces/config.ts",
+      "line": 17,
+      "column": 1,
+      "message": "Interface IntfAppLog lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/interfaces/config.ts",
+      "line": 25,
+      "column": 1,
+      "message": "Interface IntfLLMServerConfig lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/interfaces/config.ts",
+      "line": 34,
+      "column": 1,
+      "message": "Interface IntfDBConfig lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/interfaces/config.ts",
+      "line": 78,
+      "column": 1,
+      "message": "Interface IntfConfigs lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/interfaces/exHttp.ts",
+      "line": 14,
+      "column": 1,
+      "message": "Interface IntfExHttp lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/interfaces/file.ts",
+      "line": 1,
+      "column": 1,
+      "message": "Interface IntfFileMeta lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/interfaces/file.ts",
+      "line": 8,
+      "column": 1,
+      "message": "Interface IntfTextExtractResult lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/interfaces/file.ts",
+      "line": 14,
+      "column": 1,
+      "message": "Interface IntfChunkMeta lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/interfaces/file.ts",
+      "line": 22,
+      "column": 1,
+      "message": "Interface IntfChunk lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/interfaces/llm.ts",
+      "line": 7,
+      "column": 1,
+      "message": "Interface IntfLLMMessage lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/interfaces/llm.ts",
+      "line": 12,
+      "column": 1,
+      "message": "Interface IntfChunkPayload lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/routes/auth.ts",
+      "line": 21,
+      "column": 1,
+      "message": "Interface AuthRequestBody lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/routes/shares.ts",
+      "line": 12,
+      "column": 1,
+      "message": "Interface IntfDirSpec lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/routes/summarize.ts",
+      "line": 23,
+      "column": 1,
+      "message": "Interface SummarizeRequestBody lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/chatService.ts",
+      "line": 48,
+      "column": 1,
+      "message": "Interface IntfRefrence lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/chatService.ts",
+      "line": 54,
+      "column": 1,
+      "message": "Interface IntfReaderWithTimeout lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/crmService.ts",
+      "line": 57,
+      "column": 1,
+      "message": "Interface CRMAccess lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/embedService.ts",
+      "line": 5,
+      "column": 1,
+      "message": "Interface EmbeddingResponse lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/ragChatService.ts",
+      "line": 24,
+      "column": 1,
+      "message": "Interface IntfRagContext lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/ragChatService.ts",
+      "line": 30,
+      "column": 1,
+      "message": "Interface IntfRagBeforeGenerateContext lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/ragChatService.ts",
+      "line": 41,
+      "column": 1,
+      "message": "Interface IntfRunRagChatOptions lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/ragService.ts",
+      "line": 29,
+      "column": 1,
+      "message": "Interface RagOptions lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/structuredRag.ts",
+      "line": 5,
+      "column": 1,
+      "message": "Interface StructuredRagManifest lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/structuredRag.ts",
+      "line": 12,
+      "column": 1,
+      "message": "Interface StructuredRagRecord lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/structuredRag.ts",
+      "line": 19,
+      "column": 1,
+      "message": "Interface StructuredRagQuery lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/vectorDB-old.ts",
+      "line": 25,
+      "column": 1,
+      "message": "Interface QdrantSearchPoint lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/vectorDB-old.ts",
+      "line": 33,
+      "column": 1,
+      "message": "Interface FindChunksOptions lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/utils/fileProcessors/doc.ts",
+      "line": 8,
+      "column": 1,
+      "message": "Interface IntfPandocBlock lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/utils/fileProcessors/doc.ts",
+      "line": 14,
+      "column": 1,
+      "message": "Interface IntfVirtualSection lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/utils/fileProcessors/pdf-simple.ts",
+      "line": 9,
+      "column": 1,
+      "message": "Interface IntfTextBlock lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/utils/fileProcessors/pdf-simple.ts",
+      "line": 20,
+      "column": 1,
+      "message": "Interface IntfPageContext lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/utils/fileProcessors/pdf/detectColumns.ts",
+      "line": 17,
+      "column": 1,
+      "message": "Interface IntfDetectedColumn lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/utils/fileProcessors/pdf/interfaces.ts",
+      "line": 11,
+      "column": 1,
+      "message": "Interface IntfPDFDoc lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/utils/fileProcessors/pdf/interfaces.ts",
+      "line": 17,
+      "column": 1,
+      "message": "Interface IntfPageInfo lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/utils/fileProcessors/pdf/interfaces.ts",
+      "line": 35,
+      "column": 1,
+      "message": "Interface IntfLineSegment lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/utils/fileProcessors/pdf/interfaces.ts",
+      "line": 42,
+      "column": 1,
+      "message": "Interface IntfImagePrimitive lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/utils/fileProcessors/pdf/interfaces.ts",
+      "line": 45,
+      "column": 1,
+      "message": "Interface IntfPageGeometry lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/utils/fileProcessors/pdf/interfaces.ts",
+      "line": 61,
+      "column": 1,
+      "message": "Interface IntfXYRegionFeatures lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/utils/fileProcessors/pdf/interfaces.ts",
+      "line": 90,
+      "column": 1,
+      "message": "Interface IntfXYRegionSignals lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/utils/fileProcessors/pdf/interfaces.ts",
+      "line": 105,
+      "column": 1,
+      "message": "Interface IntfXYRegionStructureScores lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/utils/fileProcessors/pdf/interfaces.ts",
+      "line": 111,
+      "column": 1,
+      "message": "Interface IntfXYCutResult lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/utils/fileProcessors/pdf/interfaces.ts",
+      "line": 124,
+      "column": 1,
+      "message": "Interface IntfXYCutOptions lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/utils/fileProcessors/pdf/interfaces.ts",
+      "line": 135,
+      "column": 1,
+      "message": "Interface IntfBlockBox lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/utils/fileProcessors/pdf/interfaces.ts",
+      "line": 139,
+      "column": 1,
+      "message": "Interface IntfGlyph lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/utils/fileProcessors/pdf/interfaces.ts",
+      "line": 151,
+      "column": 1,
+      "message": "Interface IntfTextBlock lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/utils/fileProcessors/pdf/interfaces.ts",
+      "line": 178,
+      "column": 1,
+      "message": "Interface IntfColumn lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/utils/fileProcessors/pdf/interfaces.ts",
+      "line": 183,
+      "column": 1,
+      "message": "Interface IntfPageStripOptions lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/utils/fileProcessors/pdf/interfaces.ts",
+      "line": 199,
+      "column": 1,
+      "message": "Interface IntfMergeOptions lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/utils/fileProcessors/pdf/interfaces.ts",
+      "line": 207,
+      "column": 1,
+      "message": "Interface IntfLineSpacingStats lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/utils/fileProcessors/pdf/interfaces.ts",
+      "line": 214,
+      "column": 1,
+      "message": "Interface IntfXYCutOptions lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/utils/fileProcessors/pdf/page2PNG.ts",
+      "line": 6,
+      "column": 1,
+      "message": "Interface RasterizeOptions lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/utils/fileProcessors/pdf/renderDebugPNG.ts",
+      "line": 6,
+      "column": 1,
+      "message": "Interface IntfDebugRenderOptions lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/utils/fileProcessors/pdf/xy-cut.ts",
+      "line": 182,
+      "column": 1,
+      "message": "Interface IntfGap lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/utils/logger.ts",
+      "line": 9,
+      "column": 3,
+      "message": "Interface Logger lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/utils/oidcFlow.ts",
+      "line": 4,
+      "column": 1,
+      "message": "Interface OIDCFlow lacks intf prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-004",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/db/tables/tblChats.ts",
+      "line": 30,
+      "column": 1,
+      "message": "Type IntfDBChat lacks typ prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-004",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/db/tables/tblChats.ts",
+      "line": 40,
+      "column": 1,
+      "message": "Type TypChatListItem lacks typ prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-004",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/db/tables/tblDic.ts",
+      "line": 27,
+      "column": 1,
+      "message": "Type IntfDictionary lacks typ prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-004",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/db/tables/tblFiles.ts",
+      "line": 35,
+      "column": 1,
+      "message": "Type IntfFile lacks typ prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-004",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/db/tables/tblFiles.ts",
+      "line": 42,
+      "column": 1,
+      "message": "Type TypFileListItem lacks typ prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-004",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/db/tables/tblLog.ts",
+      "line": 26,
+      "column": 1,
+      "message": "Type IntfLog lacks typ prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-004",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/db/tables/tblMessages.ts",
+      "line": 33,
+      "column": 1,
+      "message": "Type IntfMessage lacks typ prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-004",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/db/tables/tblNews.ts",
+      "line": 21,
+      "column": 1,
+      "message": "Type IntfNews lacks typ prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-004",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/db/tables/tblPerUserStats.ts",
+      "line": 31,
+      "column": 1,
+      "message": "Type IntfPerUserStats lacks typ prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-004",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/db/tables/tblSampleQuestions.ts",
+      "line": 23,
+      "column": 1,
+      "message": "Type IntfSampleQuestion lacks typ prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-004",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/db/tables/tblSharedFileRequests.ts",
+      "line": 35,
+      "column": 1,
+      "message": "Type IntfSharedFileRequests lacks typ prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-004",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/db/tables/tblSharedFiles.ts",
+      "line": 27,
+      "column": 1,
+      "message": "Type IntfLog lacks typ prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-004",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/db/tables/tblSharedFilesDownloads.ts",
+      "line": 23,
+      "column": 1,
+      "message": "Type IntfLog lacks typ prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-004",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/db/tables/tblUser.ts",
+      "line": 57,
+      "column": 1,
+      "message": "Type IntfUser lacks typ prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-004",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/db/tables/tblUser.ts",
+      "line": 67,
+      "column": 1,
+      "message": "Type TypUserListItem lacks typ prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-004",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/interfaces/db.ts",
+      "line": 1,
+      "column": 1,
+      "message": "Type Select lacks typ prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-004",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/routes/faq.ts",
+      "line": 29,
+      "column": 1,
+      "message": "Type FaqItem lacks typ prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-004",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/chatService.ts",
+      "line": 14,
+      "column": 1,
+      "message": "Type TypStreamHandlers lacks typ prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-004",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/chatService.ts",
+      "line": 21,
+      "column": 1,
+      "message": "Type TypActiveRequest lacks typ prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-004",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/chatService.ts",
+      "line": 28,
+      "column": 1,
+      "message": "Type TypVirtualResponse lacks typ prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-004",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/crmService.ts",
+      "line": 21,
+      "column": 1,
+      "message": "Type Row lacks typ prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-004",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/crmService.ts",
+      "line": 22,
+      "column": 1,
+      "message": "Type CRMRole lacks typ prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-004",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/embedService.ts",
+      "line": 11,
+      "column": 1,
+      "message": "Type EmbeddingPurpose lacks typ prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-004",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/file2TxtService.ts",
+      "line": 25,
+      "column": 1,
+      "message": "Type StructuredChunkMeta lacks typ prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-004",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/structuredRag.ts",
+      "line": 26,
+      "column": 1,
+      "message": "Type StructuredChunkPayload lacks typ prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-004",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/vectorDB-old.ts",
+      "line": 20,
+      "column": 1,
+      "message": "Type FieldCondition lacks typ prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-004",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/vectorDB-old.ts",
+      "line": 21,
+      "column": 1,
+      "message": "Type Filter lacks typ prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-004",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/vectorDB-old.ts",
+      "line": 22,
+      "column": 1,
+      "message": "Type Range lacks typ prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-004",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/vectorDB-old.ts",
+      "line": 23,
+      "column": 1,
+      "message": "Type QRecord lacks typ prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-004",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/vectorDB-old.ts",
+      "line": 38,
+      "column": 1,
+      "message": "Type StructuredChunkMeta lacks typ prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-004",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/widgetService.ts",
+      "line": 31,
+      "column": 1,
+      "message": "Type WidgetAppearance lacks typ prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-004",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/widgetService.ts",
+      "line": 48,
+      "column": 1,
+      "message": "Type WidgetScheduleDay lacks typ prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-004",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/widgetService.ts",
+      "line": 49,
+      "column": 1,
+      "message": "Type WidgetSchedule lacks typ prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-004",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/widgetService.ts",
+      "line": 54,
+      "column": 1,
+      "message": "Type WidgetBehavior lacks typ prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-004",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/widgetService.ts",
+      "line": 74,
+      "column": 1,
+      "message": "Type WidgetConfig lacks typ prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-004",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/widgetService.ts",
+      "line": 795,
+      "column": 1,
+      "message": "Type HandoffTrigger lacks typ prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-004",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/utils/asyncRouter.ts",
+      "line": 50,
+      "column": 1,
+      "message": "Type RouteDef lacks typ prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-004",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/utils/asyncRouter.ts",
+      "line": 57,
+      "column": 1,
+      "message": "Type RouteModule lacks typ prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-004",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/utils/asyncRouter.ts",
+      "line": 61,
+      "column": 1,
+      "message": "Type RouteLoader lacks typ prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-004",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/utils/fileProcessors/pdf-simple.ts",
+      "line": 133,
+      "column": 3,
+      "message": "Type Glyph lacks typ prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-004",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/utils/fileProcessors/pdf/filterHeaderFooter.ts",
+      "line": 71,
+      "column": 3,
+      "message": "Type Candidate lacks typ prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-004",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/utils/fileProcessors/pdf/interfaces.ts",
+      "line": 4,
+      "column": 1,
+      "message": "Type IntfPDFRawPage lacks typ prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-004",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/utils/fileProcessors/pdf/interfaces.ts",
+      "line": 5,
+      "column": 1,
+      "message": "Type IntfPDFTextContent lacks typ prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-004",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/utils/fileProcessors/pdf/interfaces.ts",
+      "line": 6,
+      "column": 1,
+      "message": "Type IntfPDFOperatorList lacks typ prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-004",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/utils/fileProcessors/pdf/interfaces.ts",
+      "line": 7,
+      "column": 1,
+      "message": "Type IntfPDFRender lacks typ prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-004",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/utils/fileProcessors/pdf/interfaces.ts",
+      "line": 8,
+      "column": 1,
+      "message": "Type IntfPDFViewPort lacks typ prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-004",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/utils/fileProcessors/pdf/interfaces.ts",
+      "line": 9,
+      "column": 1,
+      "message": "Type IntfPDFRaw lacks typ prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-004",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/utils/fileProcessors/pdf/interfaces.ts",
+      "line": 52,
+      "column": 1,
+      "message": "Type TypXYRegionKind lacks typ prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-004",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/utils/fileProcessors/pdf/interfaces.ts",
+      "line": 212,
+      "column": 1,
+      "message": "Type TypAxis lacks typ prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-004",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/utils/fileProcessors/pdf/mergeIntoParagraphs.ts",
+      "line": 71,
+      "column": 3,
+      "message": "Type ActiveNumberedList lacks typ prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-004",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/utils/fileProcessors/pdf/mergeIntoParagraphs.ts",
+      "line": 91,
+      "column": 3,
+      "message": "Type DriftKind lacks typ prefix"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-006",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/db/tables/tblUser.ts",
+      "line": 16,
+      "column": 7,
+      "message": "Variable priv_cols is not camelCase"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-006",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/db/tables/tblUser.ts",
+      "line": 30,
+      "column": 14,
+      "message": "Variable public_cols is not camelCase"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-006",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/routes/summarize.ts",
+      "line": 99,
+      "column": 9,
+      "message": "Variable trimmed_text is not camelCase"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-006",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/routes/translate.ts",
+      "line": 175,
+      "column": 9,
+      "message": "Variable trimmed_text is not camelCase"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-006",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/ragService.ts",
+      "line": 303,
+      "column": 5,
+      "message": "Function _deleteFileInternal is not camelCase"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-006",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/ragService.ts",
+      "line": 446,
+      "column": 3,
+      "message": "Function _ragBasedChatInternal is not camelCase"
+    },
+    {
+      "ruleId": "ARCH-TS-NAME-006",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "src/services/vectorDB-old.ts",
+      "line": 99,
+      "column": 7,
+      "message": "Variable VDBClient is not camelCase"
+    }
+  ]
+}

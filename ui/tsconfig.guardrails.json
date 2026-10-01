@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "target": "ESNext",
+    "strict": true,
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "types": ["node"],
+    "skipLibCheck": true
+  },
+  "include": ["scripts/activity-report.ts", "scripts/static-architecture.ts", "tests/architecture/**/*.ts", "tests/reporting/**/*.ts", "tests/conformance/authority/**/*.ts"]
+}

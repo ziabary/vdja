@@ -74,6 +74,29 @@ read governing docs
 
 Do not silently redesign architecture during implementation.
 
+## Mandatory Activity Reporting
+
+Every repository-modifying task must create exactly one Activity Report in the repository reports directory.
+
+Canonical path and filename:
+
+```text
+docs/reports/YYYYMMDD-HHmm-PURPOSE.md
+```
+
+Example:
+
+```text
+docs/reports/20260210-0207-ARCHITECTURE-GUARDRAILS.md
+```
+
+Rules:
+
+- `PURPOSE` must be uppercase ASCII kebab-case.
+- The report file is created by the supported `report:start` workflow and verified by `report:verify`.
+- Repository-modifying work is not considered complete until the report exists, is finalized, and passes verification.
+- Do not claim unrelated user/workspace modifications as part of the current task; record them under `Pre-existing Workspace Changes` when applicable.
+
 ## Canonical Ownership
 
 Every significant fact, rule, lifecycle, and decision has one canonical owner.
