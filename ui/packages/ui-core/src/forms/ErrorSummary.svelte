@@ -1,0 +1,1 @@
+<script lang="ts">let {title,errors}:{title:string;errors:readonly {id:string;message:string}[]}=$props();</script>{#if errors.length}<div class="alert alert-danger" role="alert" tabindex="-1"><strong>{title}</strong><ul>{#each errors as error (error.id)}<li><a href={`#${error.id}`}>{error.message}</a></li>{/each}</ul></div>{/if}

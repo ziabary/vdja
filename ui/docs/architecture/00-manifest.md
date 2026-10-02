@@ -66,6 +66,8 @@ The product belongs to Targoman.
 
 Runtime branding is configurable.
 
+Code/package identity and deployment branding are separate concerns. First-party target packages use the internal `@targoman/*` namespace. Customer or deployment names such as FAPA must not be canonical package names, module IDs, shared source-code identity, or default visual branding. Runtime visual identity comes from the active Brand Profile; the FAPA name or logo is rendered only when that profile selects FAPA branding.
+
 No business module may depend on Targoman-specific:
 
 - logos;

@@ -1,0 +1,1 @@
+<script lang="ts">let {title,description}:{title:string;description?:string}=$props();</script><section class="p-4 text-center" aria-label={title}><h2 class="h5">{title}</h2>{#if description}<p>{description}</p>{/if}</section>

@@ -1,0 +1,1 @@
+<script lang="ts">let {message,kind='info'}:{message:string;kind?:'info'|'success'|'error'}=$props();</script><div class={`alert alert-${kind==='error'?'danger':kind==='success'?'success':'info'}`} role="status" aria-live="polite">{message}</div>

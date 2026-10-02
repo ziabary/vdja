@@ -1,6 +1,6 @@
 # U0 — UI Guardrails and Testing Contract
 
-Status: guardrails and acceptance strategy **approved for U1 foundation, not installed or executed as a target UI suite**. U0/U0.1 changes documentation only. Existing T1/T1.1 architecture gates remain mandatory and are not weakened to accommodate UI work. Sources: [governing conventions](../architecture/02-engineering-conventions.md), [Web instructions](../../apps/web/AGENTS.md), [target contract](03-target-ui-architecture.md), [migration contract](04-migration-contract.md), and inspected [reference tests](01-reference-implementations.md).
+Status: U0 guardrail contract with UI01–UI16, U1.1 UI19–UI22, and U1.2 UI23–UI24 installed in `scripts/target-ui-guardrails.ts`. UI17–UI18 remain feature/cutover gates. Existing T1/T1.1 architecture gates remain mandatory and are not weakened to accommodate UI work. Sources: [governing conventions](../architecture/02-engineering-conventions.md), [Web instructions](../../apps/web/AGENTS.md), [target contract](03-target-ui-architecture.md), [migration contract](04-migration-contract.md), and inspected [reference tests](01-reference-implementations.md).
 
 ## 1. Enforcement scope and timing
 
@@ -32,6 +32,12 @@ Use TypeScript compiler/import resolution, Svelte compiler AST, package dependen
 | UI16 | No browser storage credentials/protected drafts by default | AST sinks + application browser test; reject token persistence/sessionStorage prompt copies, allow non-sensitive theme hints | Foundation |
 | UI17 | Abort/terminal/context ownership for async work | Contract and component tests; static rules identify missing operation adapters but do not claim to prove lifecycle from syntax | Before each async feature cutover |
 | UI18 | Public assets/config are safe and versioned | Build manifest/export schema and runtime config tests; no paths/credentials/scripts injected by Brand Profile; embed asset compatibility test | Before cutover |
+| UI19 | Internal target packages use `@targoman/*` | Validate target package names, dependencies and imports; reject `@fapa/*` or customer-scoped packages, allow approved internal imports | U1.1 foundation |
+| UI20 | Generic visual branding comes from Brand Profile | Detect FAPA visual literals and package-name-derived display names in generic Web/UI components; allow `brand.displayName` and explicit owner fixtures | U1.1 foundation |
+| UI21 | FontAwesome is the functional icon source | Reject competing icon package imports/dependencies and emoji-only interactive icons; allow FontAwesome classes and textual content emoji | U1.1 foundation |
+| UI22 | Required legacy font/icon assets stay present | Check static IRANSansX/FontAwesome files; focused tests validate byte provenance and every local CSS font URL | U1.1 foundation |
+| UI23 | Framework-owned labels use the typed locale boundary | Reject a narrow set of hard-coded English shell/shared-control labels; content fixtures remain outside this rule | U1.2 foundation |
+| UI24 | Foundation showcase is development-only | Require a server load guard using `import.meta.env.DEV`; production HTTP smoke must return 404 | U1.2 foundation |
 
 Rules UI03/UI07 cannot fully establish security by static pattern matching. They are defense layers paired with backend contract, SSR and browser isolation tests. Exceptions follow repository policy; each rule has a semantic owner and one canonical implementation. No broad rule that forbids harmless role labels or code samples merely containing an authorization word.
 

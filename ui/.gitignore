@@ -4,6 +4,8 @@ Old
 dist
 logs
 package-lock.json
+!/package-lock.json
 yarn.lock
+apps/web/build/
 db/data
 *.zip

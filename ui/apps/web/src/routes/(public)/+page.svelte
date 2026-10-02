@@ -1,0 +1,2 @@
+<script lang="ts">import {resolve} from '$app/paths';import {useLocale} from '@targoman/ui-core';const i18n=useLocale();</script>
+<section><h2>{i18n.t('publicTitle')}</h2><p>{i18n.t('previewNotice')}</p><nav aria-label={i18n.t('foundation')}>{#if import.meta.env.DEV}<a href={resolve('/(public)/foundation')}>{i18n.t('foundation')}</a> · {/if}<a href={resolve('/(user)/dashboard')}>{i18n.t('dashboard')}</a> · <a href={resolve('/(admin)/admin')}>{i18n.t('administration')}</a></nav></section>

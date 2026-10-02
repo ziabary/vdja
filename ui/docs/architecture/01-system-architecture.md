@@ -1006,6 +1006,8 @@ Security limits define hard upper or lower boundaries where applicable.
 
 Branding is represented by a Brand Profile.
 
+Internal first-party packages use `@targoman/*`; this code namespace does not select the UI brand. Customer/deployment names, including FAPA, are not package/module IDs or generic source-code identity. The active Brand Profile alone supplies display names, logos, favicon, support/legal identity and visual tokens at runtime. A FAPA profile may render FAPA assets; another deployment renders its own profile without a source fork.
+
 Possible fields include:
 
 ```text

@@ -1,0 +1,27 @@
+{
+  "name": "@targoman/calendar-svelte",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "svelte": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "check": "svelte-check --tsconfig ./tsconfig.json"
+  },
+  "dependencies": {
+    "@targoman/calendar-core": "1.0.0",
+    "@targoman/contracts": "1.0.0",
+    "@targoman/ui-core": "1.0.0",
+    "svelte": "5.57.1"
+  },
+  "devDependencies": {
+    "svelte-check": "4.7.6",
+    "typescript": "6.0.3"
+  }
+}

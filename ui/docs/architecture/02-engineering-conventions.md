@@ -1989,6 +1989,8 @@ Business modules must not hard-code customer branding.
 
 Branding belongs to the platform branding system.
 
+Use `@targoman/*` for first-party target packages and imports. Never use a customer or deployment name such as FAPA as a package scope, module ID, generic source-code identity, or default visual brand. Generic UI receives visual identity from the active Brand Profile. Package metadata is never a display-name source.
+
 ---
 
 # 72. RTL and LTR Must Be Deliberately Supported

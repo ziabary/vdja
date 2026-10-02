@@ -1,0 +1,20 @@
+@use 'sass:map';
+$grid-breakpoints: (xs: 0, sm: 576px, md: 768px, lg: 992px, xl: 1200px, xxl: 1400px);
+:root { --brand-primary: #285d84; --focus-ring: #176ea6; --bs-body-font-family: 'IRANSansX', Tahoma, sans-serif; font-family: var(--bs-body-font-family); }
+body, button, input, select, textarea, table, dialog, nav, .markdown-view { font-family: var(--bs-body-font-family); }
+.fa-num { font-feature-settings: 'ss02'; }
+.ltr { direction: ltr; text-align: left; unicode-bidi: isolate; }
+.rtl { direction: rtl; text-align: right; unicode-bidi: isolate; }
+.hidden { display: none !important; }
+[hidden] { display: none !important; }
+:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 2px; }
+.shell { --bs-body-font-family: 'IRANSansX', Tahoma, sans-serif; min-height: 100dvh; display: grid; grid-template-rows: auto 1fr auto; }
+.shell-header,.shell-footer { padding-block: 1rem; padding-inline: max(1rem, env(safe-area-inset-left)); }
+.shell-header { border-block-end: 1px solid var(--bs-border-color); }
+.shell-footer { border-block-start: 1px solid var(--bs-border-color); display: flex; gap: 1rem; flex-wrap: wrap; }
+.shell-main { min-width: 0; padding-block: 1.5rem; padding-inline: clamp(1rem, 3vw, 3rem); }
+.skip-link { position: absolute; inset-block-start: -10rem; inset-inline-start: 1rem; z-index: var(--bs-tooltip-zindex, 1080); }
+.skip-link:focus { inset-block-start: 1rem; }
+.ltr-island,code,pre,[type='email'],[type='url'] { direction: ltr; unicode-bidi: isolate; }
+@media (max-width: map.get($grid-breakpoints, md)) { .shell-header { flex-wrap: wrap; } }
+@media (prefers-reduced-motion: reduce) { *,*::before,*::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; } }

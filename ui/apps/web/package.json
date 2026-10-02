@@ -1,0 +1,41 @@
+{
+  "name": "@targoman/web",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "preview": "vite preview",
+    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@targoman/branding": "1.0.0",
+    "@targoman/calendar-core": "1.0.0",
+    "@targoman/calendar-svelte": "1.0.0",
+    "@targoman/contracts": "1.0.0",
+    "@targoman/ui-core": "1.0.0",
+    "bootstrap": "5.3.8"
+  },
+  "devDependencies": {
+    "@sveltejs/adapter-node": "6.0.0",
+    "@sveltejs/kit": "3.0.0",
+    "@sveltejs/vite-plugin-svelte": "7.3.1",
+    "axe-core": "4.11.3",
+    "sass": "1.102.0",
+    "svelte": "5.57.1",
+    "svelte-check": "4.7.6",
+    "typescript": "6.0.3",
+    "vite": "8.3.2",
+    "vitest": "5.0.3",
+    "@types/node": "22.20.5",
+    "jsdom": "26.1.0"
+  },
+  "engines": {
+    "node": ">=22.17 <23"
+  },
+  "imports": {
+    "#lib/*": "./src/lib/*"
+  }
+}

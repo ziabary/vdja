@@ -917,6 +917,8 @@ belong to Deployment/Brand Profiles.
 
 No module hard-codes Targoman public identity.
 
+Deployment and Brand Profiles select runtime visual identity independently of the `@targoman/*` code/package namespace. FAPA is a deployment-specific brand only: its name and assets may be shown when the active Brand Profile selects them. Customer names do not become canonical package names, module IDs, or generic UI defaults.
+
 ---
 
 # 57. API Is Stateless Where Practical

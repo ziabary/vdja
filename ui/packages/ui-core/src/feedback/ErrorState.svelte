@@ -1,0 +1,1 @@
+<script lang="ts">let {title,description}:{title:string;description?:string}=$props();</script><section class="alert alert-danger" role="alert"><h2 class="h5">{title}</h2>{#if description}<p>{description}</p>{/if}</section>
