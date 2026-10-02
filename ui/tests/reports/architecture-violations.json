@@ -21,13 +21,13 @@
     "ARCH-DB-003": 11,
     "ARCH-DB-004": 0,
     "ARCH-DB-005": 0,
-    "ARCH-DB-006": 0,
+    "ARCH-DB-006": 2,
     "ARCH-DB-NAME-001": 0,
     "ARCH-DB-NAME-002": 0,
     "ARCH-DB-NAME-003": 0,
     "ARCH-DB-NAME-004": 0,
     "ARCH-DB-NAME-005": 0,
-    "ARCH-DB-NAME-006": 0,
+    "ARCH-DB-NAME-006": 1,
     "ARCH-TS-NAME-001": 0,
     "ARCH-TS-NAME-002": 70,
     "ARCH-TS-NAME-003": 0,
@@ -35,8 +35,8 @@
     "ARCH-TS-NAME-005": 0,
     "ARCH-TS-NAME-006": 7,
     "ARCH-TS-NAME-007": 0,
-    "ARCH-TS-001": 25,
-    "ARCH-TS-002": 5,
+    "ARCH-TS-001": 26,
+    "ARCH-TS-002": 6,
     "ARCH-TS-003": 0,
     "ARCH-TS-004": 0,
     "ARCH-AUTH-001": 2,
@@ -53,11 +53,11 @@
     "ARCH-DOC-002": 0,
     "ARCH-MOD-001": 5,
     "ARCH-MOD-002": 0,
-    "ARCH-MOD-003": 24
+    "ARCH-MOD-003": 19
   },
   "classificationCounts": {
-    "ARCHITECTURE_VIOLATION": 212,
-    "TARGET_NOT_IMPLEMENTED": 29,
+    "ARCHITECTURE_VIOLATION": 217,
+    "TARGET_NOT_IMPLEMENTED": 24,
     "TEST_INFRA_FAILURE": 0
   },
   "violations": [
@@ -494,6 +494,30 @@
       "message": "Transport imports database dependency ../db/atDB"
     },
     {
+      "ruleId": "ARCH-DB-006",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "packages/persistence/src/migrations/001-foundation.sql",
+      "line": 26,
+      "column": 38,
+      "message": "Unqualified SQL object PUBLIC"
+    },
+    {
+      "ruleId": "ARCH-DB-006",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "packages/persistence/src/migrations/001-foundation.sql",
+      "line": 63,
+      "column": 47,
+      "message": "Unqualified SQL object PUBLIC"
+    },
+    {
+      "ruleId": "ARCH-DB-NAME-006",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "packages/persistence/src/migrations/001-foundation.sql",
+      "line": 30,
+      "column": 1,
+      "message": "Procedural local v_record_id requires r_"
+    },
+    {
       "ruleId": "ARCH-MOD-001",
       "classification": "TARGET_NOT_IMPLEMENTED",
       "file": "modules/crm/manifest.ts",
@@ -550,31 +574,7 @@
     {
       "ruleId": "ARCH-MOD-003",
       "classification": "TARGET_NOT_IMPLEMENTED",
-      "file": "packages/branding/package.json",
-      "message": "Package manifest missing"
-    },
-    {
-      "ruleId": "ARCH-MOD-003",
-      "classification": "TARGET_NOT_IMPLEMENTED",
-      "file": "packages/calendar-core/package.json",
-      "message": "Package manifest missing"
-    },
-    {
-      "ruleId": "ARCH-MOD-003",
-      "classification": "TARGET_NOT_IMPLEMENTED",
-      "file": "packages/calendar-svelte/package.json",
-      "message": "Package manifest missing"
-    },
-    {
-      "ruleId": "ARCH-MOD-003",
-      "classification": "TARGET_NOT_IMPLEMENTED",
       "file": "packages/commercial/package.json",
-      "message": "Package manifest missing"
-    },
-    {
-      "ruleId": "ARCH-MOD-003",
-      "classification": "TARGET_NOT_IMPLEMENTED",
-      "file": "packages/contracts/package.json",
       "message": "Package manifest missing"
     },
     {
@@ -658,14 +658,16 @@
     {
       "ruleId": "ARCH-MOD-003",
       "classification": "TARGET_NOT_IMPLEMENTED",
-      "file": "packages/ui-core/package.json",
+      "file": "packages/usage/package.json",
       "message": "Package manifest missing"
     },
     {
-      "ruleId": "ARCH-MOD-003",
-      "classification": "TARGET_NOT_IMPLEMENTED",
-      "file": "packages/usage/package.json",
-      "message": "Package manifest missing"
+      "ruleId": "ARCH-TS-001",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "apps/web/.svelte-kit/types/src/routes/(public)/foundation/proxy+page.server.ts",
+      "line": 5,
+      "column": 10,
+      "message": "Explicit any type"
     },
     {
       "ruleId": "ARCH-TS-001",
@@ -866,6 +868,14 @@
       "line": 26,
       "column": 21,
       "message": "Explicit any type"
+    },
+    {
+      "ruleId": "ARCH-TS-002",
+      "classification": "ARCHITECTURE_VIOLATION",
+      "file": "packages/persistence/src/ready.ts",
+      "line": 28,
+      "column": 126,
+      "message": "Raw string in stable decision logic"
     },
     {
       "ruleId": "ARCH-TS-002",

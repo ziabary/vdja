@@ -1,0 +1,23 @@
+services:
+  postgres-t2:
+    image: postgres:16.15-bookworm
+    container_name: vadja-postgres-t2
+    environment:
+      POSTGRES_USER: t2_bootstrap
+      POSTGRES_PASSWORD: ${T2_BOOTSTRAP_PASSWORD:?set in .env.pg.local}
+      POSTGRES_DB: targoman_t2
+      T2_MIGRATION_PASSWORD: ${T2_MIGRATION_PASSWORD:?set in .env.pg.local}
+      T2_RUNTIME_PASSWORD: ${T2_RUNTIME_PASSWORD:?set in .env.pg.local}
+      POSTGRES_INITDB_ARGS: --auth-host=scram-sha-256 --auth-local=scram-sha-256
+    ports:
+      - "127.0.0.1:55432:5432"
+    volumes:
+      - postgres_t2_data:/var/lib/postgresql/data
+      - ./postgres-t2-init.sh:/docker-entrypoint-initdb.d/01-roles.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U t2_bootstrap -d targoman_t2"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+volumes:
+  postgres_t2_data:

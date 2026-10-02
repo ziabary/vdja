@@ -52,6 +52,14 @@
     "check:web": "npm run check --workspace @targoman/web",
     "test:ui": "npm run test --workspace @targoman/web",
     "test:architecture:target-ui": "node --import tsx scripts/target-ui-guardrails.ts"
+    ,"db:pg:start": "node scripts/pg-dev.mjs start"
+    ,"db:pg:status": "node scripts/pg-dev.mjs status"
+    ,"db:pg:stop": "node scripts/pg-dev.mjs stop"
+    ,"db:pg:migrate": "node --import tsx packages/persistence/src/migrate.ts"
+    ,"db:pg:ready": "node --import tsx packages/persistence/src/ready.ts"
+    ,"test:db:conformance": "node --import tsx tests/db/conformance.ts"
+    ,"test:db:integration": "node --import tsx tests/db/integration.ts"
+    ,"check:persistence": "tsc --noEmit -p tsconfig.persistence.json"
   },
   "keywords": [
     "LLM",
@@ -72,6 +80,7 @@
     "@types/ms": "^2.1.0",
     "@types/multer": "^2.0.0",
     "@types/node": "^25.0.10",
+    "@types/pg": "8.15.5",
     "@types/swagger-jsdoc": "^6.0.4",
     "@types/swagger-ui-express": "^4.1.8",
     "@types/uuid": "^11.0.0",
@@ -93,9 +102,9 @@
     "tsup": "^8.5.1",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
+    "vite": "8.3.2",
     "ws": "8.21.0",
-    "yargs": "^17.7.2",
-    "vite": "8.3.2"
+    "yargs": "^17.7.2"
   },
   "dependencies": {
     "@napi-rs/canvas": "^0.1.94",
@@ -109,6 +118,7 @@
     "express-session": "^1.19.0",
     "jsonwebtoken": "^9.0.3",
     "knex": "^3.1.0",
+    "kysely": "0.28.8",
     "md5": "^2.3.0",
     "morgan": "^1.10.1",
     "ms": "^2.1.3",
@@ -118,7 +128,7 @@
     "mysql2": "^3.16.1",
     "openid-client": "^6.8.1",
     "pdfjs-dist": "^4.10.38",
-    "pg": "^8.18.0",
+    "pg": "8.18.0",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
     "unorm": "^1.6.0",
@@ -132,7 +142,8 @@
     "packages/branding",
     "packages/ui-core",
     "packages/calendar-core",
-    "packages/calendar-svelte"
+    "packages/calendar-svelte",
+    "packages/persistence"
   ],
   "overrides": {
     "devalue": "5.9.3",

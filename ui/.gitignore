@@ -9,5 +9,6 @@ yarn.lock
 apps/web/build/
 db/data
 /docker/mysql/data/
+.env.pg.local
 /src/utils/fileProcessors/pdf/pdf.worker.min.mjs
 *.zip

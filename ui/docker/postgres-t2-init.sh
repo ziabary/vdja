@@ -1,0 +1,15 @@
+#!/bin/sh
+set -eu
+export PGPASSWORD="$POSTGRES_PASSWORD"
+psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB" \
+  -v migration_password="$T2_MIGRATION_PASSWORD" -v runtime_password="$T2_RUNTIME_PASSWORD" <<'SQL'
+SELECT format('CREATE ROLE t2_migration LOGIN PASSWORD %L NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION', :'migration_password') \gexec
+SELECT format('CREATE ROLE t2_runtime LOGIN PASSWORD %L NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION', :'runtime_password') \gexec
+REVOKE ALL ON DATABASE targoman_t2 FROM PUBLIC;
+GRANT CONNECT ON DATABASE targoman_t2 TO t2_migration, t2_runtime;
+GRANT CREATE ON DATABASE targoman_t2 TO t2_migration;
+REVOKE CREATE ON SCHEMA public FROM PUBLIC;
+CREATE SCHEMA platform AUTHORIZATION t2_migration;
+CREATE SCHEMA audit AUTHORIZATION t2_migration;
+GRANT USAGE ON SCHEMA platform, audit TO t2_runtime;
+SQL
