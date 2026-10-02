@@ -1,6 +1,8 @@
 .form-control.calendar-trigger{display:flex;flex-flow:row nowrap;align-items:center;gap:.75rem;min-height:2.6rem;text-align:start;cursor:pointer;}
 .form-control.calendar-trigger>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .form-control.calendar-trigger>.calendar-trigger-icon{flex:none;margin-inline-start:auto;color:var(--bs-secondary-color);font-size:.9rem;}
+.calendar-input-shell{position:relative;}
+.calendar-empty-today{position:absolute;inset-inline-start:.55rem;top:50%;transform:translateY(-50%);min-height:2rem;padding:.2rem .25rem;}
 .calendar-popover{position:fixed;z-index:var(--bs-popover-zindex,1070);width:min(19.75rem,calc(100vw - 16px));max-height:calc(100dvh - 16px);overflow:auto;padding:1rem;border:1px solid var(--bs-border-color);border-radius:.85rem;background:var(--bs-body-bg);color:var(--bs-body-color);box-shadow:0 18px 48px rgba(0,0,0,.24);}
 .calendar-popover.range-popover{width:min(40rem,calc(100vw - 16px));}
 .calendar-months{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.25rem;}

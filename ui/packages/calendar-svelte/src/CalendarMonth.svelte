@@ -1,7 +1,7 @@
 <script lang="ts">
   import {tick} from 'svelte';
   import {JALALI_MAX_YEAR,JALALI_MIN_YEAR,JALALI_MONTH_NAMES,normalizeDateDigits,toPersianDigits} from '@targoman/calendar-core';
-  import {englishJalaliMonth,useLocale} from '@targoman/ui-core';
+  import {englishJalaliMonth,normalizeNumericDraft,useLocale} from '@targoman/ui-core';
   import {monthArrow} from './keyboard.js';
   import {canShowPickerMonth,canShowPickerYear,pickerDays} from './picker.js';
 
@@ -21,6 +21,7 @@
   let panel=$state<'days'|'months'|'years'>('days');
   let yearPage=$state(0);
   let yearInput=$state('');
+  let yearComposing=false;
   let yearError=$state(false);
   let container:HTMLDivElement;
   let view=$derived(pickerDays(year,month));
@@ -64,6 +65,13 @@
     if(!/^\d{4}$/.test(normalized)||!canShowPickerYear(value,min,max)){yearError=true;void tick().then(()=>onViewChange?.());return;}
     void chooseYear(value);
   }
+  function changeYearInput(event:Event){
+    const input=event.currentTarget as HTMLInputElement;
+    if(yearComposing)return;
+    const next=normalizeNumericDraft(input.value,'integer',0,false);
+    if(next===null||next.length>4){input.value=yearInput;return;}
+    yearInput=next;input.value=next;yearError=false;
+  }
 </script>
 <div bind:this={container} class="calendar-month" {dir}>
   {#if panel==='days'}
@@ -79,7 +87,7 @@
   {:else}
     <header class="month-heading year-heading"><button type="button" class="month-nav" aria-label={i18n.t('previousYears')} disabled={yearPage<=FIRST_YEAR_PAGE} onclick={()=>changeYearPage(-1)}><i class={`fa-solid ${monthArrow(dir,'previous')}`} aria-hidden="true"></i></button><div class="year-heading-copy"><span>{i18n.t('selectYear')}</span><strong>{number(yearPage)}–{number(Math.min(yearPage+YEAR_PAGE_SIZE-1,JALALI_MAX_YEAR))}</strong></div><button type="button" class="month-nav" aria-label={i18n.t('nextYears')} disabled={yearPage>=LAST_YEAR_PAGE} onclick={()=>changeYearPage(1)}><i class={`fa-solid ${monthArrow(dir,'next')}`} aria-hidden="true"></i></button></header>
     <div class="choice-grid year-choice-grid">{#each years as option}<button type="button" class="choice year-option" data-year={option} aria-pressed={option===year} disabled={!canShowPickerYear(option,min,max)} onclick={()=>chooseYear(option)}>{number(option)}</button>{/each}</div>
-    <div class="year-entry"><label>{i18n.t('jalaliYear')}<input type="text" inputmode="numeric" autocomplete="off" maxlength="4" placeholder={number(year)} aria-label={i18n.t('jalaliYear')} aria-invalid={yearError} bind:value={yearInput} oninput={()=>yearError=false} onkeydown={event=>{if(event.key==='Enter'){event.preventDefault();submitYear();}}} /></label><button type="button" class="year-submit" aria-label={i18n.t('goToYear')} onclick={submitYear}>{i18n.t('go')}</button>{#if yearError}<span class="year-error" role="alert">{i18n.t('invalidYear')}</span>{/if}</div>
+    <div class="year-entry"><label>{i18n.t('jalaliYear')}<input type="text" inputmode="numeric" autocomplete="off" maxlength="4" placeholder={number(year)} aria-label={i18n.t('jalaliYear')} aria-invalid={yearError} value={yearInput} oncompositionstart={()=>yearComposing=true} oncompositionend={event=>{yearComposing=false;changeYearInput(event);}} oninput={changeYearInput} onkeydown={event=>{if(event.key==='Enter'&&!yearComposing){event.preventDefault();submitYear();}}} /></label><button type="button" class="year-submit" aria-label={i18n.t('goToYear')} onclick={submitYear}>{i18n.t('go')}</button>{#if yearError}<span class="year-error" role="alert">{i18n.t('invalidYear')}</span>{/if}</div>
     <button type="button" class="year-back" onclick={()=>showPanel('days')}><i class="fa-solid fa-arrow-rotate-left" aria-hidden="true"></i>{i18n.t('backToCalendar')}</button>
   {/if}
 </div>

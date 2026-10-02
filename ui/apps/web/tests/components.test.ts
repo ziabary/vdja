@@ -6,6 +6,7 @@ import EmailInput from '../../../packages/ui-core/src/forms/EmailInput.svelte';
 import NumberInput from '../../../packages/ui-core/src/forms/NumberInput.svelte';
 import DateInput from '../../../packages/calendar-svelte/src/DateInput.svelte';
 import MarkdownView from '../../../packages/ui-core/src/rich-content/MarkdownView.svelte';
+import MenuFixture from './MenuFixture.svelte';
 import axe from 'axe-core';
 import {readFileSync} from 'node:fs';
 import {join} from 'node:path';
@@ -46,11 +47,46 @@ describe('rendered foundation controls',()=>{
     expect(target.querySelector('#number-local')?.classList.contains('fa-num')).toBe(true);
     expect((target.querySelector('#number-local') as HTMLInputElement).value).toBe('123');
   });
+  it('accepts Latin, Persian, and Arabic digits but rejects letters in integer fields',async()=>{
+    const changes:string[]=[];const target=host();
+    mounted.push(mount(NumberInput,{target,props:{id:'numeric',label:'Count',value:'200',mode:'integer',onChange:next=>changes.push(next)}}));await tick();
+    const input=target.querySelector<HTMLInputElement>('#numeric')!;
+    input.value='۲۰۵';input.setSelectionRange(2,2);input.dispatchEvent(new Event('input',{bubbles:true}));await tick();
+    expect(input.value).toBe('205');expect(input.selectionStart).toBe(2);expect(changes).toEqual(['205']);
+    input.value='20a5';input.dispatchEvent(new Event('input',{bubbles:true}));await tick();
+    expect(input.value).toBe('205');expect(changes).toEqual(['205']);
+    input.value='٢٥٠';input.dispatchEvent(new Event('input',{bubbles:true}));await tick();
+    expect(input.value).toBe('250');expect(changes).toEqual(['205','250']);
+    input.value='123';input.dispatchEvent(new Event('input',{bubbles:true}));await tick();
+    expect(input.value).toBe('123');expect(changes.at(-1)).toBe('123');
+  });
+  it('keeps decimal precision and IME input valid while normalizing only completed digits',async()=>{
+    const changes:string[]=[];const target=host();
+    mounted.push(mount(NumberInput,{target,props:{id:'decimal',label:'Amount',value:'',mode:'decimal',scale:2,signed:true,onChange:next=>changes.push(next)}}));await tick();
+    const input=target.querySelector<HTMLInputElement>('#decimal')!;
+    input.value='-۱۲.۵';input.dispatchEvent(new Event('input',{bubbles:true}));await tick();
+    expect(input.value).toBe('-12.5');expect(changes).toEqual(['-12.5']);
+    input.value='-۱۲.۵۶۷';input.dispatchEvent(new Event('input',{bubbles:true}));await tick();
+    expect(input.value).toBe('-12.5');expect(changes).toEqual(['-12.5']);
+    input.dispatchEvent(new CompositionEvent('compositionstart',{bubbles:true}));input.value='-٢.٥';input.dispatchEvent(new Event('input',{bubbles:true}));await tick();
+    expect(changes).toEqual(['-12.5']);
+    input.dispatchEvent(new CompositionEvent('compositionend',{bubbles:true}));await tick();
+    expect(input.value).toBe('-2.5');expect(changes).toEqual(['-12.5','-2.5']);
+  });
   it('keeps the shared hidden utility a display suppression contract',()=>{
     const stylesheet=readFileSync(join(process.cwd(),'src/lib/styles/main.scss'),'utf8');
     const rule=stylesheet.match(/\.hidden\s*\{[^}]+\}/)?.[0];expect(rule).toContain('display: none !important');
     const style=document.createElement('style');style.textContent=rule!;document.head.append(style);
     try{const element=host();element.className='hidden';expect(getComputedStyle(element).display).toBe('none');}
     finally{style.remove();}
+  });
+  it('dismisses a reusable menu on outside click, Escape, and selection',async()=>{
+    const target=host();mounted.push(mount(MenuFixture,{target}));await tick();
+    const menu=target.querySelector<HTMLDetailsElement>('details')!,trigger=target.querySelector<HTMLElement>('summary')!;
+    menu.open=true;document.body.click();expect(menu.open).toBe(false);
+    menu.open=true;window.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}));expect(menu.open).toBe(false);expect(document.activeElement).toBe(trigger);
+    menu.open=true;target.querySelector<HTMLAnchorElement>('a')!.click();expect(menu.open).toBe(false);
+    menu.open=true;target.querySelector<HTMLButtonElement>('[data-menu-close]')!.click();expect(menu.open).toBe(false);
+    menu.open=true;target.querySelector<HTMLSelectElement>('select')!.dispatchEvent(new Event('change',{bubbles:true}));expect(menu.open).toBe(false);
   });
 });

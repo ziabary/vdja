@@ -167,16 +167,17 @@ Use small field primitives; module pages compose forms and bind canonical schema
 | Primitive | Required behavior |
 |---|---|
 | TextInput | Safe text, locale/direction, max-length from contract, IME/autofill support |
-| NumberInput | Named integer/decimal mode, allowed sign/scale/range; Persian/Arabic input; no blanket digit stripping or unsafe Number conversion |
+| NumberInput | Named integer/decimal mode, allowed sign/scale/range; Latin/Persian/Arabic digits normalize to ASCII during entry; reject an invalid whole edit instead of stripping characters; preserve selection and IME composition; no unsafe Number conversion |
 | EmailInput | LTR value, email autocomplete, server validation; no Persian glyph rewrite |
 | Select | Native accessible select by default; explicit null/empty option and stable typed keys |
 | MultiSelect | Keyboard select/remove/search, announced selection count, remote options via injected client; no built-in domain/file importer |
 | Checkbox / Radio | Actual input semantics, group fieldset/legend, associated labels |
 | Textarea | Plain editable source/draft; preserves newlines; no Markdown rendering inside editor |
 | DateInput / DateTimeInput / DateRangeInput | calendar-svelte components using §7; keyboard/label/disabled/error contract |
-| FileInput | Accessible pick/drop, type/size guidance, cancel/progress, server scan/validation final |
+| FileInput | Shared `@targoman/ui-core` `FileDropInput` owns accessible file picking and drag/drop for standalone panels or text fields. Callers provide accepted types, guidance, disabled state and extraction/inspection callbacks; they own limits, cancel/progress and errors. Server scan/validation remains final. |
 | FormError | Form-level summary and safe field linking; does not reveal raw provider/backend errors |
 | FieldHelp | Described text; instructions persist alongside validation errors |
+| DropdownMenu | Shared native details/summary menu with caller-provided trigger and content; close on outside click, Escape, or item selection, restoring trigger focus on Escape; route and business items belong to the composing shell |
 
 Money inputs use integer atomic units plus explicit currency at the authoritative boundary, preserving values beyond JS safe integer via contract serialization. Financial Core owns rounding/calculation; the UI parser cannot invent exchange/discount/charge semantics.
 

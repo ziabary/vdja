@@ -668,8 +668,8 @@ SET SQL_MODE = @bootstrap_old_mode;
 SET TIME_ZONE = @bootstrap_old_tz;
 
 -- Remote MySQL administrator. Does not change root@localhost.
-CREATE USER IF NOT EXISTS 'root'@'%' IDENTIFIED WITH mysql_native_password BY 'CHANGE_ME_ROOT_PASSWORD';
-ALTER USER 'root'@'%' IDENTIFIED WITH mysql_native_password BY 'CHANGE_ME_ROOT_PASSWORD';
+CREATE USER IF NOT EXISTS 'root'@'%' IDENTIFIED WITH mysql_native_password BY 'TEMPORAL_ROOT_PASS';
+ALTER USER 'root'@'%' IDENTIFIED WITH mysql_native_password BY 'TEMPORAL_ROOT_PASS';
 GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION;
 
 SELECT 'TargomanLLM bootstrap complete' AS result;

@@ -1,5 +1,5 @@
 import type {intfApiErrorEnvelope} from '@targoman/contracts';
-export interface intfTransportRequest {readonly method:'GET'|'POST'|'PUT'|'PATCH'|'DELETE';readonly path:string;readonly body?:unknown;readonly signal?:AbortSignal;readonly headers?:Readonly<Record<string,string>>;readonly deadlineMs?:number}
+export interface intfTransportRequest {readonly method:'GET'|'POST'|'PUT'|'PATCH'|'DELETE';readonly path:string;readonly body?:unknown;readonly contentType?:'json'|'multipart';readonly signal?:AbortSignal;readonly headers?:Readonly<Record<string,string>>;readonly deadlineMs?:number}
 export interface intfTransportResponse {readonly status:number;readonly body:unknown;readonly correlationId?:string}
 export interface intfUiTransport {send(request:intfTransportRequest):Promise<intfTransportResponse>}
 export class exUiApiError extends Error {constructor(readonly status:number,readonly envelope:intfApiErrorEnvelope){super(envelope.message);}}

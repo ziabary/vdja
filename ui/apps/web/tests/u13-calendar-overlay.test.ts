@@ -75,6 +75,9 @@ describe('direct Jalali month and year navigation',()=>{
     target.querySelector<HTMLButtonElement>('[aria-label="انتخاب سال"]')?.click();await settle();
     const yearInput=target.querySelector<HTMLInputElement>('[aria-label="سال جلالی"]')!;
     yearInput.value='۱۳۸۵';yearInput.dispatchEvent(new Event('input',{bubbles:true}));
+    expect(yearInput.value).toBe('1385');
+    yearInput.value='13a85';yearInput.dispatchEvent(new Event('input',{bubbles:true}));
+    expect(yearInput.value).toBe('1385');
     target.querySelector<HTMLButtonElement>('[aria-label="رفتن به سال"]')?.click();await settle();
     expect(target.querySelector('.calendar-month')?.textContent).toContain('۱۳۸۵');
     target.querySelector<HTMLButtonElement>('[aria-label="انتخاب ماه"]')?.click();await settle();
@@ -118,6 +121,19 @@ describe('direct Jalali month and year navigation',()=>{
 });
 
 describe('single-date Today action',()=>{
+  it('shows a Today shortcut in an empty field while its calendar button still opens the picker',async()=>{
+    const changes:string[]=[];const target=host();
+    mounted.push(mount(DateInput,{target,props:{id:'empty-date',label:'تاریخ',value:'',today,onChange:value=>changes.push(value)}}));await settle();
+    const trigger=target.querySelector<HTMLButtonElement>('#empty-date')!;
+    expect(trigger.textContent).not.toContain('انتخاب تاریخ');
+    const shortcut=target.querySelector<HTMLButtonElement>('[data-action="empty-select-today"]')!;
+    expect(shortcut.textContent).toBe('امروز');
+    shortcut.click();await settle();
+    expect(changes).toEqual([formatGregorianDate(today)]);
+    expect(target.querySelector('[role="dialog"]')).toBeNull();
+    trigger.click();await settle();
+    expect(target.querySelector('[role="dialog"]')).not.toBeNull();
+  });
   it('selects the supplied today value and closes the calendar',async()=>{
     const changes:string[]=[];const target=host();
     const previous=formatGregorianDate(toGregorian({calendar:'jalali',year:1405,month:1,day:5}));
@@ -138,6 +154,7 @@ describe('single-date Today action',()=>{
     target.querySelector<HTMLButtonElement>('#today-bounded')?.click();await settle();
     const action=target.querySelector<HTMLButtonElement>('[data-action="select-today"]')!;
     expect(action.disabled).toBe(true);
+    expect(target.querySelector<HTMLButtonElement>('[data-action="empty-select-today"]')?.disabled).toBe(true);
     action.click();await settle();
     expect(changes).toHaveLength(0);
     expect(target.querySelector('[role="dialog"]')).not.toBeNull();

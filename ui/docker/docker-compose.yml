@@ -132,12 +132,14 @@ services:
     image: mysql:8.4.5
     restart: unless-stopped
     ports:
-       - "127.0.0.1:33011:3306"
+       - "127.0.0.1:33036:3306"
     volumes:
       - ./mysql/data:/var/lib/mysql
       - ./mysql/conf/enable_native.cnf:/etc/mysql/conf.d/enable_native.cnf
       - /etc/localtime:/etc/localtime:ro
       - /usr/share/zoneinfo:/usr/share/zoneinfo:ro
+    command:
+      - --mysql-native-password=ON
     environment:
       - "MYSQL_ROOT_PASSWORD=mehran@1234"
       - "MYSQL_CHARACTER_SET_SERVER=utf8mb4"
