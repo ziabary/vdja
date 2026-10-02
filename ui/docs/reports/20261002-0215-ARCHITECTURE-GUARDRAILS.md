@@ -1,6 +1,6 @@
 # Activity Report: ARCHITECTURE-GUARDRAILS
 
-- Report Path: docs/reports/20261002-0215-ARCHITECTURE-GUARDRAILS.md
+- Report Path: /home/user/Projects/vadja/ui/reports/20261002-0215-ARCHITECTURE-GUARDRAILS.md
 - Created At: 2026-10-01T22:45:22.464Z
 - Status: VERIFIED
 
@@ -41,7 +41,7 @@
 
 ## Files Added
 
-- ui/docs/reports/
+- ui/reports/
 - ui/scripts/activity-report.ts
 - ui/scripts/guardrail-runner.mjs
 
@@ -99,7 +99,7 @@
  M ui/tests/architecture/config/targetScope.ts
  M ui/tests/architecture/moduleManifestConformance.test.ts
  M ui/tests/conformance/authority/authorityBehavior.test.ts
-?? ui/docs/reports/
+?? ui/reports/
 ?? ui/scripts/activity-report.ts
 ?? ui/scripts/guardrail-runner.mjs
 ```
