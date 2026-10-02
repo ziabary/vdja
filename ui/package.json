@@ -10,7 +10,7 @@
     "lint": "node ./node_modules/eslint/bin/eslint.js 'src/**/*.{ts,tsx}'",
     "fix": "node ./node_modules/eslint/bin/eslint.js 'src/**/*.{ts,tsx}' --fix",
     "lint:watch": "node ./node_modules/eslint/bin/eslint.js 'src/**/*.{ts,tsx}'",
-    "dev": "npm run dev:web",
+    "dev": "concurrently --kill-others --names api,web \"npm run dev:target:api -- --config deploy/examples/development/platform.cjson --secrets-dir .secrets.t3.local\" \"npm run dev:web\"",
     "dev:api": "npm run sdev",
     "dev:public-tools:runtime:check": "node scripts/public-tools-runtime-check.mjs",
     "dev:public-tools:pdf-worker": "node scripts/public-tools-pdf-worker.mjs",
