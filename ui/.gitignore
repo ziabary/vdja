@@ -5,10 +5,13 @@ dist
 logs
 package-lock.json
 !/package-lock.json
+!/deploy/runtime/package-lock.json
 yarn.lock
 apps/web/build/
 db/data
 /docker/mysql/data/
 .env.pg.local
+.secrets.t3.local/
+/deploy/releases/
 /src/utils/fileProcessors/pdf/pdf.worker.min.mjs
 *.zip

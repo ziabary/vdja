@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "types": ["node"]
+  },
+  "include": [
+    "apps/api/src/**/*.ts", "apps/worker/src/**/*.ts",
+    "modules/translator/src/**/*.ts", "modules/summarizer/src/**/*.ts", "modules/faq/src/**/*.ts",
+    "modules/translator/manifest.ts", "modules/summarizer/manifest.ts", "modules/faq/manifest.ts",
+    "packages/configuration/src/**/*.ts", "packages/persistence/src/target*.ts", "packages/persistence/src/bootstrap-target-dev.ts",
+    "packages/ai-router/src/**/*.ts", "packages/audit/src/**/*.ts", "packages/usage/src/**/*.ts",
+    "packages/admission-control/src/**/*.ts", "packages/observability/src/**/*.ts",
+    "packages/security-telemetry/src/**/*.ts", "packages/file-processing/src/**/*.ts", "packages/platform/src/**/*.ts",
+    "packages/contracts/src/index.ts"
+  ]
+}

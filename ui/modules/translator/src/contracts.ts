@@ -1,0 +1,1 @@
+export interface intfDictionaryResult { readonly phrase: string; readonly translations: readonly string[]; readonly synonyms?: unknown; readonly antonyms?: unknown; readonly relWords?: unknown; readonly relExp?: unknown; readonly pronunciations?: unknown; readonly examples?: unknown; readonly extra?: unknown }

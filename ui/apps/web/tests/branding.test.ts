@@ -9,6 +9,6 @@ describe('package and visual-brand separation',()=>{
     expect(fapa.displayName).toBe('FAPA');
     expect(customer.displayName).toBe('Customer');
     expect(brandTokens(fapa)['--brand-primary']).not.toBe(brandTokens(customer)['--brand-primary']);
-    expect(anonymousBootstrap('fa','system').brand.displayName).toBe('Workspace');
+    expect(anonymousBootstrap('fa','system',customer).brand.displayName).toBe('Customer');
   });
 });

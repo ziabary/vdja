@@ -42,13 +42,13 @@
         <DropdownMenu>
           {#snippet trigger()}<i class="fa-solid fa-boxes-stacked" aria-hidden="true"></i> {publicToolText(i18n.locale,'otherServices')}{/snippet}
           <a href={resolve('/(public)')}>{i18n.t('home')}</a>
-          <a href={resolve('/(public)/translate')}>{publicToolText(i18n.locale,'translator')}</a>
-          <a href={resolve('/(public)/summarize')}>{publicToolText(i18n.locale,'summarizer')}</a>
-          <a href={resolve('/(public)/faq')}>{publicToolText(i18n.locale,'faq')}</a>
+          {#if data.publicModules.includes('translator')}<a href={resolve('/(public)/translate')}>{publicToolText(i18n.locale,'translator')}</a>{/if}
+          {#if data.publicModules.includes('summarizer')}<a href={resolve('/(public)/summarize')}>{publicToolText(i18n.locale,'summarizer')}</a>{/if}
+          {#if data.publicModules.includes('faq')}<a href={resolve('/(public)/faq')}>{publicToolText(i18n.locale,'faq')}</a>{/if}
           <label for="locale-choice">زبان / Language</label>
           <select id="locale-choice" class="form-select form-select-sm" value={i18n.locale} onchange={event=>changeLocale(event.currentTarget.value as 'fa'|'en')}><option value="fa">فارسی</option><option value="en">English</option></select>
         </DropdownMenu>
-        <a class="btn btn-primary btn-sm login-link" href={data.loginUrl}><i class="fa-solid fa-user" aria-hidden="true"></i> {publicToolText(i18n.locale,'login')}</a>
+        {#if data.loginUrl}<a class="btn btn-primary btn-sm login-link" href={data.loginUrl}><i class="fa-solid fa-user" aria-hidden="true"></i> {publicToolText(i18n.locale,'login')}</a>{/if}
       {:else}
         <span>{data.bootstrap.session.tenant?.label??i18n.t('guest')}</span>
         <label class="visually-hidden" for="locale-choice">زبان / Language</label><select id="locale-choice" class="form-select form-select-sm w-auto" value={i18n.locale} onchange={event=>changeLocale(event.currentTarget.value as 'fa'|'en')}><option value="fa">فارسی</option><option value="en">English</option></select>

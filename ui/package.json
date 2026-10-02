@@ -60,6 +60,20 @@
     ,"test:db:conformance": "node --import tsx tests/db/conformance.ts"
     ,"test:db:integration": "node --import tsx tests/db/integration.ts"
     ,"check:persistence": "tsc --noEmit -p tsconfig.persistence.json"
+    ,"config:validate": "node --import tsx packages/configuration/src/cli.ts validate"
+    ,"config:print-effective": "node --import tsx packages/configuration/src/cli.ts print-effective"
+    ,"config:fingerprint": "node --import tsx packages/configuration/src/cli.ts fingerprint"
+    ,"test:configuration": "node --import tsx --test tests/configuration/configuration.test.ts"
+    ,"test:ai-router": "node --import tsx --test tests/ai-router/router.test.ts"
+    ,"db:target:migrate": "node --import tsx packages/persistence/src/target-migrate.ts"
+    ,"migrate:public-tools:mysql-to-pg": "node --import tsx modules/translator/src/persistence/migrate.ts"
+    ,"db:target:dev:bootstrap": "node --import tsx packages/persistence/src/bootstrap-target-dev.ts"
+    ,"dev:target:api": "node --import tsx apps/api/src/index.ts"
+    ,"dev:target:worker": "node --import tsx apps/worker/src/index.ts"
+    ,"check:target": "tsc --noEmit -p tsconfig.target.json"
+    ,"release:customers": "node --import tsx scripts/customer-release.mjs"
+    ,"test:target:integration": "node --import tsx --test tests/target/runtime.integration.test.ts"
+    ,"test:customer:web": "node tests/target/customer-web.smoke.mjs"
   },
   "keywords": [
     "LLM",
@@ -144,6 +158,20 @@
     "packages/calendar-core",
     "packages/calendar-svelte",
     "packages/persistence"
+    ,"packages/configuration"
+    ,"packages/ai-router"
+    ,"packages/audit"
+    ,"packages/usage"
+    ,"packages/admission-control"
+    ,"packages/observability"
+    ,"packages/security-telemetry"
+    ,"packages/file-processing"
+    ,"packages/platform"
+    ,"modules/translator"
+    ,"modules/summarizer"
+    ,"modules/faq"
+    ,"apps/api"
+    ,"apps/worker"
   ],
   "overrides": {
     "devalue": "5.9.3",

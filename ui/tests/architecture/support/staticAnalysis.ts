@@ -19,7 +19,7 @@ export const RULES: readonly intfRule[] = [
   ...['Typed module manifest','Unique contribution IDs','Platform package manifest'].map((title,i)=>({id:`ARCH-MOD-00${i+1}`,title,category:'manifests',mechanism:'TypeScript manifest AST'})),
 ];
 const RULE_IDS = new Set(RULES.map(r=>r.id));
-const EXCLUDED = new Set(['node_modules','vendor','generated','dist','build','.git','tests','scripts','public']);
+const EXCLUDED = new Set(['node_modules','vendor','generated','dist','build','.svelte-kit','.git','tests','scripts','public']);
 const ROOTS = ['src','db','apps','packages','modules'];
 const ORM_PACKAGES = ['typeorm','sequelize','prisma','@prisma/client','@mikro-orm/core','mikro-orm','drizzle-orm','objection'];
 const DB_PACKAGES = ['kysely','pg','knex','mssql','mysql','mysql2','sqlite3','better-sqlite3'];
@@ -185,7 +185,7 @@ export function analyzeTypeScript(file:string,out:intfArchitectureViolation[],co
     if(/^(?:(?:db|database|pool|client|trx|knex|kysely|atDB|queryRunner|sourceDb|externalDb|sourceClient|externalClient|sourcePool)\.)?(?:query|raw|execute|executeQuery)$/.test(name)){
       for(const argument of node.arguments)if(ts.isStringLiteral(argument)||ts.isNoSubstitutionTemplateLiteral(argument))inspectSqlExpression(argument,argument.text);
     }
-    if(/(?:^|\/)(?:ai-router|ai|tasks?)\//.test(file)&&/(?:\.save|\.insert|\.update|\.delete|\.query|\.raw)$/.test(name)&&/(?:model|completion|output|response)/i.test(node.getText(sf)))add(out,'ARCH-AI-004',file,node,'AI output passed directly to persistence write');
+    if(/(?:^|\/)(?:ai-router|ai|tasks?)\//.test(file)&&/(?:\.save|\.insert|\.update|\.delete|\.query|\.raw)$/.test(name)&&node.arguments.some(argument=>!ts.isStringLiteral(argument)&&!ts.isNoSubstitutionTemplateLiteral(argument)&&/(?:modelOutput|completion(?:Text|Content)|response(?:Text|Content)|generated(?:Text|Content)|output(?:Text|Content)|\.output\b|\.completion\b)/i.test(argument.getText(sf))))add(out,'ARCH-AI-004',file,node,'AI output passed directly to persistence write');
   }
   if(ts.isTaggedTemplateExpression(node)&&node.tag.getText(sf)==='sql'&&(ts.isNoSubstitutionTemplateLiteral(node.template)))inspectSqlExpression(node.template,node.template.text);
   if(ts.isTypeReferenceNode(node)&&node.typeName.getText(sf)==='Record'&&node.typeArguments?.length===2&&node.typeArguments[0]?.kind===ts.SyntaxKind.StringKeyword&&node.typeArguments[1]?.kind===ts.SyntaxKind.UnknownKeyword&&isPublicDomain(file,info)){
@@ -235,7 +235,7 @@ export function analyzeSql(file:string,text:string,out:intfArchitectureViolation
  ];
  for(const pattern of objectPatterns)for(const match of cleaned.matchAll(pattern)){
   const object=match[1]!;
-  if(!vendorDialect&&!object.includes('.')&&!['SELECT','VALUES','UNNEST','GENERATE_SERIES','LATERAL','IF','NOT','EXISTS','SQLITE_MASTER'].includes(object.toUpperCase()))sqlAdd(out,'ARCH-DB-006',file,text,match.index,`Unqualified SQL object ${object}`);
+  if(!vendorDialect&&!object.includes('.')&&!['SELECT','VALUES','UNNEST','GENERATE_SERIES','LATERAL','IF','NOT','EXISTS','SQLITE_MASTER','PUBLIC'].includes(object.toUpperCase()))sqlAdd(out,'ARCH-DB-006',file,text,match.index,`Unqualified SQL object ${object}`);
  }
  for(const match of cleaned.matchAll(/\bCREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?(?:[a-z_][\w]*\.)?([a-z_][\w]*)\s*\(([^;]*?)\)\s*;/gis)){
   const table=match[1]!,body=match[2]!;
@@ -253,7 +253,7 @@ export function analyzeSql(file:string,text:string,out:intfArchitectureViolation
  }
  for(const [pattern,id,prefix] of SQL_NAME_RULES)for(const m of cleaned.matchAll(pattern)){const name=m[1]!;const expected=prefix||({'PRIMARY KEY':'pk_','FOREIGN KEY':'fk_','UNIQUE':'uq_','CHECK':'ck_'}[m[2]?.toUpperCase()??'']??'');if(expected&&!name.startsWith(expected))sqlAdd(out,id,file,text,m.index,`Object ${name} requires ${expected} prefix`);}
  for(const m of cleaned.matchAll(/\bCREATE\s+(?:OR\s+REPLACE\s+)?(?:FUNCTION|PROCEDURE)\s+[\w.]+\s*\(([^)]*)\)/gi))for(const p of m[1]!.split(',')){const pm=p.trim().match(/^(?:(INOUT|OUT|IN)\s+)?([a-z_][\w]*)\s+/i);if(pm){const expected=pm[1]?.toUpperCase()==='OUT'?'o_':pm[1]?.toUpperCase()==='INOUT'?'io_':'i_';if(!pm[2]!.startsWith(expected))sqlAdd(out,'ARCH-DB-NAME-005',file,text,m.index,`Routine parameter ${pm[2]} requires ${expected}`);}}
- for(const m of cleaned.matchAll(/\bDECLARE\s+([\s\S]*?)\bBEGIN\b/gi))for(const decl of m[1]!.split(';')){const dm=decl.trim().match(/^([a-z_][\w]*)\s+(CONSTANT\s+)?(?:[a-z_][\w]*(?:\[\])?|RECORD|REFCURSOR)/i);if(dm){const expected=dm[2]?'c_':/REFCURSOR/i.test(decl)?'cur_':/RECORD/i.test(decl)?'r_':'v_';if(!dm[1]!.startsWith(expected))sqlAdd(out,'ARCH-DB-NAME-006',file,text,m.index,`Procedural local ${dm[1]} requires ${expected}`);}}
+ for(const m of cleaned.matchAll(/\bDECLARE\s+([\s\S]*?)\bBEGIN\b/gi))for(const decl of m[1]!.split(';')){const dm=decl.trim().match(/^([a-z_][\w]*)\s+(CONSTANT\s+)?(RECORD|REFCURSOR|[a-z_][\w]*(?:\[\])?)/i);if(dm){const type=dm[3]!.toUpperCase(),expected=dm[2]?'c_':type==='REFCURSOR'?'cur_':type==='RECORD'?'r_':'v_';if(!dm[1]!.startsWith(expected))sqlAdd(out,'ARCH-DB-NAME-006',file,text,m.index,`Procedural local ${dm[1]} requires ${expected}`);}}
 }
 
 function packageManifests(out:intfArchitectureViolation[]):void {

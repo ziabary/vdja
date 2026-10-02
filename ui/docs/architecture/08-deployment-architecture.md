@@ -372,6 +372,15 @@ targoman-platform-worker
 targoman-postgres
 ```
 
+For the anonymous public product release, each customer receives an explicitly
+identified Web, API, and Worker image set derived from one canonical source
+revision. The Web image packages the customer's approved brand assets and
+validated non-secret CJSON. API and Worker images have customer-specific
+identities and may package the same non-secret CJSON. Image labels and the
+release manifest preserve source revision, configuration fingerprint, schema
+version, customer release ID, build time, and lockfile/SBOM references. Secrets
+remain external. See `docs/backend/03-t3-customer-release.md`.
+
 AI serving infrastructure may use separately versioned approved images.
 
 ---
@@ -1937,7 +1946,7 @@ Deployment design must define expected recovery behavior.
 
 # 144. Configuration Is Externalized
 
-Application image content must not change merely because:
+Canonical application source and business logic must not change merely because:
 
 - customer name;
 - domain;
@@ -1947,6 +1956,12 @@ Application image content must not change merely because:
 - integration
 
 changes.
+
+Customer release images may package customer-specific non-secret configuration
+and Web brand assets. This is a release derivation from one source revision,
+not a customer source fork. A complete validated CJSON runtime override is
+permitted; partial environment overrides are not. Secret values are never
+packaged in images.
 
 ---
 

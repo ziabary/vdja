@@ -64,6 +64,13 @@ test('SQL qualification inspects SQL contexts and ignores keywords, prose, and r
  assert.ok(!sqlRules('SELECT EXISTS(SELECT 1 FROM app.tbl_user); SELECT COUNT(*) FROM app.tbl_user;').has('ARCH-DB-005'));
  assert.ok(!tsRules('src/services/prose.ts',`const prose="SELECT id FROM Logs"; db.raw('select 1');`).has('ARCH-DB-006'));
  assert.ok(tsRules('src/services/query.ts',"db.raw('SELECT id FROM tbl_user');").has('ARCH-DB-006'));
+ assert.ok(!sqlRules('REVOKE ALL ON FUNCTION audit.fn_aud_capture_safe() FROM PUBLIC;').has('ARCH-DB-006'));
+ assert.ok(!sqlRules('CREATE FUNCTION audit.fn_x() RETURNS trigger AS $$ DECLARE v_record_id text; BEGIN RETURN NULL; END $$ LANGUAGE plpgsql;').has('ARCH-DB-NAME-006'));
+ assert.ok(sqlRules('CREATE FUNCTION audit.fn_x() RETURNS trigger AS $$ DECLARE v_row RECORD; BEGIN RETURN NULL; END $$ LANGUAGE plpgsql;').has('ARCH-DB-NAME-006'));
+});
+test('AI output guard ignores run metadata but catches direct model text writes',()=>{
+ assert.ok(!tsRules('packages/ai-router/src/persistence.ts',"tx.query('UPDATE ai_router.tbl_air_run SET air_output_tokens=$1', [value.outputTokens, value.modelId]);").has('ARCH-AI-004'));
+ assert.ok(tsRules('packages/ai-router/src/application/service.ts',"repository.save({ body: model.output });").has('ARCH-AI-004'));
 });
 test('naming accepts exact prefixes and recognizes transitive exceptions',()=>{
  const valid=tsRules('modules/crm/src/domain/classes.ts','class exBase extends Error {} class exHttpUnauthorized extends exBase {} class clsUserService {} interface intfFoo {} type typFoo = string; enum enuState {ACTIVE}');

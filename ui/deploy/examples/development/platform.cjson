@@ -1,0 +1,161 @@
+{
+  "configVersion": 1,
+  "deployment": {
+    "id": "development",
+    "tenantId": "development",
+    "releaseId": "development-r1"
+  },
+  "modules": {
+    "translator": {
+      "enabled": true,
+      "route": "/translate"
+    },
+    "summarizer": {
+      "enabled": true,
+      "route": "/summarize"
+    },
+    "faq": {
+      "enabled": true,
+      "route": "/faq"
+    }
+  },
+  "brand": {
+    "displayName": "Workspace",
+    "shortName": "Workspace",
+    "logo": "/brand/logo.svg",
+    "favicon": "/brand/favicon.svg",
+    "primaryColor": "#285D84",
+    "supportUrl": "https://example.invalid/support",
+    "legalUrl": "https://example.invalid/legal"
+  },
+  "database": {
+    "host": "127.0.0.1",
+    "port": 55432,
+    "name": "targoman_platform_t3",
+    "apiUser": "targoman_api",
+    "workerUser": "targoman_worker",
+    "migrationUser": "targoman_migration",
+    "apiPasswordRef": "file:/run/secrets/pg-api",
+    "workerPasswordRef": "file:/run/secrets/pg-worker",
+    "migrationPasswordRef": "file:/run/secrets/pg-migration",
+    "maxConnections": 5
+  },
+  "ai": {
+    "endpoints": [
+      {
+        "id": "gpu-a",
+        "enabled": true,
+        "provider": "OPENAI_COMPATIBLE",
+        "baseUrl": "http://127.0.0.1:8001",
+        "model": "configured-model",
+        "capabilities": [
+          "TRANSLATE",
+          "SUMMARIZE",
+          "GENERATE_FAQ"
+        ],
+        "priority": 100,
+        "weight": 10,
+        "maxConcurrent": 8,
+        "connectTimeoutMs": 1000,
+        "firstTokenTimeoutMs": 10000,
+        "totalTimeoutMs": 120000
+      }
+    ],
+    "tasks": {
+      "TRANSLATE": {
+        "preferredEndpoints": [
+          "gpu-a"
+        ],
+        "maxAttempts": 2,
+        "circuitFailureThreshold": 3,
+        "circuitOpenMs": 30000
+      },
+      "SUMMARIZE": {
+        "preferredEndpoints": [
+          "gpu-a"
+        ],
+        "maxAttempts": 2,
+        "circuitFailureThreshold": 3,
+        "circuitOpenMs": 30000
+      },
+      "GENERATE_FAQ": {
+        "preferredEndpoints": [
+          "gpu-a"
+        ],
+        "maxAttempts": 2,
+        "circuitFailureThreshold": 3,
+        "circuitOpenMs": 30000
+      }
+    }
+  },
+  "admission": {
+    "translator": {
+      "requestsPerMinute": 30,
+      "concurrent": 8,
+      "dailyRequests": 1000,
+      "dailyInputChars": 1000000,
+      "inputChars": 2000,
+      "uploadBytes": 10000000,
+      "tokenBudget": 1000000
+    },
+    "summarizer": {
+      "requestsPerMinute": 30,
+      "concurrent": 4,
+      "dailyRequests": 500,
+      "dailyInputChars": 1000000,
+      "inputChars": 5000,
+      "uploadBytes": 10000000,
+      "tokenBudget": 1000000
+    },
+    "faq": {
+      "requestsPerMinute": 10,
+      "concurrent": 2,
+      "dailyRequests": 100,
+      "dailyInputChars": 2000000,
+      "inputChars": 2000000,
+      "uploadBytes": 50000000,
+      "tokenBudget": 1000000
+    }
+  },
+  "siem": {
+    "enabled": false,
+    "destinationId": "customer-soc",
+    "url": "",
+    "timeoutMs": 5000,
+    "maxAttempts": 5,
+    "events": [
+      "public.translate.failed",
+      "public.faq.failed"
+    ]
+  },
+  "fileProcessing": {
+    "maxUploadBytes": 50000000,
+    "maxExtractedChars": 2000000,
+    "maxPages": 500
+  },
+  "http": {
+    "listenHost": "127.0.0.1",
+    "apiPort": 3100,
+    "allowedOrigins": [
+      "http://localhost:5173"
+    ],
+    "maxJsonBytes": 100000,
+    "apiInternalUrl": "http://127.0.0.1:3100"
+  },
+  "worker": {
+    "pollMs": 1000,
+    "claimLeaseMs": 30000
+  },
+  "observability": {
+    "level": "INFO"
+  },
+  "audit": {
+    "retentionDays": 365
+  },
+  "usage": {
+    "retentionDays": 365
+  },
+  "retention": {
+    "policyRef": "customer-standard"
+  }
+}
