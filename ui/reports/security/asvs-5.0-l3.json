@@ -779,11 +779,13 @@
       "evidence": [
         "کوکی Refresh با نام __Secure-tg_refresh و Path=/api/auth صادر می‌شود؛ پیشوند __Host- با مسیر محدود سازگار نیست.",
         "آزمون Chrome ویژگی‌های کوکی را تأیید کرد؛ مقایسهٔ مسیر محدود، مبدأ اختصاصی Auth و استثنای معماری مستند شد، ولی مبدأ اختصاصی هنوز پیاده نشده و استثنایی تصویب نشده است.",
-        "کوکی‌های تنظیمات Web اکنون __Host- و Path=/ دارند؛ Refresh عمداً Path محدود دارد و همچنان __Secure- است."
+        "کوکی‌های تنظیمات Web اکنون __Host- و Path=/ دارند؛ Refresh عمداً Path محدود دارد و همچنان __Secure- است.",
+        "آزمون T4.2 رد کوکی Refresh تکراری در refresh و logout و بقای نشست را نشان داد؛ این کنترل جبرانی جای پیشوند __Host- را نمی‌گیرد."
       ],
       "sourceOrTestPaths": [
         "packages/session/src/cookie.ts",
-        "tests/target/t4-auth-cookie.test.ts",
+      "tests/target/t4-auth-cookie.test.ts",
+      "tests/target/t4-auth-http.integration.test.ts",
         "tests/target/t4-browser.integration.test.mjs",
         "docs/security/03-t4-refresh-cookie-decision-fa.md",
         "apps/web/src/routes/+layout.svelte"

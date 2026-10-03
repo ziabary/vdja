@@ -75,6 +75,21 @@ test('HTTP login, Origin, refresh replay, concurrent refresh, logout and disable
       if (!addressInfo || typeof addressInfo === 'string') throw new Error('INVALID_TEST_ADDRESS');
       const url = `http://127.0.0.1:${addressInfo.port}`;
       const origin = snapshot.value.http.allowedOrigins[0]!;
+      const preflight = (requestOrigin: string | undefined, method = 'POST', headers = 'content-type') =>
+        fetch(`${url}/api/auth/refresh`, { method: 'OPTIONS', headers: {
+          ...(requestOrigin ? { origin: requestOrigin } : {}),
+          'access-control-request-method': method, 'access-control-request-headers': headers
+        } });
+      const allowedPreflight = await preflight(origin);
+      assert.equal(allowedPreflight.status, 204);
+      assert.equal(allowedPreflight.headers.get('access-control-allow-origin'), origin);
+      assert.equal(allowedPreflight.headers.get('access-control-allow-credentials'), 'true');
+      assert.equal(allowedPreflight.headers.get('vary'), 'Origin');
+      assert.equal((await preflight('https://evil.example.invalid')).status, 403);
+      assert.equal((await preflight(undefined)).status, 403);
+      assert.equal((await preflight('not-an-origin')).status, 403);
+      assert.equal((await preflight(origin, 'DELETE')).status, 403);
+      assert.equal((await preflight(origin, 'POST', 'x-unapproved-header')).status, 403);
       const post = (path: string, body: unknown, cookie?: string, requestOrigin = origin) => fetch(`${url}/api/auth/${path}`,
         { method: 'POST', headers: { origin: requestOrigin, 'content-type': 'application/json',
           ...(cookie ? { cookie } : {}) }, body: JSON.stringify(body) });
@@ -90,6 +105,12 @@ test('HTTP login, Origin, refresh replay, concurrent refresh, logout and disable
       assert.equal((await post('login', { email, password: 'wrong' })).status, 401);
       const first = await login();
       const me = (token: string) => fetch(`${url}/api/auth/me`, { headers: { authorization: `Bearer ${token}` } });
+      assert.equal((await me(first.accessToken)).status, 200);
+      const duplicate = `${first.cookie}; __Secure-tg_refresh=invalid`;
+      const rejectedDuplicate = await post('refresh', {}, duplicate);
+      assert.equal(rejectedDuplicate.status, 400);
+      assert.equal(rejectedDuplicate.headers.get('access-control-allow-credentials'), 'true');
+      assert.equal((await post('logout', {}, duplicate)).status, 400);
       assert.equal((await me(first.accessToken)).status, 200);
       assert.equal((await post('refresh', {}, first.cookie, 'https://evil.example.invalid')).status, 403);
       assert.equal((await fetch(`${url}/api/auth/refresh`, { method: 'POST', headers: { cookie: first.cookie } })).status, 403);

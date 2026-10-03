@@ -75,4 +75,6 @@ test('Auth-disabled configuration needs no key material; enabled configuration a
   assert.throws(() => validateConfiguration({ ...configured, auth: { ...configured.auth, accessTokenSeconds: 3600 } }), /auth.accessTokenSeconds/);
   assert.throws(() => validateConfiguration({ ...configured, auth: { ...configured.auth, session: { ...configured.auth.session, absoluteLifetimeSeconds: 2592001 } } }), /auth.session.absoluteLifetimeSeconds/);
   assert.throws(() => validateConfiguration({ ...configured, auth: { ...configured.auth, session: { ...configured.auth.session, refreshLifetimeSeconds: 2592000, absoluteLifetimeSeconds: 604800 } } }), /auth.session/);
+  assert.throws(() => validateConfiguration({ ...configured, http: { ...source.http as object, allowedOrigins: ['https://app.example.invalid/path'] } }), /http.allowedOrigins/);
+  assert.throws(() => validateConfiguration({ ...configured, http: { ...source.http as object, allowedOrigins: ['https://app.example.invalid/'] } }), /http.allowedOrigins/);
 });

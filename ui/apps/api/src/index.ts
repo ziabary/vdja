@@ -11,7 +11,7 @@ import { exAdmission } from '../../../packages/admission-control/src/index.js';
 import { exFileProcessing } from '../../../packages/file-processing/src/index.js';
 import { logOperational } from '../../../packages/observability/src/index.js';
 import type { intfFaqOptions } from '../../../modules/faq/src/service.js';
-import { readRefreshCookie, refreshSetCookie, refreshClearCookie } from '../../../packages/session/src/cookie.js';
+import { inspectRefreshCookie, refreshSetCookie, refreshClearCookie } from '../../../packages/session/src/cookie.js';
 import { createPublicApiRuntime } from './composition.js';
 import { enuAuthorityDecision } from '../../../packages/authority/src/index.js';
 
@@ -86,11 +86,41 @@ function authOrigin(snapshot: intfConfigurationSnapshot, req: Request, res: Resp
   if (origin && snapshot.value.http.allowedOrigins.includes(origin)) return true;
   res.status(403).json({ error: 'ORIGIN_DENIED' }); return false;
 }
+const AUTH_POST_PATH = /^\/api\/auth\/(?:login|refresh|logout)$/;
+function allowedPreflightHeaders(value: string | undefined): boolean {
+  if (!value) return false;
+  const names = value.split(',').map(part => part.trim().toLowerCase());
+  return names.length > 0 && names.every(name => name === 'content-type' || name === 'accept');
+}
 
 export async function createPublicApi(snapshot: intfConfigurationSnapshot, secretRoot = '/run/secrets') {
   const runtime = await createPublicApiRuntime(snapshot, secretRoot);
   const app = express(); app.disable('x-powered-by');
-  app.use((req, res, next) => { res.setHeader('X-Content-Type-Options', 'nosniff'); res.setHeader('Referrer-Policy', 'no-referrer'); const origin = req.header('origin'); if (origin && !snapshot.value.http.allowedOrigins.includes(origin)) { res.status(403).json({ error: 'ORIGIN_DENIED' }); return; } if (origin) res.setHeader('Access-Control-Allow-Origin', origin); next(); });
+  app.use((req, res, next) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Referrer-Policy', 'no-referrer');
+    res.setHeader('Vary', 'Origin');
+    const origin = req.header('origin');
+    if (origin && !snapshot.value.http.allowedOrigins.includes(origin)) { res.status(403).json({ error: 'ORIGIN_DENIED' }); return; }
+    const authPath = snapshot.value.auth?.enabled && AUTH_POST_PATH.test(req.path);
+    if (req.method === 'OPTIONS' && authPath) {
+      if (!origin || req.header('access-control-request-method') !== 'POST'
+        || !allowedPreflightHeaders(req.header('access-control-request-headers'))) {
+        res.status(403).json({ error: 'ORIGIN_DENIED' }); return;
+      }
+      res.setHeader('Access-Control-Allow-Origin', origin);
+      res.setHeader('Access-Control-Allow-Credentials', 'true');
+      res.setHeader('Access-Control-Allow-Methods', 'POST');
+      res.setHeader('Access-Control-Allow-Headers', 'content-type, accept');
+      res.setHeader('Access-Control-Max-Age', '600');
+      res.status(204).end(); return;
+    }
+    if (origin) {
+      res.setHeader('Access-Control-Allow-Origin', origin);
+      if (authPath) res.setHeader('Access-Control-Allow-Credentials', 'true');
+    }
+    next();
+  });
   app.use(express.json({ limit: snapshot.value.http.maxJsonBytes }));
   const upload = multer({ dest: tmpdir(), limits: { fileSize: snapshot.value.fileProcessing.maxUploadBytes } });
   app.use((req, res, next) => { const started = Date.now(); const log = () => logOperational({ severity: res.statusCode >= 500 ? 'ERROR' : 'INFO', component: 'target-api', event: 'request_completed', context: res.locals.publicContext as intfExecutionContext | undefined, status: String(res.statusCode), durationMs: Date.now() - started, method: req.method, route: req.route?.path ?? req.path }); res.once('finish', log); next(); });
@@ -141,9 +171,10 @@ export async function createPublicApi(snapshot: intfConfigurationSnapshot, secre
     app.post('/api/auth/refresh', async (req, res, next) => { try {
       if (!authOrigin(snapshot, req, res)) return;
       res.setHeader('Cache-Control', 'no-store');
-      const token = readRefreshCookie(req.header('cookie'));
-      if (!token) { res.status(401).json({ error: 'INVALID_SESSION' }); return; }
-      const result = await authentication.refresh(token);
+      const cookie = inspectRefreshCookie(req.header('cookie'));
+      if (cookie.kind === 'AMBIGUOUS') { res.status(400).json({ error: 'INVALID_SESSION' }); return; }
+      if (cookie.kind !== 'VALID') { res.status(401).json({ error: 'INVALID_SESSION' }); return; }
+      const result = await authentication.refresh(cookie.token);
       if (result.kind === 'REPLAY') {
         const replay = securityContext(snapshot, req, 'session', 'HUMAN', result.identityId, result.sessionId, result.tenantId);
         await runtime.securityAudit.record(replay, 'session.refresh_replay_detected', 'DENIED');
@@ -158,8 +189,9 @@ export async function createPublicApi(snapshot: intfConfigurationSnapshot, secre
     app.post('/api/auth/logout', async (req, res, next) => { try {
       if (!authOrigin(snapshot, req, res)) return;
       res.setHeader('Cache-Control', 'no-store');
-      const token = readRefreshCookie(req.header('cookie'));
-      const revoked = token ? await authentication.logout(token) : null;
+      const cookie = inspectRefreshCookie(req.header('cookie'));
+      if (cookie.kind === 'AMBIGUOUS') { res.status(400).json({ error: 'INVALID_SESSION' }); return; }
+      const revoked = cookie.kind === 'VALID' ? await authentication.logout(cookie.token) : null;
       if (revoked) {
         const logout = securityContext(snapshot, req, 'session', 'HUMAN', revoked.identityId, revoked.sessionId, revoked.tenantId);
         await runtime.securityAudit.record(logout, 'session.logout', 'SUCCEEDED');

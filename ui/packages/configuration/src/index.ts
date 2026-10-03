@@ -67,6 +67,11 @@ function integer(value: unknown, path: string, min: number, max: number): number
 function bool(value: unknown, path: string): boolean { if (typeof value !== 'boolean') fail(path, 'expected boolean'); return value; }
 function list(value: unknown, path: string): readonly unknown[] { if (!Array.isArray(value)) fail(path, 'expected array'); return value; }
 function url(value: unknown, path: string, protocols: readonly string[]): string { const v = string(value, path, 2048); let parsed: URL; try { parsed = new URL(v); } catch { return fail(path, 'invalid URL'); } if (!protocols.includes(parsed.protocol) || parsed.username || parsed.password || parsed.hash) fail(path, 'invalid URL protocol or credentials'); return v; }
+function origin(value: unknown, path: string): string {
+  const parsed = url(value, path, ['http:', 'https:']);
+  if (new URL(parsed).origin !== parsed) fail(path, 'expected exact origin without path, query, or trailing slash');
+  return parsed;
+}
 function secret(value: unknown, path: string): typSecretRef { if (typeof value !== 'string' || !SECRET_REF.test(value)) fail(path, 'expected file:/run/secrets/<name> reference'); return value as typSecretRef; }
 function optionalSecret(value: unknown, path: string): typSecretRef | undefined { return value === undefined ? undefined : secret(value, path); }
 function unique(values: readonly string[], path: string): void { if (new Set(values).size !== values.length) fail(path, 'duplicate value'); }
@@ -189,7 +194,8 @@ export function validateConfiguration(value: unknown): intfPlatformConfiguration
   const aiConfig = ai(root.ai);
   for (const module of MODULES) if (modules[module].enabled && !aiConfig.endpoints.some(e => e.enabled && e.capabilities.includes(TASK_MODULE[module]))) fail(`modules.${module}.enabled`, `no eligible ${TASK_MODULE[module]} endpoint`);
   const h = object(root.http, 'http', ['listenHost', 'apiPort', 'apiInternalUrl', 'allowedOrigins', 'maxJsonBytes']);
-  const http = { listenHost: string(h.listenHost, 'http.listenHost'), apiPort: integer(h.apiPort, 'http.apiPort', 1, 65535), apiInternalUrl: url(h.apiInternalUrl, 'http.apiInternalUrl', ['http:', 'https:']), allowedOrigins: list(h.allowedOrigins, 'http.allowedOrigins').map((v, i) => url(v, `http.allowedOrigins[${i}]`, ['http:', 'https:'])), maxJsonBytes: integer(h.maxJsonBytes, 'http.maxJsonBytes', 1024, 1000000) };
+  const http = { listenHost: string(h.listenHost, 'http.listenHost'), apiPort: integer(h.apiPort, 'http.apiPort', 1, 65535), apiInternalUrl: url(h.apiInternalUrl, 'http.apiInternalUrl', ['http:', 'https:']), allowedOrigins: list(h.allowedOrigins, 'http.allowedOrigins').map((v, i) => origin(v, `http.allowedOrigins[${i}]`)), maxJsonBytes: integer(h.maxJsonBytes, 'http.maxJsonBytes', 1024, 1000000) };
+  unique(http.allowedOrigins, 'http.allowedOrigins');
   const w = object(root.worker, 'worker', ['pollMs', 'claimLeaseMs']); const worker = { pollMs: integer(w.pollMs, 'worker.pollMs', 100, 60000), claimLeaseMs: integer(w.claimLeaseMs, 'worker.claimLeaseMs', 1000, 3600000) };
   const o = object(root.observability, 'observability', ['level']); if (!['INFO', 'WARN', 'ERROR'].includes(String(o.level))) fail('observability.level', 'invalid level');
   const a = object(root.audit, 'audit', ['retentionDays']), u = object(root.usage, 'usage', ['retentionDays']), r = object(root.retention, 'retention', ['policyRef']);
