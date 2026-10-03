@@ -4,7 +4,7 @@ export type typModuleId = string & { readonly __brand: 'ModuleId' };
 export type typRouteId = string & { readonly __brand: 'RouteId' };
 export type typContextVersion = string & { readonly __brand: 'ContextVersion' };
 
-export type typActorKind = 'ANONYMOUS' | 'HUMAN' | 'SERVICE_ACCOUNT' | 'API_CLIENT' | 'PLATFORM_SERVICE';
+export type typActorKind = 'ANONYMOUS' | 'HUMAN' | 'SERVICE_ACCOUNT' | 'API_CLIENT' | 'PLATFORM_SERVICE' | 'INTEGRATION';
 export interface intfExecutionContext {
   readonly deploymentId: string;
   readonly tenantId: string;
@@ -14,6 +14,7 @@ export interface intfExecutionContext {
   readonly actorKind: typActorKind;
   readonly actorId: string | null;
   readonly sessionId: string | null;
+  readonly authorizationVersion?: number | null;
   readonly source: string;
   readonly configFingerprint: string;
 }

@@ -1,9 +1,9 @@
 import { randomUUID } from 'node:crypto';
 import type pg from 'pg';
 import type { intfExecutionContext } from '../../contracts/src/index.js';
-import type { typPublicAuditAction, typAuditResult } from './index.js';
+import type { typPublicAuditAction, typSecurityAuditAction, typAuditResult } from './index.js';
 
-export async function recordAudit(tx: pg.PoolClient, context: intfExecutionContext, action: typPublicAuditAction, result: typAuditResult, reason?: string): Promise<string> {
+export async function recordAudit(tx: pg.PoolClient, context: intfExecutionContext, action: typPublicAuditAction | typSecurityAuditAction, result: typAuditResult, reason?: string): Promise<string> {
   const id = randomUUID();
   await tx.query(`INSERT INTO audit.tbl_aud_semantic_event
     (ase_id, ase_deployment_id, ase_tenant_id, ase_module_id, ase_actor_kind, ase_actor_id, ase_session_id,

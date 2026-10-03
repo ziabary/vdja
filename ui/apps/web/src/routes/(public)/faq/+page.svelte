@@ -2,15 +2,16 @@
   import {onMount} from 'svelte';
   import {Select,NumberInput,TextInput,FileDropInput,transitionAiOperation,normalizeNumericDigits,useLocale,type typAiOperationState} from '@targoman/ui-core';
   import {createPublicToolsClient,type intfFaqItem,type intfFaqMeta} from '#lib/api/publicTools.js';
+  import {useAuthClient} from '#lib/auth/client.svelte.js';
   import {publicToolText,type typPublicToolMessage} from '#lib/public-tools/messages.js';
-  const locale=useLocale();const t=(key:typPublicToolMessage)=>publicToolText(locale.locale,key);
+  const locale=useLocale();const auth=useAuthClient();const t=(key:typPublicToolMessage)=>publicToolText(locale.locale,key);
   let client:ReturnType<typeof createPublicToolsClient>|null=null,controller:AbortController|null=null,selection=0;
   let file=$state<File|null>(null),meta=$state<intfFaqMeta|null>(null),items=$state<intfFaqItem[]>([]),expanded=$state<number[]>([]);
   let inspectState=$state<'IDLE'|'READING'|'FAILED'>('IDLE'),operation=$state<typAiOperationState>('IDLE');
   let answerWords=$state('100'),language=$state('source'),tone=$state('formal'),scope=$state('all'),from=$state('1'),to=$state('1'),focus=$state('');
   let error=$state(''),notice=$state(''),produced=$state(0),total=$state(10),copied=$state(false);
   const active=$derived(operation==='SUBMITTING'||operation==='STREAMING'||operation==='COMPLETING');
-  onMount(()=>{client=createPublicToolsClient();return()=>{selection++;controller?.abort();};});
+  onMount(()=>{client=createPublicToolsClient(auth);return()=>{selection++;controller?.abort();};});
   function parseNumber(value:string):number{return Number(normalizeNumericDigits(value));}
   async function selectFile(next:File|undefined){if(!next||!client||active)return;const current=++selection;
     if(!/\.(?:pdf|doc|docx|odt|txt|md)$/i.test(next.name)){error=t('invalidFile');return;}

@@ -18,8 +18,7 @@ RUN test -f "deploy/examples/${CUSTOMER}/platform.cjson" \
  && mkdir -p dist \
  && ./node_modules/.bin/esbuild apps/api/src/index.ts --bundle --platform=node --format=esm --packages=external --outfile=dist/target-api.js \
  && ./node_modules/.bin/esbuild apps/worker/src/index.ts --bundle --platform=node --format=esm --packages=external --outfile=dist/target-worker.js \
- && ./node_modules/.bin/esbuild packages/persistence/src/target-migrate.ts --bundle --platform=node --format=esm --packages=external --outfile=dist/target-migrate.js \
- && ./node_modules/.bin/esbuild modules/translator/src/persistence/migrate.ts --bundle --platform=node --format=esm --packages=external --outfile=dist/import-dictionary.js
+ && ./node_modules/.bin/esbuild packages/persistence/src/target-migrate.ts --bundle --platform=node --format=esm --packages=external --outfile=dist/target-migrate.js
 
 FROM ${NODE_IMAGE} AS runtime_base
 WORKDIR /app
@@ -33,6 +32,7 @@ RUN npm ci --omit=dev --ignore-scripts --registry=https://registry.npmjs.org \
 COPY --from=build /app/apps/web/build ./apps/web/build
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/packages/persistence/src/target-migrations ./dist/target-migrations
+COPY --from=build /app/packages/authentication/data/LICENSE-SecLists.txt ./licenses/LICENSE-SecLists.txt
 COPY --from=build /app/apps/web/static/brand ./apps/web/static/brand
 COPY --from=build /app/deploy/entrypoint.mjs ./deploy/entrypoint.mjs
 

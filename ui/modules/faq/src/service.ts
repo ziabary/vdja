@@ -39,9 +39,10 @@ function parseItems(raw: string, wanted: number): readonly intfFaqItem[] {
 }
 
 export async function inspectFaq(storage: intfPublicOperationPersistence, context: intfExecutionContext, policy: intfAdmissionPolicy, siem: intfSiemConfiguration, file: intfUploadedFile, limits: intfFileLimits): Promise<{ readonly fileName: string; readonly pageCount: number; readonly sourceChars: number }> {
-  return executePublicOperation(storage, { context, policy, siem, action: { requested: 'public.faq.inspect', completed: 'public.faq.inspect', failed: 'public.faq.failed', cancelled: 'public.faq.cancelled' }, inputChars: 0, uploadedBytes: file.size, tokenReservation: 0, execute: async () => {
+  return executePublicOperation(storage, { context, policy, siem, action: { requested: 'public.faq.inspect', completed: 'public.faq.inspect', failed: 'public.faq.failed', cancelled: 'public.faq.cancelled' }, inputChars: 0, uploadedBytes: file.size, tokenReservation: 0, execute: async reservation => {
     const extracted = await extractText(file, limits);
     if (!extracted.text.trim()) throw new Error('EMPTY_DOCUMENT');
+    await storage.recordExtractedInput(context, reservation.id, policy, extracted.text.length);
     return { value: { fileName: file.originalname, pageCount: extracted.pageCount, sourceChars: extracted.text.length }, usage: [{ runId: randomUUID(), inputChars: extracted.text.length, uploadedBytes: file.size, inputTokens: 0, outputTokens: 0, providerMs: 0 }] };
   } });
 }
@@ -49,13 +50,15 @@ export async function inspectFaq(storage: intfPublicOperationPersistence, contex
 export async function generateFaq(storage: intfPublicOperationPersistence, usage: intfUsageRecorder, router: clsAiRouter, context: intfExecutionContext, policy: intfAdmissionPolicy, siem: intfSiemConfiguration, file: intfUploadedFile, limits: intfFileLimits, options: intfFaqOptions, onMeta: (meta: intfFaqMeta) => void, onBatch: (items: readonly intfFaqItem[], index: number, total: number, produced: number) => void): Promise<number> {
   if (!Number.isInteger(options.count) || options.count < 1 || options.count > MAX_FAQS || !Number.isInteger(options.answerWords) || options.answerWords < 20 || options.answerWords > 250 || options.focus.length > 500 || options.priorQuestions.length > MAX_FAQS || options.count + options.priorQuestions.length > MAX_FAQS || !['all','range','focus'].includes(options.scope) || !['formal','conversational'].includes(options.tone) || !['source','fa','en'].includes(options.language)) throw new Error('INVALID_FAQ_INPUT');
   const expectedBatches = Math.ceil(options.count / BATCH_SIZE);
-  return executePublicOperation(storage, { context, policy, siem, action: { requested: 'public.faq.generate.requested', completed: 'public.faq.generate.completed', failed: 'public.faq.failed', cancelled: 'public.faq.cancelled' }, inputChars: 0, uploadedBytes: file.size, tokenReservation: options.count * 2000, execute: async () => {
+  return executePublicOperation(storage, { context, policy, siem, action: { requested: 'public.faq.generate.requested', completed: 'public.faq.generate.completed', failed: 'public.faq.failed', cancelled: 'public.faq.cancelled' }, inputChars: 0, uploadedBytes: file.size, outputTokenBudget: policy.outputTokens, tokenReservation: policy.outputTokens, execute: async reservation => {
     const extracted = await extractText(file, limits);
     if (!extracted.text.trim()) throw new Error('EMPTY_DOCUMENT');
+    await storage.recordExtractedInput(context, reservation.id, policy, extracted.text.length);
     const selected = selectScope(extracted.text, extracted.pageCount, options).trim();
     if (!selected) throw new Error('EMPTY_SCOPE');
     const batches = Math.max(expectedBatches, Math.ceil(selected.length / MAX_BATCH_SOURCE_CHARS));
     if (batches > options.count) throw new Error('SOURCE_TOO_LARGE_FOR_FAQ_COUNT');
+    if (batches > policy.outputTokens) throw new Error('OUTPUT_LIMIT_EXCEEDED');
     onMeta({ fileName: file.originalname, sourceChars: extracted.text.length, selectedChars: selected.length, pageCount: extracted.pageCount, count: options.count, batches });
     const questions = [...options.priorQuestions]; let produced = 0;
     for (let batch = 0; batch < batches; batch += 1) {
@@ -65,7 +68,7 @@ export async function generateFaq(storage: intfPublicOperationPersistence, usage
       const source = selected.slice(start, end);
       const system = `Generate grounded FAQs from supplied document content. Return ONLY a valid JSON array. Each item has question, answer and section string fields. Do not invent facts. Questions must be distinct. Answers must be self-contained and no longer than ${options.answerWords} words. Use ${options.tone} register. Preserve exact names, numbers and qualifications.`;
       const user = `Generate exactly ${wanted} FAQ items. Output language: ${options.language}. Requested focus: ${options.focus || 'none'}. Questions already used: ${JSON.stringify(questions)}. DOCUMENT PART ${batch + 1}/${batches}:\n${source}`;
-      const result = await router.run({ task: 'GENERATE_FAQ', moduleId: 'faq', requestId: `${context.requestId}-${batch}`, correlationId: context.correlationId, deploymentId: context.deploymentId, tenantId: context.tenantId, actorKind: context.actorKind, actorId: context.actorId, messages: [{ role: 'system', content: system }, { role: 'user', content: user }], maxOutputTokens: Math.min(2000, wanted * (options.answerWords + 60)), temperature: 0.2, signal: options.signal });
+      const result = await router.run({ task: 'GENERATE_FAQ', moduleId: 'faq', requestId: `${context.requestId}-${batch}`, correlationId: context.correlationId, deploymentId: context.deploymentId, tenantId: context.tenantId, actorKind: context.actorKind, actorId: context.actorId, messages: [{ role: 'system', content: system }, { role: 'user', content: user }], maxOutputTokens: Math.min(Math.floor(policy.outputTokens / batches), wanted * (options.answerWords + 60)), temperature: 0.2, signal: options.signal });
       const items = parseItems(result.output, wanted);
       await usage.record(context, { runId: result.runId, inputChars: source.length, uploadedBytes: batch === 0 ? file.size : 0, inputTokens: result.inputTokens, outputTokens: result.outputTokens, providerMs: result.durationMs });
       questions.push(...items.map(item => item.question)); produced += items.length;

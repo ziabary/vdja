@@ -14,7 +14,7 @@ function option(name: string, fallback: string): string { const at = process.arg
 function parseLegacy(value: string | null): unknown { if (!value) return null; try { return JSON.parse(value) as unknown; } catch { return null; } }
 function mysqlRow(row: intfMysqlDictionaryRow): intfDictionaryRow {
   const translations = parseLegacy(row.dicTranslation);
-  const payload = { translations: Array.isArray(translations) ? translations : [], synonyms: parseLegacy(row.dicSynonyms), antonyms: parseLegacy(row.dicAntonyms), relExp: parseLegacy(row.dicRelExp), relWords: parseLegacy(row.dicRelWord), pronunciations: parseLegacy(row.dicPronunciation), examples: parseLegacy(row.dicPronunciation), extra: parseLegacy(row.dicExtra) };
+  const payload = { translations: Array.isArray(translations) ? translations : [], synonyms: parseLegacy(row.dicSynonyms), antonyms: parseLegacy(row.dicAntonyms), relExp: parseLegacy(row.dicRelExp), relWords: parseLegacy(row.dicRelWord), pronunciations: parseLegacy(row.dicPronunciation), examples: parseLegacy(row.dicExamples), extra: parseLegacy(row.dicExtra) };
   return dictionaryRow('MYSQL', String(row.dicID), row.dicWord, payload);
 }
 function jsonRows(raw: unknown): { rows: intfDictionaryRow[]; skippedInvalidKeys: number } {

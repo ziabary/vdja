@@ -2,10 +2,11 @@
   import {onMount} from 'svelte';
   import {Textarea,Select,NumberInput,Checkbox,FileDropInput,MarkdownView,transitionAiOperation,useLocale,normalizeNumericDigits,type typAiOperationState} from '@targoman/ui-core';
   import {createPublicToolsClient,newPublicRequestId,type intfDictionaryResult} from '#lib/api/publicTools.js';
+  import {useAuthClient} from '#lib/auth/client.svelte.js';
   import {LANGUAGE_CODES,publicToolText,type typPublicToolMessage} from './messages.js';
 
   let {kind}:{kind:'translate'|'summarize'}=$props();
-  const locale=useLocale();const t=(key:typPublicToolMessage)=>publicToolText(locale.locale,key);
+  const locale=useLocale();const auth=useAuthClient();const t=(key:typPublicToolMessage)=>publicToolText(locale.locale,key);
   const title=$derived(t(kind==='translate'?'translator':'summarizer'));
   let text=$state(''),result=$state(''),dictionary=$state<intfDictionaryResult|null>(null),error=$state(''),notice=$state('');
   let source=$state('auto'),target=$state('fa'),maxWords=$state('200'),forcePersian=$state(true);
@@ -18,7 +19,7 @@
   const outputDirection=$derived(/[\u0590-\u08ff]/.test(dictionary?.translations.join(' ')??result)?'rtl':'ltr');
 
   onMount(()=>{
-    client=createPublicToolsClient();
+    client=createPublicToolsClient(auth);
     if(kind==='translate'){const query=new URLSearchParams(location.search).get('q');if(query){text=query;history.replaceState(null,'',location.pathname);void submit('AUTO');}}
     return()=>{if(autoTimer)clearTimeout(autoTimer);controller?.abort();};
   });

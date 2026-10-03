@@ -8,8 +8,8 @@ export interface intfDictionaryRow { readonly sourceKind: 'JSON_FILE' | 'MYSQL';
 export type { intfDictionaryResult } from './contracts.js';
 
 export function dictionaryRow(sourceKind: 'JSON_FILE' | 'MYSQL', sourceKey: string, phrase: string, payload: Readonly<Record<string, unknown>>): intfDictionaryRow {
-  if (!sourceKey || !phrase || !Array.isArray(payload.translations)) throw new Error('INVALID_DICTIONARY_ROW');
-  return { sourceKind, sourceKey, lookupKey: phrase.toLowerCase(), phrase, payload, sourceSha256: createHash('sha256').update(JSON.stringify([sourceKind, sourceKey, phrase, payload])).digest('hex') };
+  if (!sourceKey.trim() || !phrase.trim() || !Array.isArray(payload.translations) || payload.translations.some(value => typeof value !== 'string')) throw new Error('INVALID_DICTIONARY_ROW');
+  return { sourceKind, sourceKey, lookupKey: phrase.trim().toLowerCase(), phrase, payload, sourceSha256: createHash('sha256').update(JSON.stringify([sourceKind, sourceKey, phrase, payload])).digest('hex') };
 }
 
 export async function upsertDictionaryBatch(client: typTargetClient, rows: readonly intfDictionaryRow[]): Promise<void> {
@@ -30,7 +30,7 @@ export async function upsertDictionaryBatch(client: typTargetClient, rows: reado
 
 export async function lookupDictionary(client: typTargetClient, phrase: string): Promise<intfDictionaryResult | null> {
   const found = await client.query<{ trd_phrase: string; trd_payload: Record<string, unknown> }>(`SELECT trd_phrase, trd_payload FROM translator.tbl_trn_dictionary
-    WHERE trd_lookup_key = $1 ORDER BY CASE trd_source_kind WHEN 'MYSQL' THEN 0 ELSE 1 END, trd_id LIMIT 1`, [phrase.trim().toLowerCase()]);
+    WHERE trd_lookup_key = $1 ORDER BY CASE trd_source_kind WHEN 'MYSQL' THEN 0 ELSE 1 END, trd_source_key COLLATE "C" LIMIT 1`, [phrase.trim().toLowerCase()]);
   if (!found.rows[0]) return null;
   const { trd_phrase: word, trd_payload: data } = found.rows[0];
   if (!Array.isArray(data.translations)) throw new Error('INVALID_DICTIONARY_PAYLOAD');

@@ -1,5 +1,6 @@
 import {createUiApiClient,exUiApiError} from './client.js';
-import {browserFetcher,createFetchTransport,postPublicTool} from './transport.js';
+import {browserFetcher,createFetchTransport,postPublicTool,publicToolFetcher} from './transport.js';
+import type {intfAuthClient} from '../auth/client.svelte.js';
 import {consumeSseFrames,exStreamProtocol,type intfSseFrame} from '../streaming/parser.js';
 import {openLegacyEventStream} from '../streaming/transport.js';
 
@@ -32,8 +33,8 @@ function formForFaq(options:intfFaqOptions):FormData{
 }
 export function newPublicRequestId():string{return crypto.randomUUID().replaceAll('-','');}
 
-export function createPublicToolsClient(){
-  const fetcher=browserFetcher();const api=createUiApiClient(createFetchTransport(fetcher));
+export function createPublicToolsClient(auth?:intfAuthClient){
+  const fetcher=publicToolFetcher(browserFetcher(),()=>auth?.state??{token:null,tenantId:null});const api=createUiApiClient(createFetchTransport(fetcher));
   return {
     async extractText(file:File,maxChars:2000|3000,signal?:AbortSignal):Promise<string>{
       if(/\.(txt|md)$/i.test(file.name)){const content=await file.text();return content.length>maxChars?content.substring(0,maxChars-7)+' [...]':content;}

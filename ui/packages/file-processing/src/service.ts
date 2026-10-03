@@ -10,8 +10,9 @@ export async function extractPublicText(storage: intfPublicOperationPersistence,
     action: { requested: 'public.file.extract.requested', completed: 'public.file.extract.completed',
       failed: 'public.file.extract.failed', cancelled: 'public.file.extract.cancelled' },
     inputChars: 0, uploadedBytes: file.size, tokenReservation: 0,
-    execute: async () => {
+    execute: async reservation => {
       const extracted = await extractText(file, limits, maxChars);
+      await storage.recordExtractedInput(context, reservation.id, policy, extracted.text.length);
       return { value: extracted, usage: [{ runId: randomUUID(), inputChars: extracted.text.length,
         uploadedBytes: file.size, inputTokens: 0, outputTokens: 0, providerMs: 0 }] };
     } });

@@ -92,7 +92,7 @@ export class clsAiRouter {
   readonly #active = new Map<string, number>();
   readonly #inflight = new Map<string, { endpoint: intfAiEndpointConfiguration; providerRequestId: string; abort: AbortController }>();
   constructor(readonly configuration: clsConfigurationStore, readonly store: intfAiRunStore, readonly provider = callOpenAiCompatible, readonly now = () => Date.now()) {}
-  async probeReadiness(): Promise<{ status: 'READY' | 'DEGRADED'; healthyEndpoints: readonly string[]; unavailableTasks: readonly typAiTask[] }> {
+  async probeReadiness(): Promise<{ status: 'READY' | 'DEGRADED' | 'NOT_READY'; healthyEndpoints: readonly string[]; unavailableTasks: readonly typAiTask[] }> {
     const snapshot = this.configuration.active();
     const enabled = snapshot.value.ai.endpoints.filter(endpoint => endpoint.enabled);
     const checks = await Promise.all(enabled.map(async endpoint => {
@@ -105,8 +105,9 @@ export class clsAiRouter {
     const healthyEndpoints = checks.filter((id): id is string => id !== null);
     const taskByModule = { translator: 'TRANSLATE', summarizer: 'SUMMARIZE', faq: 'GENERATE_FAQ' } as const;
     const requiredTasks = (Object.keys(taskByModule) as typModuleId[]).filter(module => snapshot.value.modules[module].enabled).map(module => taskByModule[module]);
-    const unavailableTasks = requiredTasks.filter(task => !enabled.some(endpoint => healthyEndpoints.includes(endpoint.id) && endpoint.capabilities.includes(task)));
-    return { status: unavailableTasks.length ? 'DEGRADED' : 'READY', healthyEndpoints, unavailableTasks };
+    const unavailableTasks = requiredTasks.filter(task => !this.reasons(task, snapshot).some(reason => reason.status === 'ELIGIBLE'));
+    const degraded = requiredTasks.some(task => enabled.some(endpoint => endpoint.capabilities.includes(task) && this.reasons(task, snapshot).some(reason => reason.endpointId === endpoint.id && reason.status !== 'ELIGIBLE')));
+    return { status: unavailableTasks.length ? 'NOT_READY' : degraded ? 'DEGRADED' : 'READY', healthyEndpoints, unavailableTasks };
   }
   setHealth(endpointId: string, health: typEndpointHealth): void { this.#health.set(endpointId, health); }
   circuitState(endpointId: string): typCircuitState { const c = this.#circuits.get(endpointId); if (!c || c.failures === 0) return 'CLOSED'; return c.openedUntil > this.now() ? 'OPEN' : 'HALF_OPEN'; }

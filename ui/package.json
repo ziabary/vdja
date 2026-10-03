@@ -45,7 +45,7 @@
     "test:architecture:self": "node --import tsx --test tests/architecture/staticAnalysis.test.ts",
     "test:reporting": "node --import tsx --test tests/reporting/activityReport.test.ts",
     "test:architecture": "node scripts/architecture-runner.mjs",
-    "test:conformance:authority": "node --import tsx --test tests/conformance/authority/authorityBehavior.test.ts",
+    "test:conformance:authority": "AUTHORITY_CONFORMANCE_ADAPTER=tests/conformance/authority/productionAdapter.ts node --import tsx tests/conformance/authority/authorityBehavior.test.ts",
     "test:guardrails": "node scripts/guardrail-runner.mjs",
     "dev:web": "npm run dev --workspace @targoman/web",
     "build:web": "npm run build --workspace @targoman/web",
@@ -74,6 +74,21 @@
     ,"release:customers": "node --import tsx scripts/customer-release.mjs"
     ,"test:target:integration": "node --import tsx --test tests/target/runtime.integration.test.ts"
     ,"test:customer:web": "node tests/target/customer-web.smoke.mjs"
+    ,"test:auth:unit": "node --import tsx --test tests/target/t4-password.test.ts tests/target/t4-auth-service.test.ts tests/target/t4-web-auth-proxy.test.ts"
+    ,"test:auth:live": "T4_REQUIRE_LIVE=1 node --import tsx tests/target/t4-auth-http.integration.test.ts"
+    ,"test:auth": "npm run test:auth:unit && npm run test:auth:live"
+    ,"test:browser:t4": "T4_REQUIRE_BROWSER=1 node tests/target/t4-browser.integration.test.mjs"
+    ,"test:session:unit": "node --import tsx --test tests/target/t4-session.test.ts tests/target/t4-access-token.test.ts tests/target/t4-auth-cookie.test.ts"
+    ,"test:session": "npm run test:session:unit && npm run test:session:live"
+    ,"test:session:live": "T4_REQUIRE_LIVE=1 node --import tsx --test tests/target/t4-session.integration.test.ts"
+    ,"test:authority": "npm run test:conformance:authority"
+    ,"test:tenant-isolation": "node scripts/t4-gate.mjs tenant-isolation"
+    ,"test:security:asvs:l3": "node scripts/t4-gate.mjs asvs-l3"
+    ,"test:public-tools:anonymous": "node scripts/t4-gate.mjs public-tools-anonymous"
+    ,"test:public-tools:authenticated": "node scripts/t4-gate.mjs public-tools-authenticated"
+    ,"test:public-tools:limits": "node scripts/t4-gate.mjs public-tools-limits"
+    ,"test:security-telemetry": "node --import tsx --test tests/target/t4-four-point.test.ts && npm run test:target:integration"
+    ,"test:architecture:target": "node --import tsx scripts/t4-target-architecture.ts && node --import tsx --test tests/architecture/t4TargetArchitecture.test.ts"
   },
   "keywords": [
     "LLM",
@@ -167,6 +182,9 @@
     ,"packages/security-telemetry"
     ,"packages/file-processing"
     ,"packages/platform"
+    ,"packages/authority"
+    ,"packages/session"
+    ,"packages/authentication"
     ,"modules/translator"
     ,"modules/summarizer"
     ,"modules/faq"

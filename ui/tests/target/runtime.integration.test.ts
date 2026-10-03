@@ -78,8 +78,10 @@ test('SIEM export survives retry, retains safe envelope, and settles once', asyn
       calls += 1;
       assert.equal(event.eventId, eventId);
       assert.equal(event.actorKind, 'ANONYMOUS');
+      assert.equal(event.actorId, null);
+      assert.equal(event.sessionId, null);
       assert.equal(event.requestId, ctx.requestId);
-      assert.deepEqual(Object.keys(event).sort(), ['action','actorKind','correlationId','deploymentId','eventId','moduleId','occurredAt','reason','requestId','result','tenantId'].sort());
+      assert.deepEqual(Object.keys(event).sort(), ['action','actorId','actorKind','correlationId','deploymentId','eventId','moduleId','occurredAt','reason','requestId','result','sessionId','tenantId'].sort());
       return calls === 1 ? { kind: 'RETRY', errorClass: 'HTTP_503' } : { kind: 'DELIVERED', ack: 'accepted' };
     } };
     const storage = createSiemExportPersistence(worker);
@@ -126,9 +128,40 @@ test('local SIEM receiver proves HTTP delivery, idempotency, outage retry, and w
     assert.deepEqual(received[0]?.body, received[1]?.body);
     const body = received[0]?.body as Record<string, unknown>;
     assert.equal(body.actorKind, 'ANONYMOUS');
-    assert.deepEqual(Object.keys(body).sort(), ['action','actorKind','correlationId','deploymentId','eventId','moduleId','occurredAt','reason','requestId','result','tenantId'].sort());
+    assert.equal(body.actorId, null);
+    assert.equal(body.sessionId, null);
+    assert.deepEqual(Object.keys(body).sort(), ['action','actorId','actorKind','correlationId','deploymentId','eventId','moduleId','occurredAt','reason','requestId','result','sessionId','tenantId'].sort());
     const state = await worker.query('SELECT tex_status, tex_ack FROM telemetry.tbl_tel_export WHERE tex_event__ase_id = $1', [eventId]);
     assert.deepEqual(state.rows[0], { tex_status: 'DELIVERED', tex_ack: 'local-receiver-ack' });
+  } finally {
+    await api.end(); await worker.end();
+    await new Promise<void>((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
+  }
+});
+
+test('SIEM lost acknowledgement remains UNKNOWN across Worker restart without receiver guarantee', async () => {
+  let deliveries = 0;
+  const server = createServer(async (request) => {
+    for await (const _chunk of request) { /* consume body before dropping acknowledgement */ }
+    deliveries += 1;
+    request.socket.destroy();
+  });
+  await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve));
+  const address = server.address(); assert.ok(address && typeof address !== 'string');
+  const api = await createTargetPool(config, 'api', secretRoot), worker = await createTargetPool(config, 'worker', secretRoot);
+  try {
+    const ctx = context(), destinationId = `unknown-${randomUUID().slice(0, 8)}`;
+    const siem = { ...config.value.siem, enabled: true, destinationId, url: `http://127.0.0.1:${address.port}/ingest`, events: ['public.translate.completed'], deliveryGuarantee: 'NONE' as const };
+    const eventId = await withTargetTransaction(api, { actorKind: 'ANONYMOUS', actorId: null, correlationId: ctx.correlationId, source: 'test' }, async tx => {
+      const id = await recordAudit(tx, ctx, 'public.translate.completed', 'SUCCEEDED');
+      await scheduleSiemExport(tx, id, 'public.translate.completed', siem); return id;
+    });
+    assert.equal(await deliverNext(createSiemExportPersistence(worker), siem), 'UNKNOWN');
+    assert.equal(deliveries, 1);
+    assert.equal(await deliverNext(createSiemExportPersistence(worker), siem), 'EMPTY');
+    assert.equal(deliveries, 1);
+    const state = await worker.query('SELECT tex_status FROM telemetry.tbl_tel_export WHERE tex_event__ase_id = $1', [eventId]);
+    assert.equal(state.rows[0]?.tex_status, 'UNKNOWN');
   } finally {
     await api.end(); await worker.end();
     await new Promise<void>((resolve, reject) => server.close(error => error ? reject(error) : resolve()));

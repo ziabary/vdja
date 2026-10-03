@@ -20,13 +20,13 @@ export function createTargetReadinessPersistence(pool: pg.Pool): () => Promise<v
   return async () => { await pool.query('SELECT 1 FROM platform.tbl_plt_migration LIMIT 1'); };
 }
 
-export interface intfMutationContext { readonly actorKind: string; readonly actorId: string | null; readonly correlationId: string; readonly source: string }
+export interface intfMutationContext { readonly actorKind: string; readonly actorId: string | null; readonly sessionId?: string | null; readonly tenantId?: string | null; readonly correlationId: string; readonly source: string }
 export async function withTargetTransaction<T>(pool: pg.Pool, context: intfMutationContext, work: (client: typTargetClient) => Promise<T>): Promise<T> {
   if (!context.actorKind || !context.correlationId || !context.source) throw new Error('Missing mutation context');
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
-    await client.query("SELECT set_config('app.actor_kind', $1, true), set_config('app.actor_id', $2, true), set_config('app.correlation_id', $3, true), set_config('app.source', $4, true)", [context.actorKind, context.actorId ?? '', context.correlationId, context.source]);
+    await client.query("SELECT set_config('app.actor_kind', $1, true), set_config('app.actor_id', $2, true), set_config('app.session_id', $3, true), set_config('app.tenant_id', $4, true), set_config('app.correlation_id', $5, true), set_config('app.source', $6, true)", [context.actorKind, context.actorId ?? '', context.sessionId ?? '', context.tenantId ?? '', context.correlationId, context.source]);
     const result = await work(client);
     await client.query('COMMIT');
     return result;

@@ -16,6 +16,6 @@
     "packages/ai-router/src/**/*.ts", "packages/audit/src/**/*.ts", "packages/usage/src/**/*.ts",
     "packages/admission-control/src/**/*.ts", "packages/observability/src/**/*.ts",
     "packages/security-telemetry/src/**/*.ts", "packages/file-processing/src/**/*.ts", "packages/platform/src/**/*.ts",
-    "packages/contracts/src/index.ts"
+    "packages/contracts/src/index.ts", "packages/authority/src/**/*.ts", "packages/session/src/**/*.ts", "packages/authentication/src/**/*.ts"
   ]
 }

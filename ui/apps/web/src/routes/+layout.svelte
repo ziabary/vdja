@@ -5,10 +5,12 @@
   import {clsLayoutChrome,provideLayoutChrome} from '#lib/layout/chrome.svelte.js';
   import {DropdownMenu,provideLocale} from '@targoman/ui-core';
   import {publicToolText} from '#lib/public-tools/messages.js';
+  import {provideAuthClient} from '#lib/auth/client.svelte.js';
   import '#lib/styles/main.scss';
   import bootstrapLtr from 'bootstrap/dist/css/bootstrap.min.css?url';
   import bootstrapRtl from 'bootstrap/dist/css/bootstrap.rtl.min.css?url';
   let {data,children}:{data:LayoutData;children:Snippet}=$props();
+  const auth=provideAuthClient();
   const i18n=provideLocale(()=>data.bootstrap.locale);
   const chrome=new clsLayoutChrome();provideLayoutChrome(chrome);
   let descriptor=$derived(data.chromeDescriptor);
@@ -20,15 +22,16 @@
   onMount(()=>{
     const media=matchMedia('(prefers-color-scheme: dark)');
     const update=()=>{resolved=theme==='system'?(media.matches?'dark':'light'):theme;document.documentElement.setAttribute('data-bs-theme',resolved);document.documentElement.dataset.themePreference=theme;};
-    update();media.addEventListener('change',update);return()=>media.removeEventListener('change',update);
+    update();media.addEventListener('change',update);if(data.authEnabled)void auth.refresh().catch(()=>{});return()=>media.removeEventListener('change',update);
   });
   function changeTheme(value:'light'|'dark'|'system'){
+    if(value!=='light'&&value!=='dark'&&value!=='system')return;
     themeOverride=value;resolved=value==='system'?(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):value;
     document.documentElement.setAttribute('data-bs-theme',resolved);document.documentElement.dataset.themePreference=value;
-    document.cookie=`ui-theme=${value}; Path=/; SameSite=Lax`;
+    document.cookie=`__Host-ui-theme=${value}; Secure; Path=/; SameSite=Lax`;
   }
   function toggleTheme(){changeTheme(resolved==='dark'?'light':'dark');}
-  function changeLocale(value:'fa'|'en') {document.cookie=`ui-locale=${value}; Path=/; SameSite=Lax`;location.reload();}
+  function changeLocale(value:'fa'|'en') {if(value!=='fa'&&value!=='en')return;document.cookie=`__Host-ui-locale=${value}; Secure; Path=/; SameSite=Lax`;location.reload();}
 </script>
 <svelte:head><title>{descriptor.title} · {data.bootstrap.brand.displayName}</title><link id="bootstrap-css" rel="stylesheet" href={data.bootstrap.direction==='rtl'?bootstrapRtl:bootstrapLtr} /><link rel="stylesheet" href={asset('fonts/iransansx/fontiran.css')} /><link rel="stylesheet" href={asset('fonts/fontawesome/v6.2.0/all.css')} />{#if data.bootstrap.brand.favicon}<link rel="icon" href={data.bootstrap.brand.favicon} />{/if}</svelte:head>
 <a class="skip-link btn btn-primary" href="#main">{i18n.t('skip')}</a>
@@ -48,7 +51,8 @@
           <label for="locale-choice">زبان / Language</label>
           <select id="locale-choice" class="form-select form-select-sm" value={i18n.locale} onchange={event=>changeLocale(event.currentTarget.value as 'fa'|'en')}><option value="fa">فارسی</option><option value="en">English</option></select>
         </DropdownMenu>
-        {#if data.loginUrl}<a class="btn btn-primary btn-sm login-link" href={data.loginUrl}><i class="fa-solid fa-user" aria-hidden="true"></i> {publicToolText(i18n.locale,'login')}</a>{/if}
+        {#if data.authEnabled&&auth.state.tenantId}<span class="small">{auth.state.tenantId}</span><button class="btn btn-outline-secondary btn-sm" type="button" onclick={()=>{void auth.logout();}}>خروج</button>
+        {:else if data.loginUrl}<a class="btn btn-primary btn-sm login-link" href={resolve('/(public)/login')}><i class="fa-solid fa-user" aria-hidden="true"></i> {publicToolText(i18n.locale,'login')}</a>{/if}
       {:else}
         <span>{data.bootstrap.session.tenant?.label??i18n.t('guest')}</span>
         <label class="visually-hidden" for="locale-choice">زبان / Language</label><select id="locale-choice" class="form-select form-select-sm w-auto" value={i18n.locale} onchange={event=>changeLocale(event.currentTarget.value as 'fa'|'en')}><option value="fa">فارسی</option><option value="en">English</option></select>

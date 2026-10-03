@@ -9,8 +9,21 @@ export interface intfBrandConfiguration { readonly displayName: string; readonly
 export interface intfDatabaseConfiguration { readonly host: string; readonly port: number; readonly name: string; readonly apiUser: string; readonly workerUser: string; readonly migrationUser: string; readonly apiPasswordRef: typSecretRef; readonly workerPasswordRef: typSecretRef; readonly migrationPasswordRef: typSecretRef; readonly maxConnections: number }
 export interface intfAiEndpointConfiguration { readonly id: string; readonly enabled: boolean; readonly provider: 'OPENAI_COMPATIBLE'; readonly baseUrl: string; readonly model: string; readonly capabilities: readonly typAiTask[]; readonly priority: number; readonly weight: number; readonly maxConcurrent: number; readonly connectTimeoutMs: number; readonly firstTokenTimeoutMs: number; readonly totalTimeoutMs: number; readonly credentialRef?: typSecretRef }
 export interface intfAiTaskPolicy { readonly preferredEndpoints: readonly string[]; readonly maxAttempts: number; readonly circuitFailureThreshold: number; readonly circuitOpenMs: number }
-export interface intfAdmissionPolicy { readonly requestsPerMinute: number; readonly concurrent: number; readonly dailyRequests: number; readonly dailyInputChars: number; readonly inputChars: number; readonly uploadBytes: number; readonly tokenBudget: number }
-export interface intfSiemConfiguration { readonly enabled: boolean; readonly destinationId: string; readonly url: string; readonly credentialRef?: typSecretRef; readonly timeoutMs: number; readonly maxAttempts: number; readonly events: readonly string[] }
+export interface intfAdmissionPolicy { readonly requestsPerMinute: number; readonly concurrent: number; readonly dailyRequests: number; readonly dailyInputChars: number; readonly inputChars: number; readonly uploadBytes: number; readonly outputTokens: number; readonly tokenBudget: number }
+export interface intfSiemConfiguration { readonly enabled: boolean; readonly destinationId: string; readonly url: string; readonly credentialRef?: typSecretRef; readonly timeoutMs: number; readonly maxAttempts: number; readonly events: readonly string[]; readonly deliveryGuarantee: 'NONE' | 'IDEMPOTENT' | 'DUPLICATE_TOLERANT' }
+export interface intfSessionSecurityPolicy {
+  readonly absoluteLifetimeSeconds: number;
+  readonly refreshLifetimeSeconds: number;
+  readonly inactivityLifetimeSeconds: number;
+}
+export type typAuthConfiguration = Readonly<{ enabled: false }> | Readonly<{
+  enabled: true; issuer: string; audience: string; accessTokenSeconds: number;
+  session: intfSessionSecurityPolicy;
+  authenticatedAdmission: Readonly<Record<typModuleId, intfAdmissionPolicy>>;
+  privilegedAdmission: Readonly<Record<typModuleId, intfAdmissionPolicy>>;
+  activeKid: string; privateKeyRef: typSecretRef;
+  publicKeys: readonly Readonly<{ kid: string; publicKeyRef: typSecretRef }>[];
+}>;
 export interface intfPlatformConfiguration {
   readonly configVersion: 1;
   readonly deployment: { readonly id: string; readonly tenantId: string; readonly releaseId: string };
@@ -20,6 +33,7 @@ export interface intfPlatformConfiguration {
   readonly ai: { readonly endpoints: readonly intfAiEndpointConfiguration[]; readonly tasks: Readonly<Record<typAiTask, intfAiTaskPolicy>> };
   readonly admission: Readonly<Record<typModuleId, intfAdmissionPolicy>>;
   readonly siem: intfSiemConfiguration;
+  readonly auth?: typAuthConfiguration;
   readonly fileProcessing: { readonly maxUploadBytes: number; readonly maxExtractedChars: number; readonly maxPages: number };
   readonly http: { readonly listenHost: string; readonly apiPort: number; readonly apiInternalUrl: string; readonly allowedOrigins: readonly string[]; readonly maxJsonBytes: number };
   readonly worker: { readonly pollMs: number; readonly claimLeaseMs: number };
@@ -109,25 +123,61 @@ function ai(value: unknown): intfPlatformConfiguration['ai'] {
   }
   return { endpoints, tasks };
 }
-function admission(value: unknown, maxUploadBytes: number): intfPlatformConfiguration['admission'] {
-  const raw = object(value, 'admission', MODULES), result = {} as Record<typModuleId, intfAdmissionPolicy>;
+function admission(value: unknown, maxUploadBytes: number, path = 'admission', requireOutputTokens = false): intfPlatformConfiguration['admission'] {
+  const raw = object(value, path, MODULES), result = {} as Record<typModuleId, intfAdmissionPolicy>;
   for (const module of MODULES) {
-    const p = `admission.${module}`, x = object(raw[module], p, ['requestsPerMinute', 'concurrent', 'dailyRequests', 'dailyInputChars', 'inputChars', 'uploadBytes', 'tokenBudget']);
+    const p = `${path}.${module}`, x = object(raw[module], p, ['requestsPerMinute', 'concurrent', 'dailyRequests', 'dailyInputChars', 'inputChars', 'uploadBytes', 'outputTokens', 'tokenBudget']);
     const uploadBytes = integer(x.uploadBytes, `${p}.uploadBytes`, 0, maxUploadBytes);
-    result[module] = { requestsPerMinute: integer(x.requestsPerMinute, `${p}.requestsPerMinute`, 1, 1000000), concurrent: integer(x.concurrent, `${p}.concurrent`, 1, 100000), dailyRequests: integer(x.dailyRequests, `${p}.dailyRequests`, 1, 100000000), dailyInputChars: integer(x.dailyInputChars, `${p}.dailyInputChars`, 1, 1000000000), inputChars: integer(x.inputChars, `${p}.inputChars`, 1, 2000000), uploadBytes, tokenBudget: integer(x.tokenBudget, `${p}.tokenBudget`, 1, 1000000000) };
+    result[module] = { requestsPerMinute: integer(x.requestsPerMinute, `${p}.requestsPerMinute`, 1, 1000000), concurrent: integer(x.concurrent, `${p}.concurrent`, 1, 100000), dailyRequests: integer(x.dailyRequests, `${p}.dailyRequests`, 1, 100000000), dailyInputChars: integer(x.dailyInputChars, `${p}.dailyInputChars`, 1, 1000000000), inputChars: integer(x.inputChars, `${p}.inputChars`, 1, 2000000), uploadBytes, outputTokens: integer(x.outputTokens ?? (requireOutputTokens ? undefined : module === 'faq' ? 20000 : 2000), `${p}.outputTokens`, 1, 100000), tokenBudget: integer(x.tokenBudget, `${p}.tokenBudget`, 1, 1000000000) };
   }
   return result;
 }
 function siem(value: unknown): intfSiemConfiguration {
-  const x = object(value, 'siem', ['enabled', 'destinationId', 'url', 'credentialRef', 'timeoutMs', 'maxAttempts', 'events']);
+  const x = object(value, 'siem', ['enabled', 'destinationId', 'url', 'credentialRef', 'timeoutMs', 'maxAttempts', 'events', 'deliveryGuarantee']);
   const enabled = bool(x.enabled, 'siem.enabled');
   const events = list(x.events, 'siem.events').map((v, i) => string(v, `siem.events[${i}]`)); unique(events, 'siem.events');
   const credentialRef = optionalSecret(x.credentialRef, 'siem.credentialRef');
-  return { enabled, destinationId: identifier(x.destinationId, 'siem.destinationId'), url: enabled ? url(x.url, 'siem.url', ['https:']) : typeof x.url === 'string' ? x.url : '', ...(credentialRef ? { credentialRef } : {}), timeoutMs: integer(x.timeoutMs, 'siem.timeoutMs', 100, 120000), maxAttempts: integer(x.maxAttempts, 'siem.maxAttempts', 1, 20), events };
+  const deliveryGuarantee = x.deliveryGuarantee ?? 'NONE';
+  if (!['NONE', 'IDEMPOTENT', 'DUPLICATE_TOLERANT'].includes(String(deliveryGuarantee))) fail('siem.deliveryGuarantee', 'invalid delivery guarantee');
+  return { enabled, destinationId: identifier(x.destinationId, 'siem.destinationId'), url: enabled ? url(x.url, 'siem.url', ['https:']) : typeof x.url === 'string' ? x.url : '', ...(credentialRef ? { credentialRef } : {}), timeoutMs: integer(x.timeoutMs, 'siem.timeoutMs', 100, 120000), maxAttempts: integer(x.maxAttempts, 'siem.maxAttempts', 1, 20), events, deliveryGuarantee: deliveryGuarantee as intfSiemConfiguration['deliveryGuarantee'] };
+}
+
+function auth(value: unknown, maxUploadBytes: number): typAuthConfiguration | undefined {
+  if (value === undefined) return undefined;
+  const x = object(value, 'auth', ['enabled', 'issuer', 'audience', 'accessTokenSeconds', 'session', 'authenticatedAdmission', 'privilegedAdmission', 'activeKid', 'privateKeyRef', 'publicKeys']);
+  if (!bool(x.enabled, 'auth.enabled')) {
+    if (Object.keys(x).length !== 1) fail('auth', 'disabled auth must contain only enabled');
+    return { enabled: false };
+  }
+  const issuer = url(x.issuer, 'auth.issuer', ['https:']);
+  const audience = string(x.audience, 'auth.audience', 100);
+  const accessTokenSeconds = integer(x.accessTokenSeconds, 'auth.accessTokenSeconds', 1, 300);
+  const sessionRaw = object(x.session, 'auth.session', ['absoluteLifetimeSeconds', 'refreshLifetimeSeconds', 'inactivityLifetimeSeconds']);
+  const session: intfSessionSecurityPolicy = {
+    absoluteLifetimeSeconds: integer(sessionRaw.absoluteLifetimeSeconds, 'auth.session.absoluteLifetimeSeconds', 300, 30 * 24 * 60 * 60),
+    refreshLifetimeSeconds: integer(sessionRaw.refreshLifetimeSeconds, 'auth.session.refreshLifetimeSeconds', 60, 7 * 24 * 60 * 60),
+    inactivityLifetimeSeconds: integer(sessionRaw.inactivityLifetimeSeconds, 'auth.session.inactivityLifetimeSeconds', 60, 7 * 24 * 60 * 60)
+  };
+  if (session.refreshLifetimeSeconds > session.absoluteLifetimeSeconds || session.inactivityLifetimeSeconds > session.absoluteLifetimeSeconds)
+    fail('auth.session', 'refresh and inactivity lifetimes must not exceed absolute lifetime');
+  const authenticatedAdmission = admission(x.authenticatedAdmission, maxUploadBytes, 'auth.authenticatedAdmission', true);
+  const privilegedAdmission = admission(x.privilegedAdmission, maxUploadBytes, 'auth.privilegedAdmission', true);
+  const activeKid = string(x.activeKid, 'auth.activeKid', 64);
+  if (!/^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/.test(activeKid)) fail('auth.activeKid', 'invalid key ID');
+  const publicKeys = list(x.publicKeys, 'auth.publicKeys').map((item, index) => {
+    const key = object(item, `auth.publicKeys[${index}]`, ['kid', 'publicKeyRef']);
+    const kid = string(key.kid, `auth.publicKeys[${index}].kid`, 64);
+    if (!/^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/.test(kid)) fail(`auth.publicKeys[${index}].kid`, 'invalid key ID');
+    return { kid, publicKeyRef: secret(key.publicKeyRef, `auth.publicKeys[${index}].publicKeyRef`) };
+  });
+  unique(publicKeys.map(key => key.kid), 'auth.publicKeys');
+  if (!publicKeys.some(key => key.kid === activeKid)) fail('auth.activeKid', 'no matching public key');
+  return { enabled: true, issuer, audience, accessTokenSeconds, session, authenticatedAdmission, privilegedAdmission, activeKid,
+    privateKeyRef: secret(x.privateKeyRef, 'auth.privateKeyRef'), publicKeys };
 }
 
 export function validateConfiguration(value: unknown): intfPlatformConfiguration {
-  const root = object(value, 'config', ['configVersion', 'deployment', 'modules', 'brand', 'database', 'ai', 'admission', 'siem', 'fileProcessing', 'http', 'worker', 'observability', 'audit', 'usage', 'retention']);
+  const root = object(value, 'config', ['configVersion', 'deployment', 'modules', 'brand', 'database', 'ai', 'admission', 'siem', 'auth', 'fileProcessing', 'http', 'worker', 'observability', 'audit', 'usage', 'retention']);
   if (root.configVersion !== 1) fail('configVersion', 'unsupported version');
   const dep = object(root.deployment, 'deployment', ['id', 'tenantId', 'releaseId']);
   const deployment = { id: identifier(dep.id, 'deployment.id'), tenantId: identifier(dep.tenantId, 'deployment.tenantId'), releaseId: identifier(dep.releaseId, 'deployment.releaseId') };
@@ -143,7 +193,7 @@ export function validateConfiguration(value: unknown): intfPlatformConfiguration
   const w = object(root.worker, 'worker', ['pollMs', 'claimLeaseMs']); const worker = { pollMs: integer(w.pollMs, 'worker.pollMs', 100, 60000), claimLeaseMs: integer(w.claimLeaseMs, 'worker.claimLeaseMs', 1000, 3600000) };
   const o = object(root.observability, 'observability', ['level']); if (!['INFO', 'WARN', 'ERROR'].includes(String(o.level))) fail('observability.level', 'invalid level');
   const a = object(root.audit, 'audit', ['retentionDays']), u = object(root.usage, 'usage', ['retentionDays']), r = object(root.retention, 'retention', ['policyRef']);
-  return { configVersion: 1, deployment, modules, brand: brand(root.brand), database: database(root.database), ai: aiConfig, admission: admission(root.admission, fileProcessing.maxUploadBytes), siem: siem(root.siem), fileProcessing, http, worker, observability: { level: o.level as 'INFO' | 'WARN' | 'ERROR' }, audit: { retentionDays: integer(a.retentionDays, 'audit.retentionDays', 1, 36500) }, usage: { retentionDays: integer(u.retentionDays, 'usage.retentionDays', 1, 36500) }, retention: { policyRef: string(r.policyRef, 'retention.policyRef') } };
+  return { configVersion: 1, deployment, modules, brand: brand(root.brand), database: database(root.database), ai: aiConfig, admission: admission(root.admission, fileProcessing.maxUploadBytes), siem: siem(root.siem), ...(root.auth === undefined ? {} : { auth: auth(root.auth, fileProcessing.maxUploadBytes) }), fileProcessing, http, worker, observability: { level: o.level as 'INFO' | 'WARN' | 'ERROR' }, audit: { retentionDays: integer(a.retentionDays, 'audit.retentionDays', 1, 36500) }, usage: { retentionDays: integer(u.retentionDays, 'usage.retentionDays', 1, 36500) }, retention: { policyRef: string(r.policyRef, 'retention.policyRef') } };
 }
 
 function canonical(value: unknown): unknown {
