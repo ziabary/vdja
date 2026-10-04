@@ -1,0 +1,1 @@
+{"name":"@targoman/knowledge","version":"0.0.0","private":true,"type":"module","exports":{".":"./src/index.ts","./service":"./src/service.ts","./persistence":"./src/persistence.ts","./vector-adapter":"./src/adapters/qdrant.ts","./legacy-migration":"./src/legacy-migration.ts"}}

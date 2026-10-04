@@ -128,6 +128,9 @@
       "public.faq.failed"
     ]
   },
+  "security": { "assuranceProfile": "CUSTOMER_L3" },
+  "fileManagement": { "enabled": false },
+  "knowledge": { "enabled": false },
   "fileProcessing": {
     "maxUploadBytes": 50000000,
     "maxExtractedChars": 2000000,

@@ -1,5 +1,95 @@
 # Targoman AI Platform — Repository Agent Instructions
 
+## Protected governing sources and task instructions
+
+The repository distinguishes **governing documents** from implementation/state documentation.
+
+An agent must recognize these two classes immediately when reading repository
+instructions. Both are protected by default; authorization must be explicit
+and apply to the current task and the exact file or path.
+
+### GOVERNING / PROTECTED
+
+The following paths are **READ-ONLY unless the current user explicitly
+authorizes their modification for this task**:
+
+```text
+AGENTS.md
+**/AGENTS.md           # scoped repository instructions
+docs/architecture/**
+docs/adr/**            # if present
+docs/governance/**     # if present
+```
+
+An agent MUST NOT create, edit, rename, delete, auto-format, or rewrite a protected governing file unless the **current user request explicitly authorizes changing that exact file or protected path**.
+
+### TASK INSTRUCTIONS / PROTECTED BUT TASK-EDITABLE
+
+```text
+docs/prompts/**
+```
+
+Task instructions may be changed only when the current task explicitly
+authorizes editing that prompt or prompt path. Executing or following a prompt
+does not authorize rewriting it. An explicit prompt-editing instruction in the
+current user request or in the task the user explicitly asked to execute is
+task-scoped authorization; it never grants permission to change governing
+architecture, ADRs, governance, or AGENTS.md.
+
+Authorization from an earlier task does not carry over to a later task.
+
+The following do **not** constitute permission to modify a protected governing file:
+
+- the file is listed as a governing source;
+- the agent is told to read/follow/obey it;
+- implementation no longer matches it;
+- changing it would make a test or gate pass;
+- a report, prompt, or prior task once modified it;
+- the agent believes the architecture should change;
+- a generated report contains a newer interpretation;
+- the file is already modified in the working tree.
+
+When implementation reveals a conflict with a protected governing source, the agent MUST:
+
+1. leave the protected file unchanged;
+2. record the conflict and proposed change in the current Activity Report or in a non-governing proposal document;
+3. continue only if implementation can remain compliant with the existing governing source;
+4. if the conflict is blocking, stop that part of the task and request explicit user authorization to change the governing document.
+
+Implementation/state documents may be updated when the active task requires them, for example:
+
+```text
+docs/backend/**
+docs/security/**
+docs/verification/**
+docs/deployment/**
+docs/reports/**
+reports/**
+tests/**
+```
+
+Updating implementation/state documentation MUST NOT be used to redefine an architectural invariant.
+
+### Prompt immutability
+
+A prompt under `docs/prompts/**` is an **execution input**, not an implementation output. An agent executing a prompt MUST NOT rewrite that prompt, its prerequisites, acceptance criteria, or security gates unless the current task explicitly authorizes that prompt edit under the TASK INSTRUCTIONS rule above.
+
+### Protected-file check
+
+At the start of every substantial task, capture the existing working-tree state of protected paths. At task completion, verify that the task introduced no unauthorized protected-path changes.
+
+Recommended command/check:
+
+```text
+git diff --name-only -- AGENTS.md docs/architecture docs/prompts docs/adr docs/governance
+```
+
+Pre-existing changes must be reported but not silently reverted or extended.
+
+### Architecture-change workflow
+
+If an architecture change is desired, treat it as a separate user-approved task. The implementation task may prepare an `Architecture Change Proposal`, but may not apply it to `docs/architecture/**` without explicit approval.
+
 ## Authority and Precedence
 
 This file operationalizes the governing architecture. It does not redefine it.
@@ -69,7 +159,7 @@ read governing docs
 → write acceptance/architecture/focused tests
 → implement smallest correct change
 → run relevant checks
-→ update governing documentation when semantics changed
+→ update required implementation/state documentation; propose governing changes unless explicitly authorized for this task
 ```
 
 Do not silently redesign architecture during implementation.

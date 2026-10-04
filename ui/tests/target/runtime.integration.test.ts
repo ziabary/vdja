@@ -81,7 +81,9 @@ test('SIEM export survives retry, retains safe envelope, and settles once', asyn
       assert.equal(event.actorId, null);
       assert.equal(event.sessionId, null);
       assert.equal(event.requestId, ctx.requestId);
-      assert.deepEqual(Object.keys(event).sort(), ['action','actorId','actorKind','correlationId','deploymentId','eventId','moduleId','occurredAt','reason','requestId','result','sessionId','tenantId'].sort());
+      assert.equal(event.source, 'PUBLIC_API');
+      assert.deepEqual(event.initiator, {kind: 'ANONYMOUS', id: null});
+      assert.deepEqual(Object.keys(event).sort(), ['action','actorId','actorKind','correlationId','deploymentId','eventId','initiator','moduleId','occurredAt','reason','requestId','result','sessionId','source','tenantId'].sort());
       return calls === 1 ? { kind: 'RETRY', errorClass: 'HTTP_503' } : { kind: 'DELIVERED', ack: 'accepted' };
     } };
     const storage = createSiemExportPersistence(worker);
@@ -130,7 +132,9 @@ test('local SIEM receiver proves HTTP delivery, idempotency, outage retry, and w
     assert.equal(body.actorKind, 'ANONYMOUS');
     assert.equal(body.actorId, null);
     assert.equal(body.sessionId, null);
-    assert.deepEqual(Object.keys(body).sort(), ['action','actorId','actorKind','correlationId','deploymentId','eventId','moduleId','occurredAt','reason','requestId','result','sessionId','tenantId'].sort());
+    assert.equal(body.source, 'PUBLIC_API');
+    assert.deepEqual(body.initiator, {kind: 'ANONYMOUS', id: null});
+    assert.deepEqual(Object.keys(body).sort(), ['action','actorId','actorKind','correlationId','deploymentId','eventId','initiator','moduleId','occurredAt','reason','requestId','result','sessionId','source','tenantId'].sort());
     const state = await worker.query('SELECT tex_status, tex_ack FROM telemetry.tbl_tel_export WHERE tex_event__ase_id = $1', [eventId]);
     assert.deepEqual(state.rows[0], { tex_status: 'DELIVERED', tex_ack: 'local-receiver-ack' });
   } finally {

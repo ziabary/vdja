@@ -1,0 +1,1 @@
+{"name":"@targoman/jobs","version":"0.0.0","private":true,"type":"module","exports":{".":"./src/index.ts","./worker":"./src/worker.ts","./persistence":"./src/persistence.ts"}}

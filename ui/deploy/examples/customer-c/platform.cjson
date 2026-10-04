@@ -145,10 +145,14 @@
     "timeoutMs": 5000,
     "maxAttempts": 5,
     "events": [
+      "authority.decision",
       "public.translate.failed",
       "public.faq.failed"
     ]
   },
+  "security": { "assuranceProfile": "CUSTOMER_L3" },
+  "fileManagement": { "enabled": false },
+  "knowledge": { "enabled": false },
   "fileProcessing": {
     "maxUploadBytes": 50000000,
     "maxExtractedChars": 2000000,

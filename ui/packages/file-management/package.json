@@ -1,0 +1,1 @@
+{"name":"@targoman/file-management","version":"0.0.0","private":true,"type":"module","exports":{".":"./src/index.ts","./service":"./src/service.ts","./temporary":"./src/temporary.ts","./public-service":"./src/public-service.ts","./storage-migration":"./src/storage-migration.ts","./storage-migration-persistence":"./src/persistence/storage-migration.ts"}}

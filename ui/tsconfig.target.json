@@ -9,13 +9,15 @@
     "types": ["node"]
   },
   "include": [
-    "apps/api/src/**/*.ts", "apps/worker/src/**/*.ts",
+    "apps/api/src/**/*.ts", "apps/worker/src/**/*.ts", "apps/runtime/src/**/*.ts",
     "modules/translator/src/**/*.ts", "modules/summarizer/src/**/*.ts", "modules/faq/src/**/*.ts",
     "modules/translator/manifest.ts", "modules/summarizer/manifest.ts", "modules/faq/manifest.ts",
     "packages/configuration/src/**/*.ts", "packages/persistence/src/target*.ts", "packages/persistence/src/bootstrap-target-dev.ts",
     "packages/ai-router/src/**/*.ts", "packages/audit/src/**/*.ts", "packages/usage/src/**/*.ts",
     "packages/admission-control/src/**/*.ts", "packages/observability/src/**/*.ts",
     "packages/security-telemetry/src/**/*.ts", "packages/file-processing/src/**/*.ts", "packages/platform/src/**/*.ts",
-    "packages/contracts/src/index.ts", "packages/authority/src/**/*.ts", "packages/session/src/**/*.ts", "packages/authentication/src/**/*.ts"
+    "packages/contracts/src/**/*.ts", "packages/authority/src/**/*.ts", "packages/session/src/**/*.ts", "packages/authentication/src/**/*.ts",
+    "packages/storage/src/**/*.ts", "packages/documents/src/**/*.ts", "packages/jobs/src/**/*.ts", "packages/knowledge/src/**/*.ts",
+    "packages/file-management/src/**/*.ts", "packages/data-governance/src/**/*.ts", "packages/identity/src/**/*.ts"
   ]
 }

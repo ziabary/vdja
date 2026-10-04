@@ -1,0 +1,925 @@
+{
+  "source": "reports/security/rag-asvs-classification.json",
+  "governingContract": "docs/prompts/T5-final.md",
+  "securityGate": "docs/security/06-t5-genai-rag-security-gate.md",
+  "controls": [
+    {
+      "asvsId": "v5.0.0-V1.1.1",
+      "description": "Verify that input is decoded or unescaped into a canonical form only once, it is only decoded when encoded data in that form is expected, and that this is done before processing the input further, for example it is not performed after input validation or sanitization.",
+      "reason": "V1.1.1 requires evidence from the T5 RAG input, output, and rendering surface. Verify that input is decoded or unescaped into a canonical form only once, it is only decoded when encoded data in that form is expected, and that this is done before processing the input further, for example it is not performed after input validation or sanitization. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "RAG input, output, and rendering",
+      "requiredEvidence": "نیاز به بازبینی کد، قرارداد و آزمون اختصاصی محصول هدف برای اثبات «رمزگشایی ورودی فقط یک‌بار، در قالب مورد انتظار و پیش از پردازش»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that input is decoded or unescaped into a canonical form only once, it is only decoded when encoded data in that form is expected, and that this is done before processing the input further, for example it is not performed after input validation or sanitization. against the implemented RAG input, output, and rendering path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V1.1.2",
+      "description": "Verify that the application performs output encoding and escaping either as a final step before being used by the interpreter for which it is intended or by the interpreter itself.",
+      "reason": "V1.1.2 requires evidence from the T5 RAG input, output, and rendering surface. Verify that the application performs output encoding and escaping either as a final step before being used by the interpreter for which it is intended or by the interpreter itself. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "RAG input, output, and rendering",
+      "requiredEvidence": "نیاز به بازبینی کد، قرارداد و آزمون اختصاصی محصول هدف برای اثبات «کدگذاری و گریزدهی خروجی در آخرین مرحله و متناسب با مفسر مقصد»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that the application performs output encoding and escaping either as a final step before being used by the interpreter for which it is intended or by the interpreter itself. against the implemented RAG input, output, and rendering path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V1.2.1",
+      "description": "Verify that output encoding for an HTTP response, HTML document, or XML document is relevant for the context required, such as encoding the relevant characters for HTML elements, HTML attributes, HTML comments, CSS, or HTTP header fields, to avoid changing the message or document structure.",
+      "reason": "V1.2.1 requires evidence from the T5 RAG input, output, and rendering surface. Verify that output encoding for an HTTP response, HTML document, or XML document is relevant for the context required, such as encoding the relevant characters for HTML elements, HTML attributes, HTML comments, CSS, or HTTP header fields, to avoid changing the message or document structure. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "RAG input, output, and rendering",
+      "requiredEvidence": "نیاز به بازبینی کد، قرارداد و آزمون اختصاصی محصول هدف برای اثبات «کدگذاری خروجی HTTP و HTML و XML متناسب با جایگاه متن، ویژگی و سرآیند»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that output encoding for an HTTP response, HTML document, or XML document is relevant for the context required, such as encoding the relevant characters for HTML elements, HTML attributes, HTML comments, CSS, or HTTP header fields, to avoid changing the message or document structure. against the implemented RAG input, output, and rendering path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V1.2.2",
+      "description": "Verify that when dynamically building URLs, untrusted data is encoded according to its context (e.g., URL encoding or base64url encoding for query or path parameters). Ensure that only safe URL protocols are permitted (e.g., disallow javascript: or data:).",
+      "reason": "V1.2.2 requires evidence from the T5 RAG input, output, and rendering surface. Verify that when dynamically building URLs, untrusted data is encoded according to its context (e.g., URL encoding or base64url encoding for query or path parameters). Ensure that only safe URL protocols are permitted (e.g., disallow javascript: or data:). This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "RAG input, output, and rendering",
+      "requiredEvidence": "نیاز به بازبینی کد، قرارداد و آزمون اختصاصی محصول هدف برای اثبات «کدگذاری دادهٔ نامطمئن در URL و محدودکردن پروتکل‌های مجاز»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that when dynamically building URLs, untrusted data is encoded according to its context (e.g., URL encoding or base64url encoding for query or path parameters). Ensure that only safe URL protocols are permitted (e.g., disallow javascript: or data:). against the implemented RAG input, output, and rendering path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V1.2.3",
+      "description": "Verify that output encoding or escaping is used when dynamically building JavaScript content (including JSON), to avoid changing the message or document structure (to avoid JavaScript and JSON injection).",
+      "reason": "V1.2.3 requires evidence from the T5 RAG input, output, and rendering surface. Verify that output encoding or escaping is used when dynamically building JavaScript content (including JSON), to avoid changing the message or document structure (to avoid JavaScript and JSON injection). This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "RAG input, output, and rendering",
+      "requiredEvidence": "نیاز به بازبینی کد، قرارداد و آزمون اختصاصی محصول هدف برای اثبات «گریزدهی محتوای JavaScript و JSON ساخته‌شده به‌صورت پویا»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that output encoding or escaping is used when dynamically building JavaScript content (including JSON), to avoid changing the message or document structure (to avoid JavaScript and JSON injection). against the implemented RAG input, output, and rendering path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V1.2.9",
+      "description": "Verify that the application escapes special characters in regular expressions (typically using a backslash) to prevent them from being misinterpreted as metacharacters.",
+      "reason": "V1.2.9 requires evidence from the T5 RAG input, output, and rendering surface. Verify that the application escapes special characters in regular expressions (typically using a backslash) to prevent them from being misinterpreted as metacharacters. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "RAG input, output, and rendering",
+      "requiredEvidence": "نیاز به بازبینی کد، قرارداد و آزمون اختصاصی محصول هدف برای اثبات «گریزدهی کاراکترهای خاص دادهٔ نامطمئن پیش از ساخت عبارت منظم»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that the application escapes special characters in regular expressions (typically using a backslash) to prevent them from being misinterpreted as metacharacters. against the implemented RAG input, output, and rendering path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V1.3.2",
+      "description": "Verify that the application avoids the use of eval() or other dynamic code execution features such as Spring Expression Language (SpEL). Where there is no alternative, any user input being included must be sanitized before being executed.",
+      "reason": "V1.3.2 requires evidence from the T5 RAG input, output, and rendering surface. Verify that the application avoids the use of eval() or other dynamic code execution features such as Spring Expression Language (SpEL). Where there is no alternative, any user input being included must be sanitized before being executed. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "RAG input, output, and rendering",
+      "requiredEvidence": "نیاز به بازبینی کد، قرارداد و آزمون اختصاصی محصول هدف برای اثبات «پرهیز از eval و اجرای پویای کد یا پاک‌سازی ورودیِ ناگزیر»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that the application avoids the use of eval() or other dynamic code execution features such as Spring Expression Language (SpEL). Where there is no alternative, any user input being included must be sanitized before being executed. against the implemented RAG input, output, and rendering path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V1.3.3",
+      "description": "Verify that data being passed to a potentially dangerous context is sanitized beforehand to enforce safety measures, such as only allowing characters which are safe for this context and trimming input which is too long.",
+      "reason": "V1.3.3 requires evidence from the T5 RAG input, output, and rendering surface. Verify that data being passed to a potentially dangerous context is sanitized beforehand to enforce safety measures, such as only allowing characters which are safe for this context and trimming input which is too long. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "RAG input, output, and rendering",
+      "requiredEvidence": "نیاز به بازبینی کد، قرارداد و آزمون اختصاصی محصول هدف برای اثبات «پاک‌سازی و محدودسازی ورودی پیش از ورود به زمینهٔ خطرناک»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that data being passed to a potentially dangerous context is sanitized beforehand to enforce safety measures, such as only allowing characters which are safe for this context and trimming input which is too long. against the implemented RAG input, output, and rendering path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V1.3.5",
+      "description": "Verify that the application sanitizes or disables user-supplied scriptable or expression template language content, such as Markdown, CSS or XSL stylesheets, BBCode, or similar.",
+      "reason": "V1.3.5 requires evidence from the T5 RAG input, output, and rendering surface. Verify that the application sanitizes or disables user-supplied scriptable or expression template language content, such as Markdown, CSS or XSL stylesheets, BBCode, or similar. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "RAG input, output, and rendering",
+      "requiredEvidence": "نیاز به بازبینی کد، قرارداد و آزمون اختصاصی محصول هدف برای اثبات «پاک‌سازی یا غیرفعال‌سازی محتوای Markdown و قالب‌های اسکریپت‌پذیر»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that the application sanitizes or disables user-supplied scriptable or expression template language content, such as Markdown, CSS or XSL stylesheets, BBCode, or similar. against the implemented RAG input, output, and rendering path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V1.3.7",
+      "description": "Verify that the application protects against template injection attacks by not allowing templates to be built based on untrusted input. Where there is no alternative, any untrusted input being included dynamically during template creation must be sanitized or strictly validated.",
+      "reason": "V1.3.7 requires evidence from the T5 RAG input, output, and rendering surface. Verify that the application protects against template injection attacks by not allowing templates to be built based on untrusted input. Where there is no alternative, any untrusted input being included dynamically during template creation must be sanitized or strictly validated. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "RAG input, output, and rendering",
+      "requiredEvidence": "نیاز به بازبینی کد، قرارداد و آزمون اختصاصی محصول هدف برای اثبات «پیشگیری از تزریق قالب در ساخت پویای template»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that the application protects against template injection attacks by not allowing templates to be built based on untrusted input. Where there is no alternative, any untrusted input being included dynamically during template creation must be sanitized or strictly validated. against the implemented RAG input, output, and rendering path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V1.3.10",
+      "description": "Verify that format strings which might resolve in an unexpected or malicious way when used are sanitized before being processed.",
+      "reason": "V1.3.10 requires evidence from the T5 RAG input, output, and rendering surface. Verify that format strings which might resolve in an unexpected or malicious way when used are sanitized before being processed. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "RAG input, output, and rendering",
+      "requiredEvidence": "نیاز به بازبینی کد، قرارداد و آزمون اختصاصی محصول هدف برای اثبات «پاک‌سازی رشته‌های قالب‌بندیِ قابل‌تفسیر به‌شکل ناخواسته»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that format strings which might resolve in an unexpected or malicious way when used are sanitized before being processed. against the implemented RAG input, output, and rendering path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V1.3.12",
+      "description": "Verify that regular expressions are free from elements causing exponential backtracking, and ensure untrusted input is sanitized to mitigate ReDoS or Runaway Regex attacks.",
+      "reason": "V1.3.12 requires evidence from the T5 RAG input, output, and rendering surface. Verify that regular expressions are free from elements causing exponential backtracking, and ensure untrusted input is sanitized to mitigate ReDoS or Runaway Regex attacks. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "RAG input, output, and rendering",
+      "requiredEvidence": "نیاز به بازبینی کد، قرارداد و آزمون اختصاصی محصول هدف برای اثبات «ایمنی عبارت‌های منظم در برابر بازگشت نمایی و ReDoS»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that regular expressions are free from elements causing exponential backtracking, and ensure untrusted input is sanitized to mitigate ReDoS or Runaway Regex attacks. against the implemented RAG input, output, and rendering path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V1.4.1",
+      "description": "Verify that the application uses memory-safe string, safer memory copy and pointer arithmetic to detect or prevent stack, buffer, or heap overflows.",
+      "reason": "V1.4.1 requires evidence from the T5 RAG input, output, and rendering surface. Verify that the application uses memory-safe string, safer memory copy and pointer arithmetic to detect or prevent stack, buffer, or heap overflows. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "RAG input, output, and rendering",
+      "requiredEvidence": "نیاز به بازبینی کد، قرارداد و آزمون اختصاصی محصول هدف برای اثبات «استفاده از رشته و حافظهٔ ایمن برای جلوگیری از سرریز پشته و heap»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that the application uses memory-safe string, safer memory copy and pointer arithmetic to detect or prevent stack, buffer, or heap overflows. against the implemented RAG input, output, and rendering path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V1.4.2",
+      "description": "Verify that sign, range, and input validation techniques are used to prevent integer overflows.",
+      "reason": "V1.4.2 requires evidence from the T5 RAG input, output, and rendering surface. Verify that sign, range, and input validation techniques are used to prevent integer overflows. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "RAG input, output, and rendering",
+      "requiredEvidence": "نیاز به بازبینی کد، قرارداد و آزمون اختصاصی محصول هدف برای اثبات «اعتبارسنجی علامت و بازهٔ عددی برای پیشگیری از سرریز عدد صحیح»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that sign, range, and input validation techniques are used to prevent integer overflows. against the implemented RAG input, output, and rendering path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V1.4.3",
+      "description": "Verify that dynamically allocated memory and resources are released, and that references or pointers to freed memory are removed or set to null to prevent dangling pointers and use-after-free vulnerabilities.",
+      "reason": "V1.4.3 requires evidence from the T5 RAG input, output, and rendering surface. Verify that dynamically allocated memory and resources are released, and that references or pointers to freed memory are removed or set to null to prevent dangling pointers and use-after-free vulnerabilities. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "RAG input, output, and rendering",
+      "requiredEvidence": "نیاز به بازبینی کد، قرارداد و آزمون اختصاصی محصول هدف برای اثبات «آزادسازی منابع پویا و جلوگیری از اشاره‌گر معلق و استفاده پس از آزادسازی»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that dynamically allocated memory and resources are released, and that references or pointers to freed memory are removed or set to null to prevent dangling pointers and use-after-free vulnerabilities. against the implemented RAG input, output, and rendering path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V1.5.1",
+      "description": "Verify that the application configures XML parsers to use a restrictive configuration and that unsafe features such as resolving external entities are disabled to prevent XML eXternal Entity (XXE) attacks.",
+      "reason": "V1.5.1 requires evidence from the T5 RAG input, output, and rendering surface. Verify that the application configures XML parsers to use a restrictive configuration and that unsafe features such as resolving external entities are disabled to prevent XML eXternal Entity (XXE) attacks. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "RAG input, output, and rendering",
+      "requiredEvidence": "نیاز به بازبینی کد، قرارداد و آزمون اختصاصی محصول هدف برای اثبات «غیرفعال‌کردن موجودیت‌های خارجی و ویژگی‌های ناامن XML parser»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that the application configures XML parsers to use a restrictive configuration and that unsafe features such as resolving external entities are disabled to prevent XML eXternal Entity (XXE) attacks. against the implemented RAG input, output, and rendering path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V1.5.2",
+      "description": "Verify that deserialization of untrusted data enforces safe input handling, such as using an allowlist of object types or restricting client-defined object types, to prevent deserialization attacks. Deserialization mechanisms that are explicitly defined as insecure must not be used with untrusted input.",
+      "reason": "V1.5.2 requires evidence from the T5 RAG input, output, and rendering surface. Verify that deserialization of untrusted data enforces safe input handling, such as using an allowlist of object types or restricting client-defined object types, to prevent deserialization attacks. Deserialization mechanisms that are explicitly defined as insecure must not be used with untrusted input. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "RAG input, output, and rendering",
+      "requiredEvidence": "نیاز به بازبینی کد، قرارداد و آزمون اختصاصی محصول هدف برای اثبات «محدودسازی امن نوع شیء هنگام deserialization دادهٔ نامطمئن»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that deserialization of untrusted data enforces safe input handling, such as using an allowlist of object types or restricting client-defined object types, to prevent deserialization attacks. Deserialization mechanisms that are explicitly defined as insecure must not be used with untrusted input. against the implemented RAG input, output, and rendering path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V1.5.3",
+      "description": "Verify that different parsers used in the application for the same data type (e.g., JSON parsers, XML parsers, URL parsers), perform parsing in a consistent way and use the same character encoding mechanism to avoid issues such as JSON Interoperability vulnerabilities or different URI or file parsing behavior being exploited in Remote File Inclusion (RFI) or Server-side Request Forgery (SSRF) attacks.",
+      "reason": "V1.5.3 requires evidence from the T5 RAG input, output, and rendering surface. Verify that different parsers used in the application for the same data type (e.g., JSON parsers, XML parsers, URL parsers), perform parsing in a consistent way and use the same character encoding mechanism to avoid issues such as JSON Interoperability vulnerabilities or different URI or file parsing behavior being exploited in Remote File Inclusion (RFI) or Server-side Request Forgery (SSRF) attacks. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "RAG input, output, and rendering",
+      "requiredEvidence": "نیاز به بازبینی کد، قرارداد و آزمون اختصاصی محصول هدف برای اثبات «یکسانی تفسیر و کدگذاری در parserهای متعدد یک نوع داده»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that different parsers used in the application for the same data type (e.g., JSON parsers, XML parsers, URL parsers), perform parsing in a consistent way and use the same character encoding mechanism to avoid issues such as JSON Interoperability vulnerabilities or different URI or file parsing behavior being exploited in Remote File Inclusion (RFI) or Server-side Request Forgery (SSRF) attacks. against the implemented RAG input, output, and rendering path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V2.1.1",
+      "description": "Verify that the application's documentation defines input validation rules for how to check the validity of data items against an expected structure. This could be common data formats such as credit card numbers, email addresses, telephone numbers, or it could be an internal data format.",
+      "reason": "V2.1.1 requires evidence from the T5 Document and File Management lifecycle surface. Verify that the application's documentation defines input validation rules for how to check the validity of data items against an expected structure. This could be common data formats such as credit card numbers, email addresses, telephone numbers, or it could be an internal data format. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Document and File Management lifecycle",
+      "requiredEvidence": "نیاز به بازبینی کد، قرارداد و آزمون اختصاصی محصول هدف برای اثبات «مستندسازی قواعد ساختاری اعتبارسنجی داده‌های ورودی»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that the application's documentation defines input validation rules for how to check the validity of data items against an expected structure. This could be common data formats such as credit card numbers, email addresses, telephone numbers, or it could be an internal data format. against the implemented Document and File Management lifecycle path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V2.1.2",
+      "description": "Verify that the application's documentation defines how to validate the logical and contextual consistency of combined data items, such as checking that suburb and ZIP code match.",
+      "reason": "V2.1.2 requires evidence from the T5 Document and File Management lifecycle surface. Verify that the application's documentation defines how to validate the logical and contextual consistency of combined data items, such as checking that suburb and ZIP code match. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Document and File Management lifecycle",
+      "requiredEvidence": "نیاز به بازبینی کد، قرارداد و آزمون اختصاصی محصول هدف برای اثبات «مستندسازی سازگاری منطقی و زمینه‌ایِ داده‌های وابسته»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that the application's documentation defines how to validate the logical and contextual consistency of combined data items, such as checking that suburb and ZIP code match. against the implemented Document and File Management lifecycle path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V2.1.3",
+      "description": "Verify that expectations for business logic limits and validations are documented, including both per-user and globally across the application.",
+      "reason": "V2.1.3 requires evidence from the T5 Document and File Management lifecycle surface. Verify that expectations for business logic limits and validations are documented, including both per-user and globally across the application. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Document and File Management lifecycle",
+      "requiredEvidence": "نیاز به بازبینی کد، قرارداد و آزمون اختصاصی محصول هدف برای اثبات «مستندسازی حدود و اعتبارسنجی منطق کسب‌وکار در سطح کاربر و سامانه»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that expectations for business logic limits and validations are documented, including both per-user and globally across the application. against the implemented Document and File Management lifecycle path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V2.2.1",
+      "description": "Verify that input is validated to enforce business or functional expectations for that input. This should either use positive validation against an allow list of values, patterns, and ranges, or be based on comparing the input to an expected structure and logical limits according to predefined rules. For L1, this can focus on input which is used to make specific business or security decisions. For L2 and up, this should apply to all input.",
+      "reason": "V2.2.1 requires evidence from the T5 Document and File Management lifecycle surface. Verify that input is validated to enforce business or functional expectations for that input. This should either use positive validation against an allow list of values, patterns, and ranges, or be based on comparing the input to an expected structure and logical limits according to predefined rules. For L1, this can focus on input which is used to make specific business or security decisions. For L2 and up, this should apply to all input. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Document and File Management lifecycle",
+      "requiredEvidence": "نیاز به بازبینی کد، قرارداد و آزمون اختصاصی محصول هدف برای اثبات «اعتبارسنجی همهٔ ورودی‌ها با فهرست مجاز یا ساختار و حدود ازپیش‌تعریف‌شده»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that input is validated to enforce business or functional expectations for that input. This should either use positive validation against an allow list of values, patterns, and ranges, or be based on comparing the input to an expected structure and logical limits according to predefined rules. For L1, this can focus on input which is used to make specific business or security decisions. For L2 and up, this should apply to all input. against the implemented Document and File Management lifecycle path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V2.2.3",
+      "description": "Verify that the application ensures that combinations of related data items are reasonable according to the pre-defined rules.",
+      "reason": "V2.2.3 requires evidence from the T5 Document and File Management lifecycle surface. Verify that the application ensures that combinations of related data items are reasonable according to the pre-defined rules. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Document and File Management lifecycle",
+      "requiredEvidence": "نیاز به بازبینی کد، قرارداد و آزمون اختصاصی محصول هدف برای اثبات «سنجش معقول‌بودن ترکیب داده‌های مرتبط بر پایهٔ قواعد تعریف‌شده»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that the application ensures that combinations of related data items are reasonable according to the pre-defined rules. against the implemented Document and File Management lifecycle path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V2.3.1",
+      "description": "Verify that the application will only process business logic flows for the same user in the expected sequential step order and without skipping steps.",
+      "reason": "V2.3.1 requires evidence from the T5 Document and File Management lifecycle surface. Verify that the application will only process business logic flows for the same user in the expected sequential step order and without skipping steps. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Document and File Management lifecycle",
+      "requiredEvidence": "نیاز به بازبینی کد، قرارداد و آزمون اختصاصی محصول هدف برای اثبات «اجرای گام‌های فرایند کسب‌وکار به ترتیب مجاز و بدون پرش»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that the application will only process business logic flows for the same user in the expected sequential step order and without skipping steps. against the implemented Document and File Management lifecycle path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V2.3.2",
+      "description": "Verify that business logic limits are implemented per the application's documentation to avoid business logic flaws being exploited.",
+      "reason": "V2.3.2 requires evidence from the T5 Document and File Management lifecycle surface. Verify that business logic limits are implemented per the application's documentation to avoid business logic flaws being exploited. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Document and File Management lifecycle",
+      "requiredEvidence": "نیاز به بازبینی کد، قرارداد و آزمون اختصاصی محصول هدف برای اثبات «اعمال حدود منطق کسب‌وکار مطابق مستندات»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that business logic limits are implemented per the application's documentation to avoid business logic flaws being exploited. against the implemented Document and File Management lifecycle path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V2.3.3",
+      "description": "Verify that transactions are being used at the business logic level such that either a business logic operation succeeds in its entirety or it is rolled back to the previous correct state.",
+      "reason": "V2.3.3 requires evidence from the T5 Document and File Management lifecycle surface. Verify that transactions are being used at the business logic level such that either a business logic operation succeeds in its entirety or it is rolled back to the previous correct state. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Document and File Management lifecycle",
+      "requiredEvidence": "نیاز به بازبینی کد، قرارداد و آزمون اختصاصی محصول هدف برای اثبات «اتمی‌بودن تراکنش کسب‌وکار و بازگشت کامل در خطا»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that transactions are being used at the business logic level such that either a business logic operation succeeds in its entirety or it is rolled back to the previous correct state. against the implemented Document and File Management lifecycle path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V2.3.4",
+      "description": "Verify that business logic level locking mechanisms are used to ensure that limited quantity resources (such as theater seats or delivery slots) cannot be double-booked by manipulating the application's logic.",
+      "reason": "V2.3.4 requires evidence from the T5 Document and File Management lifecycle surface. Verify that business logic level locking mechanisms are used to ensure that limited quantity resources (such as theater seats or delivery slots) cannot be double-booked by manipulating the application's logic. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Document and File Management lifecycle",
+      "requiredEvidence": "نیاز به بازبینی کد، قرارداد و آزمون اختصاصی محصول هدف برای اثبات «قفل‌گذاری منبع محدود برای جلوگیری از تخصیص دوباره»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that business logic level locking mechanisms are used to ensure that limited quantity resources (such as theater seats or delivery slots) cannot be double-booked by manipulating the application's logic. against the implemented Document and File Management lifecycle path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V3.2.1",
+      "description": "Verify that security controls are in place to prevent browsers from rendering content or functionality in HTTP responses in an incorrect context (e.g., when an API, a user-uploaded file or other resource is requested directly). Possible controls could include: not serving the content unless HTTP request header fields (such as Sec-Fetch-\\*) indicate it is the correct context, using the sandbox directive of the Content-Security-Policy header field or using the attachment disposition type in the Content-Disposition header field.",
+      "reason": "V3.2.1 requires evidence from the T5 Authenticated RAG Web and API surface. Verify that security controls are in place to prevent browsers from rendering content or functionality in HTTP responses in an incorrect context (e.g., when an API, a user-uploaded file or other resource is requested directly). Possible controls could include: not serving the content unless HTTP request header fields (such as Sec-Fetch-\\*) indicate it is the correct context, using the sandbox directive of the Content-Security-Policy header field or using the attachment disposition type in the Content-Disposition header field. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Authenticated RAG Web and API",
+      "requiredEvidence": "نیاز به آزمون HTTP و مرورگر روی Web و API ساخته‌شده برای اثبات «جلوگیری از نمایش پاسخ HTTP در زمینهٔ نادرست مرورگر»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that security controls are in place to prevent browsers from rendering content or functionality in HTTP responses in an incorrect context (e.g., when an API, a user-uploaded file or other resource is requested directly). Possible controls could include: not serving the content unless HTTP request header fields (such as Sec-Fetch-\\*) indicate it is the correct context, using the sandbox directive of the Content-Security-Policy header field or using the attachment disposition type in the Content-Disposition header field. against the implemented Authenticated RAG Web and API path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V3.2.2",
+      "description": "Verify that content intended to be displayed as text, rather than rendered as HTML, is handled using safe rendering functions (such as createTextNode or textContent) to prevent unintended execution of content such as HTML or JavaScript.",
+      "reason": "V3.2.2 requires evidence from the T5 Authenticated RAG Web and API surface. Verify that content intended to be displayed as text, rather than rendered as HTML, is handled using safe rendering functions (such as createTextNode or textContent) to prevent unintended execution of content such as HTML or JavaScript. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Authenticated RAG Web and API",
+      "requiredEvidence": "نیاز به آزمون HTTP و مرورگر روی Web و API ساخته‌شده برای اثبات «نمایش متن با APIهای امن بدون تفسیر HTML یا JavaScript»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that content intended to be displayed as text, rather than rendered as HTML, is handled using safe rendering functions (such as createTextNode or textContent) to prevent unintended execution of content such as HTML or JavaScript. against the implemented Authenticated RAG Web and API path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V3.2.3",
+      "description": "Verify that the application avoids DOM clobbering when using client-side JavaScript by employing explicit variable declarations, performing strict type checking, avoiding storing global variables on the document object, and implementing namespace isolation.",
+      "reason": "V3.2.3 requires evidence from the T5 Authenticated RAG Web and API surface. Verify that the application avoids DOM clobbering when using client-side JavaScript by employing explicit variable declarations, performing strict type checking, avoiding storing global variables on the document object, and implementing namespace isolation. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Authenticated RAG Web and API",
+      "requiredEvidence": "نیاز به آزمون HTTP و مرورگر روی Web و API ساخته‌شده برای اثبات «پیشگیری از DOM clobbering با نوع‌دهی و جداسازی فضای نام»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that the application avoids DOM clobbering when using client-side JavaScript by employing explicit variable declarations, performing strict type checking, avoiding storing global variables on the document object, and implementing namespace isolation. against the implemented Authenticated RAG Web and API path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V3.4.3",
+      "description": "Verify that HTTP responses include a Content-Security-Policy response header field which defines directives to ensure the browser only loads and executes trusted content or resources, in order to limit execution of malicious JavaScript. As a minimum, a global policy must be used which includes the directives object-src 'none' and base-uri 'none' and defines either an allowlist or uses nonces or hashes. For an L3 application, a per-response policy with nonces or hashes must be defined.",
+      "reason": "V3.4.3 requires evidence from the T5 Authenticated RAG Web and API surface. Verify that HTTP responses include a Content-Security-Policy response header field which defines directives to ensure the browser only loads and executes trusted content or resources, in order to limit execution of malicious JavaScript. As a minimum, a global policy must be used which includes the directives object-src 'none' and base-uri 'none' and defines either an allowlist or uses nonces or hashes. For an L3 application, a per-response policy with nonces or hashes must be defined. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Authenticated RAG Web and API",
+      "requiredEvidence": "The release Web process now covers static assets and HTML has nonce CSP, but CSP coverage across the API response surface and customer edge has not been proved.",
+      "expectedTest": "Test Verify that HTTP responses include a Content-Security-Policy response header field which defines directives to ensure the browser only loads and executes trusted content or resources, in order to limit execution of malicious JavaScript. As a minimum, a global policy must be used which includes the directives object-src 'none' and base-uri 'none' and defines either an allowlist or uses nonces or hashes. For an L3 application, a per-response policy with nonces or hashes must be defined. against the implemented Authenticated RAG Web and API path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V3.4.5",
+      "description": "Verify that the application sets a referrer policy to prevent leakage of technically sensitive data to third-party services via the 'Referer' HTTP request header field. This can be done using the Referrer-Policy HTTP response header field or via HTML element attributes. Sensitive data could include path and query data in the URL, and for internal non-public applications also the hostname.",
+      "reason": "V3.4.5 requires evidence from the T5 Authenticated RAG Web and API surface. Verify that the application sets a referrer policy to prevent leakage of technically sensitive data to third-party services via the 'Referer' HTTP request header field. This can be done using the Referrer-Policy HTTP response header field or via HTML element attributes. Sensitive data could include path and query data in the URL, and for internal non-public applications also the hostname. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Authenticated RAG Web and API",
+      "requiredEvidence": "نیاز به آزمون HTTP و مرورگر روی Web و API ساخته‌شده برای اثبات «اعمال سیاست Referrer-Policy برای جلوگیری از افشای داده در ارجاع»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that the application sets a referrer policy to prevent leakage of technically sensitive data to third-party services via the 'Referer' HTTP request header field. This can be done using the Referrer-Policy HTTP response header field or via HTML element attributes. Sensitive data could include path and query data in the URL, and for internal non-public applications also the hostname. against the implemented Authenticated RAG Web and API path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V3.4.6",
+      "description": "Verify that the web application uses the frame-ancestors directive of the Content-Security-Policy header field for every HTTP response to ensure that it cannot be embedded by default and that embedding of specific resources is allowed only when necessary. Note that the X-Frame-Options header field, although supported by browsers, is obsolete and may not be relied upon.",
+      "reason": "V3.4.6 requires evidence from the T5 Authenticated RAG Web and API surface. Verify that the web application uses the frame-ancestors directive of the Content-Security-Policy header field for every HTTP response to ensure that it cannot be embedded by default and that embedding of specific resources is allowed only when necessary. Note that the X-Frame-Options header field, although supported by browsers, is obsolete and may not be relied upon. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Authenticated RAG Web and API",
+      "requiredEvidence": "The release Web process now sends frame-ancestors for static and HTML responses, but the API and customer edge still need response-wide evidence.",
+      "expectedTest": "Test Verify that the web application uses the frame-ancestors directive of the Content-Security-Policy header field for every HTTP response to ensure that it cannot be embedded by default and that embedding of specific resources is allowed only when necessary. Note that the X-Frame-Options header field, although supported by browsers, is obsolete and may not be relied upon. against the implemented Authenticated RAG Web and API path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V3.4.7",
+      "description": "Verify that the Content-Security-Policy header field specifies a location to report violations.",
+      "reason": "V3.4.7 requires evidence from the T5 Authenticated RAG Web and API surface. Verify that the Content-Security-Policy header field specifies a location to report violations. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Authenticated RAG Web and API",
+      "requiredEvidence": "The release Web process now sends report-uri on static and HTML responses and the API accepts bounded reports; response-wide and customer-edge evidence remains open.",
+      "expectedTest": "Test Verify that the Content-Security-Policy header field specifies a location to report violations. against the implemented Authenticated RAG Web and API path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V3.4.8",
+      "description": "Verify that all HTTP responses that initiate a document rendering (such as responses with Content-Type text/html), include the Cross‑Origin‑Opener‑Policy header field with the same-origin directive or the same-origin-allow-popups directive as required. This prevents attacks that abuse shared access to Window objects, such as tabnabbing and frame counting.",
+      "reason": "V3.4.8 requires evidence from the T5 Authenticated RAG Web and API surface. Verify that all HTTP responses that initiate a document rendering (such as responses with Content-Type text/html), include the Cross‑Origin‑Opener‑Policy header field with the same-origin directive or the same-origin-allow-popups directive as required. This prevents attacks that abuse shared access to Window objects, such as tabnabbing and frame counting. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Authenticated RAG Web and API",
+      "requiredEvidence": "نیاز به آزمون HTTP و مرورگر روی Web و API ساخته‌شده برای اثبات «ارسال Cross-Origin-Opener-Policy در همهٔ پاسخ‌های سند»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that all HTTP responses that initiate a document rendering (such as responses with Content-Type text/html), include the Cross‑Origin‑Opener‑Policy header field with the same-origin directive or the same-origin-allow-popups directive as required. This prevents attacks that abuse shared access to Window objects, such as tabnabbing and frame counting. against the implemented Authenticated RAG Web and API path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V3.5.1",
+      "description": "Verify that, if the application does not rely on the CORS preflight mechanism to prevent disallowed cross-origin requests to use sensitive functionality, these requests are validated to ensure they originate from the application itself. This may be done by using and validating anti-forgery tokens or requiring extra HTTP header fields that are not CORS-safelisted request-header fields. This is to defend against browser-based request forgery attacks, commonly known as cross-site request forgery (CSRF).",
+      "reason": "V3.5.1 requires evidence from the T5 Authenticated RAG Web and API surface. Verify that, if the application does not rely on the CORS preflight mechanism to prevent disallowed cross-origin requests to use sensitive functionality, these requests are validated to ensure they originate from the application itself. This may be done by using and validating anti-forgery tokens or requiring extra HTTP header fields that are not CORS-safelisted request-header fields. This is to defend against browser-based request forgery attacks, commonly known as cross-site request forgery (CSRF). This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Authenticated RAG Web and API",
+      "requiredEvidence": "نیاز به آزمون HTTP و مرورگر روی Web و API ساخته‌شده برای اثبات «اعتبارسنجی مبدأ درخواست حساس وقتی preflight مبنای دفاع نیست»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that, if the application does not rely on the CORS preflight mechanism to prevent disallowed cross-origin requests to use sensitive functionality, these requests are validated to ensure they originate from the application itself. This may be done by using and validating anti-forgery tokens or requiring extra HTTP header fields that are not CORS-safelisted request-header fields. This is to defend against browser-based request forgery attacks, commonly known as cross-site request forgery (CSRF). against the implemented Authenticated RAG Web and API path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V3.5.2",
+      "description": "Verify that, if the application relies on the CORS preflight mechanism to prevent disallowed cross-origin use of sensitive functionality, it is not possible to call the functionality with a request which does not trigger a CORS-preflight request. This may require checking the values of the 'Origin' and 'Content-Type' request header fields or using an extra header field that is not a CORS-safelisted header-field.",
+      "reason": "V3.5.2 requires evidence from the T5 Authenticated RAG Web and API surface. Verify that, if the application relies on the CORS preflight mechanism to prevent disallowed cross-origin use of sensitive functionality, it is not possible to call the functionality with a request which does not trigger a CORS-preflight request. This may require checking the values of the 'Origin' and 'Content-Type' request header fields or using an extra header field that is not a CORS-safelisted header-field. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Authenticated RAG Web and API",
+      "requiredEvidence": "نیاز به آزمون HTTP و مرورگر روی Web و API ساخته‌شده برای اثبات «اجبار preflight برای درخواست حساس وقتی دفاع به آن متکی است»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that, if the application relies on the CORS preflight mechanism to prevent disallowed cross-origin use of sensitive functionality, it is not possible to call the functionality with a request which does not trigger a CORS-preflight request. This may require checking the values of the 'Origin' and 'Content-Type' request header fields or using an extra header field that is not a CORS-safelisted header-field. against the implemented Authenticated RAG Web and API path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V3.5.7",
+      "description": "Verify that data requiring authorization is not included in script resource responses, like JavaScript files, to prevent Cross-Site Script Inclusion (XSSI) attacks.",
+      "reason": "V3.5.7 requires evidence from the T5 Authenticated RAG Web and API surface. Verify that data requiring authorization is not included in script resource responses, like JavaScript files, to prevent Cross-Site Script Inclusion (XSSI) attacks. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Authenticated RAG Web and API",
+      "requiredEvidence": "نیاز به آزمون HTTP و مرورگر روی Web و API ساخته‌شده برای اثبات «نبود دادهٔ نیازمند مجوز در پاسخ فایل JavaScript»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that data requiring authorization is not included in script resource responses, like JavaScript files, to prevent Cross-Site Script Inclusion (XSSI) attacks. against the implemented Authenticated RAG Web and API path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V3.5.8",
+      "description": "Verify that authenticated resources (such as images, videos, scripts, and other documents) can be loaded or embedded on behalf of the user only when intended. This can be accomplished by strict validation of the Sec-Fetch-* HTTP request header fields to ensure that the request did not originate from an inappropriate cross-origin call, or by setting a restrictive Cross-Origin-Resource-Policy HTTP response header field to instruct the browser to block returned content.",
+      "reason": "V3.5.8 requires evidence from the T5 Authenticated RAG Web and API surface. Verify that authenticated resources (such as images, videos, scripts, and other documents) can be loaded or embedded on behalf of the user only when intended. This can be accomplished by strict validation of the Sec-Fetch-* HTTP request header fields to ensure that the request did not originate from an inappropriate cross-origin call, or by setting a restrictive Cross-Origin-Resource-Policy HTTP response header field to instruct the browser to block returned content. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Authenticated RAG Web and API",
+      "requiredEvidence": "نیاز به آزمون HTTP و مرورگر روی Web و API ساخته‌شده برای اثبات «کنترل بارگذاری و embedding منابع احرازشده فقط در موقعیت مجاز»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that authenticated resources (such as images, videos, scripts, and other documents) can be loaded or embedded on behalf of the user only when intended. This can be accomplished by strict validation of the Sec-Fetch-* HTTP request header fields to ensure that the request did not originate from an inappropriate cross-origin call, or by setting a restrictive Cross-Origin-Resource-Policy HTTP response header field to instruct the browser to block returned content. against the implemented Authenticated RAG Web and API path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V4.1.1",
+      "description": "Verify that every HTTP response with a message body contains a Content-Type header field that matches the actual content of the response, including the charset parameter to specify safe character encoding (e.g., UTF-8, ISO-8859-1) according to IANA Media Types, such as \"text/\", \"/+xml\" and \"/xml\".",
+      "reason": "V4.1.1 requires evidence from the T5 Authenticated RAG Web and API surface. Verify that every HTTP response with a message body contains a Content-Type header field that matches the actual content of the response, including the charset parameter to specify safe character encoding (e.g., UTF-8, ISO-8859-1) according to IANA Media Types, such as \"text/\", \"/+xml\" and \"/xml\". This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Authenticated RAG Web and API",
+      "requiredEvidence": "نیاز به بازبینی کد، قرارداد و آزمون اختصاصی محصول هدف برای اثبات «درستی Content-Type و charset در همهٔ پاسخ‌های دارای بدنه»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that every HTTP response with a message body contains a Content-Type header field that matches the actual content of the response, including the charset parameter to specify safe character encoding (e.g., UTF-8, ISO-8859-1) according to IANA Media Types, such as \"text/\", \"/+xml\" and \"/xml\". against the implemented Authenticated RAG Web and API path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V4.1.4",
+      "description": "Verify that only HTTP methods that are explicitly supported by the application or its API (including OPTIONS during preflight requests) can be used and that unused methods are blocked.",
+      "reason": "V4.1.4 requires evidence from the T5 Authenticated RAG Web and API surface. Verify that only HTTP methods that are explicitly supported by the application or its API (including OPTIONS during preflight requests) can be used and that unused methods are blocked. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Authenticated RAG Web and API",
+      "requiredEvidence": "نیاز به بازبینی کد، قرارداد و آزمون اختصاصی محصول هدف برای اثبات «پذیرش فقط روش‌های HTTP مجاز و رد روش‌های بلااستفاده»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that only HTTP methods that are explicitly supported by the application or its API (including OPTIONS during preflight requests) can be used and that unused methods are blocked. against the implemented Authenticated RAG Web and API path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V4.2.5",
+      "description": "Verify that, if the application (backend or frontend) builds and sends requests, it uses validation, sanitization, or other mechanisms to avoid creating URIs (such as for API calls) or HTTP request header fields (such as Authorization or Cookie), which are too long to be accepted by the receiving component. This could cause a denial of service, such as when sending an overly long request (e.g., a long cookie header field), which results in the server always responding with an error status.",
+      "reason": "V4.2.5 requires evidence from the T5 Storage, S3, and protected egress surface. Verify that, if the application (backend or frontend) builds and sends requests, it uses validation, sanitization, or other mechanisms to avoid creating URIs (such as for API calls) or HTTP request header fields (such as Authorization or Cookie), which are too long to be accepted by the receiving component. This could cause a denial of service, such as when sending an overly long request (e.g., a long cookie header field), which results in the server always responding with an error status. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Storage, S3, and protected egress",
+      "requiredEvidence": "نیاز به بازبینی کد، قرارداد و آزمون اختصاصی محصول هدف برای اثبات «محدودسازی طول URI و سرآیند درخواست‌های خروجی»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that, if the application (backend or frontend) builds and sends requests, it uses validation, sanitization, or other mechanisms to avoid creating URIs (such as for API calls) or HTTP request header fields (such as Authorization or Cookie), which are too long to be accepted by the receiving component. This could cause a denial of service, such as when sending an overly long request (e.g., a long cookie header field), which results in the server always responding with an error status. against the implemented Storage, S3, and protected egress path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V5.1.1",
+      "description": "Verify that the documentation defines the permitted file types, expected file extensions, and maximum size (including unpacked size) for each upload feature. Additionally, ensure that the documentation specifies how files are made safe for end-users to download and process, such as how the application behaves when a malicious file is detected.",
+      "reason": "V5.1.1 requires evidence from the T5 Document and File Management lifecycle surface. Verify that the documentation defines the permitted file types, expected file extensions, and maximum size (including unpacked size) for each upload feature. Additionally, ensure that the documentation specifies how files are made safe for end-users to download and process, such as how the application behaves when a malicious file is detected. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Document and File Management lifecycle",
+      "requiredEvidence": "نیاز به آزمون فایل بدخواهانه و parser در تصویر runtime برای اثبات «مستندسازی نوع، پسوند، اندازه و ایمن‌سازی فایل در هر مسیر بارگذاری»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that the documentation defines the permitted file types, expected file extensions, and maximum size (including unpacked size) for each upload feature. Additionally, ensure that the documentation specifies how files are made safe for end-users to download and process, such as how the application behaves when a malicious file is detected. against the implemented Document and File Management lifecycle path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V5.2.2",
+      "description": "Verify that when the application accepts a file, either on its own or within an archive such as a zip file, it checks if the file extension matches an expected file extension and validates that the contents correspond to the type represented by the extension. This includes, but is not limited to, checking the initial 'magic bytes', performing image re-writing, and using specialized libraries for file content validation. For L1, this can focus just on files which are used to make specific business or security decisions. For L2 and up, this must apply to all files being accepted.",
+      "reason": "V5.2.2 requires evidence from the T5 Document and File Management lifecycle surface. Verify that when the application accepts a file, either on its own or within an archive such as a zip file, it checks if the file extension matches an expected file extension and validates that the contents correspond to the type represented by the extension. This includes, but is not limited to, checking the initial 'magic bytes', performing image re-writing, and using specialized libraries for file content validation. For L1, this can focus just on files which are used to make specific business or security decisions. For L2 and up, this must apply to all files being accepted. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Document and File Management lifecycle",
+      "requiredEvidence": "Current extension, MIME and signature checks are tested, but the exact file-content guarantee across all accepted formats and the future T5 File Management ingress remains unverified.",
+      "expectedTest": "Test Verify that when the application accepts a file, either on its own or within an archive such as a zip file, it checks if the file extension matches an expected file extension and validates that the contents correspond to the type represented by the extension. This includes, but is not limited to, checking the initial 'magic bytes', performing image re-writing, and using specialized libraries for file content validation. For L1, this can focus just on files which are used to make specific business or security decisions. For L2 and up, this must apply to all files being accepted. against the implemented Document and File Management lifecycle path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V5.2.4",
+      "description": "Verify that a file size quota and maximum number of files per user are enforced to ensure that a single user cannot fill up the storage with too many files, or excessively large files.",
+      "reason": "V5.2.4 requires evidence from the T5 Document and File Management lifecycle surface. Verify that a file size quota and maximum number of files per user are enforced to ensure that a single user cannot fill up the storage with too many files, or excessively large files. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Document and File Management lifecycle",
+      "requiredEvidence": "نیاز به آزمون فایل بدخواهانه و parser در تصویر runtime برای اثبات «سهمیهٔ حجم و شمار فایل هر کاربر برای جلوگیری از پرشدن ذخیره‌سازی»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that a file size quota and maximum number of files per user are enforced to ensure that a single user cannot fill up the storage with too many files, or excessively large files. against the implemented Document and File Management lifecycle path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V5.4.1",
+      "description": "Verify that the application validates or ignores user-submitted filenames, including in a JSON, JSONP, or URL parameter and specifies a filename in the Content-Disposition header field in the response.",
+      "reason": "V5.4.1 requires evidence from the T5 Document and File Management lifecycle surface. Verify that the application validates or ignores user-submitted filenames, including in a JSON, JSONP, or URL parameter and specifies a filename in the Content-Disposition header field in the response. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Document and File Management lifecycle",
+      "requiredEvidence": "Review every user-supplied filename and file-download response, including Content-Disposition.",
+      "expectedTest": "Test Verify that the application validates or ignores user-submitted filenames, including in a JSON, JSONP, or URL parameter and specifies a filename in the Content-Disposition header field in the response. against the implemented Document and File Management lifecycle path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V8.1.3",
+      "description": "Verify that the application's documentation defines the environmental and contextual attributes (including but not limited to, time of day, user location, IP address, or device) that are used in the application to make security decisions, including those pertaining to authentication and authorization.",
+      "reason": "V8.1.3 requires evidence from the T5 Document authorization and transfer surface. Verify that the application's documentation defines the environmental and contextual attributes (including but not limited to, time of day, user location, IP address, or device) that are used in the application to make security decisions, including those pertaining to authentication and authorization. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Document authorization and transfer",
+      "requiredEvidence": "نیاز به بازبینی کد، قرارداد و آزمون اختصاصی محصول هدف برای اثبات «مستندسازی ویژگی‌های محیطی و زمینه‌ای مؤثر بر تصمیم امنیتی»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that the application's documentation defines the environmental and contextual attributes (including but not limited to, time of day, user location, IP address, or device) that are used in the application to make security decisions, including those pertaining to authentication and authorization. against the implemented Document authorization and transfer path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V8.1.4",
+      "description": "Verify that authentication and authorization documentation defines how environmental and contextual factors are used in decision-making, in addition to function-level, data-specific, and field-level authorization. This should include the attributes evaluated, thresholds for risk, and actions taken (e.g., allow, challenge, deny, step-up authentication).",
+      "reason": "V8.1.4 requires evidence from the T5 Document authorization and transfer surface. Verify that authentication and authorization documentation defines how environmental and contextual factors are used in decision-making, in addition to function-level, data-specific, and field-level authorization. This should include the attributes evaluated, thresholds for risk, and actions taken (e.g., allow, challenge, deny, step-up authentication). This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Document authorization and transfer",
+      "requiredEvidence": "نیاز به بازبینی کد، قرارداد و آزمون اختصاصی محصول هدف برای اثبات «مستندسازی آستانه و اقدام امنیتی بر پایهٔ عوامل زمینه‌ای»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that authentication and authorization documentation defines how environmental and contextual factors are used in decision-making, in addition to function-level, data-specific, and field-level authorization. This should include the attributes evaluated, thresholds for risk, and actions taken (e.g., allow, challenge, deny, step-up authentication). against the implemented Document authorization and transfer path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V8.4.2",
+      "description": "Verify that access to administrative interfaces incorporates multiple layers of security, including continuous consumer identity verification, device security posture assessment, and contextual risk analysis, ensuring that network location or trusted endpoints are not the sole factors for authorization even though they may reduce the likelihood of unauthorized access.",
+      "reason": "V8.4.2 requires evidence from the T5 Document authorization and transfer surface. Verify that access to administrative interfaces incorporates multiple layers of security, including continuous consumer identity verification, device security posture assessment, and contextual risk analysis, ensuring that network location or trusted endpoints are not the sole factors for authorization even though they may reduce the likelihood of unauthorized access. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Document authorization and transfer",
+      "requiredEvidence": "نیاز به بازبینی کد، قرارداد و آزمون اختصاصی محصول هدف برای اثبات «چندلایه‌بودن امنیت رابط مدیریت با ارزیابی پیوستهٔ هویت و زمینه»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that access to administrative interfaces incorporates multiple layers of security, including continuous consumer identity verification, device security posture assessment, and contextual risk analysis, ensuring that network location or trusted endpoints are not the sole factors for authorization even though they may reduce the likelihood of unauthorized access. against the implemented Document authorization and transfer path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V10.1.1",
+      "description": "Verify that tokens are only sent to components that strictly need them. For example, when using a backend-for-frontend pattern for browser-based JavaScript applications, access and refresh tokens shall only be accessible for the backend.",
+      "reason": "V10.1.1 requires evidence from the T5 Document authorization and transfer surface. Verify that tokens are only sent to components that strictly need them. For example, when using a backend-for-frontend pattern for browser-based JavaScript applications, access and refresh tokens shall only be accessible for the backend. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Document authorization and transfer",
+      "requiredEvidence": "نیاز به بازبینی کد، قرارداد و آزمون اختصاصی محصول هدف برای اثبات «ارسال توکن فقط به مؤلفهٔ واقعاً نیازمند آن در OAuth»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that tokens are only sent to components that strictly need them. For example, when using a backend-for-frontend pattern for browser-based JavaScript applications, access and refresh tokens shall only be accessible for the backend. against the implemented Document authorization and transfer path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V11.2.5",
+      "description": "Verify that all cryptographic modules fail securely, and errors are handled in a way that does not enable vulnerabilities, such as Padding Oracle attacks.",
+      "reason": "V11.2.5 requires evidence from the T5 Storage, S3, and protected egress surface. Verify that all cryptographic modules fail securely, and errors are handled in a way that does not enable vulnerabilities, such as Padding Oracle attacks. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Storage, S3, and protected egress",
+      "requiredEvidence": "نیاز به بازبینی کد، قرارداد و آزمون اختصاصی محصول هدف برای اثبات «شکست امن ماژول رمزنگاری بدون ایجاد oracle»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that all cryptographic modules fail securely, and errors are handled in a way that does not enable vulnerabilities, such as Padding Oracle attacks. against the implemented Storage, S3, and protected egress path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V11.5.1",
+      "description": "Verify that all random numbers and strings which are intended to be non-guessable must be generated using a cryptographically secure pseudo-random number generator (CSPRNG) and have at least 128 bits of entropy. Note that UUIDs do not respect this condition.",
+      "reason": "V11.5.1 requires evidence from the T5 Storage, S3, and protected egress surface. Verify that all random numbers and strings which are intended to be non-guessable must be generated using a cryptographically secure pseudo-random number generator (CSPRNG) and have at least 128 bits of entropy. Note that UUIDs do not respect this condition. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Storage, S3, and protected egress",
+      "requiredEvidence": "نیاز به بازبینی کد، قرارداد و آزمون اختصاصی محصول هدف برای اثبات «تولید مقدار غیرقابل‌حدس با CSPRNG و دست‌کم ۱۲۸ بیت انتروپی»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that all random numbers and strings which are intended to be non-guessable must be generated using a cryptographically secure pseudo-random number generator (CSPRNG) and have at least 128 bits of entropy. Note that UUIDs do not respect this condition. against the implemented Storage, S3, and protected egress path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V11.5.2",
+      "description": "Verify that the random number generation mechanism in use is designed to work securely, even under heavy demand.",
+      "reason": "V11.5.2 requires evidence from the T5 Storage, S3, and protected egress surface. Verify that the random number generation mechanism in use is designed to work securely, even under heavy demand. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Storage, S3, and protected egress",
+      "requiredEvidence": "نیاز به بازبینی کد، قرارداد و آزمون اختصاصی محصول هدف برای اثبات «ایمنی مولد تصادفی زیر بار سنگین»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that the random number generation mechanism in use is designed to work securely, even under heavy demand. against the implemented Storage, S3, and protected egress path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V11.7.2",
+      "description": "Verify that data minimization ensures the minimal amount of data is exposed during processing, and ensure that data is encrypted immediately after use or as soon as feasible.",
+      "reason": "V11.7.2 requires evidence from the T5 Document and RAG sensitive data surface. Verify that data minimization ensures the minimal amount of data is exposed during processing, and ensure that data is encrypted immediately after use or as soon as feasible. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Document and RAG sensitive data",
+      "requiredEvidence": "نیاز به بازبینی کد، قرارداد و آزمون اختصاصی محصول هدف برای اثبات «کمینه‌سازی دادهٔ آشکار در پردازش و رمزگذاری سریع پس از آن»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that data minimization ensures the minimal amount of data is exposed during processing, and ensure that data is encrypted immediately after use or as soon as feasible. against the implemented Document and RAG sensitive data path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V12.3.1",
+      "description": "Verify that an encrypted protocol such as TLS is used for all inbound and outbound connections to and from the application, including monitoring systems, management tools, remote access and SSH, middleware, databases, mainframes, partner systems, or external APIs. The server must not fall back to insecure or unencrypted protocols.",
+      "reason": "V12.3.1 requires evidence from the T5 Storage, S3, and protected egress surface. Verify that an encrypted protocol such as TLS is used for all inbound and outbound connections to and from the application, including monitoring systems, management tools, remote access and SSH, middleware, databases, mainframes, partner systems, or external APIs. The server must not fall back to insecure or unencrypted protocols. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Storage, S3, and protected egress",
+      "requiredEvidence": "نیاز به آزمون TLS و گواهی روی edge و استقرار واقعی مشتری برای اثبات «رمزگذاری همهٔ اتصال‌های ورودی و خروجی شامل پایگاه داده و مدیریت»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that an encrypted protocol such as TLS is used for all inbound and outbound connections to and from the application, including monitoring systems, management tools, remote access and SSH, middleware, databases, mainframes, partner systems, or external APIs. The server must not fall back to insecure or unencrypted protocols. against the implemented Storage, S3, and protected egress path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V12.3.2",
+      "description": "Verify that TLS clients validate certificates received before communicating with a TLS server.",
+      "reason": "V12.3.2 requires evidence from the T5 Storage, S3, and protected egress surface. Verify that TLS clients validate certificates received before communicating with a TLS server. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Storage, S3, and protected egress",
+      "requiredEvidence": "نیاز به آزمون TLS و گواهی روی edge و استقرار واقعی مشتری برای اثبات «اعتبارسنجی گواهی سرور توسط کلاینت TLS»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that TLS clients validate certificates received before communicating with a TLS server. against the implemented Storage, S3, and protected egress path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V12.3.3",
+      "description": "Verify that TLS or another appropriate transport encryption mechanism used for all connectivity between internal, HTTP-based services within the application, and does not fall back to insecure or unencrypted communications.",
+      "reason": "V12.3.3 requires evidence from the T5 Storage, S3, and protected egress surface. Verify that TLS or another appropriate transport encryption mechanism used for all connectivity between internal, HTTP-based services within the application, and does not fall back to insecure or unencrypted communications. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Storage, S3, and protected egress",
+      "requiredEvidence": "نیاز به آزمون TLS و گواهی روی edge و استقرار واقعی مشتری برای اثبات «TLS برای HTTP داخلی میان خدمات بدون بازگشت به متن ساده»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that TLS or another appropriate transport encryption mechanism used for all connectivity between internal, HTTP-based services within the application, and does not fall back to insecure or unencrypted communications. against the implemented Storage, S3, and protected egress path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V12.3.4",
+      "description": "Verify that TLS connections between internal services use trusted certificates. Where internally generated or self-signed certificates are used, the consuming service must be configured to only trust specific internal CAs and specific self-signed certificates.",
+      "reason": "V12.3.4 requires evidence from the T5 Storage, S3, and protected egress surface. Verify that TLS connections between internal services use trusted certificates. Where internally generated or self-signed certificates are used, the consuming service must be configured to only trust specific internal CAs and specific self-signed certificates. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Storage, S3, and protected egress",
+      "requiredEvidence": "نیاز به آزمون TLS و گواهی روی edge و استقرار واقعی مشتری برای اثبات «اعتماد داخلی TLS فقط به CA یا گواهی مشخص»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that TLS connections between internal services use trusted certificates. Where internally generated or self-signed certificates are used, the consuming service must be configured to only trust specific internal CAs and specific self-signed certificates. against the implemented Storage, S3, and protected egress path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V12.3.5",
+      "description": "Verify that services communicating internally within a system (intra-service communications) use strong authentication to ensure that each endpoint is verified. Strong authentication methods, such as TLS client authentication, must be employed to ensure identity, using public-key infrastructure and mechanisms that are resistant to replay attacks. For microservice architectures, consider using a service mesh to simplify certificate management and enhance security.",
+      "reason": "V12.3.5 requires evidence from the T5 Storage, S3, and protected egress surface. Verify that services communicating internally within a system (intra-service communications) use strong authentication to ensure that each endpoint is verified. Strong authentication methods, such as TLS client authentication, must be employed to ensure identity, using public-key infrastructure and mechanisms that are resistant to replay attacks. For microservice architectures, consider using a service mesh to simplify certificate management and enhance security. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Storage, S3, and protected egress",
+      "requiredEvidence": "نیاز به آزمون TLS و گواهی روی edge و استقرار واقعی مشتری برای اثبات «احراز قوی و مقاوم به بازپخش میان خدمات داخلی»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that services communicating internally within a system (intra-service communications) use strong authentication to ensure that each endpoint is verified. Strong authentication methods, such as TLS client authentication, must be employed to ensure identity, using public-key infrastructure and mechanisms that are resistant to replay attacks. For microservice architectures, consider using a service mesh to simplify certificate management and enhance security. against the implemented Storage, S3, and protected egress path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V13.1.1",
+      "description": "Verify that all communication needs for the application are documented. This must include external services which the application relies upon and cases where an end user might be able to provide an external location to which the application will then connect.",
+      "reason": "V13.1.1 requires evidence from the T5 Storage, S3, and protected egress surface. Verify that all communication needs for the application are documented. This must include external services which the application relies upon and cases where an end user might be able to provide an external location to which the application will then connect. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Storage, S3, and protected egress",
+      "requiredEvidence": "نیاز به بازبینی CJSON، تصویر runtime و پیکربندی استقرار مشتری برای اثبات «مستندسازی همهٔ ارتباطات و مقصدهای بیرونیِ قابل‌تعیین توسط کاربر»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that all communication needs for the application are documented. This must include external services which the application relies upon and cases where an end user might be able to provide an external location to which the application will then connect. against the implemented Storage, S3, and protected egress path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V13.1.2",
+      "description": "Verify that for each service the application uses, the documentation defines the maximum number of concurrent connections (e.g., connection pool limits) and how the application behaves when that limit is reached, including any fallback or recovery mechanisms, to prevent denial of service conditions.",
+      "reason": "V13.1.2 requires evidence from the T5 Storage, S3, and protected egress surface. Verify that for each service the application uses, the documentation defines the maximum number of concurrent connections (e.g., connection pool limits) and how the application behaves when that limit is reached, including any fallback or recovery mechanisms, to prevent denial of service conditions. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Storage, S3, and protected egress",
+      "requiredEvidence": "نیاز به بازبینی CJSON، تصویر runtime و پیکربندی استقرار مشتری برای اثبات «مستندسازی سقف اتصال هم‌زمان و رفتار رسیدن به آن برای هر خدمت»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that for each service the application uses, the documentation defines the maximum number of concurrent connections (e.g., connection pool limits) and how the application behaves when that limit is reached, including any fallback or recovery mechanisms, to prevent denial of service conditions. against the implemented Storage, S3, and protected egress path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V13.1.3",
+      "description": "Verify that the application documentation defines resource‑management strategies for every external system or service it uses (e.g., databases, file handles, threads, HTTP connections). This should include resource‑release procedures, timeout settings, failure handling, and where retry logic is implemented, specifying retry limits, delays, and back‑off algorithms. For synchronous HTTP request–response operations it should mandate short timeouts and either disable retries or strictly limit retries to prevent cascading delays and resource exhaustion.",
+      "reason": "V13.1.3 requires evidence from the T5 Storage, S3, and protected egress surface. Verify that the application documentation defines resource‑management strategies for every external system or service it uses (e.g., databases, file handles, threads, HTTP connections). This should include resource‑release procedures, timeout settings, failure handling, and where retry logic is implemented, specifying retry limits, delays, and back‑off algorithms. For synchronous HTTP request–response operations it should mandate short timeouts and either disable retries or strictly limit retries to prevent cascading delays and resource exhaustion. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Storage, S3, and protected egress",
+      "requiredEvidence": "نیاز به بازبینی CJSON، تصویر runtime و پیکربندی استقرار مشتری برای اثبات «مستندسازی مدیریت منبع، timeout، شکست و retry محدود برای همهٔ خدمات»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that the application documentation defines resource‑management strategies for every external system or service it uses (e.g., databases, file handles, threads, HTTP connections). This should include resource‑release procedures, timeout settings, failure handling, and where retry logic is implemented, specifying retry limits, delays, and back‑off algorithms. For synchronous HTTP request–response operations it should mandate short timeouts and either disable retries or strictly limit retries to prevent cascading delays and resource exhaustion. against the implemented Storage, S3, and protected egress path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V13.2.1",
+      "description": "Verify that communications between backend application components that don't support the application's standard user session mechanism, including APIs, middleware, and data layers, are authenticated. Authentication must use individual service accounts, short-term tokens, or certificate-based authentication and not unchanging credentials such as passwords, API keys, or shared accounts with privileged access.",
+      "reason": "V13.2.1 requires evidence from the T5 Storage, S3, and protected egress surface. Verify that communications between backend application components that don't support the application's standard user session mechanism, including APIs, middleware, and data layers, are authenticated. Authentication must use individual service accounts, short-term tokens, or certificate-based authentication and not unchanging credentials such as passwords, API keys, or shared accounts with privileged access. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Storage, S3, and protected egress",
+      "requiredEvidence": "نیاز به بازبینی CJSON، تصویر runtime و پیکربندی استقرار مشتری برای اثبات «احراز ارتباطات پشتی با هویت خدمت اختصاصی و اعتبار کوتاه‌مدت»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that communications between backend application components that don't support the application's standard user session mechanism, including APIs, middleware, and data layers, are authenticated. Authentication must use individual service accounts, short-term tokens, or certificate-based authentication and not unchanging credentials such as passwords, API keys, or shared accounts with privileged access. against the implemented Storage, S3, and protected egress path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V13.2.2",
+      "description": "Verify that communications between backend application components, including local or operating system services, APIs, middleware, and data layers, are performed with accounts assigned the least necessary privileges.",
+      "reason": "V13.2.2 requires evidence from the T5 Storage, S3, and protected egress surface. Verify that communications between backend application components, including local or operating system services, APIs, middleware, and data layers, are performed with accounts assigned the least necessary privileges. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Storage, S3, and protected egress",
+      "requiredEvidence": "نیاز به بازبینی CJSON، تصویر runtime و پیکربندی استقرار مشتری برای اثبات «حداقل اختیار حساب‌های ارتباط با مؤلفه‌های پشتی»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that communications between backend application components, including local or operating system services, APIs, middleware, and data layers, are performed with accounts assigned the least necessary privileges. against the implemented Storage, S3, and protected egress path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V13.2.3",
+      "description": "Verify that if a credential has to be used for service authentication, the credential being used by the consumer is not a default credential (e.g., root/root or admin/admin).",
+      "reason": "V13.2.3 requires evidence from the T5 Storage, S3, and protected egress surface. Verify that if a credential has to be used for service authentication, the credential being used by the consumer is not a default credential (e.g., root/root or admin/admin). This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Storage, S3, and protected egress",
+      "requiredEvidence": "نیاز به بازبینی CJSON، تصویر runtime و پیکربندی استقرار مشتری برای اثبات «نبود اعتبار پیش‌فرض در ارتباط خدمات»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that if a credential has to be used for service authentication, the credential being used by the consumer is not a default credential (e.g., root/root or admin/admin). against the implemented Storage, S3, and protected egress path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V13.2.4",
+      "description": "Verify that an allowlist is used to define the external resources or systems with which the application is permitted to communicate (e.g., for outbound requests, data loads, or file access). This allowlist can be implemented at the application layer, web server, firewall, or a combination of different layers.",
+      "reason": "V13.2.4 requires evidence from the T5 Storage, S3, and protected egress surface. Verify that an allowlist is used to define the external resources or systems with which the application is permitted to communicate (e.g., for outbound requests, data loads, or file access). This allowlist can be implemented at the application layer, web server, firewall, or a combination of different layers. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Storage, S3, and protected egress",
+      "requiredEvidence": "نیاز به بازبینی CJSON، تصویر runtime و پیکربندی استقرار مشتری برای اثبات «فهرست مجاز مقصدهای خارجی برای درخواست و دسترسی به فایل»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that an allowlist is used to define the external resources or systems with which the application is permitted to communicate (e.g., for outbound requests, data loads, or file access). This allowlist can be implemented at the application layer, web server, firewall, or a combination of different layers. against the implemented Storage, S3, and protected egress path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V13.2.5",
+      "description": "Verify that the web or application server is configured with an allowlist of resources or systems to which the server can send requests or load data or files from.",
+      "reason": "V13.2.5 requires evidence from the T5 Storage, S3, and protected egress surface. Verify that the web or application server is configured with an allowlist of resources or systems to which the server can send requests or load data or files from. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Storage, S3, and protected egress",
+      "requiredEvidence": "نیاز به بازبینی CJSON، تصویر runtime و پیکربندی استقرار مشتری برای اثبات «فهرست مجاز مقصدهای قابل‌اتصال از سرور وب یا برنامه»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that the web or application server is configured with an allowlist of resources or systems to which the server can send requests or load data or files from. against the implemented Storage, S3, and protected egress path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V13.2.6",
+      "description": "Verify that where the application connects to separate services, it follows the documented configuration for each connection, such as maximum parallel connections, behavior when maximum allowed connections is reached, connection timeouts, and retry strategies.",
+      "reason": "V13.2.6 requires evidence from the T5 Storage, S3, and protected egress surface. Verify that where the application connects to separate services, it follows the documented configuration for each connection, such as maximum parallel connections, behavior when maximum allowed connections is reached, connection timeouts, and retry strategies. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Storage, S3, and protected egress",
+      "requiredEvidence": "نیاز به بازبینی CJSON، تصویر runtime و پیکربندی استقرار مشتری برای اثبات «اجرای سقف اتصال، timeout و retry مطابق پیکربندی هر خدمت»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that where the application connects to separate services, it follows the documented configuration for each connection, such as maximum parallel connections, behavior when maximum allowed connections is reached, connection timeouts, and retry strategies. against the implemented Storage, S3, and protected egress path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V13.3.2",
+      "description": "Verify that access to secret assets adheres to the principle of least privilege.",
+      "reason": "V13.3.2 requires evidence from the T5 Storage, S3, and protected egress surface. Verify that access to secret assets adheres to the principle of least privilege. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Storage, S3, and protected egress",
+      "requiredEvidence": "نیاز به بازبینی CJSON، تصویر runtime و پیکربندی استقرار مشتری برای اثبات «حداقل اختیار دسترسی به اسرار»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that access to secret assets adheres to the principle of least privilege. against the implemented Storage, S3, and protected egress path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V14.1.1",
+      "description": "Verify that all sensitive data created and processed by the application has been identified and classified into protection levels. This includes data that is only encoded and therefore easily decoded, such as Base64 strings or the plaintext payload inside a JWT. Protection levels need to take into account any data protection and privacy regulations and standards which the application is required to comply with.",
+      "reason": "V14.1.1 requires evidence from the T5 Document and RAG sensitive data surface. Verify that all sensitive data created and processed by the application has been identified and classified into protection levels. This includes data that is only encoded and therefore easily decoded, such as Base64 strings or the plaintext payload inside a JWT. Protection levels need to take into account any data protection and privacy regulations and standards which the application is required to comply with. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Document and RAG sensitive data",
+      "requiredEvidence": "نیاز به بازبینی کد، قرارداد و آزمون اختصاصی محصول هدف برای اثبات «شناسایی و طبقه‌بندی همهٔ داده‌های حساس شامل محتوای قابل‌بازگشایی JWT»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that all sensitive data created and processed by the application has been identified and classified into protection levels. This includes data that is only encoded and therefore easily decoded, such as Base64 strings or the plaintext payload inside a JWT. Protection levels need to take into account any data protection and privacy regulations and standards which the application is required to comply with. against the implemented Document and RAG sensitive data path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V14.1.2",
+      "description": "Verify that all sensitive data protection levels have a documented set of protection requirements. This must include (but not be limited to) requirements related to general encryption, integrity verification, retention, how the data is to be logged, access controls around sensitive data in logs, database-level encryption, privacy and privacy-enhancing technologies to be used, and other confidentiality requirements.",
+      "reason": "V14.1.2 requires evidence from the T5 Document and RAG sensitive data surface. Verify that all sensitive data protection levels have a documented set of protection requirements. This must include (but not be limited to) requirements related to general encryption, integrity verification, retention, how the data is to be logged, access controls around sensitive data in logs, database-level encryption, privacy and privacy-enhancing technologies to be used, and other confidentiality requirements. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Document and RAG sensitive data",
+      "requiredEvidence": "نیاز به بازبینی کد، قرارداد و آزمون اختصاصی محصول هدف برای اثبات «مستندسازی الزامات حفاظت هر سطح دادهٔ حساس»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that all sensitive data protection levels have a documented set of protection requirements. This must include (but not be limited to) requirements related to general encryption, integrity verification, retention, how the data is to be logged, access controls around sensitive data in logs, database-level encryption, privacy and privacy-enhancing technologies to be used, and other confidentiality requirements. against the implemented Document and RAG sensitive data path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V14.2.2",
+      "description": "Verify that the application prevents sensitive data from being cached in server components, such as load balancers and application caches, or ensures that the data is securely purged after use.",
+      "reason": "V14.2.2 requires evidence from the T5 Document and RAG sensitive data surface. Verify that the application prevents sensitive data from being cached in server components, such as load balancers and application caches, or ensures that the data is securely purged after use. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Document and RAG sensitive data",
+      "requiredEvidence": "نیاز به بازبینی کد، قرارداد و آزمون اختصاصی محصول هدف برای اثبات «جلوگیری از cache دادهٔ حساس در اجزای سرور یا پاک‌سازی امن آن»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that the application prevents sensitive data from being cached in server components, such as load balancers and application caches, or ensures that the data is securely purged after use. against the implemented Document and RAG sensitive data path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V14.2.3",
+      "description": "Verify that defined sensitive data is not sent to untrusted parties (e.g., user trackers) to prevent unwanted collection of data outside of the application's control.",
+      "reason": "V14.2.3 requires evidence from the T5 Document and RAG sensitive data surface. Verify that defined sensitive data is not sent to untrusted parties (e.g., user trackers) to prevent unwanted collection of data outside of the application's control. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Document and RAG sensitive data",
+      "requiredEvidence": "نیاز به بازبینی کد، قرارداد و آزمون اختصاصی محصول هدف برای اثبات «جلوگیری از ارسال دادهٔ حساس به طرف نامطمئن»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that defined sensitive data is not sent to untrusted parties (e.g., user trackers) to prevent unwanted collection of data outside of the application's control. against the implemented Document and RAG sensitive data path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V14.2.4",
+      "description": "Verify that controls around sensitive data related to encryption, integrity verification, retention, how the data is to be logged, access controls around sensitive data in logs, privacy and privacy-enhancing technologies, are implemented as defined in the documentation for the specific data's protection level.",
+      "reason": "V14.2.4 requires evidence from the T5 Document and RAG sensitive data surface. Verify that controls around sensitive data related to encryption, integrity verification, retention, how the data is to be logged, access controls around sensitive data in logs, privacy and privacy-enhancing technologies, are implemented as defined in the documentation for the specific data's protection level. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Document and RAG sensitive data",
+      "requiredEvidence": "نیاز به بازبینی کد، قرارداد و آزمون اختصاصی محصول هدف برای اثبات «اجرای کنترل‌های حفاظت متناسب با طبقهٔ داده»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that controls around sensitive data related to encryption, integrity verification, retention, how the data is to be logged, access controls around sensitive data in logs, privacy and privacy-enhancing technologies, are implemented as defined in the documentation for the specific data's protection level. against the implemented Document and RAG sensitive data path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V14.2.5",
+      "description": "Verify that caching mechanisms are configured to only cache responses which have the expected content type for that resource and do not contain sensitive, dynamic content. The web server should return a 404 or 302 response when a non-existent file is accessed rather than returning a different, valid file. This should prevent Web Cache Deception attacks.",
+      "reason": "V14.2.5 requires evidence from the T5 Document and RAG sensitive data surface. Verify that caching mechanisms are configured to only cache responses which have the expected content type for that resource and do not contain sensitive, dynamic content. The web server should return a 404 or 302 response when a non-existent file is accessed rather than returning a different, valid file. This should prevent Web Cache Deception attacks. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Document and RAG sensitive data",
+      "requiredEvidence": "نیاز به بازبینی کد، قرارداد و آزمون اختصاصی محصول هدف برای اثبات «تنظیم cache برای محتوای صحیح و جلوگیری از web cache deception»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that caching mechanisms are configured to only cache responses which have the expected content type for that resource and do not contain sensitive, dynamic content. The web server should return a 404 or 302 response when a non-existent file is accessed rather than returning a different, valid file. This should prevent Web Cache Deception attacks. against the implemented Document and RAG sensitive data path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V14.2.6",
+      "description": "Verify that the application only returns the minimum required sensitive data for the application's functionality. For example, only returning some of the digits of a credit card number and not the full number. If the complete data is required, it should be masked in the user interface unless the user specifically views it.",
+      "reason": "V14.2.6 requires evidence from the T5 Document and RAG sensitive data surface. Verify that the application only returns the minimum required sensitive data for the application's functionality. For example, only returning some of the digits of a credit card number and not the full number. If the complete data is required, it should be masked in the user interface unless the user specifically views it. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Document and RAG sensitive data",
+      "requiredEvidence": "نیاز به بازبینی کد، قرارداد و آزمون اختصاصی محصول هدف برای اثبات «بازگرداندن حداقل دادهٔ حساس لازم و پوشاندن مقدار کامل در رابط»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that the application only returns the minimum required sensitive data for the application's functionality. For example, only returning some of the digits of a credit card number and not the full number. If the complete data is required, it should be masked in the user interface unless the user specifically views it. against the implemented Document and RAG sensitive data path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V14.2.7",
+      "description": "Verify that sensitive information is subject to data retention classification, ensuring that outdated or unnecessary data is deleted automatically, on a defined schedule, or as the situation requires.",
+      "reason": "V14.2.7 requires evidence from the T5 Document and RAG sensitive data surface. Verify that sensitive information is subject to data retention classification, ensuring that outdated or unnecessary data is deleted automatically, on a defined schedule, or as the situation requires. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Document and RAG sensitive data",
+      "requiredEvidence": "نیاز به بازبینی کد، قرارداد و آزمون اختصاصی محصول هدف برای اثبات «حذف دادهٔ حساس طبق برنامهٔ نگهداشت»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that sensitive information is subject to data retention classification, ensuring that outdated or unnecessary data is deleted automatically, on a defined schedule, or as the situation requires. against the implemented Document and RAG sensitive data path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V14.3.1",
+      "description": "Verify that authenticated data is cleared from client storage, such as the browser DOM, after the client or session is terminated. The 'Clear-Site-Data' HTTP response header field may be able to help with this but the client-side should also be able to clear up if the server connection is not available when the session is terminated.",
+      "reason": "V14.3.1 requires evidence from the T5 Document and RAG sensitive data surface. Verify that authenticated data is cleared from client storage, such as the browser DOM, after the client or session is terminated. The 'Clear-Site-Data' HTTP response header field may be able to help with this but the client-side should also be able to clear up if the server connection is not available when the session is terminated. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Document and RAG sensitive data",
+      "requiredEvidence": "نیاز به بازبینی کد، قرارداد و آزمون اختصاصی محصول هدف برای اثبات «پاک‌کردن دادهٔ احرازشده از حافظه و DOM مرورگر پس از پایان نشست»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that authenticated data is cleared from client storage, such as the browser DOM, after the client or session is terminated. The 'Clear-Site-Data' HTTP response header field may be able to help with this but the client-side should also be able to clear up if the server connection is not available when the session is terminated. against the implemented Document and RAG sensitive data path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V14.3.2",
+      "description": "Verify that the application sets sufficient anti-caching HTTP response header fields (i.e., Cache-Control: no-store) so that sensitive data is not cached in browsers.",
+      "reason": "V14.3.2 requires evidence from the T5 Document and RAG sensitive data surface. Verify that the application sets sufficient anti-caching HTTP response header fields (i.e., Cache-Control: no-store) so that sensitive data is not cached in browsers. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Document and RAG sensitive data",
+      "requiredEvidence": "نیاز به بازبینی کد، قرارداد و آزمون اختصاصی محصول هدف برای اثبات «سرآیند no-store برای جلوگیری از cache دادهٔ حساس در مرورگر»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that the application sets sufficient anti-caching HTTP response header fields (i.e., Cache-Control: no-store) so that sensitive data is not cached in browsers. against the implemented Document and RAG sensitive data path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V15.1.3",
+      "description": "Verify that the application documentation identifies functionality which is time-consuming or resource-demanding. This must include how to prevent a loss of availability due to overusing this functionality and how to avoid a situation where building a response takes longer than the consumer's timeout. Potential defenses may include asynchronous processing, using queues, and limiting parallel processes per user and per application.",
+      "reason": "V15.1.3 requires evidence from the T5 RAG resources and dangerous components surface. Verify that the application documentation identifies functionality which is time-consuming or resource-demanding. This must include how to prevent a loss of availability due to overusing this functionality and how to avoid a situation where building a response takes longer than the consumer's timeout. Potential defenses may include asynchronous processing, using queues, and limiting parallel processes per user and per application. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "RAG resources and dangerous components",
+      "requiredEvidence": "نیاز به بازبینی کد هدف، تصویر runtime و آزمون بدخواهانه برای اثبات «مستندسازی کارهای پرهزینه و دفاع در برابر مصرف بیش‌ازحد»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that the application documentation identifies functionality which is time-consuming or resource-demanding. This must include how to prevent a loss of availability due to overusing this functionality and how to avoid a situation where building a response takes longer than the consumer's timeout. Potential defenses may include asynchronous processing, using queues, and limiting parallel processes per user and per application. against the implemented RAG resources and dangerous components path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V15.1.4",
+      "description": "Verify that application documentation highlights third-party libraries which are considered to be \"risky components\".",
+      "reason": "V15.1.4 requires evidence from the T5 RAG resources and dangerous components surface. Verify that application documentation highlights third-party libraries which are considered to be \"risky components\". This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "RAG resources and dangerous components",
+      "requiredEvidence": "نیاز به بازبینی کد هدف، تصویر runtime و آزمون بدخواهانه برای اثبات «شناسایی و مستندسازی وابستگی‌های پرخطر»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that application documentation highlights third-party libraries which are considered to be \"risky components\". against the implemented RAG resources and dangerous components path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V15.1.5",
+      "description": "Verify that application documentation highlights parts of the application where \"dangerous functionality\" is being used.",
+      "reason": "V15.1.5 requires evidence from the T5 RAG resources and dangerous components surface. Verify that application documentation highlights parts of the application where \"dangerous functionality\" is being used. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "RAG resources and dangerous components",
+      "requiredEvidence": "نیاز به بازبینی کد هدف، تصویر runtime و آزمون بدخواهانه برای اثبات «شناسایی کارکردهای خطرناک برنامه در مستندات»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that application documentation highlights parts of the application where \"dangerous functionality\" is being used. against the implemented RAG resources and dangerous components path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V15.2.5",
+      "description": "Verify that the application implements additional protections around parts of the application which are documented as containing \"dangerous functionality\" or using third-party libraries considered to be \"risky components\". This could include techniques such as sandboxing, encapsulation, containerization or network level isolation to delay and deter attackers who compromise one part of an application from pivoting elsewhere in the application.",
+      "reason": "V15.2.5 requires evidence from the T5 RAG resources and dangerous components surface. Verify that the application implements additional protections around parts of the application which are documented as containing \"dangerous functionality\" or using third-party libraries considered to be \"risky components\". This could include techniques such as sandboxing, encapsulation, containerization or network level isolation to delay and deter attackers who compromise one part of an application from pivoting elsewhere in the application. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "RAG resources and dangerous components",
+      "requiredEvidence": "نیاز به بازبینی کد هدف، تصویر runtime و آزمون بدخواهانه برای اثبات «حفاظت تکمیلی اطراف قابلیت و وابستگی خطرناک»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that the application implements additional protections around parts of the application which are documented as containing \"dangerous functionality\" or using third-party libraries considered to be \"risky components\". This could include techniques such as sandboxing, encapsulation, containerization or network level isolation to delay and deter attackers who compromise one part of an application from pivoting elsewhere in the application. against the implemented RAG resources and dangerous components path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V15.3.1",
+      "description": "Verify that the application only returns the required subset of fields from a data object. For example, it should not return an entire data object, as some individual fields should not be accessible to users.",
+      "reason": "V15.3.1 requires evidence from the T5 Document authorization and transfer surface. Verify that the application only returns the required subset of fields from a data object. For example, it should not return an entire data object, as some individual fields should not be accessible to users. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Document authorization and transfer",
+      "requiredEvidence": "نیاز به بازبینی کد هدف، تصویر runtime و آزمون بدخواهانه برای اثبات «بازگرداندن فقط فیلدهای ضروری شیء در پاسخ»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that the application only returns the required subset of fields from a data object. For example, it should not return an entire data object, as some individual fields should not be accessible to users. against the implemented Document authorization and transfer path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V15.3.2",
+      "description": "Verify that where the application backend makes calls to external URLs, it is configured to not follow redirects unless it is intended functionality.",
+      "reason": "V15.3.2 requires evidence from the T5 Storage, S3, and protected egress surface. Verify that where the application backend makes calls to external URLs, it is configured to not follow redirects unless it is intended functionality. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Storage, S3, and protected egress",
+      "requiredEvidence": "نیاز به بازبینی کد هدف، تصویر runtime و آزمون بدخواهانه برای اثبات «عدم دنبال‌کردن redirect مقصد بیرونی مگر عمدی»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that where the application backend makes calls to external URLs, it is configured to not follow redirects unless it is intended functionality. against the implemented Storage, S3, and protected egress path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V15.3.6",
+      "description": "Verify that JavaScript code is written in a way that prevents prototype pollution, for example, by using Set() or Map() instead of object literals.",
+      "reason": "V15.3.6 requires evidence from the T5 RAG resources and dangerous components surface. Verify that JavaScript code is written in a way that prevents prototype pollution, for example, by using Set() or Map() instead of object literals. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "RAG resources and dangerous components",
+      "requiredEvidence": "نیاز به بازبینی کد هدف، تصویر runtime و آزمون بدخواهانه برای اثبات «دفاع کد JavaScript در برابر prototype pollution»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that JavaScript code is written in a way that prevents prototype pollution, for example, by using Set() or Map() instead of object literals. against the implemented RAG resources and dangerous components path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V15.3.7",
+      "description": "Verify that the application has defenses against HTTP parameter pollution attacks, particularly if the application framework makes no distinction about the source of request parameters (query string, body parameters, cookies, or header fields).",
+      "reason": "V15.3.7 requires evidence from the T5 RAG resources and dangerous components surface. Verify that the application has defenses against HTTP parameter pollution attacks, particularly if the application framework makes no distinction about the source of request parameters (query string, body parameters, cookies, or header fields). This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "RAG resources and dangerous components",
+      "requiredEvidence": "نیاز به بازبینی کد هدف، تصویر runtime و آزمون بدخواهانه برای اثبات «دفاع در برابر آلودگی پارامتر HTTP میان query، body، cookie و header»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that the application has defenses against HTTP parameter pollution attacks, particularly if the application framework makes no distinction about the source of request parameters (query string, body parameters, cookies, or header fields). against the implemented RAG resources and dangerous components path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V15.4.2",
+      "description": "Verify that checks on a resource's state, such as its existence or permissions, and the actions that depend on them are performed as a single atomic operation to prevent time-of-check to time-of-use (TOCTOU) race conditions. For example, checking if a file exists before opening it, or verifying a user’s access before granting it.",
+      "reason": "V15.4.2 requires evidence from the T5 Document authorization and transfer surface. Verify that checks on a resource's state, such as its existence or permissions, and the actions that depend on them are performed as a single atomic operation to prevent time-of-check to time-of-use (TOCTOU) race conditions. For example, checking if a file exists before opening it, or verifying a user’s access before granting it. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "Document authorization and transfer",
+      "requiredEvidence": "نیاز به بازبینی کد هدف، تصویر runtime و آزمون بدخواهانه برای اثبات «اتمی‌بودن بررسی و عمل وابسته برای پیشگیری از TOCTOU»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that checks on a resource's state, such as its existence or permissions, and the actions that depend on them are performed as a single atomic operation to prevent time-of-check to time-of-use (TOCTOU) race conditions. For example, checking if a file exists before opening it, or verifying a user’s access before granting it. against the implemented Document authorization and transfer path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V15.4.3",
+      "description": "Verify that locks are used consistently to avoid threads getting stuck, whether by waiting on each other or retrying endlessly, and that locking logic stays within the code responsible for managing the resource to ensure locks cannot be inadvertently or maliciously modified by external classes or code.",
+      "reason": "V15.4.3 requires evidence from the T5 RAG resources and dangerous components surface. Verify that locks are used consistently to avoid threads getting stuck, whether by waiting on each other or retrying endlessly, and that locking logic stays within the code responsible for managing the resource to ensure locks cannot be inadvertently or maliciously modified by external classes or code. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "RAG resources and dangerous components",
+      "requiredEvidence": "نیاز به بازبینی کد هدف، تصویر runtime و آزمون بدخواهانه برای اثبات «کاربرد سازگار قفل در مالک منبع برای جلوگیری از بن‌بست»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that locks are used consistently to avoid threads getting stuck, whether by waiting on each other or retrying endlessly, and that locking logic stays within the code responsible for managing the resource to ensure locks cannot be inadvertently or maliciously modified by external classes or code. against the implemented RAG resources and dangerous components path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V15.4.4",
+      "description": "Verify that resource allocation policies prevent thread starvation by ensuring fair access to resources, such as by leveraging thread pools, allowing lower-priority threads to proceed within a reasonable timeframe.",
+      "reason": "V15.4.4 requires evidence from the T5 RAG resources and dangerous components surface. Verify that resource allocation policies prevent thread starvation by ensuring fair access to resources, such as by leveraging thread pools, allowing lower-priority threads to proceed within a reasonable timeframe. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "RAG resources and dangerous components",
+      "requiredEvidence": "نیاز به بازبینی کد هدف، تصویر runtime و آزمون بدخواهانه برای اثبات «سیاست تخصیص عادلانهٔ منبع برای جلوگیری از گرسنگی ریسه»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that resource allocation policies prevent thread starvation by ensuring fair access to resources, such as by leveraging thread pools, allowing lower-priority threads to proceed within a reasonable timeframe. against the implemented RAG resources and dangerous components path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V16.1.1",
+      "description": "Verify that an inventory exists documenting the logging performed at each layer of the application's technology stack, what events are being logged, log formats, where that logging is stored, how it is used, how access to it is controlled, and for how long logs are kept.",
+      "reason": "V16.1.1 requires evidence from the T5 T5 Audit and recovery surface. Verify that an inventory exists documenting the logging performed at each layer of the application's technology stack, what events are being logged, log formats, where that logging is stored, how it is used, how access to it is controlled, and for how long logs are kept. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "T5 Audit and recovery",
+      "requiredEvidence": "نیاز به آزمون رویداد واقعی، پایگاه داده و گیرندهٔ SIEM برای اثبات «فهرست لایه‌ها، رخدادها، قالب، محل، دسترسی و نگهداشت لاگ»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that an inventory exists documenting the logging performed at each layer of the application's technology stack, what events are being logged, log formats, where that logging is stored, how it is used, how access to it is controlled, and for how long logs are kept. against the implemented T5 Audit and recovery path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V16.2.1",
+      "description": "Verify that each log entry includes necessary metadata (such as when, where, who, what) that would allow for a detailed investigation of the timeline when an event happens.",
+      "reason": "V16.2.1 requires evidence from the T5 T5 Audit and recovery surface. Verify that each log entry includes necessary metadata (such as when, where, who, what) that would allow for a detailed investigation of the timeline when an event happens. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "T5 Audit and recovery",
+      "requiredEvidence": "نیاز به آزمون رویداد واقعی، پایگاه داده و گیرندهٔ SIEM برای اثبات «فرادادهٔ زمان، مکان، کنشگر و عمل در هر رکورد امنیتی»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that each log entry includes necessary metadata (such as when, where, who, what) that would allow for a detailed investigation of the timeline when an event happens. against the implemented T5 Audit and recovery path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V16.2.2",
+      "description": "Verify that time sources for all logging components are synchronized, and that timestamps in security event metadata use UTC or include an explicit time zone offset. UTC is recommended to ensure consistency across distributed systems and to prevent confusion during daylight saving time transitions.",
+      "reason": "V16.2.2 requires evidence from the T5 T5 Audit and recovery surface. Verify that time sources for all logging components are synchronized, and that timestamps in security event metadata use UTC or include an explicit time zone offset. UTC is recommended to ensure consistency across distributed systems and to prevent confusion during daylight saving time transitions. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "T5 Audit and recovery",
+      "requiredEvidence": "نیاز به آزمون رویداد واقعی، پایگاه داده و گیرندهٔ SIEM برای اثبات «ساعت هماهنگ و timestamp دارای UTC یا offset در ثبت امنیتی»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that time sources for all logging components are synchronized, and that timestamps in security event metadata use UTC or include an explicit time zone offset. UTC is recommended to ensure consistency across distributed systems and to prevent confusion during daylight saving time transitions. against the implemented T5 Audit and recovery path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V16.2.3",
+      "description": "Verify that the application only stores or broadcasts logs to the files and services that are documented in the log inventory.",
+      "reason": "V16.2.3 requires evidence from the T5 T5 Audit and recovery surface. Verify that the application only stores or broadcasts logs to the files and services that are documented in the log inventory. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "T5 Audit and recovery",
+      "requiredEvidence": "نیاز به آزمون رویداد واقعی، پایگاه داده و گیرندهٔ SIEM برای اثبات «ارسال و نگهداری لاگ فقط در مقصدهای مستند»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that the application only stores or broadcasts logs to the files and services that are documented in the log inventory. against the implemented T5 Audit and recovery path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V16.2.5",
+      "description": "Verify that when logging sensitive data, the application enforces logging based on the data's protection level. For example, it may not be allowed to log certain data, such as credentials or payment details. Other data, such as session tokens, may only be logged by being hashed or masked, either in full or partially.",
+      "reason": "V16.2.5 requires evidence from the T5 T5 Audit and recovery surface. Verify that when logging sensitive data, the application enforces logging based on the data's protection level. For example, it may not be allowed to log certain data, such as credentials or payment details. Other data, such as session tokens, may only be logged by being hashed or masked, either in full or partially. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "T5 Audit and recovery",
+      "requiredEvidence": "نیاز به آزمون رویداد واقعی، پایگاه داده و گیرندهٔ SIEM برای اثبات «حذف یا پوشاندن اسرار و دادهٔ حساس در ثبت»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that when logging sensitive data, the application enforces logging based on the data's protection level. For example, it may not be allowed to log certain data, such as credentials or payment details. Other data, such as session tokens, may only be logged by being hashed or masked, either in full or partially. against the implemented T5 Audit and recovery path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V16.3.3",
+      "description": "Verify that the application logs the security events that are defined in the documentation and also logs attempts to bypass the security controls, such as input validation, business logic, and anti-automation.",
+      "reason": "V16.3.3 requires evidence from the T5 T5 Audit and recovery surface. Verify that the application logs the security events that are defined in the documentation and also logs attempts to bypass the security controls, such as input validation, business logic, and anti-automation. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "T5 Audit and recovery",
+      "requiredEvidence": "نیاز به آزمون رویداد واقعی، پایگاه داده و گیرندهٔ SIEM برای اثبات «ثبت رخدادهای امنیتی و تلاش دورزدن کنترل‌ها»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that the application logs the security events that are defined in the documentation and also logs attempts to bypass the security controls, such as input validation, business logic, and anti-automation. against the implemented T5 Audit and recovery path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V16.3.4",
+      "description": "Verify that the application logs unexpected errors and security control failures such as backend TLS failures.",
+      "reason": "V16.3.4 requires evidence from the T5 T5 Audit and recovery surface. Verify that the application logs unexpected errors and security control failures such as backend TLS failures. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "T5 Audit and recovery",
+      "requiredEvidence": "نیاز به آزمون رویداد واقعی، پایگاه داده و گیرندهٔ SIEM برای اثبات «ثبت خطاهای غیرمنتظره و شکست کنترل امنیتی»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that the application logs unexpected errors and security control failures such as backend TLS failures. against the implemented T5 Audit and recovery path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V16.4.1",
+      "description": "Verify that all logging components appropriately encode data to prevent log injection.",
+      "reason": "V16.4.1 requires evidence from the T5 T5 Audit and recovery surface. Verify that all logging components appropriately encode data to prevent log injection. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "T5 Audit and recovery",
+      "requiredEvidence": "نیاز به آزمون رویداد واقعی، پایگاه داده و گیرندهٔ SIEM برای اثبات «کدگذاری دادهٔ ورودی لاگ برای جلوگیری از log injection»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that all logging components appropriately encode data to prevent log injection. against the implemented T5 Audit and recovery path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V16.4.2",
+      "description": "Verify that logs are protected from unauthorized access and cannot be modified.",
+      "reason": "V16.4.2 requires evidence from the T5 T5 Audit and recovery surface. Verify that logs are protected from unauthorized access and cannot be modified. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "T5 Audit and recovery",
+      "requiredEvidence": "API and Worker database roles cannot update or delete canonical semantic Audit; protection of all operational log stores and customer infrastructure remains unverified.",
+      "expectedTest": "Test Verify that logs are protected from unauthorized access and cannot be modified. against the implemented T5 Audit and recovery path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V16.4.3",
+      "description": "Verify that logs are securely transmitted to a logically separate system for analysis, detection, alerting, and escalation. The aim is to ensure that if the application is breached, the logs are not compromised.",
+      "reason": "V16.4.3 requires evidence from the T5 T5 Audit and recovery surface. Verify that logs are securely transmitted to a logically separate system for analysis, detection, alerting, and escalation. The aim is to ensure that if the application is breached, the logs are not compromised. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "T5 Audit and recovery",
+      "requiredEvidence": "نیاز به آزمون رویداد واقعی، پایگاه داده و گیرندهٔ SIEM برای اثبات «ارسال امن لاگ به سامانهٔ مستقل برای تحلیل و هشدار»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that logs are securely transmitted to a logically separate system for analysis, detection, alerting, and escalation. The aim is to ensure that if the application is breached, the logs are not compromised. against the implemented T5 Audit and recovery path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V16.5.3",
+      "description": "Verify that the application fails gracefully and securely, including when an exception occurs, preventing fail-open conditions such as processing a transaction despite errors resulting from validation logic.",
+      "reason": "V16.5.3 requires evidence from the T5 T5 Audit and recovery surface. Verify that the application fails gracefully and securely, including when an exception occurs, preventing fail-open conditions such as processing a transaction despite errors resulting from validation logic. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "T5 Audit and recovery",
+      "requiredEvidence": "نیاز به آزمون رویداد واقعی، پایگاه داده و گیرندهٔ SIEM برای اثبات «شکست امن و کنترل‌شده در استثنا بدون fail-open»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that the application fails gracefully and securely, including when an exception occurs, preventing fail-open conditions such as processing a transaction despite errors resulting from validation logic. against the implemented T5 Audit and recovery path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    },
+    {
+      "asvsId": "v5.0.0-V16.5.4",
+      "description": "Verify that a \"last resort\" error handler is defined which will catch all unhandled exceptions. This is both to avoid losing error details that must go to log files and to ensure that an error does not take down the entire application process, leading to a loss of availability.",
+      "reason": "V16.5.4 requires evidence from the T5 T5 Audit and recovery surface. Verify that a \"last resort\" error handler is defined which will catch all unhandled exceptions. This is both to avoid losing error details that must go to log files and to ensure that an error does not take down the entire application process, leading to a loss of availability. This evidence is mandatory during T5 and cannot be complete before that surface exists.",
+      "t5Capability": "T5 Audit and recovery",
+      "requiredEvidence": "نیاز به آزمون رویداد واقعی، پایگاه داده و گیرندهٔ SIEM برای اثبات «گیرندهٔ نهایی خطاهای مهارنشده برای ثبت و تداوم خدمت»؛ نتیجهٔ منطبق با الزام هنوز ثبت نشده است.",
+      "expectedTest": "Test Verify that a \"last resort\" error handler is defined which will catch all unhandled exceptions. This is both to avoid losing error details that must go to log files and to ensure that an error does not take down the entire application process, leading to a loss of availability. against the implemented T5 Audit and recovery path; include a failing case and the relevant tenant/authorization boundary where applicable, then record source and test evidence.",
+      "releaseImpact": "Blocks ASVS Level 3 customer release until PASS or justified NOT_APPLICABLE."
+    }
+  ]
+}

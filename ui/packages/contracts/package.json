@@ -5,6 +5,7 @@
   "type": "module",
   "sideEffects": false,
   "exports": {
+    "./knowledge": "./src/knowledge.ts",
     ".": {
       "types": "./src/index.ts",
       "svelte": "./src/index.ts",

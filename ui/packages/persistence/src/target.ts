@@ -20,13 +20,18 @@ export function createTargetReadinessPersistence(pool: pg.Pool): () => Promise<v
   return async () => { await pool.query('SELECT 1 FROM platform.tbl_plt_migration LIMIT 1'); };
 }
 
-export interface intfMutationContext { readonly actorKind: string; readonly actorId: string | null; readonly sessionId?: string | null; readonly tenantId?: string | null; readonly correlationId: string; readonly source: string }
+export interface intfMutationContext { readonly actorKind: string; readonly actorId: string | null; readonly sessionId?: string | null; readonly tenantId?: string | null; readonly deploymentId?: string; readonly requestId?: string; readonly moduleId?: string; readonly authorizationVersion?: number | null; readonly initiator?:Readonly<{actorKind:string;actorId:string|null}>; readonly correlationId: string; readonly source: string }
 export async function withTargetTransaction<T>(pool: pg.Pool, context: intfMutationContext, work: (client: typTargetClient) => Promise<T>): Promise<T> {
   if (!context.actorKind || !context.correlationId || !context.source) throw new Error('Missing mutation context');
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
     await client.query("SELECT set_config('app.actor_kind', $1, true), set_config('app.actor_id', $2, true), set_config('app.session_id', $3, true), set_config('app.tenant_id', $4, true), set_config('app.correlation_id', $5, true), set_config('app.source', $6, true)", [context.actorKind, context.actorId ?? '', context.sessionId ?? '', context.tenantId ?? '', context.correlationId, context.source]);
+    await client.query("SELECT set_config('app.deployment_id', $1, true)", [context.deploymentId ?? '']);
+    await client.query("SELECT set_config('app.initiator_actor_kind',$1,true),set_config('app.initiator_actor_id',$2,true)",
+      [context.initiator?.actorKind??context.actorKind,context.initiator?.actorId??context.actorId??'']);
+    await client.query("SELECT set_config('app.request_id',$1,true),set_config('app.module_id',$2,true),set_config('app.authorization_version',$3,true)",
+      [context.requestId ?? '',context.moduleId ?? '',context.authorizationVersion == null ? '' : String(context.authorizationVersion)]);
     const result = await work(client);
     await client.query('COMMIT');
     return result;

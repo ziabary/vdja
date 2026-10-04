@@ -34,6 +34,38 @@ test('unknown keys, inline secrets, weak limits and missing AI capability fail c
   const capability = clone(base); ((capability.ai as Record<string, unknown>).endpoints as Record<string, unknown>[])[0]!.capabilities = ['SUMMARIZE']; assert.throws(() => validateConfiguration(capability), /modules.translator.enabled/);
 });
 
+test('archive processing bounds are validated and default closed', async () => {
+  const base = await sample();
+  const configured = validateConfiguration(base);
+  assert.equal(configured.fileProcessing.archive.maxNesting, 0);
+  const unsafe = clone(base);
+  (unsafe.fileProcessing as Record<string, unknown>).archive = { maxNesting: 1 };
+  assert.throws(() => validateConfiguration(unsafe), /fileProcessing.archive.maxNesting/);
+  const bounded = clone(base);
+  (bounded.fileProcessing as Record<string, unknown>).archive = { maxEntries: 12, maxTotalUncompressedBytes: 30_000, maxEntryUncompressedBytes: 20_000, maxCompressionRatio: 25, maxNesting: 0 };
+  assert.equal(validateConfiguration(bounded).fileProcessing.archive.maxEntries, 12);
+});
+
+test('password-only assurance is confined to development and test profiles', async () => {
+  const customer = await sample();
+  assert.equal(validateConfiguration(customer).security.assuranceProfile, 'CUSTOMER_L3');
+  const unsafe = clone(customer);
+  unsafe.security = { assuranceProfile: 'DEVELOPMENT_PASSWORD' };
+  assert.throws(() => validateConfiguration(unsafe), /password-only assurance is restricted/);
+  const development = clone(customer);
+  (development.deployment as Record<string, unknown>).id = 'development';
+  development.security = { assuranceProfile: 'DEVELOPMENT_PASSWORD' };
+  assert.equal(validateConfiguration(development).security.assuranceProfile, 'DEVELOPMENT_PASSWORD');
+});
+
+test('enabled SIEM includes canonical Authority decisions', async () => {
+  const config = parseCjson(await readFile('deploy/examples/customer-c/platform.cjson', 'utf8')) as Record<string, unknown>;
+  assert.ok(validateConfiguration(config).siem.events.includes('authority.decision'));
+  const missing = clone(config);
+  (missing.siem as Record<string, unknown>).events = ['public.translate.failed'];
+  assert.throws(() => validateConfiguration(missing), /authority.decision required/);
+});
+
 test('redaction removes secret reference identities from effective output', async () => {
   const config = validateConfiguration(await sample());
   const rendered = JSON.stringify(redactConfiguration(config));

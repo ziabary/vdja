@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { resolveSecretRef, type clsConfigurationStore, type intfAiEndpointConfiguration, type intfConfigurationSnapshot, type typAiTask, type typModuleId } from '../../configuration/src/index.js';
+import type { enuProtectedAiTask } from '../../contracts/src/protected-ai.js';
 
 export type typRunStatus = 'SUCCEEDED' | 'FAILED' | 'CANCELLED' | 'INTERRUPTED';
 export type typEndpointHealth = 'UNKNOWN' | 'HEALTHY' | 'DEGRADED' | 'UNHEALTHY';
@@ -8,18 +9,19 @@ export interface intfAiMessage { readonly role: 'system' | 'user'; readonly cont
 export interface intfAiRequest { readonly task: typAiTask; readonly moduleId: typModuleId; readonly requestId: string; readonly correlationId: string; readonly deploymentId: string; readonly tenantId: string; readonly actorKind: string; readonly actorId: string | null; readonly messages: readonly intfAiMessage[]; readonly maxOutputTokens: number; readonly temperature: number; readonly signal?: AbortSignal }
 export interface intfAiResult { readonly runId: string; readonly status: typRunStatus; readonly output: string; readonly endpointId: string; readonly modelId: string; readonly attempts: number; readonly inputTokens: number; readonly outputTokens: number; readonly durationMs: number; readonly configFingerprint: string }
 export interface intfRoutingReason { readonly endpointId: string; readonly status: 'ELIGIBLE' | 'DISABLED' | 'CAPABILITY_MISMATCH' | 'UNHEALTHY' | 'CIRCUIT_OPEN' | 'CAPACITY_EXHAUSTED' }
-export interface intfRunStart { readonly runId: string; readonly request: intfAiRequest; readonly configFingerprint: string }
+export type typAiRunRequest = Omit<intfAiRequest, 'task' | 'moduleId'> & Readonly<{ task: typAiTask | enuProtectedAiTask; moduleId: typModuleId | 'knowledge'; sessionId?: string | null; authorizationVersion?: number | null; source?: string }>;
+export interface intfRunStart { readonly runId: string; readonly request: typAiRunRequest; readonly configFingerprint: string }
 export interface intfAttemptRecord { readonly attemptId: string; readonly runId: string; readonly sequence: number; readonly endpointId: string; readonly modelId: string; readonly status: 'RUNNING' | typRunStatus; readonly errorClass?: string }
 export interface intfRunFinish { readonly runId: string; readonly status: typRunStatus; readonly endpointId?: string; readonly modelId?: string; readonly inputTokens?: number; readonly outputTokens?: number; readonly errorClass?: string }
-export interface intfActiveRun { readonly endpointId: string; readonly task: typAiTask; readonly requestId: string }
+export interface intfActiveRun { readonly endpointId: string; readonly task: typAiTask | enuProtectedAiTask; readonly requestId: string }
 export interface intfAiRunStore {
   beginRun(value: intfRunStart): Promise<void>;
-  claimEndpointCapacity(runId: string, request: intfAiRequest, endpointId: string, maxConcurrent: number, leaseMs: number): Promise<boolean>;
-  releaseEndpointCapacity(runId: string, request: intfAiRequest, endpointId: string): Promise<void>;
+  claimEndpointCapacity(runId: string, request: typAiRunRequest, endpointId: string, maxConcurrent: number, leaseMs: number): Promise<boolean>;
+  releaseEndpointCapacity(runId: string, request: typAiRunRequest, endpointId: string): Promise<void>;
   beginAttempt(value: intfAttemptRecord): Promise<void>;
   finishAttempt(value: intfAttemptRecord): Promise<void>;
   finishRun(value: intfRunFinish): Promise<void>;
-  activeRun(deploymentId: string, tenantId: string, moduleId: typModuleId, requestId: string): Promise<intfActiveRun | null>;
+  activeRun(deploymentId: string, tenantId: string, moduleId: typModuleId | 'knowledge', requestId: string): Promise<intfActiveRun | null>;
 }
 
 export class exAiRouter extends Error { constructor(readonly code: 'NO_ELIGIBLE_ENDPOINT' | 'PROVIDER_FAILURE' | 'INTERRUPTED' | 'CANCELLED', readonly committed: boolean, readonly safeClass: string) { super(code); } }
@@ -97,7 +99,8 @@ export class clsAiRouter {
     const enabled = snapshot.value.ai.endpoints.filter(endpoint => endpoint.enabled);
     const checks = await Promise.all(enabled.map(async endpoint => {
       try {
-        const response = await fetch(new URL('/health', endpoint.baseUrl), { signal: AbortSignal.timeout(Math.min(endpoint.connectTimeoutMs, 3000)) });
+        const response = await fetch(new URL('/health', endpoint.baseUrl), { redirect:'error',signal: AbortSignal.timeout(Math.min(endpoint.connectTimeoutMs, 3000)) });
+        await response.body?.cancel();
         this.setHealth(endpoint.id, response.ok ? 'HEALTHY' : 'UNHEALTHY');
         return response.ok ? endpoint.id : null;
       } catch { this.setHealth(endpoint.id, 'UNHEALTHY'); return null; }

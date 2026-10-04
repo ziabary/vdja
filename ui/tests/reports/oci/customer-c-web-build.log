@@ -1,0 +1,132 @@
+INFORMATION: This version of Docker has been patched by SUSE.
+        These patches allow for automatic access to the host SUSE subscription
+        inside containers, allowing for customers to create derived images with
+        "docker build" using SUSE packages. However, this feature is
+        incompatible with BuildKit and so "docker build" will use the legacy
+        builder by default. In order to disable this message and continue using
+        the legacy builder, set the DOCKER_BUILDKIT=0 environment-variable.
+
+        In order to opt-in to using BuildKit, set the DOCKER_BUILDKIT=1
+        environment-variable. See the SUSE Linux Enterprise Server 15
+        documentation for information on how to switch to BuildKit while still
+        maintaining access to SCC credentials. In order to use BuildKit, you
+        must have the docker-buildx package installed.
+
+Sending build context to Docker daemon  267.3MB
+Step 1/39 : ARG NODE_IMAGE=node:22.23.3-bookworm-slim@sha256:43ac6c60b8f89723f746e8a92ce91abd5017e627ce1ddfe4238355d3a30b772c
+Step 2/39 : FROM ${NODE_IMAGE} AS build
+ ---> 88f8ba583a88
+Step 3/39 : WORKDIR /app
+ ---> Using cache
+ ---> ab3da0356aca
+Step 4/39 : COPY package.json package-lock.json ./
+ ---> Using cache
+ ---> 689ed956d4c5
+Step 5/39 : COPY apps ./apps
+ ---> Using cache
+ ---> 564f72a851e4
+Step 6/39 : COPY modules ./modules
+ ---> Using cache
+ ---> 82c1d55ff520
+Step 7/39 : COPY packages ./packages
+ ---> Using cache
+ ---> 75b709057798
+Step 8/39 : COPY deploy/examples ./deploy/examples
+ ---> Using cache
+ ---> bb284cc2551c
+Step 9/39 : COPY deploy/entrypoint.mjs ./deploy/entrypoint.mjs
+ ---> Using cache
+ ---> 0359c094b084
+Step 10/39 : COPY deploy/web-security-headers.mjs ./deploy/web-security-headers.mjs
+ ---> Using cache
+ ---> d6f25ee0eac1
+Step 11/39 : COPY tsconfig.target.json ./
+ ---> Using cache
+ ---> 7e6c8922cf63
+Step 12/39 : RUN npm ci --ignore-scripts
+ ---> Using cache
+ ---> bb5bafd4d851
+Step 13/39 : ARG CUSTOMER
+ ---> Using cache
+ ---> cf1fdfccc36d
+Step 14/39 : RUN test -f "deploy/examples/${CUSTOMER}/platform.cjson"  && cp "deploy/examples/${CUSTOMER}/brand/logo.svg" apps/web/static/brand/logo.svg  && cp "deploy/examples/${CUSTOMER}/brand/favicon.svg" apps/web/static/brand/favicon.svg  && npm run build:web  && mkdir -p dist  && ./node_modules/.bin/esbuild apps/api/src/index.ts --bundle --platform=node --format=esm --external:@aws-sdk/* --external:express --external:multer --external:pdfjs-dist --external:pg --outfile=dist/target-api.js  && ./node_modules/.bin/esbuild apps/worker/src/index.ts --bundle --platform=node --format=esm --external:@aws-sdk/* --external:express --external:multer --external:pdfjs-dist --external:pg --outfile=dist/target-worker.js  && ./node_modules/.bin/esbuild packages/persistence/src/target-migrate.ts --bundle --platform=node --format=esm --external:@aws-sdk/* --external:express --external:multer --external:pdfjs-dist --external:pg --outfile=dist/target-migrate.js
+ ---> Using cache
+ ---> 4165bac7362f
+Step 15/39 : FROM ${NODE_IMAGE} AS runtime_base
+ ---> 88f8ba583a88
+Step 16/39 : WORKDIR /app
+ ---> Using cache
+ ---> ab3da0356aca
+Step 17/39 : RUN apt-get update && apt-get upgrade -y  && apt-get install -y --no-install-recommends ca-certificates libreoffice-writer tini util-linux  && rm -rf /var/lib/apt/lists/*  && mkdir -p /etc/targoman /app/apps/web/static/brand /tmp/targoman  && chown -R node:node /tmp/targoman
+ ---> Using cache
+ ---> 83de3cdfa37a
+Step 18/39 : COPY deploy/runtime/package.json deploy/runtime/package-lock.json ./
+ ---> Using cache
+ ---> 7b28671c0624
+Step 19/39 : RUN npm ci --omit=dev --ignore-scripts --registry=https://registry.npmjs.org  && npm cache clean --force  && rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack  && rm -f /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack /usr/local/bin/pnpm /usr/local/bin/pnpx /usr/local/bin/yarn /usr/local/bin/yarnpkg
+ ---> Using cache
+ ---> 3d83eec1c3d6
+Step 20/39 : COPY --from=build /app/apps/web/build ./apps/web/build
+ ---> Using cache
+ ---> b800a315c41c
+Step 21/39 : COPY --from=build /app/dist ./dist
+ ---> Using cache
+ ---> 0ac3f2e890e8
+Step 22/39 : COPY --from=build /app/packages/persistence/src/target-migrations ./dist/target-migrations
+ ---> Using cache
+ ---> 2285dc8650ed
+Step 23/39 : COPY --from=build /app/packages/authentication/data/LICENSE-SecLists.txt ./licenses/LICENSE-SecLists.txt
+ ---> Using cache
+ ---> 5212e3b70641
+Step 24/39 : COPY --from=build /app/apps/web/static/brand ./apps/web/static/brand
+ ---> Using cache
+ ---> 91a1d32e64da
+Step 25/39 : COPY --from=build /app/deploy/entrypoint.mjs ./deploy/entrypoint.mjs
+ ---> Using cache
+ ---> d2a51789152d
+Step 26/39 : COPY --from=build /app/deploy/web-security-headers.mjs ./deploy/web-security-headers.mjs
+ ---> Using cache
+ ---> d9d42d866af1
+Step 27/39 : FROM runtime_base AS runtime
+ ---> d9d42d866af1
+Step 28/39 : ARG CUSTOMER
+ ---> Using cache
+ ---> 462e53c3ed31
+Step 29/39 : ARG ROLE
+ ---> Using cache
+ ---> e41d9b605bde
+Step 30/39 : ARG SOURCE_COMMIT
+ ---> Using cache
+ ---> 1d6afb7d12e5
+Step 31/39 : ARG PLATFORM_VERSION
+ ---> Using cache
+ ---> 74021466e806
+Step 32/39 : ARG RELEASE_ID
+ ---> Using cache
+ ---> 21f6a7b2f691
+Step 33/39 : ARG CONFIG_FINGERPRINT
+ ---> Using cache
+ ---> 24efed2561c6
+Step 34/39 : ARG BUILD_TIMESTAMP
+ ---> Using cache
+ ---> 838ad73af83f
+Step 35/39 : LABEL org.opencontainers.image.source-revision="${SOURCE_COMMIT}"       org.opencontainers.image.version="${PLATFORM_VERSION}"       org.opencontainers.image.created="${BUILD_TIMESTAMP}"       org.targoman.customer="${CUSTOMER}"       org.targoman.role="${ROLE}"       org.targoman.release-id="${RELEASE_ID}"       org.targoman.config-schema-version="1"       org.targoman.config-fingerprint="${CONFIG_FINGERPRINT}"
+ ---> Running in ba074dfea3b2
+ ---> Removed intermediate container ba074dfea3b2
+ ---> 809726162892
+Step 36/39 : COPY --from=build /app/deploy/examples/${CUSTOMER}/platform.cjson /etc/targoman/platform.cjson
+ ---> ec2660e1876b
+Step 37/39 : ENV NODE_ENV=production TARGOMAN_ROLE=${ROLE} TARGOMAN_CONFIG_PATH=/etc/targoman/platform.cjson
+ ---> Running in f8243d02667b
+ ---> Removed intermediate container f8243d02667b
+ ---> da4b3cdcd2ba
+Step 38/39 : USER node
+ ---> Running in a2ca621f2f3b
+ ---> Removed intermediate container a2ca621f2f3b
+ ---> 3ab5d5cc8751
+Step 39/39 : ENTRYPOINT ["/usr/bin/tini", "--", "node", "deploy/entrypoint.mjs"]
+ ---> Running in fff84b518057
+ ---> Removed intermediate container fff84b518057
+ ---> 310647d06f6f
+Successfully built 310647d06f6f
+Successfully tagged targoman/t5-customer-c-web:acceptance

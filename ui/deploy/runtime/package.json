@@ -4,9 +4,10 @@
   "private": true,
   "type": "module",
   "dependencies": {
+    "@aws-sdk/client-s3": "3.1146.0",
     "express": "^5.2.1",
-    "multer": "^2.0.2",
-    "pg": "^8.18.0",
-    "pdfjs-dist": "^4.10.38"
+    "multer": "2.4.0",
+    "pdfjs-dist": "^4.10.38",
+    "pg": "^8.18.0"
   }
 }

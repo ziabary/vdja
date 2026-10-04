@@ -1,0 +1,4 @@
+
+> targoman_llm@1.0.0 check:target
+> tsc --noEmit -p tsconfig.target.json
+

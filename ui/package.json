@@ -51,44 +51,65 @@
     "build:web": "npm run build --workspace @targoman/web",
     "check:web": "npm run check --workspace @targoman/web",
     "test:ui": "npm run test --workspace @targoman/web",
-    "test:architecture:target-ui": "node --import tsx scripts/target-ui-guardrails.ts"
-    ,"db:pg:start": "node scripts/pg-dev.mjs start"
-    ,"db:pg:status": "node scripts/pg-dev.mjs status"
-    ,"db:pg:stop": "node scripts/pg-dev.mjs stop"
-    ,"db:pg:migrate": "node --import tsx packages/persistence/src/migrate.ts"
-    ,"db:pg:ready": "node --import tsx packages/persistence/src/ready.ts"
-    ,"test:db:conformance": "node --import tsx tests/db/conformance.ts"
-    ,"test:db:integration": "node --import tsx tests/db/integration.ts"
-    ,"check:persistence": "tsc --noEmit -p tsconfig.persistence.json"
-    ,"config:validate": "node --import tsx packages/configuration/src/cli.ts validate"
-    ,"config:print-effective": "node --import tsx packages/configuration/src/cli.ts print-effective"
-    ,"config:fingerprint": "node --import tsx packages/configuration/src/cli.ts fingerprint"
-    ,"test:configuration": "node --import tsx --test tests/configuration/configuration.test.ts"
-    ,"test:ai-router": "node --import tsx --test tests/ai-router/router.test.ts"
-    ,"db:target:migrate": "node --import tsx packages/persistence/src/target-migrate.ts"
-    ,"migrate:public-tools:mysql-to-pg": "node --import tsx modules/translator/src/persistence/migrate.ts"
-    ,"db:target:dev:bootstrap": "node --import tsx packages/persistence/src/bootstrap-target-dev.ts"
-    ,"dev:target:api": "node --import tsx apps/api/src/index.ts"
-    ,"dev:target:worker": "node --import tsx apps/worker/src/index.ts"
-    ,"check:target": "tsc --noEmit -p tsconfig.target.json"
-    ,"release:customers": "node --import tsx scripts/customer-release.mjs"
-    ,"test:target:integration": "node --import tsx --test tests/target/runtime.integration.test.ts"
-    ,"test:customer:web": "node tests/target/customer-web.smoke.mjs"
-    ,"test:auth:unit": "node --import tsx --test tests/target/t4-password.test.ts tests/target/t4-auth-service.test.ts tests/target/t4-web-auth-proxy.test.ts"
-    ,"test:auth:live": "T4_REQUIRE_LIVE=1 node --import tsx tests/target/t4-auth-http.integration.test.ts"
-    ,"test:auth": "npm run test:auth:unit && npm run test:auth:live"
-    ,"test:browser:t4": "T4_REQUIRE_BROWSER=1 node tests/target/t4-browser.integration.test.mjs"
-    ,"test:session:unit": "node --import tsx --test tests/target/t4-session.test.ts tests/target/t4-access-token.test.ts tests/target/t4-auth-cookie.test.ts"
-    ,"test:session": "npm run test:session:unit && npm run test:session:live"
-    ,"test:session:live": "T4_REQUIRE_LIVE=1 node --import tsx --test tests/target/t4-session.integration.test.ts"
-    ,"test:authority": "npm run test:conformance:authority"
-    ,"test:tenant-isolation": "node scripts/t4-gate.mjs tenant-isolation"
-    ,"test:security:asvs:l3": "node scripts/t4-gate.mjs asvs-l3"
-    ,"test:public-tools:anonymous": "node scripts/t4-gate.mjs public-tools-anonymous"
-    ,"test:public-tools:authenticated": "node scripts/t4-gate.mjs public-tools-authenticated"
-    ,"test:public-tools:limits": "node scripts/t4-gate.mjs public-tools-limits"
-    ,"test:security-telemetry": "node --import tsx --test tests/target/t4-four-point.test.ts && npm run test:target:integration"
-    ,"test:architecture:target": "node --import tsx scripts/t4-target-architecture.ts && node --import tsx --test tests/architecture/t4TargetArchitecture.test.ts"
+    "test:architecture:target-ui": "node --import tsx scripts/target-ui-guardrails.ts",
+    "db:pg:start": "node scripts/pg-dev.mjs start",
+    "db:pg:status": "node scripts/pg-dev.mjs status",
+    "db:pg:stop": "node scripts/pg-dev.mjs stop",
+    "db:pg:migrate": "node --import tsx packages/persistence/src/migrate.ts",
+    "db:pg:ready": "node --import tsx packages/persistence/src/ready.ts",
+    "test:db:conformance": "node --import tsx tests/db/conformance.ts",
+    "test:db:integration": "node --import tsx tests/db/integration.ts",
+    "check:persistence": "tsc --noEmit -p tsconfig.persistence.json",
+    "config:validate": "node --import tsx packages/configuration/src/cli.ts validate",
+    "config:print-effective": "node --import tsx packages/configuration/src/cli.ts print-effective",
+    "config:fingerprint": "node --import tsx packages/configuration/src/cli.ts fingerprint",
+    "test:configuration": "node --import tsx --test tests/configuration/configuration.test.ts",
+    "test:ai-router": "node --import tsx --test tests/ai-router/router.test.ts",
+    "db:target:migrate": "node --import tsx packages/persistence/src/target-migrate.ts",
+    "migrate:public-tools:mysql-to-pg": "node --import tsx modules/translator/src/persistence/migrate.ts",
+    "db:target:dev:bootstrap": "node --import tsx packages/persistence/src/bootstrap-target-dev.ts",
+    "dev:target:api": "node --import tsx apps/api/src/index.ts",
+    "dev:target:worker": "node --import tsx apps/worker/src/index.ts",
+    "check:target": "tsc --noEmit -p tsconfig.target.json",
+    "test:t5": "node scripts/t5-acceptance.mjs",
+    "test:t5:audit-siem": "node scripts/t5-audit-siem.mjs",
+    "migrate:rag:plan": "node --import tsx scripts/t5-legacy-migration-plan.ts",
+    "release:customers": "node --import tsx scripts/customer-release.mjs",
+    "test:target:integration": "node --import tsx --test tests/target/runtime.integration.test.ts",
+    "test:customer:web": "node tests/target/customer-web.smoke.mjs",
+    "test:auth:unit": "node --import tsx --test tests/target/t4-password.test.ts tests/target/t4-password-policy.test.ts tests/target/t4-auth-service.test.ts tests/target/t4-web-auth-proxy.test.ts",
+    "test:auth:live": "T4_REQUIRE_LIVE=1 node --import tsx tests/target/t4-auth-http.integration.test.ts",
+    "test:auth": "npm run test:auth:unit && npm run test:auth:live",
+    "test:browser:t4": "T4_REQUIRE_BROWSER=1 node tests/target/t4-browser.integration.test.mjs",
+    "test:session:unit": "node --import tsx --test tests/target/t4-session.test.ts tests/target/t4-access-token.test.ts tests/target/t4-auth-cookie.test.ts",
+    "test:session": "npm run test:session:unit && npm run test:session:live",
+    "test:session:live": "T4_REQUIRE_LIVE=1 node --import tsx --test tests/target/t4-session.integration.test.ts",
+    "test:authority": "npm run test:conformance:authority",
+    "test:tenant-isolation": "node scripts/t4-gate.mjs tenant-isolation",
+    "test:security:asvs:l3": "node scripts/t4-gate.mjs asvs-l3",
+    "test:public-tools:anonymous": "node scripts/t4-gate.mjs public-tools-anonymous",
+    "test:public-tools:authenticated": "node scripts/t4-gate.mjs public-tools-authenticated",
+    "test:public-tools:limits": "node scripts/t4-gate.mjs public-tools-limits",
+    "test:security-telemetry": "node --import tsx --test tests/target/t4-four-point.test.ts && npm run test:target:integration",
+    "test:architecture:target": "node --import tsx scripts/t4-target-architecture.ts && node --import tsx --test tests/architecture/t4TargetArchitecture.test.ts",
+    "test:authority:live": "T4_REQUIRE_LIVE=1 node --import tsx --test tests/target/t44-authority-live.integration.test.ts",
+    "test:authority:object": "npm run test:authority:live",
+    "test:authority:field": "npm run test:authority:live",
+    "test:authority:classification": "npm run test:authority:live",
+    "test:authority:audit": "npm run test:authority:live",
+    "test:authority:subject-propagation": "npm run test:authority:live",
+    "test:audit:security": "npm run test:authority:live",
+    "test:file-security": "node --import tsx --test tests/target/t4-file-security.test.ts",
+    "test:security:static-headers": "npm run build:web && node --test tests/target/t44-static-headers.integration.test.mjs",
+    "test:security:release-policy": "node --test tests/target/t44-release-policy.test.mjs",
+    "test:security:rag-gate-policy": "node --test tests/target/t44-rag-gate-policy.test.mjs",
+    "security:classify-asvs": "node scripts/classify-rag-asvs.mjs",
+    "security:rag-gate": "node scripts/rag-security-gate.mjs",
+    "test:t5:oci": "node --import tsx scripts/t5-oci-acceptance.ts",
+    "test:t5:live-models": "node --import tsx scripts/t5-live-model-acceptance.ts",
+    "security:t5:assessment": "node scripts/t5-security-assessment.mjs",
+    "security:t5:completion": "node scripts/t5-completion-gate.mjs",
+    "security:t5:protected": "node scripts/t5-protected-paths.mjs"
   },
   "keywords": [
     "LLM",
@@ -136,6 +157,7 @@
     "yargs": "^17.7.2"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "3.1146.0",
     "@napi-rs/canvas": "^0.1.94",
     "@qdrant/js-client-rest": "^1.16.2",
     "arabic-persian-reshaper": "^1.0.1",
@@ -152,7 +174,7 @@
     "morgan": "^1.10.1",
     "ms": "^2.1.3",
     "mssql": "^12.2.0",
-    "multer": "^2.0.2",
+    "multer": "2.4.0",
     "mysql": "^2.18.1",
     "mysql2": "^3.16.1",
     "openid-client": "^6.8.1",
@@ -172,24 +194,31 @@
     "packages/ui-core",
     "packages/calendar-core",
     "packages/calendar-svelte",
-    "packages/persistence"
-    ,"packages/configuration"
-    ,"packages/ai-router"
-    ,"packages/audit"
-    ,"packages/usage"
-    ,"packages/admission-control"
-    ,"packages/observability"
-    ,"packages/security-telemetry"
-    ,"packages/file-processing"
-    ,"packages/platform"
-    ,"packages/authority"
-    ,"packages/session"
-    ,"packages/authentication"
-    ,"modules/translator"
-    ,"modules/summarizer"
-    ,"modules/faq"
-    ,"apps/api"
-    ,"apps/worker"
+    "packages/persistence",
+    "packages/configuration",
+    "packages/ai-router",
+    "packages/audit",
+    "packages/usage",
+    "packages/admission-control",
+    "packages/observability",
+    "packages/security-telemetry",
+    "packages/file-processing",
+    "packages/platform",
+    "packages/authority",
+    "packages/session",
+    "packages/authentication",
+    "packages/documents",
+    "packages/storage",
+    "packages/jobs",
+    "packages/file-management",
+    "packages/knowledge",
+    "packages/data-governance",
+    "packages/identity",
+    "modules/translator",
+    "modules/summarizer",
+    "modules/faq",
+    "apps/api",
+    "apps/worker"
   ],
   "overrides": {
     "devalue": "5.9.3",

@@ -1,0 +1,208 @@
+TAP version 13
+# Subtest: catalog IDs are unique and have a detection mechanism
+ok 1 - catalog IDs are unique and have a detection mechanism
+  ---
+  duration_ms: 0.44111
+  type: 'test'
+  ...
+# Subtest: dependency and persistence boundaries use imports and calls
+ok 2 - dependency and persistence boundaries use imports and calls
+  ---
+  duration_ms: 6.510739
+  type: 'test'
+  ...
+# Subtest: TypeScript naming and safety checks inspect AST nodes
+ok 3 - TypeScript naming and safety checks inspect AST nodes
+  ---
+  duration_ms: 1.609336
+  type: 'test'
+  ...
+# Subtest: Authority and provider boundaries inspect executable code
+ok 4 - Authority and provider boundaries inspect executable code
+  ---
+  duration_ms: 1.060118
+  type: 'test'
+  ...
+# Subtest: pure Authority evaluator is restricted to Authority internals and tests
+ok 5 - pure Authority evaluator is restricted to Authority internals and tests
+  ---
+  duration_ms: 0.935872
+  type: 'test'
+  ...
+# Subtest: SQL rules distinguish SELECT star from COUNT star
+ok 6 - SQL rules distinguish SELECT star from COUNT star
+  ---
+  duration_ms: 0.420897
+  type: 'test'
+  ...
+# Subtest: SQL qualification recognizes declared CTEs and row constructors without hiding unqualified base tables
+ok 7 - SQL qualification recognizes declared CTEs and row constructors without hiding unqualified base tables
+  ---
+  duration_ms: 0.134366
+  type: 'test'
+  ...
+# Subtest: SQL naming checks cover tables, columns, FKs, objects, parameters, locals
+ok 8 - SQL naming checks cover tables, columns, FKs, objects, parameters, locals
+  ---
+  duration_ms: 0.404169
+  type: 'test'
+  ...
+# Subtest: violations sort deterministically
+ok 9 - violations sort deterministically
+  ---
+  duration_ms: 3.790833
+  type: 'test'
+  ...
+# Subtest: typed manifest AST checks all canonical global IDs and route collisions
+ok 10 - typed manifest AST checks all canonical global IDs and route collisions
+  ---
+  duration_ms: 1.582613
+  type: 'test'
+  ...
+# Subtest: persistence boundary distinguishes composition wiring and external source adapters
+ok 11 - persistence boundary distinguishes composition wiring and external source adapters
+  ---
+  duration_ms: 2.122463
+  type: 'test'
+  ...
+# Subtest: SQL qualification inspects SQL contexts and ignores keywords, prose, and referential actions
+ok 12 - SQL qualification inspects SQL contexts and ignores keywords, prose, and referential actions
+  ---
+  duration_ms: 0.438857
+  type: 'test'
+  ...
+# Subtest: AI output guard ignores run metadata but catches direct model text writes
+ok 13 - AI output guard ignores run metadata but catches direct model text writes
+  ---
+  duration_ms: 0.381536
+  type: 'test'
+  ...
+# Subtest: naming accepts exact prefixes and recognizes transitive exceptions
+ok 14 - naming accepts exact prefixes and recognizes transitive exceptions
+  ---
+  duration_ms: 0.372047
+  type: 'test'
+  ...
+# Subtest: Authority and AI checks distinguish facts and owner boundaries
+ok 15 - Authority and AI checks distinguish facts and owner boundaries
+  ---
+  duration_ms: 0.670228
+  type: 'test'
+  ...
+# Subtest: magic decisions and constants target stable declarations
+ok 16 - magic decisions and constants target stable declarations
+  ---
+  duration_ms: 0.863859
+  type: 'test'
+  ...
+# Subtest: canonical typed manifest alone supplies contribution IDs and routes have module scope
+ok 17 - canonical typed manifest alone supplies contribution IDs and routes have module scope
+  ---
+  duration_ms: 1.628879
+  type: 'test'
+  ...
+# Subtest: T5 guards reject S3 and filesystem bypasses while accepting owning infrastructure
+ok 18 - T5 guards reject S3 and filesystem bypasses while accepting owning infrastructure
+  ---
+  duration_ms: 4.300632
+  type: 'test'
+  ...
+# Subtest: T5 guards reject direct vectors/providers/signed URLs and retain public File Management and Router contracts
+ok 19 - T5 guards reject direct vectors/providers/signed URLs and retain public File Management and Router contracts
+  ---
+  duration_ms: 0.881356
+  type: 'test'
+  ...
+# Subtest: managed transfer configuration selects one adapter with external credentials and strict bounds
+ok 20 - managed transfer configuration selects one adapter with external credentials and strict bounds
+  ---
+  duration_ms: 1.199471
+  type: 'test'
+  ...
+# Subtest: identity tiers cannot exceed hard platform limits or lower the privileged tier
+ok 21 - identity tiers cannot exceed hard platform limits or lower the privileged tier
+  ---
+  duration_ms: 0.388533
+  type: 'test'
+  ...
+# Subtest: display filename preserves Persian basename and removes dangerous metadata
+ok 22 - display filename preserves Persian basename and removes dangerous metadata
+  ---
+  duration_ms: 0.734103
+  type: 'test'
+  ...
+# Subtest: office precheck rejects malicious archives before LibreOffice
+ok 23 - office precheck rejects malicious archives before LibreOffice
+  ---
+  duration_ms: 12.472347
+  type: 'test'
+  ...
+# Subtest: upload media type, extension, signature, and temporary path agree
+ok 24 - upload media type, extension, signature, and temporary path agree
+  ---
+  duration_ms: 5.335044
+  type: 'test'
+  ...
+# Subtest: office parser cleans its conversion directory and profile after processing
+ok 25 - office parser cleans its conversion directory and profile after processing
+  ---
+  duration_ms: 2071.109784
+  type: 'test'
+  ...
+# Subtest: maximal overlap and surrogate-pair boundaries always advance and reproduce canonical spans
+ok 26 - maximal overlap and surrogate-pair boundaries always advance and reproduce canonical spans
+  ---
+  duration_ms: 1.544013
+  type: 'test'
+  ...
+# Subtest: unsafe overlap expansion is bounded before allocating unbounded chunk metadata
+ok 27 - unsafe overlap expansion is bounded before allocating unbounded chunk metadata
+  ---
+  duration_ms: 19.892279
+  type: 'test'
+  ...
+# Subtest: range boundaries reject multiple, malformed and unsafe ranges
+ok 28 - range boundaries reject multiple, malformed and unsafe ranges
+  ---
+  duration_ms: 0.837935
+  type: 'test'
+  ...
+# Subtest: private bounded cache is version/tenant aware, rebuildable and verifies full bytes before ranges
+ok 29 - private bounded cache is version/tenant aware, rebuildable and verifies full bytes before ranges
+  ---
+  duration_ms: 23.969421
+  type: 'test'
+  ...
+# Subtest: cache excludes concurrent fills and kernel releases its lock when the holder crashes
+ok 30 - cache excludes concurrent fills and kernel releases its lock when the holder crashes
+  ---
+  duration_ms: 117.704213
+  type: 'test'
+  ...
+# Subtest: noncanonical staging streams bounded verified bytes, cleans failure and never exposes partial content
+ok 31 - noncanonical staging streams bounded verified bytes, cleans failure and never exposes partial content
+  ---
+  duration_ms: 13.394282
+  type: 'test'
+  ...
+# Subtest: last-resort handler redacts exception payload and drains before supervisor replacement
+ok 32 - last-resort handler redacts exception payload and drains before supervisor replacement
+  ---
+  duration_ms: 171.664666
+  type: 'test'
+  ...
+# Subtest: local multipart contract is immutable, resumable, bounded by opaque identity, and hash verified
+ok 33 - local multipart contract is immutable, resumable, bounded by opaque identity, and hash verified
+  ---
+  duration_ms: 9.373386
+  type: 'test'
+  ...
+1..33
+# tests 33
+# suites 0
+# pass 33
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 4623.04508

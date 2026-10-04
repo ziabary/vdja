@@ -2,13 +2,16 @@ import { readFileSync, readdirSync, writeFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { analyzeRepository } from '../tests/architecture/support/staticAnalysis.js';
 
-const TARGET_PREFIXES = [
-  'apps/api/src/', 'apps/worker/src/',
+export const TARGET_PREFIXES = [
+  'apps/api/src/', 'apps/worker/src/', 'apps/runtime/src/',
   'modules/translator/src/', 'modules/summarizer/src/', 'modules/faq/src/',
   'packages/authority/src/', 'packages/authentication/src/', 'packages/session/src/',
   'packages/ai-router/src/', 'packages/security-telemetry/src/', 'packages/platform/src/',
   'packages/configuration/src/', 'packages/admission-control/src/', 'packages/usage/src/',
   'packages/audit/src/', 'packages/file-processing/src/', 'packages/observability/src/',
+  'packages/documents/src/', 'packages/storage/src/', 'packages/jobs/src/', 'packages/file-management/src/',
+  'packages/knowledge/src/', 'packages/data-governance/src/',
+  'packages/identity/src/',
   'packages/persistence/src/target', 'packages/contracts/src/'
 ];
 export interface intfTargetFinding { readonly ruleId: string; readonly file: string; readonly message: string }

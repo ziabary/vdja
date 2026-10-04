@@ -6,6 +6,7 @@ import multer from 'multer';
 import { loadConfiguration, type intfAdmissionPolicy, type intfConfigurationSnapshot, type typModuleId } from '../../../packages/configuration/src/index.js';
 import type { intfExecutionContext } from '../../../packages/contracts/src/index.js';
 import { probeSiemReadiness } from '../../../packages/security-telemetry/src/worker.js';
+import { parseCspReport } from '../../../packages/security-telemetry/src/csp-report.js';
 import { exAiRouter } from '../../../packages/ai-router/src/index.js';
 import { exAdmission } from '../../../packages/admission-control/src/index.js';
 import { exFileProcessing } from '../../../packages/file-processing/src/index.js';
@@ -14,6 +15,7 @@ import type { intfFaqOptions } from '../../../modules/faq/src/service.js';
 import { inspectRefreshCookie, refreshSetCookie, refreshClearCookie } from '../../../packages/session/src/cookie.js';
 import { createPublicApiRuntime } from './composition.js';
 import { enuAuthorityDecision } from '../../../packages/authority/src/index.js';
+import { registerKnowledgeApi } from './knowledge.js';
 
 function arg(name: string, fallback: string): string { const at = process.argv.indexOf(name); return at < 0 ? fallback : process.argv[at + 1] ?? fallback; }
 function record(value: unknown): Record<string, unknown> { if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('INVALID_BODY'); return value as Record<string, unknown>; }
@@ -46,11 +48,13 @@ async function context(snapshot: intfConfigurationSnapshot, runtime: Awaited<Ret
         'tenant.mismatch', 'DENIED', 'TOKEN_TENANT_MISMATCH_OR_INVALID');
       throw error;
     }
-    const result = await runtime.authority.authorizePublicTool(claims.identityId, claims.tenantId,
+    const authorityContext: intfExecutionContext = { ...securityContext(snapshot, req, moduleId, 'HUMAN',
+      claims.identityId, claims.sessionId, claims.tenantId), requestId: id, correlationId,
+      authorizationVersion: claims.authorizationVersion, source: 'PUBLIC_API' };
+    const result = await runtime.authority.authorizePublicTool(authorityContext,
       moduleId as 'translator' | 'summarizer' | 'faq');
     if (result.decision !== enuAuthorityDecision.Permit) {
-      await runtime.securityAudit.record(securityContext(snapshot, req, moduleId, 'HUMAN', claims.identityId,
-        claims.sessionId, claims.tenantId), 'authority.denied', 'DENIED', result.reason);
+      await runtime.securityAudit.record(authorityContext, 'authority.denied', 'DENIED', result.reason);
       throw new Error('AUTHORITY_DENIED');
     }
     if (!snapshot.value.auth?.enabled || !result.limitTier) throw new Error('AUTHORITY_DENIED');
@@ -68,6 +72,7 @@ function enabled(snapshot: intfConfigurationSnapshot, module: typModuleId): void
 function sse(res: Response): void { if (res.headersSent) return; res.status(200).setHeader('Content-Type', 'text/event-stream; charset=utf-8'); res.setHeader('Cache-Control', 'no-cache, no-transform'); res.setHeader('X-Accel-Buffering', 'no'); res.flushHeaders(); }
 async function writeSse(res: Response, payload: string): Promise<void> { sse(res); if (!res.write(payload)) await new Promise<void>(resolve => res.once('drain', resolve)); }
 function safeError(error: unknown): { status: number; code: string } {
+  if (error instanceof Error && 'type' in error && error.type === 'entity.too.large') return { status: 413, code: 'INPUT_LIMIT_EXCEEDED' };
   if (error instanceof Error && error.message === 'INVALID_ACCESS_TOKEN') return { status: 401, code: 'INVALID_SESSION' };
   if (error instanceof Error && error.message === 'AUTHORITY_DENIED') return { status: 403, code: 'AUTHORITY_DENIED' };
   if (error instanceof exAdmission) return { status: error.code === 'INPUT_LIMIT_EXCEEDED' || error.code === 'OUTPUT_LIMIT_EXCEEDED' ? 413 : 429, code: error.code };
@@ -83,7 +88,7 @@ function signalFor(req: Request, res: Response): AbortSignal { const controller 
 function moduleRoute(app: express.Express, path: string, action: (req: Request, res: Response) => Promise<void>): void { app.post(`/api${path}`, async (req, res, next) => { try { await action(req, res); } catch (error) { next(error); } }); }
 function authOrigin(snapshot: intfConfigurationSnapshot, req: Request, res: Response): boolean {
   const origin = req.header('origin');
-  if (origin && snapshot.value.http.allowedOrigins.includes(origin)) return true;
+  if (origin && snapshot.value.auth?.enabled && snapshot.value.auth.allowedApplicationOrigins.includes(origin)) return true;
   res.status(403).json({ error: 'ORIGIN_DENIED' }); return false;
 }
 const AUTH_POST_PATH = /^\/api\/auth\/(?:login|refresh|logout)$/;
@@ -101,9 +106,21 @@ export async function createPublicApi(snapshot: intfConfigurationSnapshot, secre
     res.setHeader('Referrer-Policy', 'no-referrer');
     res.setHeader('Vary', 'Origin');
     const origin = req.header('origin');
-    if (origin && !snapshot.value.http.allowedOrigins.includes(origin)) { res.status(403).json({ error: 'ORIGIN_DENIED' }); return; }
-    const authPath = snapshot.value.auth?.enabled && AUTH_POST_PATH.test(req.path);
-    if (req.method === 'OPTIONS' && authPath) {
+    const authEnabled = snapshot.value.auth?.enabled === true;
+    const authHost = authEnabled ? new URL(snapshot.value.auth.publicOrigin).host : null;
+    const appHost = authEnabled && snapshot.value.web ? new URL(snapshot.value.web.publicOrigin).host : null;
+    const requestHost = req.header('host')?.toLowerCase();
+    const operationalPath = ['/', '/health', '/ready', '/version'].includes(req.path);
+    if (authEnabled && !operationalPath) {
+      if (requestHost !== authHost && requestHost !== appHost) { res.status(421).json({ error: 'HOST_DENIED' }); return; }
+      if (requestHost === authHost && !req.path.startsWith('/api/auth/')) { res.status(404).json({ error: 'NOT_FOUND' }); return; }
+      if (requestHost === appHost && req.path.startsWith('/api/auth/')) { res.status(404).json({ error: 'NOT_FOUND' }); return; }
+    }
+    const authPath = authEnabled && req.path.startsWith('/api/auth/');
+    const allowedOrigins = authPath && snapshot.value.auth?.enabled
+      ? snapshot.value.auth.allowedApplicationOrigins : snapshot.value.http.allowedOrigins;
+    if (origin && !allowedOrigins.includes(origin)) { res.status(403).json({ error: 'ORIGIN_DENIED' }); return; }
+    if (req.method === 'OPTIONS' && AUTH_POST_PATH.test(req.path) && authPath) {
       if (!origin || req.header('access-control-request-method') !== 'POST'
         || !allowedPreflightHeaders(req.header('access-control-request-headers'))) {
         res.status(403).json({ error: 'ORIGIN_DENIED' }); return;
@@ -121,18 +138,33 @@ export async function createPublicApi(snapshot: intfConfigurationSnapshot, secre
     }
     next();
   });
-  app.use(express.json({ limit: snapshot.value.http.maxJsonBytes }));
   const upload = multer({ dest: tmpdir(), limits: { fileSize: snapshot.value.fileProcessing.maxUploadBytes } });
-  app.use((req, res, next) => { const started = Date.now(); const log = () => logOperational({ severity: res.statusCode >= 500 ? 'ERROR' : 'INFO', component: 'target-api', event: 'request_completed', context: res.locals.publicContext as intfExecutionContext | undefined, status: String(res.statusCode), durationMs: Date.now() - started, method: req.method, route: req.route?.path ?? req.path }); res.once('finish', log); next(); });
+  app.use((req, res, next) => { const started = Date.now(); const log = () => logOperational({ severity: res.statusCode >= 500 ? 'ERROR' : 'INFO', component: 'target-api', event: 'request_completed', context: res.locals.publicContext as intfExecutionContext | undefined, status: String(res.statusCode), durationMs: Date.now() - started, method: req.method, route: req.route?.path ?? "UNMATCHED" }); res.once('finish', log); next(); });
   app.get('/health', (_req, res) => res.json({ status: 'ALIVE' }));
   app.get('/', (_req, res) => res.json({ status: 'ALIVE' }));
   app.get('/ready', async (_req, res) => { try {
     await runtime.databaseReady();
-    const [ai, siem] = await Promise.all([runtime.router.probeReadiness(), probeSiemReadiness(runtime.store.active().value.siem)]);
-    const status = ai.status === 'NOT_READY' ? 'NOT_READY' : ai.status === 'DEGRADED' || siem === 'DEGRADED' ? 'DEGRADED' : 'READY';
-    res.status(status === 'NOT_READY' ? 503 : 200).json({ status, dependencies: { postgres: 'READY', ai: ai.status, siem }, unavailableTasks: ai.unavailableTasks, fingerprint: runtime.store.active().fingerprint });
+    const [ai, siem, managed] = await Promise.all([runtime.router.probeReadiness(), probeSiemReadiness(runtime.store.active().value.siem),runtime.managed?.readiness()]);
+    const status = ai.status === 'NOT_READY' ? 'NOT_READY' : ai.status === 'DEGRADED' || siem === 'DEGRADED' || managed?.files==='UNAVAILABLE' || managed?.knowledge==='UNAVAILABLE'||managed?.protectedAi==='UNAVAILABLE' ? 'DEGRADED' : 'READY';
+    res.status(status === 'NOT_READY' ? 503 : 200).json({ status, dependencies: { postgres: 'READY', ai: ai.status, siem,files:managed?.files??'DISABLED',knowledge:managed?.knowledge??'DISABLED',protectedAi:managed?.protectedAi??'DISABLED' }, unavailableTasks: [...ai.unavailableTasks,...managed?.unavailableTasks??[]], fingerprint: runtime.store.active().fingerprint });
   } catch { res.status(503).json({ status: 'NOT_READY', dependencies: { postgres: 'UNAVAILABLE' } }); } });
   app.get('/version', (_req, res) => res.json({ configVersion: snapshot.value.configVersion, releaseId: snapshot.value.deployment.releaseId, fingerprint: snapshot.fingerprint }));
+  app.post('/api/security/csp-report', express.raw({ limit: snapshot.value.security.cspReporting.maxBodyBytes,
+    type: ['application/csp-report', 'application/reports+json'] }), async (req, res) => {
+    if (!snapshot.value.security.cspReporting.enabled) { res.status(404).end(); return; }
+    if (!Buffer.isBuffer(req.body)) { res.status(415).end(); return; }
+    try {
+      const report = parseCspReport(req.body, req.header('content-type'), snapshot.value.security.cspReporting.maxBodyBytes);
+      await runtime.recordCspReport(securityContext(snapshot, req, 'security-csp-report'), report, req.body.length);
+      res.status(204).end();
+    } catch (error) {
+      if (error instanceof exAdmission) { res.status(429).end(); return; }
+      if (error instanceof Error && error.message === 'INVALID_CSP_REPORT') { res.status(400).end(); return; }
+      res.status(503).end();
+    }
+  });
+  app.use(express.json({ limit: snapshot.value.http.maxJsonBytes }));
+  registerKnowledgeApi(app,snapshot,runtime);
 
   if (runtime.authentication) {
     const authentication = runtime.authentication;
@@ -248,6 +280,9 @@ export async function createPublicApi(snapshot: intfConfigurationSnapshot, secre
   });
   app.use((error: unknown, req: Request, res: Response, _next: express.NextFunction) => {
     const safe = safeError(error);
+    logOperational({severity:safe.status>=500?'ERROR':'WARN',component:'target-api',event:'request_failed',
+      context:res.locals.publicContext as intfExecutionContext|undefined,status:String(safe.status),errorClass:safe.code,
+      method:req.method,route:req.route?.path??'UNMATCHED'});
     if (res.headersSent) {
       if (req.path.includes('/faq')) res.write(`event: error\ndata: ${JSON.stringify({ message: safe.code })}\n\n`);
       else if (safe.code === 'CANCELLED') {
@@ -262,9 +297,18 @@ export async function createPublicApi(snapshot: intfConfigurationSnapshot, secre
 }
 
 if (process.argv[1]?.endsWith('/apps/api/src/index.ts')) {
+  const {installProcessErrorHandlers}=await import('../../../packages/observability/src/process-errors.js');
+  let drain=async()=>{};
+  installProcessErrorHandlers('target-api',()=>drain());
   const snapshot = await loadConfiguration(arg('--config', '/etc/targoman/platform.cjson'));
   const { app, close } = await createPublicApi(snapshot, arg('--secrets-dir', '/run/secrets'));
   const server = app.listen(snapshot.value.http.apiPort, snapshot.value.http.listenHost, () => logOperational({ severity: 'INFO', component: 'target-api', event: 'listening', status: 'READY' }));
-  const shutdown = () => { server.close(() => { void close(); }); };
+  let draining:Promise<void>|undefined;
+  drain=()=>draining??=new Promise<void>((resolve,reject)=>{
+    const timer=setTimeout(()=>server.closeAllConnections(),30000);timer.unref();
+    server.close(error=>{clearTimeout(timer);void close().then(()=>error?reject(error):resolve(),reject);});
+    server.closeIdleConnections();
+  });
+  const shutdown = () => { void drain().catch(()=>{logOperational({severity:'ERROR',component:'target-api',event:'shutdown_failed',errorClass:'DRAIN_FAILED'});process.exitCode=1;}); };
   process.once('SIGTERM', shutdown); process.once('SIGINT', shutdown);
 }

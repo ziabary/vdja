@@ -9,21 +9,36 @@ if (gate === 'asvs-l3') {
   for (const control of assessment.controls) {
     if (ids.has(control.id) || !/^v5\.0\.0-V\d+\.\d+\.\d+$/.test(control.id)) throw new Error('ASVS_DUPLICATE_OR_INVALID_ID');
     ids.add(control.id);
+    if (!control.descriptionEn?.trim() || !control.descriptionFa?.trim())
+      throw new Error(`ASVS_DESCRIPTION_MISSING: ${control.id}`);
     if (!['PASS', 'FAIL', 'NOT_APPLICABLE', 'NOT_VERIFIED'].includes(control.postT4)) throw new Error(`ASVS_INVALID_STATUS: ${control.id}`);
     if (control.postT4 === 'PASS' && (!control.evidence?.length || !control.sourceOrTestPaths?.length))
       throw new Error(`ASVS_PASS_WITHOUT_EVIDENCE: ${control.id}`);
     if (control.postT4 === 'FAIL' && (!control.evidence?.length || !control.sourceOrTestPaths?.length))
       throw new Error(`ASVS_FAIL_WITHOUT_EVIDENCE: ${control.id}`);
-    if (control.postT4 === 'NOT_APPLICABLE' && !control.notApplicableReason?.trim())
+    if (control.postT4 === 'NOT_APPLICABLE' && (!control.notApplicableReason?.trim() || !control.sourceOrTestPaths?.length))
       throw new Error(`ASVS_NA_WITHOUT_REASON: ${control.id}`);
+    if (control.postT4 === 'NOT_VERIFIED' && (!control.missingEvidence?.trim() || !control.sourceOrTestPaths?.length))
+      throw new Error(`ASVS_UNVERIFIED_WITHOUT_GAP: ${control.id}`);
   }
   const counts = { total: assessment.controls.length,
     postPass: assessment.controls.filter(control => control.postT4 === 'PASS').length,
     fail: assessment.controls.filter(control => control.postT4 === 'FAIL').length,
     notVerified: assessment.controls.filter(control => control.postT4 === 'NOT_VERIFIED').length,
+    notApplicable: assessment.controls.filter(control => control.postT4 === 'NOT_APPLICABLE').length,
+    applicable: assessment.controls.filter(control => control.postT4 !== 'NOT_APPLICABLE').length,
     blocking: assessment.controls.filter(control => control.postT4 !== 'PASS' && control.postT4 !== 'NOT_APPLICABLE').length };
   for (const [key, value] of Object.entries(counts)) if (assessment.counts[key] !== value) throw new Error(`ASVS_STALE_COUNT: ${key}`);
-  const open = assessment.controls.filter(control => control.postT4 !== 'PASS' && !(control.postT4 === 'NOT_APPLICABLE' && control.notApplicableReason));
+  for(const control of assessment.controls)if(control.postT5!==undefined){
+    if(!['PASS','FAIL','NOT_APPLICABLE','NOT_VERIFIED'].includes(control.postT5)||!control.t5Verification?.observed||!control.t5Verification?.evidencePaths?.length)
+      throw new Error(`ASVS_T5_EVIDENCE_INCOMPLETE:${control.id}`);
+  }
+  if(assessment.postT5Counts)for(const status of ['PASS','FAIL','NOT_APPLICABLE','NOT_VERIFIED'])
+    if(assessment.postT5Counts[status]!==assessment.controls.filter(control=>(control.postT5??control.postT4)===status).length)throw new Error(`ASVS_T5_STALE_COUNT:${status}`);
+  const open = assessment.controls.filter(control => {
+    const status=control.postT5??control.postT4;
+    return status!=='PASS'&&!(status==='NOT_APPLICABLE'&&(control.t5Verification?.observed||control.notApplicableReason));
+  });
   if (open.length) throw new Error(`ASVS_L3_GATE_OPEN: ${open.length} requirements are not verified as PASS or justified N/A`);
   console.log('ASVS 5.0.0 Level 3 gate PASS');
 } else if (['tenant-isolation', 'public-tools-anonymous', 'public-tools-authenticated', 'public-tools-limits'].includes(gate)) {

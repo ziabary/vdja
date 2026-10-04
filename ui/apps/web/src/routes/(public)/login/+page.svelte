@@ -23,7 +23,7 @@
 </script>
 
 <svelte:head><title>{locale.locale === 'fa' ? 'ورود' : 'Sign in'} · {data.brandName}</title></svelte:head>
-<section class="card mx-auto my-5 p-4" style="max-width: 28rem" aria-label={locale.locale === 'fa' ? 'ورود به حساب' : 'Sign in'}>
+<section class="card mx-auto my-5 p-4 login-card" aria-label={locale.locale === 'fa' ? 'ورود به حساب' : 'Sign in'}>
   <h2 class="h4 mb-4">{locale.locale === 'fa' ? 'ورود به حساب' : 'Sign in'}</h2>
   {#if auth.state.tenantId}
     <p role="status">{locale.locale === 'fa' ? 'نشست فعال برای مستأجر' : 'Active session for tenant'} <b>{auth.state.tenantId}</b></p>
@@ -34,7 +34,8 @@
       <div class="mb-3"><label class="form-label" for="login-password">{locale.locale === 'fa' ? 'گذرواژه' : 'Password'}</label><input id="login-password" name="password" type="password" class="form-control" bind:value={password} autocomplete="current-password" required disabled={busy} /></div>
       {#if tenantOptions.length > 1}<Select id="login-tenant" label={locale.locale === 'fa' ? 'مستأجر' : 'Tenant'} value={tenantId} onChange={value => tenantId = value} options={tenantOptions.map(value => ({ value, label: value }))} required disabled={busy} />{/if}
       {#if failed}<p role="alert" class="alert alert-danger">{locale.locale === 'fa' ? 'ورود انجام نشد. اطلاعات را بررسی کنید.' : 'Sign in failed. Check your details.'}</p>{/if}
-      <button class="btn btn-primary w-100" type="submit" disabled={busy}>{locale.locale === 'fa' ? 'ورود' : 'Sign in'}</button>
+      <button class="btn btn-primary w-100" type="submit" disabled={busy||auth.state.restoring}>{locale.locale === 'fa' ? 'ورود' : 'Sign in'}</button>
     </form>
   {/if}
 </section>
+<style>.login-card{max-width:28rem}</style>

@@ -3834,3 +3834,18 @@ Customer customization normally requires configuration, not source forks.
 The default deployment question is:
 
 > **What must remain available, what state is authoritative, which failures can this topology tolerate, how is overload bounded, how is every critical state backed up and restored, what exact artifact/configuration is running, and which test proves the claimed availability and recovery behavior?**
+
+## T4 release Web headers and assurance profile
+
+The release Web process sets the baseline CSP, content-type, referrer, opener,
+and resource policy headers before the SvelteKit adapter handles requests. This
+also covers adapter-served static assets, which do not pass through SvelteKit
+hooks. SvelteKit sets the per-response nonce CSP for rendered HTML. The gateway
+owns TLS and any customer HSTS policy. A local static-header test proves the
+Web process behavior only; it does not prove customer TLS or HSTS.
+
+The effective Configuration has `security.assuranceProfile`. The
+`DEVELOPMENT_PASSWORD` profile is restricted to development/test deployments.
+Customer profiles use `CUSTOMER_L3`; customer release tooling refuses to build
+while the applicable ASVS Level 3 matrix has FAIL or NOT_VERIFIED controls.
+The RAG development gate is independent of customer release assurance.

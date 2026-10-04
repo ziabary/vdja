@@ -1,0 +1,27 @@
+
+> targoman_llm@1.0.0 test:architecture:target
+> node --import tsx scripts/t4-target-architecture.ts && node --import tsx --test tests/architecture/t4TargetArchitecture.test.ts
+
+T4 target architecture: 0 findings
+TAP version 13
+# Subtest: JWT and password detectors catch target boundary violations
+ok 1 - JWT and password detectors catch target boundary violations
+  ---
+  duration_ms: 0.566203
+  type: 'test'
+  ...
+# Subtest: Authority table and direct privilege detectors catch target boundary violations
+ok 2 - Authority table and direct privilege detectors catch target boundary violations
+  ---
+  duration_ms: 0.06967
+  type: 'test'
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 440.058122

@@ -1,5 +1,6 @@
 import { randomBytes, scrypt as nodeScrypt, timingSafeEqual } from 'node:crypto';
 import { isCommonPassword } from './common-passwords.js';
+import { assertNewPasswordAllowed, type intfPasswordPolicy } from './password-policy.js';
 export interface intfLoginMembership { readonly membershipId: string; readonly tenantId: string }
 export type typLoginResult =
   | Readonly<{ kind: 'AUTHENTICATED'; identityId: string; memberships: readonly intfLoginMembership[] }>
@@ -25,6 +26,12 @@ export async function hashPassword(password: string): Promise<string> {
   const salt = randomBytes(16);
   const key = await derive(password, salt);
   return `scrypt$${N}$${R}$${P}$${salt.toString('base64url')}$${key.toString('base64url')}`;
+}
+
+/** The only operational entry point for establishing a new human password. */
+export async function establishPassword(password: string, policy: intfPasswordPolicy): Promise<string> {
+  await assertNewPasswordAllowed(password, policy);
+  return hashPassword(password);
 }
 
 export async function verifyPassword(password: string, encoded: string): Promise<boolean> {

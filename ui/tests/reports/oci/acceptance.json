@@ -1,0 +1,82 @@
+{
+  "generatedAt": "2026-10-03T18:31:57.362Z",
+  "status": "PASS",
+  "providerScope": "PROTOCOL_FIXTURES_NOT_LIVE_VLLM",
+  "customerReleaseAuthorized": false,
+  "results": [
+    {
+      "customer": "customer-a",
+      "status": "PASS",
+      "sourceHash": "a05545c4d316b7b6ab901202417b09cbe196e163e4cd3b1fcaeced05bf4d82cf",
+      "images": {
+        "api": "sha256:adeec276168f4255d3d5913627ea01a93910e1919b0c122c3b031aa9a738096b",
+        "worker": "sha256:c017fd517f0b509cabf9473265c21165d1785a34fc26c8618e5e514dcd85b93b",
+        "web": "sha256:5d4217857959cce30fb659ddbed3860c504633c8ff6515cd20889c2fa843fff4"
+      },
+      "sbom": "tests/reports/oci/customer-a-sbom.cdx.json",
+      "vulnerabilityScan": "FAIL",
+      "scope": "LOCAL_ACCEPTANCE_CONFIG_AND_PROTOCOL_MODELS",
+      "checks": [
+        "PRIVATE_STORAGE",
+        "MODEL_DISCOVERY",
+        "API_UPLOAD",
+        "OCI_WORKER_PROCESSING",
+        "INDEXING",
+        "ROUTER_QUERY_CITATION",
+        "WEB_BRAND",
+        "NO_MYSQL_KNEX_LEGACY_RAG",
+        "GRACEFUL_DRAIN"
+      ],
+      "vulnerabilityEvidence": "reports/security/t5-supply-chain.json",
+      "vulnerabilityScope": "REPRESENTATIVE_CUSTOMER_A_API_IMAGE_AND_SHIPPED_RUNTIME_LOCK"
+    },
+    {
+      "customer": "customer-b",
+      "status": "PASS",
+      "sourceHash": "a05545c4d316b7b6ab901202417b09cbe196e163e4cd3b1fcaeced05bf4d82cf",
+      "images": {
+        "api": "sha256:02f3644440585562324431dfca266dfb7b0a9f3a59fada0ea3520fcd1ce0a0b5",
+        "worker": "sha256:6f7d8c660358a9a3e0c38af1705c1ea545cfc7f23f4ab20c22eacec6a9822d49",
+        "web": "sha256:b3bcac58dfc7baba3b5403e00fc7ea25016cab83a3e1ba1fa0c412e6c4cce29b"
+      },
+      "sbom": "tests/reports/oci/customer-b-sbom.cdx.json",
+      "vulnerabilityScan": "NOT_VERIFIED",
+      "scope": "LOCAL_ACCEPTANCE_CONFIG_AND_PROTOCOL_MODELS",
+      "checks": [
+        "PRIVATE_STORAGE",
+        "MODEL_DISCOVERY",
+        "API_UPLOAD",
+        "OCI_WORKER_PROCESSING",
+        "INDEXING",
+        "ROUTER_QUERY_CITATION",
+        "WEB_BRAND",
+        "NO_MYSQL_KNEX_LEGACY_RAG",
+        "GRACEFUL_DRAIN"
+      ]
+    },
+    {
+      "customer": "customer-c",
+      "status": "PASS",
+      "sourceHash": "a05545c4d316b7b6ab901202417b09cbe196e163e4cd3b1fcaeced05bf4d82cf",
+      "images": {
+        "api": "sha256:2355b9b44f4af98965564da3fe31122f3fa92aea4db3966ebad990ab997aa2f5",
+        "worker": "sha256:e5af8d52a753bbb9476f55895168e0327b779fc82fff843735b5888755522e68",
+        "web": "sha256:310647d06f6f39a0ccbd8619fd65ded528ab55ed9b3bf47ded56678448aae018"
+      },
+      "sbom": "tests/reports/oci/customer-c-sbom.cdx.json",
+      "vulnerabilityScan": "NOT_VERIFIED",
+      "scope": "LOCAL_ACCEPTANCE_CONFIG_AND_PROTOCOL_MODELS",
+      "checks": [
+        "PRIVATE_STORAGE",
+        "MODEL_DISCOVERY",
+        "API_UPLOAD",
+        "OCI_WORKER_PROCESSING",
+        "INDEXING",
+        "ROUTER_QUERY_CITATION",
+        "WEB_BRAND",
+        "NO_MYSQL_KNEX_LEGACY_RAG",
+        "GRACEFUL_DRAIN"
+      ]
+    }
+  ]
+}

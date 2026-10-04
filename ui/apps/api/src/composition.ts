@@ -8,13 +8,17 @@ import { createTranslatorDictionaryPersistence } from '../../../modules/translat
 import { translate } from '../../../modules/translator/src/service.js';
 import { summarize } from '../../../modules/summarizer/src/service.js';
 import { inspectFaq, generateFaq } from '../../../modules/faq/src/service.js';
-import { extractPublicText } from '../../../packages/file-processing/src/service.js';
+import { extractPublicText } from '../../../packages/file-management/src/public-service.js';
 import { clsAuthenticationService } from '../../../packages/authentication/src/service.js';
 import { createAuthenticationPersistence } from '../../../packages/authentication/src/persistence.js';
 import { loadAccessTokenKeys } from '../../../packages/session/src/access-token.js';
 import { createSessionPersistence } from '../../../packages/session/src/persistence.js';
 import { createAuthorityPersistence } from '../../../packages/authority/src/persistence.js';
+import { clsAuthorityService } from '../../../packages/authority/src/service.js';
 import { createSecurityAuditPersistence } from '../../../packages/audit/src/persistence/security.js';
+import type { intfExecutionContext } from '../../../packages/contracts/src/index.js';
+import type { intfSafeCspReport } from '../../../packages/security-telemetry/src/csp-report.js';
+import { composeDocumentKnowledge } from '../../runtime/src/composition.js';
 
 export async function createPublicApiRuntime(snapshot: intfConfigurationSnapshot, secretRoot: string) {
   const pool = await createTargetDatabaseAdapter(snapshot, 'api', secretRoot);
@@ -31,10 +35,23 @@ export async function createPublicApiRuntime(snapshot: intfConfigurationSnapshot
   },
     await loadAccessTokenKeys(authConfig, secretRoot),
     { issuer: authConfig.issuer, audience: authConfig.audience, lifetimeSeconds: authConfig.accessTokenSeconds }) : null;
-  const authority = createAuthorityPersistence(pool, snapshot.value.deployment.id);
   const securityAudit = createSecurityAuditPersistence(pool, siem);
+  const authority = new clsAuthorityService({ ...createAuthorityPersistence(pool, snapshot.value.deployment.id),
+    recordDecisions: (context, evidence) => securityAudit.recordAuthorityDecisions(context, evidence),
+    recordDecision: (context, evidence) => securityAudit.recordAuthorityDecision(context, evidence) });
+  const managed = await composeDocumentKnowledge(pool, snapshot, secretRoot);
+  const cspPolicy = snapshot.value.security.cspReporting;
+  const cspAdmission: intfAdmissionPolicy = { requestsPerMinute: cspPolicy.requestsPerMinute, concurrent: 16,
+    dailyRequests: cspPolicy.requestsPerMinute * 1440, dailyInputChars: cspPolicy.maxBodyBytes * cspPolicy.requestsPerMinute * 1440,
+    inputChars: cspPolicy.maxBodyBytes, uploadBytes: 0, outputTokens: 1, tokenBudget: 1 };
   return {
-    router, store, authentication, authority, securityAudit, databaseReady: createTargetReadinessPersistence(pool), close: () => pool.end(),
+    router, store, authentication, authority, securityAudit, managed, databaseReady: createTargetReadinessPersistence(pool),
+    close: async () => { await managed?.close(); await pool.end(); },
+    recordCspReport: async (context: intfExecutionContext, report: intfSafeCspReport, byteLength: number) => {
+      const reservation = await operation.reserve(context, cspAdmission, byteLength, 0, 0);
+      try { await securityAudit.record(context, 'security.csp_violation', 'DENIED', 'CSP_VIOLATION'); }
+      finally { await operation.release(context, reservation.id); }
+    },
     translate: (context: Parameters<typeof translate>[3], input: Parameters<typeof translate>[6], onDelta: Parameters<typeof translate>[7], policy: intfAdmissionPolicy) =>
       translate(operation, dictionary, router, context, policy, siem, input, onDelta),
     summarize: (context: Parameters<typeof summarize>[2], input: Parameters<typeof summarize>[5], onDelta: Parameters<typeof summarize>[6], policy: intfAdmissionPolicy) =>

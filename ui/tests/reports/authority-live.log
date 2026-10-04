@@ -1,0 +1,53 @@
+TAP version 13
+# Subtest: real persisted Authority resolves object, field, ACL, classification, scope, schedule, version and audited SIEM decisions
+    # Subtest: object and ACL authorization precede payload materialization
+    ok 1 - object and ACL authorization precede payload materialization
+      ---
+      duration_ms: 14.834883
+      type: 'test'
+      ...
+    # Subtest: field decisions return distinct allowed sets
+    ok 2 - field decisions return distinct allowed sets
+      ---
+      duration_ms: 17.43522
+      type: 'test'
+      ...
+    # Subtest: classification, ownership, scope, and missing facts fail closed
+    ok 3 - classification, ownership, scope, and missing facts fail closed
+      ---
+      duration_ms: 20.471013
+      type: 'test'
+      ...
+    # Subtest: mandatory decision evidence failure blocks every current Authority path
+    ok 4 - mandatory decision evidence failure blocks every current Authority path
+      ---
+      duration_ms: 7.686589
+      type: 'test'
+      ...
+    # Subtest: persisted UTC and Jalali schedules, suspension, and version invalidation
+    ok 5 - persisted UTC and Jalali schedules, suspension, and version invalidation
+      ---
+      duration_ms: 23.102214
+      type: 'test'
+      ...
+    # Subtest: HUMAN origin, mandatory Audit, SIEM retry, redaction and audit immutability
+    ok 6 - HUMAN origin, mandatory Audit, SIEM retry, redaction and audit immutability
+      ---
+      duration_ms: 129.475161
+      type: 'test'
+      ...
+    1..6
+ok 1 - real persisted Authority resolves object, field, ACL, classification, scope, schedule, version and audited SIEM decisions
+  ---
+  duration_ms: 246.372594
+  type: 'test'
+  ...
+1..1
+# tests 7
+# suites 0
+# pass 7
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 362.433561

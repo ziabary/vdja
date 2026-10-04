@@ -12,7 +12,7 @@ export const RULES: readonly intfRule[] = [
   ...['Table name','Column prefix','Foreign-key column name','Object prefix','Routine parameter prefix','Procedural local prefix'].map((title,i)=>({id:`ARCH-DB-NAME-00${i+1}`,title,category:'naming',mechanism:'SQL source high-confidence patterns'})),
   ...['Class cls prefix','Interface intf prefix','Enum enu prefix','Type typ prefix','Exception ex prefix','Function and variable camelCase','Canonical constant UPPER_SNAKE_CASE'].map((title,i)=>({id:`ARCH-TS-NAME-00${i+1}`,title,category:'naming',mechanism:'TypeScript declaration AST'})),
   ...['Explicit any','Magic decision literal','Wildcard export','Broad anonymous public record'].map((title,i)=>({id:`ARCH-TS-00${i+1}`,title,category:'typescript',mechanism:'TypeScript AST'})),
-  ...['Authority sole evaluator','Privilege helper duplication','Resource fact resolver decision leak'].map((title,i)=>({id:`ARCH-AUTH-00${i+1}`,title,category:'authority',mechanism:'TypeScript AST'})),
+  ...['Authority sole evaluator','Privilege helper duplication','Resource fact resolver decision leak','Pure Authority evaluator outside Authority'].map((title,i)=>({id:`ARCH-AUTH-00${i+1}`,title,category:'authority',mechanism:'TypeScript AST'})),
   ...['Direct model provider','Business model selection','Qdrant adapter ownership','AI output direct database write'].map((title,i)=>({id:`ARCH-AI-00${i+1}`,title,category:'ai',mechanism:'TypeScript AST high-confidence signals'})),
   ...['Notification provider boundary','Payment provider boundary','Provider SDK type in public contract'].map((title,i)=>({id:`ARCH-PROVIDER-00${i+1}`,title,category:'providers',mechanism:'TypeScript import AST'})),
   ...['Generic document storage in module','Business Qdrant access'].map((title,i)=>({id:`ARCH-DOC-00${i+1}`,title,category:'ai',mechanism:'TypeScript import AST'})),
@@ -98,6 +98,7 @@ function isModulePrivateImport(target:string):boolean {return !/\/(?:contracts?|
 
 export function analyzeTypeScript(file:string,out:intfArchitectureViolation[],contents?:string):void {
  const sf=source(file,contents), info=owner(file), boundary=classifyExecutionBoundary(file); const isAuthority=info.kind==='package'&&info.name==='authority';
+ const approvedAuthorityKernel=isAuthority||file.startsWith('tests/');
  const outboundContract=boundary==='ExternalDatabaseAdapter'&&/\/outbound\//.test(file)&&sf.statements.some(stmt=>ts.isImportDeclaration(stmt)&&ts.isStringLiteral(stmt.moduleSpecifier)&&/\/contracts?\//.test(stmt.moduleSpecifier.text)&&stmt.importClause?.namedBindings&&ts.isNamedImports(stmt.importClause.namedBindings)&&stmt.importClause.namedBindings.elements.some(element=>/^intf(?:ExternalDatabase|SourceDatabase)Outbound(?:Port|Connector)$/.test(element.propertyName?.text??element.name.text)));
  const identifiers=new Set<string>();
  const classBases=new Map<string,string>();
@@ -139,6 +140,7 @@ export function analyzeTypeScript(file:string,out:intfArchitectureViolation[],co
     }
     if(info.kind==='module'&&MODEL_PACKAGES.includes(pkg))add(out,'ARCH-AI-001',file,node,`Module imports model provider ${spec}`);
     if(!isAuthority&&ts.isImportDeclaration(node)&&node.importClause?.namedBindings&&ts.isNamedImports(node.importClause.namedBindings))for(const binding of node.importClause.namedBindings.elements)if(/^(?:hasPriv|getPrivValue|getUserPrivValue|evaluateCRUD|resolvePrivilege|digestPrivileges)$/.test(binding.propertyName?.text??binding.name.text))add(out,'ARCH-AUTH-002',file,binding,`Canonical privilege helper imported outside Authority`);
+    if(!approvedAuthorityKernel&&ts.isImportDeclaration(node)&&node.importClause?.namedBindings&&ts.isNamedImports(node.importClause.namedBindings))for(const binding of node.importClause.namedBindings.elements)if((binding.propertyName?.text??binding.name.text)==='evaluateAuthority')add(out,'ARCH-AUTH-004',file,binding,'Pure Authority evaluator imported outside Authority');
     if(pkg===QDRANT){if(info.kind==='module')add(out,'ARCH-DOC-002',file,node,`Module imports Qdrant ${spec}`);else if(!(info.kind==='package'&&info.name==='knowledge'&&info.layer==='adapter'))add(out,'ARCH-AI-003',file,node,`Qdrant client outside Knowledge adapter ${spec}`);}
     if(info.kind==='module'&&NOTIFY_PACKAGES.includes(pkg))add(out,'ARCH-PROVIDER-001',file,node,`Module imports notification provider ${spec}`);
     if(PAYMENT_PACKAGES.includes(pkg)&&!(info.kind==='package'&&info.name==='commercial'&&info.layer==='adapter'))add(out,'ARCH-PROVIDER-002',file,node,`Payment provider outside Commercial adapter ${spec}`);
@@ -173,6 +175,7 @@ export function analyzeTypeScript(file:string,out:intfArchitectureViolation[],co
   }
   if(!isAuthority&&ts.isFunctionDeclaration(node)&&node.name&&/^(?:hasPriv|getPrivValue|getUserPrivValue|evaluateCRUD|resolvePrivilege|digestPrivileges)$/.test(node.name.text))add(out,'ARCH-AUTH-002',file,node,`Canonical privilege helper ${node.name.text} outside Authority`);
   if(!isAuthority&&ts.isVariableDeclaration(node)&&ts.isIdentifier(node.name)&&/^(?:hasPriv|getPrivValue|getUserPrivValue|evaluateCRUD|resolvePrivilege|digestPrivileges)$/.test(node.name.text))add(out,'ARCH-AUTH-002',file,node,`Canonical privilege helper ${node.name.text} outside Authority`);
+  if(!approvedAuthorityKernel&&ts.isCallExpression(node)&&/(?:^|\.)evaluateAuthority$/.test(callName(node)))add(out,'ARCH-AUTH-004',file,node,'Pure Authority evaluator called outside Authority');
   if(/resourcefactresolver/i.test(file)||ts.isInterfaceDeclaration(node)&&/ResourceFactResolver/.test(node.name.text)){
     if(ts.isPropertySignature(node)||ts.isPropertyAssignment(node)){const name=propName(node.name);if(name&&/^(?:allowed|authorized|canRead|permissionGranted)$/.test(name))add(out,'ARCH-AUTH-003',file,node,`Resource fact resolver returns decision field ${name}`);}
   }
@@ -235,7 +238,9 @@ export function analyzeSql(file:string,text:string,out:intfArchitectureViolation
  ];
  for(const pattern of objectPatterns)for(const match of cleaned.matchAll(pattern)){
   const object=match[1]!;
-  if(!vendorDialect&&!object.includes('.')&&!['SELECT','VALUES','UNNEST','GENERATE_SERIES','LATERAL','IF','NOT','EXISTS','SQLITE_MASTER','PUBLIC'].includes(object.toUpperCase()))sqlAdd(out,'ARCH-DB-006',file,text,match.index,`Unqualified SQL object ${object}`);
+  const statement = cleaned.slice(cleaned.lastIndexOf(';', match.index) + 1, match.index);
+  const cteNames = new Set([...statement.matchAll(/\bWITH\s+(?:RECURSIVE\s+)?([a-z_][\w]*)\s+AS\s*\(/gi)].map(cte => cte[1]!.toUpperCase()));
+  if(!vendorDialect&&!object.includes('.')&&!cteNames.has(object.toUpperCase())&&!['SELECT','VALUES','UNNEST','GENERATE_SERIES','LATERAL','IF','NOT','EXISTS','SQLITE_MASTER','PUBLIC','ROW'].includes(object.toUpperCase()))sqlAdd(out,'ARCH-DB-006',file,text,match.index,`Unqualified SQL object ${object}`);
  }
  for(const match of cleaned.matchAll(/\bCREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?(?:[a-z_][\w]*\.)?([a-z_][\w]*)\s*\(([^;]*?)\)\s*;/gis)){
   const table=match[1]!,body=match[2]!;

@@ -1,31 +1,35 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { forwardPublicApiRequest } from '../../apps/web/src/lib/api/transport.js';
+import { forwardPublicApiRequest, postAuthRequest } from '../../apps/web/src/lib/api/transport.js';
 
-test('Web proxy forwards auth Origin and cookie, returns narrow refresh Set-Cookie', async () => {
+test('Web public API gateway never forwards or returns refresh credentials', async () => {
   const previous = globalThis.fetch;
   const seen: Headers[] = [];
   globalThis.fetch = (async (_input, init) => {
     seen.push(new Headers(init?.headers));
     return new Response('{}', { status: 200, headers: {
-      'content-type': 'application/json', 'set-cookie': '__Secure-tg_refresh=value; HttpOnly; Secure; SameSite=Strict; Path=/api/auth'
+      'content-type': 'application/json', 'set-cookie': '__Host-tg_refresh=value; HttpOnly; Secure; SameSite=Strict; Path=/'
     } });
   }) as typeof fetch;
   try {
-    const headers = { origin: 'https://web.example.invalid', cookie: '__Secure-tg_refresh=opaque', 'content-type': 'application/json' };
-    const auth = await forwardPublicApiRequest(new URL('https://api.example.invalid/api/auth/refresh'),
-      new Request('https://web.example.invalid/api/auth/refresh', { method: 'POST', headers, body: '{}' }));
-    assert.equal(seen[0]?.get('origin'), headers.origin);
-    assert.equal(seen[0]?.get('cookie'), headers.cookie);
-    assert.match(auth.headers.get('set-cookie') ?? '', /Path=\/api\/auth/);
-    const publicResponse = await forwardPublicApiRequest(new URL('https://api.example.invalid/api/translate'),
-      new Request('https://web.example.invalid/api/translate', { method: 'POST', headers, body: '{}' }));
-    assert.equal(seen[1]?.get('origin'), null);
-    assert.equal(seen[1]?.get('cookie'), null);
-    assert.equal(publicResponse.headers.get('set-cookie'), null);
-    await forwardPublicApiRequest(new URL('https://api.example.invalid/api/auth/me'),
-      new Request('https://web.example.invalid/api/auth/me', { headers: { authorization: 'Bearer access-token', cookie: headers.cookie } }));
-    assert.equal(seen[2]?.get('authorization'), 'Bearer access-token');
-    assert.equal(seen[2]?.get('cookie'), null);
+    const request = new Request('https://app.example.invalid/api/translate', { method: 'POST',
+      headers: { origin: 'https://app.example.invalid', cookie: '__Host-tg_refresh=opaque', authorization: 'Bearer access-token' }, body: '{}' });
+    const response = await forwardPublicApiRequest(new URL('http://api.internal/api/translate'), request);
+    assert.equal(seen[0]?.get('origin'), null);
+    assert.equal(seen[0]?.get('cookie'), null);
+    assert.equal(seen[0]?.get('authorization'), 'Bearer access-token');
+    assert.equal(response.headers.get('set-cookie'), null);
+  } finally { globalThis.fetch = previous; }
+});
+
+test('browser Auth transport targets the dedicated origin with credentials', async () => {
+  const previous = globalThis.fetch;
+  let target = '', options: RequestInit | undefined;
+  globalThis.fetch = (async (input, init) => { target = String(input); options = init; return new Response('{}'); }) as typeof fetch;
+  try {
+    await postAuthRequest('https://auth.example.invalid', 'refresh');
+    assert.equal(target, 'https://auth.example.invalid/api/auth/refresh');
+    assert.equal(options?.credentials, 'include');
+    assert.throws(() => postAuthRequest('https://auth.example.invalid/path', 'login'), /Invalid Auth origin/);
   } finally { globalThis.fetch = previous; }
 });

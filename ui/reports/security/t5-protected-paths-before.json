@@ -1,0 +1,42 @@
+{
+  "authorizedChanges": [
+    "AGENTS.md"
+  ],
+  "userAuthorization": "Current user explicitly requested two protection classes in root AGENTS.md. No architecture or prompt edits authorized.",
+  "files": {
+    "AGENTS.md": "bf0d8c89374af59a8967c363359634eb9e97a287e85f04dcbf720e5f8a246f61",
+    "docs/architecture/00-manifest.md": "af2913ff54b25a912b576bed2495856641887490fdc278280ecb76189e2f2a0c",
+    "docs/architecture/01-system-architecture.md": "c35d1deaa3594fa89a0f9a504f8a00126e771873e7f6b029b568d78c6380b56a",
+    "docs/architecture/02-engineering-conventions.md": "5d7743bb96a0e8657449f1eb91d70313a877236fbcbc5a1a1e72ed450c161366",
+    "docs/architecture/03-persistence-and-database.md": "26abe0d25a3a30184b1effbba3dd3d91d844df333b4038fb4b395f467b6cf569",
+    "docs/architecture/04-authorization-model.md": "ea283790f130f8a5e03c7bd91825c3d85707f6a27bd658fa86283561b61bd422",
+    "docs/architecture/05-module-architecture.md": "ad5d4fde6f41bf72a3c4d2251557432b012b5a111db606a338bf6b983fe905ea",
+    "docs/architecture/06-document-and-rag.md": "32460de2e06eccc00f2a0685f1e2b0f6878ff9b9593189457c0e9d95712627b9",
+    "docs/architecture/07-ai-router.md": "068c64758aaa0bccfc75ac0cd0d27a610069aeb415bb9b82922e8c9284006fb5",
+    "docs/architecture/08-deployment-architecture.md": "de39bff1279fea540b1c240b15733bb3d8b7a337c703f8ede010bd0c1bd7bd2b",
+    "docs/architecture/09-notification-and-ticketing.md": "05de4d206fd74a9b578d066a52ae619913c23c40cfab5d0ca37feb6f8438431b",
+    "docs/architecture/10-commercial-architecture.md": "f65178f23b81033afa4464e55586810cdf4bb1c6c765e06a9a864697428748df",
+    "docs/architecture/AGENTS.md": "b5652aec2e81fbebf0d84db174e38765f8ece927e054250c8d7cf3c151d0cd1d",
+    "docs/prompts/T1-complimentary.md": "b97121ba6b6d67c0c678c2cf67215bee7610ec1304acd75f19ce2c483c8d155f",
+    "docs/prompts/T1.md": "d6e75ac30ac0706be290964d5597a55a18876752dcf36aa68d8647c4d188bcc3",
+    "docs/prompts/T3-addendum.md": "da43d22245281b9007c177e209ab7853c71dcfb1a7565b3bd47b1f69a7134e70",
+    "docs/prompts/T3-addendum2.md": "ba71c571832485cd08b918c752bd8bf67702c26764a27be155e2e0dac378efd0",
+    "docs/prompts/T3.md": "1f1ec91156d2def153f955c690d65337ae838d59f24485f36c1f55cfb4c541f3",
+    "docs/prompts/T4-fixProblems.md": "95988de310be5b6d96395cc2634da9a2b9649c9ca74cb2b8f21a93e44c5d27c2",
+    "docs/prompts/T4.2.md": "dfccbcd2b644e90ff5f42a95324ee00171d88929c2bf7f9a1809166941502527",
+    "docs/prompts/T4.3-A.md": "073f1a027cdd2d218e9c57d99b69a1b03b2058eb736a2e115bcd6d83905190ba",
+    "docs/prompts/T4.3-B.md": "9fe5139bb5187f5f6bc1c4c1fc02c5371a49b8385a9f20f2f191e3a60d5bdd46",
+    "docs/prompts/T4.4-C.md": "6a4a69d4a9939671a28d4284b2f4cb45eeb4433d24562f2b950bbf35e23e276d",
+    "docs/prompts/T4.4.md": "1943b8f9208fcbe20a41974386bba7aa49d361bc6d32266ab245b69074856156",
+    "docs/prompts/T4.md": "7255e5818edf8401316df14df63e370a12127880ab41335e5b2568b596b7a20a",
+    "docs/prompts/T5-final.md": "387456639b5b61d8c8c7881a4f9f0531483ebe9fc97fed0f54d45f8a745616ff",
+    "docs/prompts/U0.1.md": "16478f0950b5e871e5a0c8f8fed94a21092254f4d56f1455f3b56d3ae6a803f2",
+    "docs/prompts/U0.md": "bb953daf6d742569238552d252891098ede29926055a7aed51b49a99febdc47e",
+    "docs/prompts/U1.1.md": "5213d5770ff363dd006c4eadfc18d2118edb1b1e94fc71de54c96651454cd6d7",
+    "docs/prompts/U1.2.md": "1cee3ff7be99a7656715def638ce872a2d7acf273902e7d4e07d2e8b6ab36181",
+    "docs/prompts/U1.md": "11836108062a35c242a7b69598b4c7735f10df499cb4948d362ebdfde458bbc4",
+    "docs/prompts/U2.1.md": "ff3ec890b9e10540ac48d2b43217f311fb518ccb5bb4c2b7e79e162f0e695685",
+    "docs/prompts/U2.md": "408e8bd4c81dedd9c0e3204fbf62c0a1379c9d9b4993b4bb49e627004954789f"
+  },
+  "gitStatus": " M ui/AGENTS.md\n M ui/docs/architecture/04-authorization-model.md\n M ui/docs/architecture/06-document-and-rag.md\n M ui/docs/architecture/08-deployment-architecture.md\n D ui/docs/prompts/T5-addendum.md\n D ui/docs/prompts/T5.md\n?? ui/docs/prompts/T4.3-B.md\n?? ui/docs/prompts/T4.4-C.md\n?? ui/docs/prompts/T4.4.md\n?? ui/docs/prompts/T5-final.md\n"
+}

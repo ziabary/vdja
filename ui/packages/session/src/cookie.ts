@@ -1,5 +1,5 @@
-const REFRESH_COOKIE = '__Secure-tg_refresh';
-const REFRESH_PATH = '/api/auth';
+const REFRESH_COOKIE = '__Host-tg_refresh';
+const REFRESH_PATH = '/';
 
 export type typRefreshCookie = Readonly<{ kind: 'VALID'; token: string }>
   | Readonly<{ kind: 'MISSING' | 'INVALID' | 'AMBIGUOUS' }>;

@@ -3,7 +3,7 @@ import type { intfExecutionContext } from '../../../packages/contracts/src/index
 import type { intfAdmissionPolicy, intfSiemConfiguration } from '../../../packages/configuration/src/index.js';
 import { clsAiRouter } from '../../../packages/ai-router/src/index.js';
 import { executePublicOperation, type intfPublicOperationPersistence } from '../../../packages/platform/src/publicOperation.js';
-import { extractText, type intfUploadedFile, type intfFileLimits } from '../../../packages/file-processing/src/index.js';
+import { extractTemporaryFile, type intfUploadedFile, type intfFileLimits } from '@targoman/file-management/temporary';
 import type { intfUsageRecorder } from '../../../packages/usage/src/index.js';
 
 const MAX_FAQS = 100, BATCH_SIZE = 10, MAX_BATCH_SOURCE_CHARS = 12000;
@@ -40,10 +40,10 @@ function parseItems(raw: string, wanted: number): readonly intfFaqItem[] {
 
 export async function inspectFaq(storage: intfPublicOperationPersistence, context: intfExecutionContext, policy: intfAdmissionPolicy, siem: intfSiemConfiguration, file: intfUploadedFile, limits: intfFileLimits): Promise<{ readonly fileName: string; readonly pageCount: number; readonly sourceChars: number }> {
   return executePublicOperation(storage, { context, policy, siem, action: { requested: 'public.faq.inspect', completed: 'public.faq.inspect', failed: 'public.faq.failed', cancelled: 'public.faq.cancelled' }, inputChars: 0, uploadedBytes: file.size, tokenReservation: 0, execute: async reservation => {
-    const extracted = await extractText(file, limits);
+    const extracted = await extractTemporaryFile(file, limits);
     if (!extracted.text.trim()) throw new Error('EMPTY_DOCUMENT');
     await storage.recordExtractedInput(context, reservation.id, policy, extracted.text.length);
-    return { value: { fileName: file.originalname, pageCount: extracted.pageCount, sourceChars: extracted.text.length }, usage: [{ runId: randomUUID(), inputChars: extracted.text.length, uploadedBytes: file.size, inputTokens: 0, outputTokens: 0, providerMs: 0 }] };
+    return { value: { fileName: extracted.displayName, pageCount: extracted.pageCount, sourceChars: extracted.text.length }, usage: [{ runId: randomUUID(), inputChars: extracted.text.length, uploadedBytes: file.size, inputTokens: 0, outputTokens: 0, providerMs: 0 }] };
   } });
 }
 
@@ -51,7 +51,7 @@ export async function generateFaq(storage: intfPublicOperationPersistence, usage
   if (!Number.isInteger(options.count) || options.count < 1 || options.count > MAX_FAQS || !Number.isInteger(options.answerWords) || options.answerWords < 20 || options.answerWords > 250 || options.focus.length > 500 || options.priorQuestions.length > MAX_FAQS || options.count + options.priorQuestions.length > MAX_FAQS || !['all','range','focus'].includes(options.scope) || !['formal','conversational'].includes(options.tone) || !['source','fa','en'].includes(options.language)) throw new Error('INVALID_FAQ_INPUT');
   const expectedBatches = Math.ceil(options.count / BATCH_SIZE);
   return executePublicOperation(storage, { context, policy, siem, action: { requested: 'public.faq.generate.requested', completed: 'public.faq.generate.completed', failed: 'public.faq.failed', cancelled: 'public.faq.cancelled' }, inputChars: 0, uploadedBytes: file.size, outputTokenBudget: policy.outputTokens, tokenReservation: policy.outputTokens, execute: async reservation => {
-    const extracted = await extractText(file, limits);
+    const extracted = await extractTemporaryFile(file, limits);
     if (!extracted.text.trim()) throw new Error('EMPTY_DOCUMENT');
     await storage.recordExtractedInput(context, reservation.id, policy, extracted.text.length);
     const selected = selectScope(extracted.text, extracted.pageCount, options).trim();
@@ -59,7 +59,7 @@ export async function generateFaq(storage: intfPublicOperationPersistence, usage
     const batches = Math.max(expectedBatches, Math.ceil(selected.length / MAX_BATCH_SOURCE_CHARS));
     if (batches > options.count) throw new Error('SOURCE_TOO_LARGE_FOR_FAQ_COUNT');
     if (batches > policy.outputTokens) throw new Error('OUTPUT_LIMIT_EXCEEDED');
-    onMeta({ fileName: file.originalname, sourceChars: extracted.text.length, selectedChars: selected.length, pageCount: extracted.pageCount, count: options.count, batches });
+    onMeta({ fileName: extracted.displayName, sourceChars: extracted.text.length, selectedChars: selected.length, pageCount: extracted.pageCount, count: options.count, batches });
     const questions = [...options.priorQuestions]; let produced = 0;
     for (let batch = 0; batch < batches; batch += 1) {
       if (options.signal?.aborted) throw new Error('CANCELLED');

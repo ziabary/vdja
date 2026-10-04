@@ -1,0 +1,1 @@
+{"name":"@targoman/storage","version":"0.0.0","private":true,"type":"module","exports":{".":"./src/index.ts","./factory":"./src/factory.ts"},"dependencies":{"@aws-sdk/client-s3":"3.1146.0"}}

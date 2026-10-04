@@ -27,6 +27,7 @@ export interface intfAuthorityRequest {
   readonly denies?: readonly string[];
   readonly crud?: Readonly<{ value: unknown; operation: 'CREATE' | 'READ' | 'UPDATE' | 'DELETE' }>;
   readonly requireClassification?: boolean;
+  readonly allDefault?: unknown;
 }
 export interface intfAuthorityResult { readonly decision: typAuthorityDecision; readonly reason: string }
 
@@ -55,8 +56,8 @@ export function getPrivValue(privileges: Readonly<Record<string, unknown>>, path
   return node;
 }
 
-function privilegeAllows(privileges: Readonly<Record<string, unknown>>, path: string): boolean {
-  return getPrivValue(privileges, path, true) === true;
+function privilegeAllows(privileges: Readonly<Record<string, unknown>>, path: string, allDefault: unknown): boolean {
+  return getPrivValue(privileges, path, allDefault) === true;
 }
 function validInstant(value: string): number | null {
   if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?(?:Z|[+-]\d{2}:\d{2})$/.test(value)) return null;
@@ -126,9 +127,9 @@ export function evaluateAuthority(input: Readonly<intfAuthorityRequest>): intfAu
   for (const grant of input.grants) {
     if (!grant || !grant.privileges || typeof grant.privileges !== 'object' || Array.isArray(grant.privileges) || !grantActive(grant, now) || !scopeAllows(grant, input.facts)) continue;
     if (input.crud) {
-      const value = getPrivValue(grant.privileges, input.path);
+      const value = getPrivValue(grant.privileges, input.path, input.allDefault === undefined ? true : input.allDefault);
       if (value === input.crud.value && crudAllows(value, input.crud.operation, resource?.ownerId, input.facts.actorId)) return { decision: 'ALLOW', reason: 'GRANT' };
-    } else if (privilegeAllows(grant.privileges, input.path)) return { decision: 'ALLOW', reason: 'GRANT' };
+    } else if (privilegeAllows(grant.privileges, input.path, input.allDefault === undefined ? true : input.allDefault)) return { decision: 'ALLOW', reason: 'GRANT' };
   }
   return deny('NO_GRANT');
 }

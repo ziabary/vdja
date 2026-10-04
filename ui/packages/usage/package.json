@@ -1,1 +1,14 @@
-{ "name": "@targoman/usage", "version": "0.1.0", "private": true, "type": "module", "exports": { ".": "./src/index.ts" } }
+{
+  "name": "@targoman/usage",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./persistence": "./src/persistence.ts",
+    "./files": "./src/files.ts",
+    "./rag": "./src/rag.ts",
+    "./persistence-rag": "./src/persistence/rag.ts",
+    "./admission-integration": "./src/persistence.ts"
+  }
+}

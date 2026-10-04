@@ -1,6 +1,8 @@
 const role = process.env.TARGOMAN_ROLE;
 if (role === 'web') {
-  await import('../apps/web/build/index.js');
+  const { server } = await import('../apps/web/build/index.js');
+  const { installWebSecurityHeaders } = await import('./web-security-headers.mjs');
+  installWebSecurityHeaders(server);
 } else if (role === 'api') {
   process.argv = [process.argv[0], '/app/apps/api/src/index.ts', '--config', '/etc/targoman/platform.cjson'];
   await import('../dist/target-api.js');

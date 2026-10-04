@@ -22,10 +22,26 @@ test('Authority and provider boundaries inspect executable code',()=>{
  const rules=tsRules('modules/crm/src/application/task.ts',"import OpenAI from 'openai'; import { QdrantClient } from '@qdrant/js-client-rest'; import twilio from 'twilio'; import Stripe from 'stripe'; function hasPriv() {} if (user.role === 'admin') return 'ALLOW'; const model = {model:'gpt-4'};");
  for(const id of ['ARCH-AI-001','ARCH-AI-002','ARCH-AUTH-001','ARCH-AUTH-002','ARCH-DOC-002','ARCH-PROVIDER-001','ARCH-PROVIDER-002'])assert.ok(rules.has(id),id);
 });
+test('pure Authority evaluator is restricted to Authority internals and tests',()=>{
+ const imported="import { evaluateAuthority as decide } from '../../packages/authority/src/index.js'; const result=decide(input);";
+ assert.ok(tsRules('modules/crm/src/service.ts',imported).has('ARCH-AUTH-004'));
+ assert.ok(tsRules('apps/api/src/index.ts','const decision=evaluateAuthority(input);').has('ARCH-AUTH-004'));
+ assert.ok(tsRules('apps/worker/src/index.ts','const decision=authority.evaluateAuthority(input);').has('ARCH-AUTH-004'));
+ assert.ok(!tsRules('packages/authority/src/service.ts',imported).has('ARCH-AUTH-004'));
+ assert.ok(!tsRules('tests/conformance/authority/case.ts',imported).has('ARCH-AUTH-004'));
+ assert.ok(!tsRules('modules/crm/src/service.ts','const result=authorityService.authorize(input);').has('ARCH-AUTH-004'));
+});
 test('SQL rules distinguish SELECT star from COUNT star',()=>{
  assert.ok(sqlRules('SELECT * FROM crm.tbl_crm_customer;').has('ARCH-DB-005'));
  assert.ok(!sqlRules('SELECT COUNT(*) FROM crm.tbl_crm_customer;').has('ARCH-DB-005'));
  assert.ok(sqlRules('SELECT usr_id FROM tbl_aaa_user;').has('ARCH-DB-006'));
+});
+test('SQL qualification recognizes declared CTEs and row constructors without hiding unqualified base tables', () => {
+ assert.ok(!sqlRules('WITH exhausted AS (SELECT job_id FROM jobs.tbl_job_work) SELECT job_id FROM exhausted;').has('ARCH-DB-006'));
+ assert.ok(!sqlRules('SELECT ROW(1,2) IS DISTINCT FROM ROW(3,4);').has('ARCH-DB-006'));
+ assert.ok(sqlRules('WITH exhausted AS (SELECT job_id FROM tbl_job_work) SELECT job_id FROM exhausted;').has('ARCH-DB-006'));
+ assert.ok(sqlRules('SELECT job_id FROM exhausted;').has('ARCH-DB-006'));
+ assert.ok(sqlRules('WITH exhausted AS (SELECT job_id FROM jobs.tbl_job_work) SELECT job_id FROM exhausted; SELECT job_id FROM exhausted;').has('ARCH-DB-006'));
 });
 test('SQL naming checks cover tables, columns, FKs, objects, parameters, locals',()=>{
  const rules=sqlRules("CREATE TABLE authority.bad_table (id bigint, owner_id bigint REFERENCES authority.tbl_aaa_user(usr_id)); CREATE FUNCTION authority.bad_fn(bad_arg integer) RETURNS integer AS $$ DECLARE wrong integer; BEGIN RETURN wrong; END $$ LANGUAGE plpgsql; CREATE INDEX bad_idx ON authority.bad_table(id);");

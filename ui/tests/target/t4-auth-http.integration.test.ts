@@ -3,6 +3,7 @@ import { createHash, generateKeyPairSync, randomUUID } from 'node:crypto';
 import { copyFile, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { request as httpRequest } from 'node:http';
 import { test } from 'node:test';
 import { createPublicApi } from '../../apps/api/src/index.js';
 import { hashPassword } from '../../packages/authentication/src/index.js';
@@ -10,6 +11,25 @@ import { loadConfiguration, parseCjson } from '../../packages/configuration/src/
 import { createTargetPool, withTargetTransaction } from '../../packages/persistence/src/target.js';
 import { createSiemExportPersistence } from '../../packages/security-telemetry/src/persistence.js';
 import { deliverNext, type intfExportEnvelope } from '../../packages/security-telemetry/src/worker.js';
+
+const fetch: typeof globalThis.fetch = async (input, init) => new Promise<Response>((resolve, reject) => {
+  const headers = new Headers(init?.headers);
+  const request = httpRequest(String(input), { method: init?.method ?? 'GET', headers: Object.fromEntries(headers) }, response => {
+    const chunks: Buffer[] = [];
+    response.on('data', (chunk: Buffer) => chunks.push(chunk));
+    response.on('end', () => {
+      const output = new Headers();
+      for (const [name, value] of Object.entries(response.headers)) {
+        if (Array.isArray(value)) value.forEach(item => output.append(name, item));
+        else if (value) output.set(name, value);
+      }
+      resolve(new Response(response.statusCode === 204 ? null : Buffer.concat(chunks), { status: response.statusCode ?? 500, headers: output }));
+    });
+  });
+  request.on('error', reject);
+  if (typeof init?.body === 'string') request.write(init.body);
+  request.end();
+});
 
 const configPath = process.env.T4_PG_CONFIG;
 const sourceSecrets = process.env.T4_SECRETS_DIR;
@@ -40,18 +60,22 @@ test('HTTP login, Origin, refresh replay, concurrent refresh, logout and disable
         .map(([module, policy]) => [module, { ...policy, inputChars: Math.min(2_000_000, policy.inputChars! * 2),
           outputTokens: module === 'faq' ? 80000 : 8000, requestsPerMinute: policy.requestsPerMinute! * 2,
           concurrent: policy.concurrent! * 2 }]));
-      const auth = { enabled: true, issuer: 'https://auth.example.invalid', audience: 'targoman-api', accessTokenSeconds: 300,
+      const auth = { enabled: true, issuer: 'https://auth.example.invalid', publicOrigin: 'https://auth.example.invalid',
+        allowedApplicationOrigins: ['https://app.example.invalid'], audience: 'targoman-api', accessTokenSeconds: 300,
         activeKid: 'v1', privateKeyRef: 'file:/run/secrets/access-private',
         session: { absoluteLifetimeSeconds: 2592000, refreshLifetimeSeconds: 604800, inactivityLifetimeSeconds: 604800 },
+        password: { contextWords: [], compromised: { kind: 'LOCAL_SHA1', directory: '/tmp/t4-breach-fixture' } },
         authenticatedAdmission,
         privilegedAdmission,
         publicKeys: [{ kid: 'v1', publicKeyRef: 'file:/run/secrets/access-public' }] };
       const siem = { ...(base.siem as Record<string, unknown>), enabled: true,
         destinationId: `t4-auth-${identityId.slice(0, 8)}`, url: 'https://siem.example.invalid/ingest',
-        deliveryGuarantee: 'IDEMPOTENT', events: ['authentication.failed', 'authentication.success',
+        deliveryGuarantee: 'IDEMPOTENT', events: ['authority.decision','authentication.failed', 'authentication.success',
           'session.created', 'session.refreshed', 'session.refresh_replay_detected', 'session.revoked', 'session.logout'] };
       const enabledConfig = join(directory, 'enabled.cjson');
-      await writeFile(enabledConfig, JSON.stringify({ ...base, auth, siem }));
+      await writeFile(enabledConfig, JSON.stringify({ ...base, auth, siem,
+        web: { publicOrigin: 'https://app.example.invalid' },
+        http: { ...(base.http as Record<string, unknown>), allowedOrigins: ['https://app.example.invalid'] } }));
       const snapshot = await loadConfiguration(enabledConfig);
       migration = await createTargetPool(snapshot, 'migration', directory);
       worker = await createTargetPool(snapshot, 'worker', directory);
@@ -77,6 +101,7 @@ test('HTTP login, Origin, refresh replay, concurrent refresh, logout and disable
       const origin = snapshot.value.http.allowedOrigins[0]!;
       const preflight = (requestOrigin: string | undefined, method = 'POST', headers = 'content-type') =>
         fetch(`${url}/api/auth/refresh`, { method: 'OPTIONS', headers: {
+          host: 'auth.example.invalid',
           ...(requestOrigin ? { origin: requestOrigin } : {}),
           'access-control-request-method': method, 'access-control-request-headers': headers
         } });
@@ -90,30 +115,45 @@ test('HTTP login, Origin, refresh replay, concurrent refresh, logout and disable
       assert.equal((await preflight('not-an-origin')).status, 403);
       assert.equal((await preflight(origin, 'DELETE')).status, 403);
       assert.equal((await preflight(origin, 'POST', 'x-unapproved-header')).status, 403);
+      assert.equal((await fetch(`${url}/api/auth/login`, { method: 'POST', headers: { host: 'app.example.invalid', origin, 'content-type': 'application/json' }, body: '{}' })).status, 404);
+      assert.equal((await fetch(`${url}/api/auth/login`, { method: 'POST', headers: { host: 'auth.example.invalid.evil', origin, 'content-type': 'application/json' }, body: '{}' })).status, 421);
+      assert.equal((await fetch(`${url}/api/translate`, { method: 'POST', headers: { host: 'auth.example.invalid', 'content-type': 'application/json' }, body: '{}' })).status, 404);
+      assert.equal((await preflight('null')).status, 403);
+      assert.equal((await preflight('http://app.example.invalid')).status, 403);
+      const cspBody = JSON.stringify({ 'csp-report': { 'effective-directive': 'script-src', 'blocked-uri': 'https://evil.example/?token=secret' } });
+      assert.equal((await fetch(`${url}/api/security/csp-report`, { method: 'POST',
+        headers: { host: 'app.example.invalid', 'content-type': 'application/csp-report' }, body: cspBody })).status, 204);
+      assert.equal((await fetch(`${url}/api/security/csp-report`, { method: 'POST',
+        headers: { host: 'app.example.invalid', 'content-type': 'application/reports+json' },
+        body: JSON.stringify([{ type: 'csp-violation', body: { effectiveDirective: 'script-src', blockedURL: 'inline' } }]) })).status, 204);
+      assert.equal((await fetch(`${url}/api/security/csp-report`, { method: 'POST',
+        headers: { host: 'auth.example.invalid', 'content-type': 'application/csp-report' }, body: cspBody })).status, 404);
+      assert.equal((await fetch(`${url}/api/security/csp-report`, { method: 'POST',
+        headers: { host: 'app.example.invalid', 'content-type': 'text/plain' }, body: cspBody })).status, 415);
       const post = (path: string, body: unknown, cookie?: string, requestOrigin = origin) => fetch(`${url}/api/auth/${path}`,
-        { method: 'POST', headers: { origin: requestOrigin, 'content-type': 'application/json',
+        { method: 'POST', headers: { host: 'auth.example.invalid', origin: requestOrigin, 'content-type': 'application/json',
           ...(cookie ? { cookie } : {}) }, body: JSON.stringify(body) });
       const login = async () => {
         const response = await post('login', { email, password: 'an adequate live test passphrase 2026' });
         assert.equal(response.status, 200);
         const body = await response.json() as { accessToken: string; tenantId: string };
         const cookie = response.headers.get('set-cookie') ?? '';
-        assert.match(cookie, /^__Secure-tg_refresh=[A-Za-z0-9_-]{43}; HttpOnly; Secure; SameSite=Strict; Path=\/api\/auth$/);
+        assert.match(cookie, /^__Host-tg_refresh=[A-Za-z0-9_-]{43}; HttpOnly; Secure; SameSite=Strict; Path=\/$/);
         assert.equal(body.tenantId, snapshot.value.deployment.tenantId);
         return { accessToken: body.accessToken, cookie: cookie.split(';')[0]! };
       };
       assert.equal((await post('login', { email, password: 'wrong' })).status, 401);
       const first = await login();
-      const me = (token: string) => fetch(`${url}/api/auth/me`, { headers: { authorization: `Bearer ${token}` } });
+      const me = (token: string) => fetch(`${url}/api/auth/me`, { headers: { host: 'auth.example.invalid', authorization: `Bearer ${token}` } });
       assert.equal((await me(first.accessToken)).status, 200);
-      const duplicate = `${first.cookie}; __Secure-tg_refresh=invalid`;
+      const duplicate = `${first.cookie}; __Host-tg_refresh=invalid`;
       const rejectedDuplicate = await post('refresh', {}, duplicate);
       assert.equal(rejectedDuplicate.status, 400);
       assert.equal(rejectedDuplicate.headers.get('access-control-allow-credentials'), 'true');
       assert.equal((await post('logout', {}, duplicate)).status, 400);
       assert.equal((await me(first.accessToken)).status, 200);
       assert.equal((await post('refresh', {}, first.cookie, 'https://evil.example.invalid')).status, 403);
-      assert.equal((await fetch(`${url}/api/auth/refresh`, { method: 'POST', headers: { cookie: first.cookie } })).status, 403);
+      assert.equal((await fetch(`${url}/api/auth/refresh`, { method: 'POST', headers: { host: 'auth.example.invalid', cookie: first.cookie } })).status, 403);
       const rotatedResponse = await post('refresh', {}, first.cookie);
       assert.equal(rotatedResponse.status, 200);
       const rotated = await rotatedResponse.json() as { accessToken: string };
@@ -146,7 +186,7 @@ test('HTTP login, Origin, refresh replay, concurrent refresh, logout and disable
       for (const action of ['authentication.failed','session.refresh_replay_detected','session.revoked','session.logout'])
         assert.ok(exported.some(event => event.action === action), action);
       assert.ok(exported.filter(event => event.actorKind === 'HUMAN').every(event => event.actorId === identityId && event.sessionId));
-      const malformed = await fetch(`${url}/api/auth/me`, { headers: { authorization: 'Bearer bad' } });
+      const malformed = await fetch(`${url}/api/auth/me`, { headers: { host: 'auth.example.invalid', authorization: 'Bearer bad' } });
       assert.equal(malformed.status, 401);
       const disabledConfig = join(directory, 'disabled.cjson');
       await writeFile(disabledConfig, JSON.stringify({ ...base, auth: { enabled: false } }));
@@ -158,7 +198,7 @@ test('HTTP login, Origin, refresh replay, concurrent refresh, logout and disable
         const disabledAddress = disabledServer.address();
         if (!disabledAddress || typeof disabledAddress === 'string') throw new Error('INVALID_TEST_ADDRESS');
         const denied = await fetch(`http://127.0.0.1:${disabledAddress.port}/api/auth/login`,
-          { method: 'POST', headers: { origin, 'content-type': 'application/json' }, body: JSON.stringify({ email, password: 'wrong' }) });
+          { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ email, password: 'wrong' }) });
         assert.equal(denied.status, 404);
         assert.equal(denied.headers.get('set-cookie'), null);
       } finally {

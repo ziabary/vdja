@@ -1,1 +1,12 @@
-{ "name": "@targoman/admission-control", "version": "0.1.0", "private": true, "type": "module", "exports": { ".": "./src/index.ts" } }
+{
+  "name": "@targoman/admission-control",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./persistence": "./src/persistence.ts",
+    "./files": "./src/files.ts",
+    "./query": "./src/query.ts"
+  }
+}

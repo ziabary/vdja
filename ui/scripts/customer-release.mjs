@@ -7,6 +7,9 @@ import { loadConfiguration } from '../packages/configuration/src/index.ts';
 const args = process.argv.slice(2);
 function option(name, fallback) { const i = args.indexOf(name); return i < 0 ? fallback : args[i + 1]; }
 const dryRun = args.includes('--dry-run');
+const asvs = JSON.parse(await readFile('reports/security/asvs-5.0-l3.json', 'utf8'));
+if (asvs.controls.some(control => ['FAIL','NOT_VERIFIED'].includes(control.postT5 ?? control.postT4)))
+  throw new Error('ASVS_L3_RELEASE_GATE_NO: customer release requires all applicable Level 3 controls closed');
 const customerOption = option('--customer', 'all');
 const customers = customerOption === 'all' ? ['customer-a', 'customer-b', 'customer-c'] : [customerOption];
 if (customers.some(x => !/^customer-[abc]$/.test(x))) throw new Error('Supported example customers: customer-a, customer-b, customer-c');
@@ -32,6 +35,7 @@ for (const customer of customers) {
   if (await sourceHash() !== canonicalSourceHash) throw new Error('Canonical source changed between customer builds');
   const example = resolve('deploy/examples', customer);
   const config = await loadConfiguration(join(example, 'platform.cjson'));
+  if (config.value.security.assuranceProfile !== 'CUSTOMER_L3') throw new Error(`${customer}: customer assurance profile required`);
   if (config.value.deployment.id !== customer || config.value.deployment.tenantId !== customer) throw new Error(`${customer}: deployment identity mismatch`);
   const releaseDir = join(outDir, customer);
   await mkdir(join(releaseDir, 'brand'), { recursive: true });
@@ -83,7 +87,7 @@ async function sourceHash() {
   }
   for (const path of ['apps', 'modules', 'packages']) await walk(path);
   entries.push('package.json', 'package-lock.json', 'deploy/runtime/package.json', 'deploy/runtime/package-lock.json',
-    'deploy/customer.Dockerfile', 'deploy/entrypoint.mjs', 'src/db/data/multi-dic.json');
+    'deploy/customer.Dockerfile', 'deploy/entrypoint.mjs', 'deploy/web-security-headers.mjs', 'src/db/data/multi-dic.json');
   const hash = createHash('sha256');
   for (const path of entries.sort()) { hash.update(path); hash.update(await readFile(path)); }
   return hash.digest('hex');

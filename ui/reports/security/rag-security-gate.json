@@ -1,0 +1,629 @@
+{
+  "status": "YES",
+  "checkedAt": "2026-10-03T18:28:27.731Z",
+  "RAG_SECURITY_GATE": "YES",
+  "T5_START_GATE": "YES",
+  "ASVS_L3_RELEASE_GATE": "NO",
+  "openAsvsTotal": 173,
+  "blocksT5StartControls": [],
+  "verifyDuringT5Controls": [
+    "v5.0.0-V1.1.1",
+    "v5.0.0-V1.1.2",
+    "v5.0.0-V1.2.1",
+    "v5.0.0-V1.2.2",
+    "v5.0.0-V1.2.3",
+    "v5.0.0-V1.2.9",
+    "v5.0.0-V1.3.2",
+    "v5.0.0-V1.3.3",
+    "v5.0.0-V1.3.5",
+    "v5.0.0-V1.3.7",
+    "v5.0.0-V1.3.10",
+    "v5.0.0-V1.3.12",
+    "v5.0.0-V1.4.1",
+    "v5.0.0-V1.4.2",
+    "v5.0.0-V1.4.3",
+    "v5.0.0-V1.5.1",
+    "v5.0.0-V1.5.2",
+    "v5.0.0-V1.5.3",
+    "v5.0.0-V2.1.1",
+    "v5.0.0-V2.1.2",
+    "v5.0.0-V2.1.3",
+    "v5.0.0-V2.2.1",
+    "v5.0.0-V2.2.3",
+    "v5.0.0-V2.3.1",
+    "v5.0.0-V2.3.2",
+    "v5.0.0-V2.3.3",
+    "v5.0.0-V2.3.4",
+    "v5.0.0-V3.2.1",
+    "v5.0.0-V3.2.2",
+    "v5.0.0-V3.2.3",
+    "v5.0.0-V3.4.3",
+    "v5.0.0-V3.4.5",
+    "v5.0.0-V3.4.6",
+    "v5.0.0-V3.4.7",
+    "v5.0.0-V3.4.8",
+    "v5.0.0-V3.5.1",
+    "v5.0.0-V3.5.2",
+    "v5.0.0-V3.5.7",
+    "v5.0.0-V3.5.8",
+    "v5.0.0-V4.1.1",
+    "v5.0.0-V4.1.4",
+    "v5.0.0-V4.2.5",
+    "v5.0.0-V5.1.1",
+    "v5.0.0-V5.2.2",
+    "v5.0.0-V5.2.4",
+    "v5.0.0-V5.4.1",
+    "v5.0.0-V8.1.3",
+    "v5.0.0-V8.1.4",
+    "v5.0.0-V8.4.2",
+    "v5.0.0-V10.1.1",
+    "v5.0.0-V11.2.5",
+    "v5.0.0-V11.5.1",
+    "v5.0.0-V11.5.2",
+    "v5.0.0-V11.7.2",
+    "v5.0.0-V12.3.1",
+    "v5.0.0-V12.3.2",
+    "v5.0.0-V12.3.3",
+    "v5.0.0-V12.3.4",
+    "v5.0.0-V12.3.5",
+    "v5.0.0-V13.1.1",
+    "v5.0.0-V13.1.2",
+    "v5.0.0-V13.1.3",
+    "v5.0.0-V13.2.1",
+    "v5.0.0-V13.2.2",
+    "v5.0.0-V13.2.3",
+    "v5.0.0-V13.2.4",
+    "v5.0.0-V13.2.5",
+    "v5.0.0-V13.2.6",
+    "v5.0.0-V13.3.2",
+    "v5.0.0-V14.1.1",
+    "v5.0.0-V14.1.2",
+    "v5.0.0-V14.2.2",
+    "v5.0.0-V14.2.3",
+    "v5.0.0-V14.2.4",
+    "v5.0.0-V14.2.5",
+    "v5.0.0-V14.2.6",
+    "v5.0.0-V14.2.7",
+    "v5.0.0-V14.3.1",
+    "v5.0.0-V14.3.2",
+    "v5.0.0-V15.1.3",
+    "v5.0.0-V15.1.4",
+    "v5.0.0-V15.1.5",
+    "v5.0.0-V15.2.5",
+    "v5.0.0-V15.3.1",
+    "v5.0.0-V15.3.2",
+    "v5.0.0-V15.3.6",
+    "v5.0.0-V15.3.7",
+    "v5.0.0-V15.4.2",
+    "v5.0.0-V15.4.3",
+    "v5.0.0-V15.4.4",
+    "v5.0.0-V16.1.1",
+    "v5.0.0-V16.2.1",
+    "v5.0.0-V16.2.2",
+    "v5.0.0-V16.2.3",
+    "v5.0.0-V16.2.5",
+    "v5.0.0-V16.3.3",
+    "v5.0.0-V16.3.4",
+    "v5.0.0-V16.4.1",
+    "v5.0.0-V16.4.2",
+    "v5.0.0-V16.4.3",
+    "v5.0.0-V16.5.3",
+    "v5.0.0-V16.5.4"
+  ],
+  "blocksCustomerReleaseControls": [
+    "v5.0.0-V1.1.1",
+    "v5.0.0-V1.1.2",
+    "v5.0.0-V1.2.1",
+    "v5.0.0-V1.2.2",
+    "v5.0.0-V1.2.3",
+    "v5.0.0-V1.2.9",
+    "v5.0.0-V1.3.2",
+    "v5.0.0-V1.3.3",
+    "v5.0.0-V1.3.5",
+    "v5.0.0-V1.3.7",
+    "v5.0.0-V1.3.10",
+    "v5.0.0-V1.3.12",
+    "v5.0.0-V1.4.1",
+    "v5.0.0-V1.4.2",
+    "v5.0.0-V1.4.3",
+    "v5.0.0-V1.5.1",
+    "v5.0.0-V1.5.2",
+    "v5.0.0-V1.5.3",
+    "v5.0.0-V2.1.1",
+    "v5.0.0-V2.1.2",
+    "v5.0.0-V2.1.3",
+    "v5.0.0-V2.2.1",
+    "v5.0.0-V2.2.3",
+    "v5.0.0-V2.3.1",
+    "v5.0.0-V2.3.2",
+    "v5.0.0-V2.3.3",
+    "v5.0.0-V2.3.4",
+    "v5.0.0-V2.4.2",
+    "v5.0.0-V3.1.1",
+    "v5.0.0-V3.2.1",
+    "v5.0.0-V3.2.2",
+    "v5.0.0-V3.2.3",
+    "v5.0.0-V3.4.1",
+    "v5.0.0-V3.4.3",
+    "v5.0.0-V3.4.5",
+    "v5.0.0-V3.4.6",
+    "v5.0.0-V3.4.7",
+    "v5.0.0-V3.4.8",
+    "v5.0.0-V3.5.1",
+    "v5.0.0-V3.5.2",
+    "v5.0.0-V3.5.4",
+    "v5.0.0-V3.5.7",
+    "v5.0.0-V3.5.8",
+    "v5.0.0-V3.7.4",
+    "v5.0.0-V3.7.5",
+    "v5.0.0-V4.1.1",
+    "v5.0.0-V4.1.2",
+    "v5.0.0-V4.1.3",
+    "v5.0.0-V4.1.4",
+    "v5.0.0-V4.1.5",
+    "v5.0.0-V4.2.1",
+    "v5.0.0-V4.2.2",
+    "v5.0.0-V4.2.3",
+    "v5.0.0-V4.2.4",
+    "v5.0.0-V4.2.5",
+    "v5.0.0-V5.1.1",
+    "v5.0.0-V5.2.2",
+    "v5.0.0-V5.2.4",
+    "v5.0.0-V5.4.1",
+    "v5.0.0-V6.1.1",
+    "v5.0.0-V6.1.2",
+    "v5.0.0-V6.2.2",
+    "v5.0.0-V6.2.3",
+    "v5.0.0-V6.2.4",
+    "v5.0.0-V6.2.11",
+    "v5.0.0-V6.2.12",
+    "v5.0.0-V6.3.2",
+    "v5.0.0-V6.3.3",
+    "v5.0.0-V6.3.5",
+    "v5.0.0-V6.3.7",
+    "v5.0.0-V6.3.8",
+    "v5.0.0-V6.4.3",
+    "v5.0.0-V6.4.4",
+    "v5.0.0-V6.4.5",
+    "v5.0.0-V6.4.6",
+    "v5.0.0-V6.5.6",
+    "v5.0.0-V7.1.1",
+    "v5.0.0-V7.1.2",
+    "v5.0.0-V7.2.4",
+    "v5.0.0-V7.4.3",
+    "v5.0.0-V7.4.4",
+    "v5.0.0-V7.4.5",
+    "v5.0.0-V7.5.1",
+    "v5.0.0-V7.5.2",
+    "v5.0.0-V7.5.3",
+    "v5.0.0-V8.1.3",
+    "v5.0.0-V8.1.4",
+    "v5.0.0-V8.2.4",
+    "v5.0.0-V8.4.2",
+    "v5.0.0-V10.1.1",
+    "v5.0.0-V11.1.1",
+    "v5.0.0-V11.1.2",
+    "v5.0.0-V11.1.3",
+    "v5.0.0-V11.1.4",
+    "v5.0.0-V11.2.2",
+    "v5.0.0-V11.2.4",
+    "v5.0.0-V11.2.5",
+    "v5.0.0-V11.5.1",
+    "v5.0.0-V11.5.2",
+    "v5.0.0-V11.6.1",
+    "v5.0.0-V11.6.2",
+    "v5.0.0-V11.7.1",
+    "v5.0.0-V11.7.2",
+    "v5.0.0-V12.1.1",
+    "v5.0.0-V12.1.2",
+    "v5.0.0-V12.1.4",
+    "v5.0.0-V12.1.5",
+    "v5.0.0-V12.2.1",
+    "v5.0.0-V12.2.2",
+    "v5.0.0-V12.3.1",
+    "v5.0.0-V12.3.2",
+    "v5.0.0-V12.3.3",
+    "v5.0.0-V12.3.4",
+    "v5.0.0-V12.3.5",
+    "v5.0.0-V13.1.1",
+    "v5.0.0-V13.1.2",
+    "v5.0.0-V13.1.3",
+    "v5.0.0-V13.1.4",
+    "v5.0.0-V13.2.1",
+    "v5.0.0-V13.2.2",
+    "v5.0.0-V13.2.3",
+    "v5.0.0-V13.2.4",
+    "v5.0.0-V13.2.5",
+    "v5.0.0-V13.2.6",
+    "v5.0.0-V13.3.1",
+    "v5.0.0-V13.3.2",
+    "v5.0.0-V13.3.3",
+    "v5.0.0-V13.3.4",
+    "v5.0.0-V13.4.3",
+    "v5.0.0-V13.4.4",
+    "v5.0.0-V13.4.5",
+    "v5.0.0-V13.4.6",
+    "v5.0.0-V13.4.7",
+    "v5.0.0-V14.1.1",
+    "v5.0.0-V14.1.2",
+    "v5.0.0-V14.2.2",
+    "v5.0.0-V14.2.3",
+    "v5.0.0-V14.2.4",
+    "v5.0.0-V14.2.5",
+    "v5.0.0-V14.2.6",
+    "v5.0.0-V14.2.7",
+    "v5.0.0-V14.3.1",
+    "v5.0.0-V14.3.2",
+    "v5.0.0-V15.1.1",
+    "v5.0.0-V15.1.2",
+    "v5.0.0-V15.1.3",
+    "v5.0.0-V15.1.4",
+    "v5.0.0-V15.1.5",
+    "v5.0.0-V15.2.1",
+    "v5.0.0-V15.2.3",
+    "v5.0.0-V15.2.4",
+    "v5.0.0-V15.2.5",
+    "v5.0.0-V15.3.1",
+    "v5.0.0-V15.3.2",
+    "v5.0.0-V15.3.4",
+    "v5.0.0-V15.3.6",
+    "v5.0.0-V15.3.7",
+    "v5.0.0-V15.4.2",
+    "v5.0.0-V15.4.3",
+    "v5.0.0-V15.4.4",
+    "v5.0.0-V16.1.1",
+    "v5.0.0-V16.2.1",
+    "v5.0.0-V16.2.2",
+    "v5.0.0-V16.2.3",
+    "v5.0.0-V16.2.5",
+    "v5.0.0-V16.3.1",
+    "v5.0.0-V16.3.3",
+    "v5.0.0-V16.3.4",
+    "v5.0.0-V16.4.1",
+    "v5.0.0-V16.4.2",
+    "v5.0.0-V16.4.3",
+    "v5.0.0-V16.5.3",
+    "v5.0.0-V16.5.4"
+  ],
+  "requiredControls": {
+    "gateSemantics": {
+      "status": "PASS",
+      "evidence": [
+        "npm run test:security:rag-gate-policy"
+      ]
+    },
+    "identity": {
+      "status": "PASS",
+      "evidence": [
+        "npm run test:tenant-isolation",
+        "npm run test:public-tools:authenticated"
+      ]
+    },
+    "sessionValidation": {
+      "status": "PASS",
+      "evidence": [
+        "npm run test:public-tools:authenticated"
+      ]
+    },
+    "tenantIsolation": {
+      "status": "PASS",
+      "evidence": [
+        "npm run test:tenant-isolation"
+      ]
+    },
+    "authorityCanonicalOwnership": {
+      "status": "PASS",
+      "evidence": [
+        "npm run test:architecture:self",
+        "npm run test:architecture:target",
+        "npm run test:architecture:target-ui"
+      ]
+    },
+    "authorityConformance39": {
+      "status": "PASS",
+      "evidence": [
+        "npm run test:conformance:authority"
+      ]
+    },
+    "genericPersistedAuthority": {
+      "status": "PASS",
+      "evidence": [
+        "npm run test:authority:live"
+      ]
+    },
+    "objectAuthorization": {
+      "status": "PASS",
+      "evidence": [
+        "npm run test:authority:live"
+      ]
+    },
+    "fieldAuthorization": {
+      "status": "PASS",
+      "evidence": [
+        "npm run test:authority:live"
+      ]
+    },
+    "acl": {
+      "status": "PASS",
+      "evidence": [
+        "npm run test:authority:live"
+      ]
+    },
+    "classification": {
+      "status": "PASS",
+      "evidence": [
+        "npm run test:authority:live"
+      ]
+    },
+    "clearance": {
+      "status": "PASS",
+      "evidence": [
+        "npm run test:authority:live"
+      ]
+    },
+    "ownership": {
+      "status": "PASS",
+      "evidence": [
+        "npm run test:authority:live"
+      ]
+    },
+    "hierarchicalScope": {
+      "status": "PASS",
+      "evidence": [
+        "npm run test:authority:live"
+      ]
+    },
+    "explicitDeny": {
+      "status": "PASS",
+      "evidence": [
+        "npm run test:authority:live"
+      ]
+    },
+    "timedRecurringGrants": {
+      "status": "PASS",
+      "evidence": [
+        "npm run test:authority:live"
+      ]
+    },
+    "authorizationVersionInvalidation": {
+      "status": "PASS",
+      "evidence": [
+        "npm run test:authority:live"
+      ]
+    },
+    "originatingSubject": {
+      "status": "PASS",
+      "evidence": [
+        "npm run test:authority:live",
+        "npm run test:public-tools:authenticated"
+      ]
+    },
+    "authorityDecisionAudit": {
+      "status": "PASS",
+      "evidence": [
+        "npm run test:authority:live",
+        "npm run test:public-tools:authenticated",
+        "npm run test:architecture:self"
+      ]
+    },
+    "authorityToSiem": {
+      "status": "PASS",
+      "evidence": [
+        "npm run test:authority:live",
+        "npm run test:security-telemetry",
+        "npm run test:public-tools:authenticated"
+      ]
+    },
+    "auditIntegrityAndRedaction": {
+      "status": "PASS",
+      "evidence": [
+        "npm run test:authority:live",
+        "npm run test:security-telemetry"
+      ]
+    },
+    "configurationAndSecrets": {
+      "status": "PASS",
+      "evidence": [
+        "npm run test:configuration"
+      ]
+    },
+    "sqlPersistenceOwnership": {
+      "status": "PASS",
+      "evidence": [
+        "npm run test:architecture:target"
+      ]
+    },
+    "aiRouterBoundary": {
+      "status": "PASS",
+      "evidence": [
+        "npm run test:ai-router",
+        "npm run test:architecture:target"
+      ]
+    },
+    "fileProcessingSafety": {
+      "status": "PASS",
+      "evidence": [
+        "npm run test:file-security"
+      ]
+    },
+    "crossTenantAttackTests": {
+      "status": "PASS",
+      "evidence": [
+        "npm run test:tenant-isolation",
+        "npm run test:authority:live"
+      ]
+    },
+    "staticSecurityHeaders": {
+      "status": "PASS",
+      "evidence": [
+        "npm run test:security:static-headers"
+      ]
+    },
+    "customerReleaseBlockedWhileAsvsOpen": {
+      "status": "PASS",
+      "evidence": [
+        "npm run test:security:release-policy"
+      ]
+    },
+    "targetArchitectureZeroFindings": {
+      "status": "PASS",
+      "evidence": [
+        "npm run test:architecture:target",
+        "npm run test:architecture:target-ui"
+      ]
+    }
+  },
+  "pass": [
+    "gateSemantics",
+    "identity",
+    "sessionValidation",
+    "tenantIsolation",
+    "authorityCanonicalOwnership",
+    "authorityConformance39",
+    "genericPersistedAuthority",
+    "objectAuthorization",
+    "fieldAuthorization",
+    "acl",
+    "classification",
+    "clearance",
+    "ownership",
+    "hierarchicalScope",
+    "explicitDeny",
+    "timedRecurringGrants",
+    "authorizationVersionInvalidation",
+    "originatingSubject",
+    "authorityDecisionAudit",
+    "authorityToSiem",
+    "auditIntegrityAndRedaction",
+    "configurationAndSecrets",
+    "sqlPersistenceOwnership",
+    "aiRouterBoundary",
+    "fileProcessingSafety",
+    "crossTenantAttackTests",
+    "staticSecurityHeaders",
+    "customerReleaseBlockedWhileAsvsOpen",
+    "targetArchitectureZeroFindings"
+  ],
+  "fail": [],
+  "targetArchitectureFindings": 0,
+  "sourceEvidence": [
+    "reports/security/asvs-5.0-l3.json",
+    "reports/security/rag-asvs-classification.json",
+    "reports/security/t5-security-delta-backlog.json",
+    "docs/security/07-t4-authority-decision-boundary.md",
+    "npm run test:security:rag-gate-policy",
+    "npm run check:target",
+    "npm run test:conformance:authority",
+    "npm run test:authority:live",
+    "npm run test:file-security",
+    "npm run test:security:static-headers",
+    "npm run test:security:release-policy",
+    "npm run test:configuration",
+    "npm run test:ai-router",
+    "npm run test:security-telemetry",
+    "npm run test:tenant-isolation",
+    "npm run test:public-tools:anonymous",
+    "npm run test:public-tools:authenticated",
+    "npm run test:architecture:self",
+    "npm run test:architecture:target",
+    "npm run test:architecture:target-ui"
+  ],
+  "testResults": {
+    "gateSemantics": {
+      "status": "PASS",
+      "script": "test:security:rag-gate-policy",
+      "exitCode": 0,
+      "evidence": "> targoman_llm@1.0.0 test:security:rag-gate-policy\n> node --test tests/target/t44-rag-gate-policy.test.mjs\n\nTAP version 13\n# Subtest: T5-created and customer-release gaps do not block T5 start\nok 1 - T5-created and customer-release gaps do not block T5 start\n  ---\n  duration_ms: 0.360347\n  type: 'test'\n  ...\n# Subtest: an open foundation or failing named check blocks T5 start\nok 2 - an open foundation or failing named check blocks T5 start\n  ---\n  duration_ms: 0.07955\n  type: 'test'\n  ...\n1..2\n# tests 2\n# suites 0\n# pass 2\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 26.457947"
+    },
+    "targetTypecheck": {
+      "status": "PASS",
+      "script": "check:target",
+      "exitCode": 0,
+      "evidence": "> targoman_llm@1.0.0 check:target\n> tsc --noEmit -p tsconfig.target.json"
+    },
+    "authorityConformance": {
+      "status": "PASS",
+      "script": "test:conformance:authority",
+      "exitCode": 0,
+      "evidence": " inside\nok 28 - recurring timezone inside\n  ---\n  duration_ms: 7.432801\n  type: 'test'\n  ...\n# Subtest: recurring timezone end exclusive\nok 29 - recurring timezone end exclusive\n  ---\n  duration_ms: 0.152983\n  type: 'test'\n  ...\n# Subtest: Jalali odd day schedule\nok 30 - Jalali odd day schedule\n  ---\n  duration_ms: 0.313168\n  type: 'test'\n  ...\n# Subtest: suspension\nok 31 - suspension\n  ---\n  duration_ms: 0.055318\n  type: 'test'\n  ...\n# Subtest: termination\nok 32 - termination\n  ---\n  duration_ms: 0.033831\n  type: 'test'\n  ...\n# Subtest: missing classification fails closed\nok 33 - missing classification fails closed\n  ---\n  duration_ms: 0.037141\n  type: 'test'\n  ...\n# Subtest: malformed CRUD fails closed\nok 34 - malformed CRUD fails closed\n  ---\n  duration_ms: 0.032036\n  type: 'test'\n  ...\n# Subtest: invalid temporal rule fails closed\nok 35 - invalid temporal rule fails closed\n  ---\n  duration_ms: 0.028714\n  type: 'test'\n  ...\n# Subtest: invalid tenant scope fails closed\nok 36 - invalid tenant scope fails closed\n  ---\n  duration_ms: 0.026829\n  type: 'test'\n  ...\n# Subtest: determinism\nok 37 - determinism\n  ---\n  duration_ms: 0.049545\n  type: 'test'\n  ...\n# Subtest: input non-mutation\nok 38 - input non-mutation\n  ---\n  duration_ms: 0.099583\n  type: 'test'\n  ...\n# Subtest: invalidation contract\nok 39 - invalidation contract\n  ---\n  duration_ms: 0.041777\n  type: 'test'\n  ...\n1..39\n# tests 39\n# suites 0\n# pass 39\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 20.414354"
+    },
+    "persistedAuthority": {
+      "status": "PASS",
+      "script": "test:authority:live",
+      "exitCode": 0,
+      "evidence": "lization\n      ---\n      duration_ms: 14.978694\n      type: 'test'\n      ...\n    # Subtest: field decisions return distinct allowed sets\n    ok 2 - field decisions return distinct allowed sets\n      ---\n      duration_ms: 17.305382\n      type: 'test'\n      ...\n    # Subtest: classification, ownership, scope, and missing facts fail closed\n    ok 3 - classification, ownership, scope, and missing facts fail closed\n      ---\n      duration_ms: 18.33927\n      type: 'test'\n      ...\n    # Subtest: mandatory decision evidence failure blocks every current Authority path\n    ok 4 - mandatory decision evidence failure blocks every current Authority path\n      ---\n      duration_ms: 6.020582\n      type: 'test'\n      ...\n    # Subtest: persisted UTC and Jalali schedules, suspension, and version invalidation\n    ok 5 - persisted UTC and Jalali schedules, suspension, and version invalidation\n      ---\n      duration_ms: 22.946305\n      type: 'test'\n      ...\n    # Subtest: HUMAN origin, mandatory Audit, SIEM retry, redaction and audit immutability\n    ok 6 - HUMAN origin, mandatory Audit, SIEM retry, redaction and audit immutability\n      ---\n      duration_ms: 116.914402\n      type: 'test'\n      ...\n    1..6\nok 1 - real persisted Authority resolves object, field, ACL, classification, scope, schedule, version and audited SIEM decisions\n  ---\n  duration_ms: 230.729243\n  type: 'test'\n  ...\n1..1\n# tests 7\n# suites 0\n# pass 7\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 373.447427"
+    },
+    "fileProcessing": {
+      "status": "PASS",
+      "script": "test:file-security",
+      "exitCode": 0,
+      "evidence": "> targoman_llm@1.0.0 test:file-security\n> node --import tsx --test tests/target/t4-file-security.test.ts\n\nTAP version 13\n# Subtest: display filename preserves Persian basename and removes dangerous metadata\nok 1 - display filename preserves Persian basename and removes dangerous metadata\n  ---\n  duration_ms: 0.812423\n  type: 'test'\n  ...\n# Subtest: office precheck rejects malicious archives before LibreOffice\nok 2 - office precheck rejects malicious archives before LibreOffice\n  ---\n  duration_ms: 38.869122\n  type: 'test'\n  ...\n# Subtest: upload media type, extension, signature, and temporary path agree\nok 3 - upload media type, extension, signature, and temporary path agree\n  ---\n  duration_ms: 1.177207\n  type: 'test'\n  ...\n# Subtest: office parser cleans its conversion directory and profile after processing\nok 4 - office parser cleans its conversion directory and profile after processing\n  ---\n  duration_ms: 2051.927877\n  type: 'test'\n  ...\n1..4\n# tests 4\n# suites 0\n# pass 4\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 2560.926928"
+    },
+    "staticHeaders": {
+      "status": "PASS",
+      "script": "test:security:static-headers",
+      "exitCode": 0,
+      "evidence": "      45.66 kB │ gzip: 17.62 kB\n.svelte-kit/output/client/_app/immutable/chunks/gYVk3HLv.js                      48.44 kB │ gzip: 17.55 kB\n.svelte-kit/output/client/_app/immutable/nodes/9.DtTjNJoC.js                     49.36 kB │ gzip: 16.19 kB\n.svelte-kit/output/client/_app/immutable/chunks/BKG6ynyO.js                     127.64 kB │ gzip: 52.91 kB\n\n✓ built in 352ms\n\nRun npm run preview to preview your production build locally.\n\n> Using @sveltejs/adapter-node\nCopying assets\nCompressing and hashing assets\n✔ done\nTAP version 13\n# Subtest: release Web process applies security headers to built static assets\nok 1 - release Web process applies security headers to built static assets\n  ---\n  duration_ms: 147.85664\n  type: 'test'\n  ...\n1..1\n# tests 1\n# suites 0\n# pass 1\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 194.261397\n\n[plugin vite:css-post] \u001b[33m[SOURCEMAP_BROKEN] \u001b[0mSourcemap is likely to be incorrect: a plugin (vite:css-post) was used to transform files, but didn't generate a sourcemap for the transformation. Consult the plugin documentation for help: https://rolldown.rs/guide/troubleshooting#warning-sourcemap-is-likely-to-be-incorrect\n\n(node:11877) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n(Use `node --trace-warnings ...` to show where the warning was created)\n(node:11877) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n(Use `node --trace-warnings ...` to show where the warning was created)"
+    },
+    "releasePolicy": {
+      "status": "PASS",
+      "script": "test:security:release-policy",
+      "exitCode": 0,
+      "evidence": "> targoman_llm@1.0.0 test:security:release-policy\n> node --test tests/target/t44-release-policy.test.mjs\n\nTAP version 13\n# Subtest: customer release stops before creating artifacts while ASVS Level 3 is open\nok 1 - customer release stops before creating artifacts while ASVS Level 3 is open\n  ---\n  duration_ms: 94.720173\n  type: 'test'\n  ...\n1..1\n# tests 1\n# suites 0\n# pass 1\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 120.548444"
+    },
+    "configuration": {
+      "status": "PASS",
+      "script": "test:configuration",
+      "exitCode": 0,
+      "evidence": "upt string URLs and invalid syntax fails closed\nok 2 - CJSON comments do not corrupt string URLs and invalid syntax fails closed\n  ---\n  duration_ms: 0.73411\n  type: 'test'\n  ...\n# Subtest: unknown keys, inline secrets, weak limits and missing AI capability fail closed\nok 3 - unknown keys, inline secrets, weak limits and missing AI capability fail closed\n  ---\n  duration_ms: 0.932035\n  type: 'test'\n  ...\n# Subtest: archive processing bounds are validated and default closed\nok 4 - archive processing bounds are validated and default closed\n  ---\n  duration_ms: 0.78182\n  type: 'test'\n  ...\n# Subtest: password-only assurance is confined to development and test profiles\nok 5 - password-only assurance is confined to development and test profiles\n  ---\n  duration_ms: 0.73497\n  type: 'test'\n  ...\n# Subtest: enabled SIEM includes canonical Authority decisions\nok 6 - enabled SIEM includes canonical Authority decisions\n  ---\n  duration_ms: 0.670112\n  type: 'test'\n  ...\n# Subtest: redaction removes secret reference identities from effective output\nok 7 - redaction removes secret reference identities from effective output\n  ---\n  duration_ms: 0.54983\n  type: 'test'\n  ...\n# Subtest: failed reload retains previous snapshot; startup identity cannot hot change\nok 8 - failed reload retains previous snapshot; startup identity cannot hot change\n  ---\n  duration_ms: 3.603397\n  type: 'test'\n  ...\n1..8\n# tests 8\n# suites 0\n# pass 8\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 120.51495"
+    },
+    "aiRouter": {
+      "status": "PASS",
+      "script": "test:ai-router",
+      "exitCode": 0,
+      "evidence": "> targoman_llm@1.0.0 test:ai-router\n> node --import tsx --test tests/ai-router/router.test.ts\n\nTAP version 13\n# Subtest: capability and health exclusions precede preference\nok 1 - capability and health exclusions precede preference\n  ---\n  duration_ms: 3.046071\n  type: 'test'\n  ...\n# Subtest: transient failure before visible output fails over and records lineage\nok 2 - transient failure before visible output fails over and records lineage\n  ---\n  duration_ms: 1.904848\n  type: 'test'\n  ...\n# Subtest: visible output interruption never silently replays on another endpoint\nok 3 - visible output interruption never silently replays on another endpoint\n  ---\n  duration_ms: 0.815627\n  type: 'test'\n  ...\n# Subtest: open circuit excludes an endpoint after configured failures\nok 4 - open circuit excludes an endpoint after configured failures\n  ---\n  duration_ms: 0.865273\n  type: 'test'\n  ...\n# Subtest: equal-priority endpoints use deterministic weighted selection\nok 5 - equal-priority endpoints use deterministic weighted selection\n  ---\n  duration_ms: 2.517213\n  type: 'test'\n  ...\n1..5\n# tests 5\n# suites 0\n# pass 5\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 137.231604"
+    },
+    "securityTelemetry": {
+      "status": "PASS",
+      "script": "test:security-telemetry",
+      "exitCode": 0,
+      "evidence": "st'\n  ...\n# Subtest: admission enforces input and token bounds, releases, and recovers stale reservations\nok 2 - admission enforces input and token bounds, releases, and recovers stale reservations\n  ---\n  duration_ms: 14.488288\n  type: 'test'\n  ...\n# Subtest: SIEM export survives retry, retains safe envelope, and settles once\nok 3 - SIEM export survives retry, retains safe envelope, and settles once\n  ---\n  duration_ms: 15.749951\n  type: 'test'\n  ...\n# Subtest: local SIEM receiver proves HTTP delivery, idempotency, outage retry, and worker recovery\nok 4 - local SIEM receiver proves HTTP delivery, idempotency, outage retry, and worker recovery\n  ---\n  duration_ms: 27.661842\n  type: 'test'\n  ...\n# Subtest: SIEM lost acknowledgement remains UNKNOWN across Worker restart without receiver guarantee\nok 5 - SIEM lost acknowledgement remains UNKNOWN across Worker restart without receiver guarantee\n  ---\n  duration_ms: 15.992139\n  type: 'test'\n  ...\n# Subtest: AI endpoint capacity is shared across Router instances and releases after completion\nok 6 - AI endpoint capacity is shared across Router instances and releases after completion\n  ---\n  duration_ms: 20.311629\n  type: 'test'\n  ...\n# Subtest: duplicate usage settlement is counted once by stable run identity\nok 7 - duplicate usage settlement is counted once by stable run identity\n  ---\n  duration_ms: 5.620889\n  type: 'test'\n  ...\n1..7\n# tests 7\n# suites 0\n# pass 7\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 274.076267"
+    },
+    "tenantIsolation": {
+      "status": "PASS",
+      "script": "test:tenant-isolation",
+      "exitCode": 0,
+      "evidence": "d\":\"HUMAN\",\"actorId\":\"e6f95c84-b813-457c-9440-e9c2438d946a\",\"sessionId\":\"8d42f9f6-b2eb-478f-b509-e2e34345b65f\",\"authorizationVersion\":1,\"source\":\"PUBLIC_API\",\"initiatorActorId\":\"e6f95c84-b813-457c-9440-e9c2438d946a\",\"status\":\"413\",\"durationMs\":3,\"errorClass\":null,\"method\":\"POST\",\"route\":\"/api/faq/inspect\",\"endpointId\":null,\"modelId\":null,\"runId\":null,\"aiTask\":null,\"attemptCount\":null,\"inputTokens\":null,\"outputTokens\":null}\n# {\"timestamp\":\"2026-10-03T18:28:18.993Z\",\"severity\":\"INFO\",\"component\":\"target-api\",\"event\":\"request_completed\",\"requestId\":\"32ede1ddc376404e8982053edf05988f\",\"correlationId\":\"a6238db6-7641-40bc-98f1-bce43c2820b4\",\"deploymentId\":\"development\",\"tenantId\":\"t4-a-296e592f\",\"moduleId\":\"faq\",\"actorKind\":\"HUMAN\",\"actorId\":\"e6f95c84-b813-457c-9440-e9c2438d946a\",\"sessionId\":\"8d42f9f6-b2eb-478f-b509-e2e34345b65f\",\"authorizationVersion\":1,\"source\":\"PUBLIC_API\",\"initiatorActorId\":\"e6f95c84-b813-457c-9440-e9c2438d946a\",\"status\":\"200\",\"durationMs\":10,\"errorClass\":null,\"method\":\"POST\",\"route\":\"/api/faq\",\"endpointId\":null,\"modelId\":null,\"runId\":null,\"aiTask\":null,\"attemptCount\":null,\"inputTokens\":null,\"outputTokens\":null}\n# Subtest: real authenticated public requests use tenant-scoped Authority and produce HUMAN evidence\nok 1 - real authenticated public requests use tenant-scoped Authority and produce HUMAN evidence\n  ---\n  duration_ms: 2470.143632\n  type: 'test'\n  ...\n1..1\n# tests 1\n# suites 0\n# pass 1\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 3016.373601"
+    },
+    "anonymousPublicTools": {
+      "status": "PASS",
+      "script": "test:public-tools:anonymous",
+      "exitCode": 0,
+      "evidence": "d\":\"HUMAN\",\"actorId\":\"f3c053b9-6bd2-46de-b41a-15d7275d4e12\",\"sessionId\":\"e8792510-54c1-4200-bc1c-58b9b7615df8\",\"authorizationVersion\":1,\"source\":\"PUBLIC_API\",\"initiatorActorId\":\"f3c053b9-6bd2-46de-b41a-15d7275d4e12\",\"status\":\"413\",\"durationMs\":3,\"errorClass\":null,\"method\":\"POST\",\"route\":\"/api/faq/inspect\",\"endpointId\":null,\"modelId\":null,\"runId\":null,\"aiTask\":null,\"attemptCount\":null,\"inputTokens\":null,\"outputTokens\":null}\n# {\"timestamp\":\"2026-10-03T18:28:21.967Z\",\"severity\":\"INFO\",\"component\":\"target-api\",\"event\":\"request_completed\",\"requestId\":\"6e9f94d53db54fd29c539e2f4b1df799\",\"correlationId\":\"62f23672-7e6e-4ccd-a923-078804ac1b82\",\"deploymentId\":\"development\",\"tenantId\":\"t4-a-66c6fe2f\",\"moduleId\":\"faq\",\"actorKind\":\"HUMAN\",\"actorId\":\"f3c053b9-6bd2-46de-b41a-15d7275d4e12\",\"sessionId\":\"e8792510-54c1-4200-bc1c-58b9b7615df8\",\"authorizationVersion\":1,\"source\":\"PUBLIC_API\",\"initiatorActorId\":\"f3c053b9-6bd2-46de-b41a-15d7275d4e12\",\"status\":\"200\",\"durationMs\":10,\"errorClass\":null,\"method\":\"POST\",\"route\":\"/api/faq\",\"endpointId\":null,\"modelId\":null,\"runId\":null,\"aiTask\":null,\"attemptCount\":null,\"inputTokens\":null,\"outputTokens\":null}\n# Subtest: real authenticated public requests use tenant-scoped Authority and produce HUMAN evidence\nok 1 - real authenticated public requests use tenant-scoped Authority and produce HUMAN evidence\n  ---\n  duration_ms: 2337.545579\n  type: 'test'\n  ...\n1..1\n# tests 1\n# suites 0\n# pass 1\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 2883.033974"
+    },
+    "authenticatedPublicTools": {
+      "status": "PASS",
+      "script": "test:public-tools:authenticated",
+      "exitCode": 0,
+      "evidence": "d\":\"HUMAN\",\"actorId\":\"9cca622c-d5d3-44d0-9eed-14a06b92032a\",\"sessionId\":\"7fa06c58-0968-4ae8-a5d3-e7eeb4d41b0e\",\"authorizationVersion\":1,\"source\":\"PUBLIC_API\",\"initiatorActorId\":\"9cca622c-d5d3-44d0-9eed-14a06b92032a\",\"status\":\"413\",\"durationMs\":3,\"errorClass\":null,\"method\":\"POST\",\"route\":\"/api/faq/inspect\",\"endpointId\":null,\"modelId\":null,\"runId\":null,\"aiTask\":null,\"attemptCount\":null,\"inputTokens\":null,\"outputTokens\":null}\n# {\"timestamp\":\"2026-10-03T18:28:24.920Z\",\"severity\":\"INFO\",\"component\":\"target-api\",\"event\":\"request_completed\",\"requestId\":\"e8c36379e2c74bea8f39b8e5fc0fda59\",\"correlationId\":\"b0cc6eb0-e510-4d87-b6ba-9305c2a2d835\",\"deploymentId\":\"development\",\"tenantId\":\"t4-a-d94fee84\",\"moduleId\":\"faq\",\"actorKind\":\"HUMAN\",\"actorId\":\"9cca622c-d5d3-44d0-9eed-14a06b92032a\",\"sessionId\":\"7fa06c58-0968-4ae8-a5d3-e7eeb4d41b0e\",\"authorizationVersion\":1,\"source\":\"PUBLIC_API\",\"initiatorActorId\":\"9cca622c-d5d3-44d0-9eed-14a06b92032a\",\"status\":\"200\",\"durationMs\":10,\"errorClass\":null,\"method\":\"POST\",\"route\":\"/api/faq\",\"endpointId\":null,\"modelId\":null,\"runId\":null,\"aiTask\":null,\"attemptCount\":null,\"inputTokens\":null,\"outputTokens\":null}\n# Subtest: real authenticated public requests use tenant-scoped Authority and produce HUMAN evidence\nok 1 - real authenticated public requests use tenant-scoped Authority and produce HUMAN evidence\n  ---\n  duration_ms: 2313.731227\n  type: 'test'\n  ...\n1..1\n# tests 1\n# suites 0\n# pass 1\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 2866.245676"
+    },
+    "architectureAnalyzer": {
+      "status": "PASS",
+      "script": "test:architecture:self",
+      "exitCode": 0,
+      "evidence": "sition wiring and external source adapters\n  ---\n  duration_ms: 2.297349\n  type: 'test'\n  ...\n# Subtest: SQL qualification inspects SQL contexts and ignores keywords, prose, and referential actions\nok 12 - SQL qualification inspects SQL contexts and ignores keywords, prose, and referential actions\n  ---\n  duration_ms: 0.402982\n  type: 'test'\n  ...\n# Subtest: AI output guard ignores run metadata but catches direct model text writes\nok 13 - AI output guard ignores run metadata but catches direct model text writes\n  ---\n  duration_ms: 0.419396\n  type: 'test'\n  ...\n# Subtest: naming accepts exact prefixes and recognizes transitive exceptions\nok 14 - naming accepts exact prefixes and recognizes transitive exceptions\n  ---\n  duration_ms: 0.365326\n  type: 'test'\n  ...\n# Subtest: Authority and AI checks distinguish facts and owner boundaries\nok 15 - Authority and AI checks distinguish facts and owner boundaries\n  ---\n  duration_ms: 0.612565\n  type: 'test'\n  ...\n# Subtest: magic decisions and constants target stable declarations\nok 16 - magic decisions and constants target stable declarations\n  ---\n  duration_ms: 0.900307\n  type: 'test'\n  ...\n# Subtest: canonical typed manifest alone supplies contribution IDs and routes have module scope\nok 17 - canonical typed manifest alone supplies contribution IDs and routes have module scope\n  ---\n  duration_ms: 1.622412\n  type: 'test'\n  ...\n1..17\n# tests 17\n# suites 0\n# pass 17\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 480.835991"
+    },
+    "targetArchitecture": {
+      "status": "PASS",
+      "script": "test:architecture:target",
+      "exitCode": 0,
+      "evidence": "> targoman_llm@1.0.0 test:architecture:target\n> node --import tsx scripts/t4-target-architecture.ts && node --import tsx --test tests/architecture/t4TargetArchitecture.test.ts\n\nT4 target architecture: 0 findings\nTAP version 13\n# Subtest: JWT and password detectors catch target boundary violations\nok 1 - JWT and password detectors catch target boundary violations\n  ---\n  duration_ms: 0.593474\n  type: 'test'\n  ...\n# Subtest: Authority table and direct privilege detectors catch target boundary violations\nok 2 - Authority table and direct privilege detectors catch target boundary violations\n  ---\n  duration_ms: 0.076569\n  type: 'test'\n  ...\n1..2\n# tests 2\n# suites 0\n# pass 2\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 454.153594"
+    },
+    "targetUiArchitecture": {
+      "status": "PASS",
+      "script": "test:architecture:target-ui",
+      "exitCode": 0,
+      "evidence": "> targoman_llm@1.0.0 test:architecture:target-ui\n> node --import tsx scripts/target-ui-guardrails.ts\n\nARCHITECTURE_VIOLATION=0\nTEST_INFRA_FAILURE=0"
+    }
+  }
+}

@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import { generateKeyPairSync, randomUUID } from 'node:crypto';
 import { copyFile, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { createServer, type Server } from 'node:http';
+import { request as httpRequest } from 'node:http';
+import { Readable } from 'node:stream';
 import { createServer as createNetServer } from 'node:net';
 import { spawn, execFileSync, type ChildProcess } from 'node:child_process';
 import { tmpdir } from 'node:os';
@@ -21,6 +23,21 @@ const configPath = process.env.T4_PG_CONFIG;
 const sourceSecrets = process.env.T4_SECRETS_DIR;
 if (process.env.T4_REQUIRE_LIVE === '1' && (!configPath || !sourceSecrets)) throw new Error('T4_LIVE_PUBLIC_CONFIG_REQUIRED');
 const PASSWORD = 'a long distinct integration passphrase 2026';
+const hostFetch: typeof globalThis.fetch = async (input, init) => new Promise<Response>((resolve, reject) => {
+  const normalized = new Request(String(input), init);
+  const headers = new Headers(normalized.headers);
+  const supplied = new Headers(init?.headers);
+  if (supplied.has('host')) headers.set('host', supplied.get('host')!);
+  const client = httpRequest(String(input), { method: normalized.method, headers: Object.fromEntries(headers) }, response => {
+    const chunks: Buffer[] = [];
+    response.on('data', (chunk: Buffer) => chunks.push(chunk));
+    response.on('end', () => resolve(new Response(Buffer.concat(chunks), { status: response.statusCode ?? 500,
+      headers: new Headers(response.headers as Record<string, string>) })));
+  });
+  client.on('error', reject);
+  if (normalized.body) Readable.fromWeb(normalized.body).pipe(client);
+  else client.end();
+});
 
 test('real authenticated public requests use tenant-scoped Authority and produce HUMAN evidence',
   { skip: !configPath || !sourceSecrets }, async () => {
@@ -79,20 +96,23 @@ test('real authenticated public requests use tenant-scoped Authority and produce
         .map(([module, policy]) => [module, { ...policy, inputChars: policy.inputChars! * 2,
           uploadBytes: policy.uploadBytes! * 2, outputTokens: 64,
           requestsPerMinute: policy.requestsPerMinute! * 2, concurrent: policy.concurrent! * 2 }]));
-      const auth = { enabled: true, issuer: 'https://auth.example.invalid', audience: 'targoman-api', accessTokenSeconds: 300,
+      const auth = { enabled: true, issuer: 'https://auth.example.invalid', publicOrigin: 'https://auth.example.invalid',
+        allowedApplicationOrigins: ['https://app.example.invalid'], audience: 'targoman-api', accessTokenSeconds: 300,
         activeKid: 'v1', privateKeyRef: 'file:/run/secrets/access-private',
         session: { absoluteLifetimeSeconds: 2592000, refreshLifetimeSeconds: 604800, inactivityLifetimeSeconds: 604800 },
+        password: { contextWords: [], compromised: { kind: 'LOCAL_SHA1', directory: '/tmp/t4-breach-fixture' } },
         authenticatedAdmission,
         privilegedAdmission,
         publicKeys: [{ kid: 'v1', publicKeyRef: 'file:/run/secrets/access-public' }] };
       const siem = { ...(base.siem as Record<string, unknown>), enabled: true,
         destinationId: `t4-public-${suffix}`, url: 'https://siem.example.invalid/ingest',
-        deliveryGuarantee: 'IDEMPOTENT', events: ['authority.denied', 'tenant.mismatch',
+        deliveryGuarantee: 'IDEMPOTENT', events: ['authority.decision', 'authority.denied', 'tenant.mismatch',
           'public.translate.completed', 'public.summarize.completed', 'public.faq.generate.completed'] };
       const configured = join(directory, 'platform.cjson');
       await writeFile(configured, JSON.stringify({ ...base,
         deployment: { ...(base.deployment as Record<string, unknown>), tenantId: `t4-anon-${suffix}` },
-        http: { ...(base.http as Record<string, unknown>), apiPort: imagePort },
+        web: { publicOrigin: 'https://app.example.invalid' },
+        http: { ...(base.http as Record<string, unknown>), apiPort: imagePort, allowedOrigins: ['https://app.example.invalid'] },
         auth, siem, admission: anonymousAdmission, ai: { ...baseAi,
         endpoints: endpoints.map(endpoint => ({ ...endpoint, baseUrl: `http://127.0.0.1:${providerAddress.port}` })) } }));
       const snapshot = await loadConfiguration(configured);
@@ -157,13 +177,13 @@ test('real authenticated public requests use tenant-scoped Authority and produce
       }
       const origin = snapshot.value.http.allowedOrigins[0]!;
       const login = async (identityId: string, tenantId?: string) => {
-        const response = await fetch(`${root}/api/auth/login`, { method: 'POST', headers: { origin, 'content-type': 'application/json' },
+        const response = await hostFetch(`${root}/api/auth/login`, { method: 'POST', headers: { host: 'auth.example.invalid', origin, 'content-type': 'application/json' },
           body: JSON.stringify({ email: `${identityId}@example.invalid`, password: PASSWORD, ...(tenantId ? { tenantId } : {}) }) });
         assert.equal(response.status, 200);
         return response.json() as Promise<{ accessToken?: string; tenantId?: string; status?: string; tenants?: string[] }>;
       };
       const post = (path: string, body: unknown, token?: string, selectedTenant?: string) =>
-        fetch(`${root}/api${path}`, { method: 'POST', headers: { ...(body instanceof FormData ? {} : { 'content-type': 'application/json' }),
+        hostFetch(`${root}/api${path}`, { method: 'POST', headers: { host: 'app.example.invalid', ...(body instanceof FormData ? {} : { 'content-type': 'application/json' }),
           ...(token ? { authorization: `Bearer ${token}` } : {}), ...(selectedTenant ? { 'x-tenant-id': selectedTenant } : {}) },
           body: body instanceof FormData ? body : JSON.stringify(body) });
       const translate = { text: 'A source phrase', source_lang: 'en', target_lang: 'fa', request_id: randomUUID().replaceAll('-', '') };
@@ -311,9 +331,16 @@ test('real authenticated public requests use tenant-scoped Authority and produce
         if (outcome === 'EMPTY') break;
         assert.equal(outcome, 'DELIVERED');
       }
-      for (const action of ['authority.denied', 'tenant.mismatch', 'public.translate.completed',
+      for (const action of ['authority.decision', 'authority.denied', 'tenant.mismatch', 'public.translate.completed',
         'public.summarize.completed', 'public.faq.generate.completed'])
         assert.ok(delivered.some(event => event.action === action), action);
+      const authorityEvents = delivered.filter(event => event.action === 'authority.decision');
+      assert.ok(authorityEvents.some(event => event.authorityContext?.decision === 'ALLOW'));
+      assert.ok(authorityEvents.some(event => event.authorityContext?.decision === 'DENY'));
+      assert.ok(authorityEvents.every(event => event.actorKind === 'HUMAN' && event.actorId && event.sessionId
+        && event.requestId && event.correlationId && event.authorityContext?.path
+        && Number.isSafeInteger(event.authorityContext?.authorizationVersion)));
+      assert.ok(authorityEvents.every(event => !/password|refreshToken|accessToken|cookie/i.test(JSON.stringify(event))));
       assert.ok(delivered.filter(event => event.actorKind === 'HUMAN').every(event => event.actorId && event.sessionId));
       const unscoped = await apiPool.query(`SELECT aug_id FROM authority.tbl_aut_grant WHERE aug_identity__idn_id = $1`, [identities.both]);
       assert.equal(unscoped.rowCount, 0);

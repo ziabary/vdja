@@ -18,5 +18,8 @@ export const load:LayoutServerLoad=async ({cookies,route})=>{
     :route.id?.includes('dashboard')?i18n.t('userTitle')
     :publicToolText(locale,'tools');
   const authEnabled=snapshot.value.auth?.enabled===true;
-  return {bootstrap,publicSurface,publicModules:enabledPublicModules(snapshot),authEnabled,loginUrl:authEnabled?'/login':null,chromeDescriptor:{title,breadcrumbs:[],actions:[]}};
+  return {bootstrap,publicSurface,publicModules:enabledPublicModules(snapshot),authEnabled,
+    knowledgeEnabled:snapshot.value.knowledge?.enabled===true,
+    managedUploadMaxBytes:snapshot.value.fileManagement?.enabled?snapshot.value.fileManagement.uploads.maxBytes:0,
+    authOrigin:authEnabled?snapshot.value.auth.publicOrigin:null,loginUrl:authEnabled?'/login':null,chromeDescriptor:{title,breadcrumbs:[],actions:[]}};
 };

@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import type pg from 'pg';
+import type { intfSessionReference } from './subject.js';
 import { withTargetTransaction } from '../../persistence/src/target.js';
 import type { intfSessionSecurityPolicy } from '../../configuration/src/index.js';
 import { hashRefreshToken, issueRefreshToken, rotateRefreshToken, type intfSessionStore } from './index.js';
@@ -79,7 +80,7 @@ export async function createTenantSession(pool: pg.Pool, policy: intfSessionSecu
 }
 
 /** Cryptographic validity is only the first step; this check is required on every protected request. */
-export async function validateAccessSession(pool: pg.Pool, policy: intfSessionSecurityPolicy, claims: intfAccessTokenClaims, requestedTenantId: string): Promise<boolean> {
+export async function validateAccessSession(pool: pg.Pool, policy: intfSessionSecurityPolicy, claims: intfSessionReference, requestedTenantId: string): Promise<boolean> {
   if (claims.tenantId !== requestedTenantId) return false;
   const result = await pool.query<{ ses_id: string }>(`SELECT s.ses_id
     FROM session_core.tbl_ses_session s

@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "reviewDate": "2026-10-03",
+  "scope": "Current target Web/API/Worker and deploy/runtime lock; legacy src/, public/js/, root development dependencies and future T5 are excluded",
+  "http": {
+    "apiSource": "apps/api/src/index.ts",
+    "routes": [
+      { "method": "GET", "path": "/", "purpose": "health" },
+      { "method": "GET", "path": "/health", "purpose": "liveness" },
+      { "method": "GET", "path": "/ready", "purpose": "readiness" },
+      { "method": "GET", "path": "/version", "purpose": "version metadata" },
+      { "method": "GET", "path": "/api/auth/me", "purpose": "bearer session view", "condition": "auth.enabled" },
+      { "method": "POST", "path": "/api/auth/login", "purpose": "password login", "condition": "auth.enabled" },
+      { "method": "POST", "path": "/api/auth/refresh", "purpose": "refresh cookie rotation", "condition": "auth.enabled" },
+      { "method": "POST", "path": "/api/auth/logout", "purpose": "refresh session revocation", "condition": "auth.enabled" },
+      { "method": "OPTIONS", "path": "/api/auth/{login,refresh,logout}", "purpose": "credentialed CORS preflight", "condition": "auth.enabled" },
+      { "method": "POST", "path": "/api{modules.translator.route}", "purpose": "Translator JSON or SSE" },
+      { "method": "POST", "path": "/api{modules.summarizer.route}", "purpose": "Summarizer SSE" },
+      { "method": "POST", "path": "/api{modules.translator.route}/:reqId/stop", "purpose": "request cancellation" },
+      { "method": "POST", "path": "/api{modules.summarizer.route}/:reqId/stop", "purpose": "request cancellation" },
+      { "method": "POST", "path": "/api/file2Text", "purpose": "text extraction upload" },
+      { "method": "POST", "path": "/api/faq/inspect", "purpose": "FAQ upload inspection" },
+      { "method": "POST", "path": "/api{modules.faq.route}", "purpose": "FAQ upload and SSE" }
+    ],
+    "webSource": "apps/web/src/routes",
+    "webPages": ["/", "/translate", "/summarize", "/faq", "/login (auth enabled)", "/foundation", "/dashboard", "/admin"],
+    "webGateway": "/api/[...path] forwards selected headers and bodies to the target API",
+    "streaming": "SSE over HTTP for Translator, Summarizer and FAQ",
+    "uploads": ["/api/file2Text", "/api/faq/inspect", "/api{modules.faq.route}"],
+    "acceptedFileExtensions": [".txt", ".md", ".pdf", ".doc", ".docx", ".odt"],
+    "fileSource": "packages/file-processing/src/index.ts",
+    "userSubmittedFilenameFlow": "FAQ inspect JSON and FAQ SSE metadata echo Multer originalname without validation; ASVS V5.4.1 FAIL. No file download Content-Disposition response exists.",
+    "outboundHttp": [
+      { "owner": "AI Router", "destination": "CJSON-configured OpenAI-compatible endpoint", "source": "packages/ai-router/src/index.ts" },
+      { "owner": "Security Telemetry", "destination": "CJSON-configured SIEM receiver", "source": "packages/security-telemetry/src/worker.ts" }
+    ]
+  },
+  "protocolConditions": {
+    "oauthClient": { "present": false, "evidence": ["apps/api/src/index.ts", "apps/web/src/routes", "deploy/runtime/package-lock.json"], "note": "Target Auth is first-party password/session with an Ed25519 access token; the legacy/root openid-client package does not define a target OAuth client flow." },
+    "oauthAuthorizationServer": { "present": false, "evidence": ["apps/api/src/index.ts", "deploy/runtime/package-lock.json"], "note": "No authorization endpoint, OAuth token endpoint, client registration, consent or delegated scopes." },
+    "oidcProviderOrRelyingParty": { "present": false, "evidence": ["apps/api/src/index.ts", "apps/web/src/routes", "deploy/runtime/package-lock.json"], "note": "No target ID Token, OIDC discovery, provider configuration or back-channel logout." },
+    "graphql": { "present": false, "evidence": ["apps/api/src/index.ts", "deploy/runtime/package-lock.json"], "note": "No GraphQL route, parser or runtime dependency." },
+    "websocket": { "present": false, "evidence": ["apps/api/src/index.ts", "apps/web/src/routes", "deploy/runtime/package-lock.json"], "note": "Target streaming uses HTTP SSE, not an Upgrade/WebSocket route." },
+    "webrtc": { "present": false, "evidence": ["apps/api/src/index.ts", "apps/web/src/routes", "deploy/runtime/package-lock.json"], "note": "No TURN, signaling, DTLS-SRTP or media server in target product." },
+    "xmlSoapXPath": { "present": false, "evidence": ["apps/api/src/index.ts", "packages/file-processing/src/index.ts", "deploy/runtime/package-lock.json"], "note": "No target XML/SOAP/XPath endpoint or application XML parser; Office files are processed as bounded file uploads by LibreOffice." },
+    "ldapJndi": { "present": false, "evidence": ["apps/api/src/index.ts", "deploy/runtime/package-lock.json"], "note": "No LDAP/JNDI integration or JVM runtime in target image." },
+    "latex": { "present": false, "evidence": ["packages/file-processing/src/index.ts", "deploy/customer.Dockerfile"], "note": "No LaTeX upload type or TeX processor in target image." },
+    "clientSideCryptography": { "present": false, "evidence": ["apps/web/src/lib/auth/client.svelte.ts", "apps/web/src/lib/api/transport.ts"], "note": "Browser holds an access token in memory but does not encrypt, sign or derive keys." },
+    "biometricTotpSmsPstn": { "present": false, "evidence": ["packages/authentication/src/service.ts", "apps/api/src/index.ts", "deploy/runtime/package-lock.json"], "note": "Only first-party password login is exposed; no biometric, TOTP, SMS/PSTN or out-of-band factor exists." },
+    "csvExport": { "present": false, "evidence": ["apps/api/src/index.ts", "apps/web/src/routes"], "note": "Target endpoints return JSON/SSE and file-extracted text, not CSV or spreadsheet export." },
+    "publicUploadedFileHosting": { "present": false, "evidence": ["apps/api/src/index.ts", "packages/file-processing/src/index.ts"], "note": "Uploads use temporary files for extraction and are deleted after processing; no target public file-serving route." }
+  },
+  "cryptography": [
+    { "operation": "password KDF and verification", "primitive": "Node crypto.scrypt N=2^17 r=8 p=1 with 128-bit random salt and timingSafeEqual", "source": "packages/authentication/src/index.ts", "keyLocation": "PostgreSQL password hash; plaintext exists only during verification" },
+    { "operation": "refresh credential generation and hashing", "primitive": "Node crypto.randomBytes(32) and SHA-256", "source": "packages/session/src/index.ts", "keyLocation": "Only token digest in PostgreSQL" },
+    { "operation": "access-token signature", "primitive": "Ed25519 sign/verify via Node crypto, kid-based public-key set", "source": "packages/session/src/access-token.ts", "keyLocation": "CJSON secretRef resolves to external secret file; key rotation supported by public-key overlap" },
+    { "operation": "login guard key", "primitive": "SHA-256", "source": "packages/authentication/src/persistence.ts", "keyLocation": "PostgreSQL digest" },
+    { "operation": "common-password lookup", "primitive": "SHA-256 digest lookup", "source": "packages/authentication/src/common-passwords.ts", "keyLocation": "Pinned local digest set, not a password verifier" },
+    { "operation": "configuration and dictionary fingerprints", "primitive": "SHA-256", "source": "packages/configuration/src/index.ts", "keyLocation": "Unkeyed integrity identifiers, not authentication" },
+    { "operation": "TLS", "primitive": "Deployment edge, PostgreSQL/AI/SIEM transport configuration", "source": "docs/architecture/08-deployment-architecture.md", "keyLocation": "No qualified customer TLS-edge evidence in the current target release" }
+  ],
+  "supplyChain": {
+    "runtimeLock": "deploy/runtime/package-lock.json",
+    "runtimeManifest": "deploy/runtime/package.json",
+    "runtimePackageEntries": 103,
+    "runtimeResolvedHosts": ["registry.npmjs.org"],
+    "runtimeEntriesMissingIntegrity": 0,
+    "releaseLockHashMatchesCurrentFile": true,
+    "releaseSbomHashMatchesCurrentFile": true,
+    "baseImageSource": "deploy/customer.Dockerfile",
+    "baseImage": "node:22.17.1-bookworm-slim@sha256:2fa754a9ba4d7adbd2a51d182eaabbe355c82b673624035a38c0d42b08724854",
+    "existingSbom": "deploy/releases/1.0.1/dependencies.cdx.json",
+    "existingSbomCaveat": "The 1.0.1 SBOM contains broad build/root dependencies such as @napi-rs/canvas; it is not sufficient as a fresh image-specific inventory for the changed T4 target runtime.",
+    "vulnerabilityScan": "NOT_VERIFIED: npm audit was blocked by sandbox network; inherited NODE_TLS_REJECT_UNAUTHORIZED=0 also invalidates the first attempt as security evidence. Auto-review rejected external metadata transmission on a second attempt.",
+    "customerRelease": "Only the prior built customer C API image received an Auth/anonymous MySQL-off smoke; coordinated Auth-enabled Web/API/Worker release is unqualified."
+  }
+}

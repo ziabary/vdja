@@ -15,6 +15,7 @@ export interface intfExecutionContext {
   readonly actorId: string | null;
   readonly sessionId: string | null;
   readonly authorizationVersion?: number | null;
+  readonly initiator?: Readonly<{actorKind:typActorKind;actorId:string|null}>;
   readonly source: string;
   readonly configFingerprint: string;
 }

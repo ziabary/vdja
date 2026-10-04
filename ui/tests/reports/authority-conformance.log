@@ -1,0 +1,248 @@
+
+> targoman_llm@1.0.0 test:conformance:authority
+> AUTHORITY_CONFORMANCE_ADAPTER=tests/conformance/authority/productionAdapter.ts node --import tsx tests/conformance/authority/authorityBehavior.test.ts
+
+TAP version 13
+# Subtest: root ALL
+ok 1 - root ALL
+  ---
+  duration_ms: 4.028136
+  type: 'test'
+  ...
+# Subtest: internal ALL
+ok 2 - internal ALL
+  ---
+  duration_ms: 0.119893
+  type: 'test'
+  ...
+# Subtest: sibling isolation
+ok 3 - sibling isolation
+  ---
+  duration_ms: 0.075782
+  type: 'test'
+  ...
+# Subtest: ALL plus explicit deny
+ok 4 - ALL plus explicit deny
+  ---
+  duration_ms: 0.063805
+  type: 'test'
+  ...
+# Subtest: root ALL cannot cross tenant boundary
+ok 5 - root ALL cannot cross tenant boundary
+  ---
+  duration_ms: 0.051734
+  type: 'test'
+  ...
+# Subtest: classification HIGH denies LOW clearance
+ok 6 - classification HIGH denies LOW clearance
+  ---
+  duration_ms: 0.047038
+  type: 'test'
+  ...
+# Subtest: classification LOW allows HIGH clearance with grant
+ok 7 - classification LOW allows HIGH clearance with grant
+  ---
+  duration_ms: 0.082503
+  type: 'test'
+  ...
+# Subtest: resource ACL explicit deny wins over ordinary grant
+ok 8 - resource ACL explicit deny wins over ordinary grant
+  ---
+  duration_ms: 0.057479
+  type: 'test'
+  ...
+# Subtest: resource ACL grant allows absent ordinary grant
+ok 9 - resource ACL grant allows absent ordinary grant
+  ---
+  duration_ms: 0.128869
+  type: 'test'
+  ...
+# Subtest: typed value and missing value
+ok 10 - typed value and missing value
+  ---
+  duration_ms: 0.447933
+  type: 'test'
+  ...
+# Subtest: ALL default value
+ok 11 - ALL default value
+  ---
+  duration_ms: 0.061923
+  type: 'test'
+  ...
+# Subtest: CRUD 0000 READ
+ok 12 - CRUD 0000 READ
+  ---
+  duration_ms: 0.086452
+  type: 'test'
+  ...
+# Subtest: CRUD 1111 DELETE
+ok 13 - CRUD 1111 DELETE
+  ---
+  duration_ms: 0.064162
+  type: 'test'
+  ...
+# Subtest: CRUD 0w10 CREATE
+ok 14 - CRUD 0w10 CREATE
+  ---
+  duration_ms: 0.071192
+  type: 'test'
+  ...
+# Subtest: CRUD 0w10 UPDATE
+ok 15 - CRUD 0w10 UPDATE
+  ---
+  duration_ms: 0.032602
+  type: 'test'
+  ...
+# Subtest: owner match w
+ok 16 - owner match w
+  ---
+  duration_ms: 0.056785
+  type: 'test'
+  ...
+# Subtest: owner mismatch w
+ok 17 - owner mismatch w
+  ---
+  duration_ms: 0.034402
+  type: 'test'
+  ...
+# Subtest: missing owner w
+ok 18 - missing owner w
+  ---
+  duration_ms: 0.032769
+  type: 'test'
+  ...
+# Subtest: parent scope covers child
+ok 19 - parent scope covers child
+  ---
+  duration_ms: 0.038684
+  type: 'test'
+  ...
+# Subtest: child scope does not expand upward
+ok 20 - child scope does not expand upward
+  ---
+  duration_ms: 0.032516
+  type: 'test'
+  ...
+# Subtest: explicit child role grant
+ok 21 - explicit child role grant
+  ---
+  duration_ms: 0.042468
+  type: 'test'
+  ...
+# Subtest: explicit child identity grant
+ok 22 - explicit child identity grant
+  ---
+  duration_ms: 0.032478
+  type: 'test'
+  ...
+# Subtest: absolute [start,end) 2026-10-01T07:59:59.999Z
+ok 23 - absolute [start,end) 2026-10-01T07:59:59.999Z
+  ---
+  duration_ms: 0.033629
+  type: 'test'
+  ...
+# Subtest: absolute [start,end) 2026-10-01T08:00:00.000Z
+ok 24 - absolute [start,end) 2026-10-01T08:00:00.000Z
+  ---
+  duration_ms: 0.024275
+  type: 'test'
+  ...
+# Subtest: absolute [start,end) 2026-10-01T09:00:00.000Z
+ok 25 - absolute [start,end) 2026-10-01T09:00:00.000Z
+  ---
+  duration_ms: 0.469848
+  type: 'test'
+  ...
+# Subtest: absolute [start,end) 2026-10-01T16:00:00.000Z
+ok 26 - absolute [start,end) 2026-10-01T16:00:00.000Z
+  ---
+  duration_ms: 0.0284
+  type: 'test'
+  ...
+# Subtest: absolute [start,end) 2026-10-01T16:00:00.001Z
+ok 27 - absolute [start,end) 2026-10-01T16:00:00.001Z
+  ---
+  duration_ms: 0.021954
+  type: 'test'
+  ...
+# Subtest: recurring timezone inside
+ok 28 - recurring timezone inside
+  ---
+  duration_ms: 13.533192
+  type: 'test'
+  ...
+# Subtest: recurring timezone end exclusive
+ok 29 - recurring timezone end exclusive
+  ---
+  duration_ms: 0.153266
+  type: 'test'
+  ...
+# Subtest: Jalali odd day schedule
+ok 30 - Jalali odd day schedule
+  ---
+  duration_ms: 0.312291
+  type: 'test'
+  ...
+# Subtest: suspension
+ok 31 - suspension
+  ---
+  duration_ms: 0.055166
+  type: 'test'
+  ...
+# Subtest: termination
+ok 32 - termination
+  ---
+  duration_ms: 0.032734
+  type: 'test'
+  ...
+# Subtest: missing classification fails closed
+ok 33 - missing classification fails closed
+  ---
+  duration_ms: 0.032618
+  type: 'test'
+  ...
+# Subtest: malformed CRUD fails closed
+ok 34 - malformed CRUD fails closed
+  ---
+  duration_ms: 0.030208
+  type: 'test'
+  ...
+# Subtest: invalid temporal rule fails closed
+ok 35 - invalid temporal rule fails closed
+  ---
+  duration_ms: 0.029761
+  type: 'test'
+  ...
+# Subtest: invalid tenant scope fails closed
+ok 36 - invalid tenant scope fails closed
+  ---
+  duration_ms: 0.027064
+  type: 'test'
+  ...
+# Subtest: determinism
+ok 37 - determinism
+  ---
+  duration_ms: 0.053178
+  type: 'test'
+  ...
+# Subtest: input non-mutation
+ok 38 - input non-mutation
+  ---
+  duration_ms: 0.100036
+  type: 'test'
+  ...
+# Subtest: invalidation contract
+ok 39 - invalidation contract
+  ---
+  duration_ms: 0.041475
+  type: 'test'
+  ...
+1..39
+# tests 39
+# suites 0
+# pass 39
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 26.713094

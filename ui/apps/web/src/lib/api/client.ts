@@ -1,11 +1,11 @@
 import type {intfApiErrorEnvelope} from '@targoman/contracts';
-export interface intfTransportRequest {readonly method:'GET'|'POST'|'PUT'|'PATCH'|'DELETE';readonly path:string;readonly body?:unknown;readonly contentType?:'json'|'multipart';readonly signal?:AbortSignal;readonly headers?:Readonly<Record<string,string>>;readonly deadlineMs?:number}
+export interface intfTransportRequest {readonly method:'GET'|'POST'|'PUT'|'PATCH'|'DELETE';readonly path:string;readonly body?:unknown;readonly contentType?:'json'|'multipart'|'binary';readonly signal?:AbortSignal;readonly headers?:Readonly<Record<string,string>>;readonly deadlineMs?:number}
 export interface intfTransportResponse {readonly status:number;readonly body:unknown;readonly correlationId?:string}
 export interface intfUiTransport {send(request:intfTransportRequest):Promise<intfTransportResponse>}
 export class exUiApiError extends Error {constructor(readonly status:number,readonly envelope:intfApiErrorEnvelope){super(envelope.message);}}
 function isRecord(value:unknown):value is Record<string,unknown>{return typeof value==='object'&&value!==null&&!Array.isArray(value);}
 function safeEnvelope(body:unknown,correlationId?:string):intfApiErrorEnvelope {
-  const candidate=isRecord(body)&&isRecord(body.error)?body.error:null;
+  const candidate=isRecord(body)&&isRecord(body.error)?body.error:isRecord(body)&&typeof body.error==='string'?{code:body.error}:null;
   const fields:Record<string,string>={};
   if(candidate&&isRecord(candidate.fields))for(const [key,value] of Object.entries(candidate.fields))if(key.length<=100&&typeof value==='string'&&value.length<=500)fields[key]=value;
   return {code:typeof candidate?.code==='string'&&candidate.code.length<=100?candidate.code:'REQUEST_FAILED',message:'Request could not be completed',correlationId,fields:Object.keys(fields).length?fields:undefined};

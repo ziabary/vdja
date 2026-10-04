@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.7
-ARG NODE_IMAGE=node:22.17.1-bookworm-slim@sha256:2fa754a9ba4d7adbd2a51d182eaabbe355c82b673624035a38c0d42b08724854
+ARG NODE_IMAGE=node:22.23.3-bookworm-slim@sha256:43ac6c60b8f89723f746e8a92ce91abd5017e627ce1ddfe4238355d3a30b772c
 FROM ${NODE_IMAGE} AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
@@ -8,6 +8,7 @@ COPY modules ./modules
 COPY packages ./packages
 COPY deploy/examples ./deploy/examples
 COPY deploy/entrypoint.mjs ./deploy/entrypoint.mjs
+COPY deploy/web-security-headers.mjs ./deploy/web-security-headers.mjs
 COPY tsconfig.target.json ./
 RUN npm ci --ignore-scripts
 ARG CUSTOMER
@@ -16,25 +17,29 @@ RUN test -f "deploy/examples/${CUSTOMER}/platform.cjson" \
  && cp "deploy/examples/${CUSTOMER}/brand/favicon.svg" apps/web/static/brand/favicon.svg \
  && npm run build:web \
  && mkdir -p dist \
- && ./node_modules/.bin/esbuild apps/api/src/index.ts --bundle --platform=node --format=esm --packages=external --outfile=dist/target-api.js \
- && ./node_modules/.bin/esbuild apps/worker/src/index.ts --bundle --platform=node --format=esm --packages=external --outfile=dist/target-worker.js \
- && ./node_modules/.bin/esbuild packages/persistence/src/target-migrate.ts --bundle --platform=node --format=esm --packages=external --outfile=dist/target-migrate.js
+ && ./node_modules/.bin/esbuild apps/api/src/index.ts --bundle --platform=node --format=esm --external:@aws-sdk/* --external:express --external:multer --external:pdfjs-dist --external:pg --outfile=dist/target-api.js \
+ && ./node_modules/.bin/esbuild apps/worker/src/index.ts --bundle --platform=node --format=esm --external:@aws-sdk/* --external:express --external:multer --external:pdfjs-dist --external:pg --outfile=dist/target-worker.js \
+ && ./node_modules/.bin/esbuild packages/persistence/src/target-migrate.ts --bundle --platform=node --format=esm --external:@aws-sdk/* --external:express --external:multer --external:pdfjs-dist --external:pg --outfile=dist/target-migrate.js
 
 FROM ${NODE_IMAGE} AS runtime_base
 WORKDIR /app
-RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates libreoffice-writer tini \
+RUN apt-get update && apt-get upgrade -y \
+ && apt-get install -y --no-install-recommends ca-certificates libreoffice-writer tini util-linux \
  && rm -rf /var/lib/apt/lists/* \
  && mkdir -p /etc/targoman /app/apps/web/static/brand /tmp/targoman \
  && chown -R node:node /tmp/targoman
 COPY deploy/runtime/package.json deploy/runtime/package-lock.json ./
 RUN npm ci --omit=dev --ignore-scripts --registry=https://registry.npmjs.org \
- && npm cache clean --force
+ && npm cache clean --force \
+ && rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack \
+ && rm -f /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack /usr/local/bin/pnpm /usr/local/bin/pnpx /usr/local/bin/yarn /usr/local/bin/yarnpkg
 COPY --from=build /app/apps/web/build ./apps/web/build
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/packages/persistence/src/target-migrations ./dist/target-migrations
 COPY --from=build /app/packages/authentication/data/LICENSE-SecLists.txt ./licenses/LICENSE-SecLists.txt
 COPY --from=build /app/apps/web/static/brand ./apps/web/static/brand
 COPY --from=build /app/deploy/entrypoint.mjs ./deploy/entrypoint.mjs
+COPY --from=build /app/deploy/web-security-headers.mjs ./deploy/web-security-headers.mjs
 
 FROM runtime_base AS runtime
 ARG CUSTOMER

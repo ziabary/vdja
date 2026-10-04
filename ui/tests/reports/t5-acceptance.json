@@ -1,0 +1,220 @@
+{
+  "generatedAt": "2026-10-03T18:27:39.075Z",
+  "status": "PASS",
+  "providerScope": "PROTOCOL_FIXTURES_NOT_LIVE_VLLM",
+  "results": [
+    {
+      "name": "strict-target",
+      "status": "PASS",
+      "exitCode": 0,
+      "passed": 0,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 15978,
+      "command": [
+        "npm",
+        "run",
+        "check:target"
+      ],
+      "evidence": "tests/reports/strict-target.log"
+    },
+    {
+      "name": "strict-web",
+      "status": "PASS",
+      "exitCode": 0,
+      "passed": 0,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 53765,
+      "command": [
+        "npm",
+        "run",
+        "check:web"
+      ],
+      "evidence": "tests/reports/strict-web.log"
+    },
+    {
+      "name": "target-architecture",
+      "status": "PASS",
+      "exitCode": 0,
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 1365,
+      "command": [
+        "npm",
+        "run",
+        "test:architecture:target"
+      ],
+      "evidence": "tests/reports/target-architecture.log"
+    },
+    {
+      "name": "t5-architecture",
+      "status": "PASS",
+      "exitCode": 0,
+      "passed": 0,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 560,
+      "command": [
+        "node",
+        "--import",
+        "tsx",
+        "scripts/t5-target-architecture.ts"
+      ],
+      "evidence": "tests/reports/t5-architecture.log"
+    },
+    {
+      "name": "t5-foundations",
+      "status": "PASS",
+      "exitCode": 0,
+      "passed": 33,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 4640,
+      "command": [
+        "node",
+        "--import",
+        "tsx",
+        "--test",
+        "--test-concurrency=1",
+        "tests/architecture/staticAnalysis.test.ts",
+        "tests/architecture/t5TargetArchitecture.test.ts",
+        "tests/configuration/t5-file-management.test.ts",
+        "tests/target/t5-chunking.test.ts",
+        "tests/target/t5-storage-contract.test.ts",
+        "tests/target/t5-file-cache.test.ts",
+        "tests/target/t5-file-staging.test.ts",
+        "tests/target/t4-file-security.test.ts",
+        "tests/target/t5-process-errors.test.ts"
+      ],
+      "evidence": "tests/reports/t5-foundations.log"
+    },
+    {
+      "name": "t5-integrations",
+      "status": "PASS",
+      "exitCode": 0,
+      "passed": 84,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 26850,
+      "command": [
+        "node",
+        "--import",
+        "tsx",
+        "--test",
+        "--test-concurrency=1",
+        "tests/target/t5-document-jobs.integration.test.ts",
+        "tests/target/t5-transfer-persistence.integration.test.ts",
+        "tests/target/t5-file-management.integration.test.ts",
+        "tests/target/t5-s3-storage.integration.test.ts",
+        "tests/target/t5-knowledge-projection.integration.test.ts",
+        "tests/target/t5-protected-ai.integration.test.ts",
+        "tests/target/t5-rag-security.integration.test.ts",
+        "tests/target/t5-runtime.integration.test.ts",
+        "tests/target/t5-failure-runtime.integration.test.ts",
+        "tests/target/t5-worker.integration.test.ts",
+        "tests/target/t5-machine-expiry.integration.test.ts",
+        "tests/target/t5-file-limits.integration.test.ts",
+        "tests/target/t5-legacy-migration.test.ts",
+        "tests/target/t5-storage-migration.integration.test.ts"
+      ],
+      "evidence": "tests/reports/t5-integrations.log"
+    },
+    {
+      "name": "authority-conformance",
+      "status": "PASS",
+      "exitCode": 0,
+      "passed": 39,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 198,
+      "command": [
+        "npm",
+        "run",
+        "test:conformance:authority"
+      ],
+      "evidence": "tests/reports/authority-conformance.log"
+    },
+    {
+      "name": "authority-live",
+      "status": "PASS",
+      "exitCode": 0,
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 378,
+      "command": [
+        "node",
+        "--import",
+        "tsx",
+        "--test",
+        "tests/target/t44-authority-live.integration.test.ts"
+      ],
+      "evidence": "tests/reports/authority-live.log"
+    },
+    {
+      "name": "auth-http-regression",
+      "status": "PASS",
+      "exitCode": 0,
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 1760,
+      "command": [
+        "node",
+        "--import",
+        "tsx",
+        "--test",
+        "tests/target/t4-auth-http.integration.test.ts"
+      ],
+      "evidence": "tests/reports/auth-http-regression.log"
+    },
+    {
+      "name": "build-web",
+      "status": "PASS",
+      "exitCode": 0,
+      "passed": 0,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 3887,
+      "command": [
+        "npm",
+        "run",
+        "build:web"
+      ],
+      "evidence": "tests/reports/build-web.log"
+    },
+    {
+      "name": "t5-browser",
+      "status": "PASS",
+      "exitCode": 0,
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 6775,
+      "command": [
+        "node",
+        "--import",
+        "tsx",
+        "--test",
+        "tests/target/t5-browser.integration.test.mjs"
+      ],
+      "evidence": "tests/reports/t5-browser.log"
+    },
+    {
+      "name": "t5-audit-siem",
+      "status": "PASS",
+      "exitCode": 0,
+      "passed": 0,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 3093,
+      "command": [
+        "node",
+        "scripts/t5-audit-siem.mjs"
+      ],
+      "evidence": "tests/reports/t5-audit-siem.log"
+    }
+  ]
+}

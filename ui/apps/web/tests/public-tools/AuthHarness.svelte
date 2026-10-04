@@ -4,7 +4,7 @@
   import {provideAuthClient} from '../../src/lib/auth/client.svelte.js';
 
   let {kind}:{kind?:'translate'|'summarize'}=$props();
-  provideAuthClient();
+  provideAuthClient(()=>null);
 </script>
 
 {#if kind}<TextTool {kind}/>{:else}<FaqPage/>{/if}

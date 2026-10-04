@@ -3401,3 +3401,20 @@ Processing and retrieval are durable, observable, scalable, and testable.
 The default Document/RAG design question is:
 
 > **What is the canonical Document and Version, where did its content come from, which Knowledge Space uses it, which exact operation is being requested, what does Authority permit before retrieval, what content may be disclosed afterward, and can every derived index be safely rebuilt or removed without losing authoritative truth?**
+
+## T5 entry and completion evidence
+
+`T5_START_GATE` requires a verified `RAG_SECURITY_GATE=YES`: zero open ASVS
+controls marked `blocksT5Start`, plus passing Identity, Session, Authority,
+Audit, File Processing, Configuration, AI Router, persistence, tenant, and
+architecture foundations in `reports/security/rag-security-gate.json`.
+Open controls marked `verifyDuringT5` are mandatory T5 acceptance work in
+`reports/security/t5-security-delta-backlog.json`; their new surface is not a
+prerequisite for starting T5. `docs/prompts/T5-addendum.md` is mandatory for
+shared File Management and Local/S3 transfer behavior.
+
+`T5_COMPLETION_SECURITY_GATE` requires the T5 ASVS delta, File Management
+security tests, Audit/SIEM verification, no newly introduced blocking
+finding, and the GenAI/RAG security gate in
+`docs/security/06-t5-genai-rag-security-gate.md`. `ASVS_L3_RELEASE_GATE` is
+independent and remains mandatory for customer release.

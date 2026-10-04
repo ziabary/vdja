@@ -2,6 +2,8 @@ import type pg from 'pg';
 import { randomUUID } from 'node:crypto';
 import { withTargetTransaction } from '../../persistence/src/target.js';
 import { enuAuthorityDecision, evaluateAuthority, getPrivValue, type intfAuthorityGrant, type intfAuthorityResult } from './index.js';
+import { resolveAuthorityFacts, resolveAuthorityBatch } from './persistence.generic.js';
+import type { typPublicToolAuthorityResult } from './contracts.js';
 
 interface intfAuthorityRow {
   readonly idn_state: 'ACTIVE' | 'SUSPENDED' | 'TERMINATED';
@@ -22,7 +24,6 @@ const PUBLIC_PERMISSION = {
   summarizer: 'PublicTools.summarizer.use',
   faq: 'PublicTools.faq.use'
 } as const;
-export type typPublicToolAuthorityResult = intfAuthorityResult & { readonly limitTier?: 'AUTHENTICATED' | 'PRIVILEGED' };
 
 function privileges(value: unknown): Readonly<Record<string, unknown>> | null {
   return value && typeof value === 'object' && !Array.isArray(value) ? value as Readonly<Record<string, unknown>> : null;
@@ -31,6 +32,8 @@ function privileges(value: unknown): Readonly<Record<string, unknown>> | null {
 /** Resolve authority facts inside the owning capability; callers receive only a decision. */
 export function createAuthorityPersistence(pool: pg.Pool, deploymentId: string) {
   return {
+    resolve: (lookup: Parameters<typeof resolveAuthorityFacts>[1]) => resolveAuthorityFacts(pool, lookup),
+    resolveBatch: (lookups: Parameters<typeof resolveAuthorityBatch>[1]) => resolveAuthorityBatch(pool, lookups),
     async authorizePublicTool(identityId: string, tenantId: string, module: keyof typeof PUBLIC_PERMISSION): Promise<typPublicToolAuthorityResult> {
       const path = PUBLIC_PERMISSION[module];
       const rows = await withTargetTransaction(pool, { actorKind: 'HUMAN', actorId: identityId, tenantId,

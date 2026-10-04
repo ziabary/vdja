@@ -1,0 +1,857 @@
+{
+  "generatedAt": "2026-10-03T18:33:39.297Z",
+  "T5": "PARTIAL",
+  "T5_START_GATE": "PASS",
+  "T5_COMPLETION_SECURITY_GATE": "FAIL",
+  "RAG_SECURITY_GATE": "YES",
+  "GENAI_RAG_SECURITY_GATE": "FAIL",
+  "ASVS_L3_RELEASE_GATE": "NO",
+  "featureAcceptance": "PASS",
+  "ociAcceptance": "PASS",
+  "modelAcceptance": "NOT_VERIFIED",
+  "supplyChainAcceptance": "FAIL",
+  "genaiChecks": {
+    "authorityBeforeRetrieval": true,
+    "poisonedDerivedHitRejected": true,
+    "finalCandidateBeforeMaterialization": true,
+    "tenantAndEmbeddingIsolation": true,
+    "rerankAndLlmRevocationFences": true,
+    "independentCitationAndQuote": true,
+    "insecureOutputEscaped": true,
+    "egressDenied": true,
+    "contextAndResourceExhaustion": true,
+    "auditAndSiem": true,
+    "actualApprovedModels": false,
+    "actualModelBrowser": false
+  },
+  "asvs": {
+    "total": 345,
+    "PASS": 134,
+    "FAIL": 19,
+    "NOT_VERIFIED": 91,
+    "NOT_APPLICABLE": 101
+  },
+  "t5BlockingFindings": 41,
+  "releaseOnlyBlockingFindings": 69,
+  "unauthorizedProtectedChanges": 0,
+  "approvedExceptions": 0,
+  "customerReleaseAuthorized": false,
+  "readyForNextBusinessModule": false,
+  "additionalUnmetRequirements": [
+    "Actual approved generation vLLM/embedding/reranker and browser end-to-end evidence is absent."
+  ],
+  "criteria": [
+    {
+      "id": 1,
+      "description": "legacy RAG inventory complete;",
+      "status": "PASS",
+      "evidence": [
+        "docs/backend/06-t5-rag-legacy-inventory.md",
+        "docs/backend/07-t5-rag-data-migration.md",
+        "tests/target/t5-legacy-migration.test.ts"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "canonical data migration mapped;",
+      "status": "PASS",
+      "evidence": [
+        "docs/backend/06-t5-rag-legacy-inventory.md",
+        "docs/backend/07-t5-rag-data-migration.md",
+        "tests/target/t5-legacy-migration.test.ts"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Document Core implemented;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Version implemented;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Asset implemented;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 6,
+      "description": "Storage abstraction implemented;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 7,
+      "description": "File Processing integrated;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 8,
+      "description": "Knowledge Space implemented;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 9,
+      "description": "Qdrant is derived only;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 10,
+      "description": "Qdrant is rebuildable;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 11,
+      "description": "index generation/versioning implemented;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 12,
+      "description": "ingestion jobs durable;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 13,
+      "description": "ingestion idempotent;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 14,
+      "description": "Authority precedes retrieval;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 15,
+      "description": "final candidate authorization implemented;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 16,
+      "description": "unauthorized chunks never reach reranker;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 17,
+      "description": "unauthorized chunks never reach LLM;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 18,
+      "description": "discover/read/download/use/quote/manage are independent;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 19,
+      "description": "citation authorization correct;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 20,
+      "description": "quote authorization correct;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 21,
+      "description": "classification enforced;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 22,
+      "description": "tenant isolation enforced;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 23,
+      "description": "ACL deny semantics correct;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 24,
+      "description": "ALL cannot bypass hard boundaries;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 25,
+      "description": "Data Governance egress implemented;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 26,
+      "description": "protected external egress denied correctly;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 27,
+      "description": "embedding uses AI Router;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 28,
+      "description": "reranking uses approved Router boundary;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 29,
+      "description": "RAG answer uses AI Router;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 30,
+      "description": "no business code chooses model/provider;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 31,
+      "description": "context budgeting has no silent truncation;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 32,
+      "description": "prompt-injection tests pass;",
+      "status": "FAIL",
+      "evidence": [
+        "reports/security/t5-completion-gate.json"
+      ]
+    },
+    {
+      "id": 33,
+      "description": "RAG Usage works;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 34,
+      "description": "RAG Admission works;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 35,
+      "description": "semantic Audit works;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 36,
+      "description": "DB mutation Audit works;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 37,
+      "description": "SIEM selection/redaction works;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 38,
+      "description": "authenticated RAG UI works;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 39,
+      "description": "processing status UI works;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 40,
+      "description": "citations work;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 41,
+      "description": "legacy users map safely;",
+      "status": "PASS",
+      "evidence": [
+        "docs/backend/06-t5-rag-legacy-inventory.md",
+        "docs/backend/07-t5-rag-data-migration.md",
+        "tests/target/t5-legacy-migration.test.ts"
+      ]
+    },
+    {
+      "id": 42,
+      "description": "ambiguous owners fail migration;",
+      "status": "PASS",
+      "evidence": [
+        "docs/backend/06-t5-rag-legacy-inventory.md",
+        "docs/backend/07-t5-rag-data-migration.md",
+        "tests/target/t5-legacy-migration.test.ts"
+      ]
+    },
+    {
+      "id": 43,
+      "description": "legacy Qdrant not treated as canonical;",
+      "status": "PASS",
+      "evidence": [
+        "docs/backend/06-t5-rag-legacy-inventory.md",
+        "docs/backend/07-t5-rag-data-migration.md",
+        "tests/target/t5-legacy-migration.test.ts"
+      ]
+    },
+    {
+      "id": 44,
+      "description": "fresh Qdrant rebuild test passes;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 45,
+      "description": "document-version test passes;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 46,
+      "description": "embedding-policy change/reindex test passes;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 47,
+      "description": "MySQL-off RAG passes;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 48,
+      "description": "legacy auth-off target RAG passes;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 49,
+      "description": "target architecture guardrails pass;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 50,
+      "description": "Level 3 RAG security delta has no blocking failure.",
+      "status": "FAIL",
+      "evidence": [
+        "reports/security/t5-asvs-review.json"
+      ]
+    },
+    {
+      "id": 51,
+      "description": "shared File Management capability exists;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 52,
+      "description": "File Management is logical/in-process by default, not an unnecessary microservice;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 53,
+      "description": "all target managed file operations use File Management;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 54,
+      "description": "direct business-module filesystem access for managed persistent assets is zero;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 55,
+      "description": "direct business-module S3 access is zero;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 56,
+      "description": "Local Storage adapter works;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 57,
+      "description": "S3-compatible Storage adapter works;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 58,
+      "description": "adapter choice is CJSON-driven;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 59,
+      "description": "storage credentials/secrets remain external through secretRef;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 60,
+      "description": "Document Version is distinct from backend object version;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 61,
+      "description": "committed Asset bytes are immutable by identity;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 62,
+      "description": "content-hash verification works;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 63,
+      "description": "upload staging lifecycle exists;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 64,
+      "description": "incomplete uploads are not exposed as committed/usable Assets;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 65,
+      "description": "resumable/multipart semantics work as required;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 66,
+      "description": "upload cache/staging is bounded and non-canonical;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 67,
+      "description": "download cache is version-aware;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 68,
+      "description": "cache never bypasses Authority;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 69,
+      "description": "cache is disposable/rebuildable;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 70,
+      "description": "cache eviction is bounded;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 71,
+      "description": "stale cache cannot expose superseded/revoked/forbidden content;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 72,
+      "description": "Range support is safe;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 73,
+      "description": "conditional download works where configured;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 74,
+      "description": "protected content uses safe cache headers;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 75,
+      "description": "download is independently authorized;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 76,
+      "description": "read does not imply download;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 77,
+      "description": "use does not imply discover/download;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 78,
+      "description": "RAG cannot bypass File Management to read Storage;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 79,
+      "description": "path traversal/archive/symlink tests pass;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 80,
+      "description": "MIME/signature/type-consistency tests pass;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 81,
+      "description": "file size/resource-exhaustion tests pass;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 82,
+      "description": "S3 ambiguous-outcome/reconciliation semantics are safe;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 83,
+      "description": "File semantic Audit works;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 84,
+      "description": "File Usage Accounting works;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 85,
+      "description": "file security events can reach SIEM;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 86,
+      "description": "static File Management architecture guards are green;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-acceptance.json"
+      ]
+    },
+    {
+      "id": 87,
+      "description": "post-T5 complete Persian current-state ASVS assessment exists;",
+      "status": "PASS",
+      "evidence": [
+        "docs/security/03-t5-asvs-5.0-level3-assessment-fa.md",
+        "reports/security/t5-asvs-review.json"
+      ]
+    },
+    {
+      "id": 88,
+      "description": "all `verifyDuringT5` controls are re-evaluated with concrete evidence;",
+      "status": "PASS",
+      "evidence": [
+        "docs/security/03-t5-asvs-5.0-level3-assessment-fa.md",
+        "reports/security/t5-asvs-review.json"
+      ]
+    },
+    {
+      "id": 89,
+      "description": "T5-introduced/T5-scope blocking security findings = 0 or approved documented exceptions;",
+      "status": "FAIL",
+      "evidence": [
+        "reports/security/t5-asvs-review.json"
+      ]
+    },
+    {
+      "id": 90,
+      "description": "GenAI/RAG security gate passes;",
+      "status": "FAIL",
+      "evidence": [
+        "reports/security/t5-completion-gate.json"
+      ]
+    },
+    {
+      "id": 91,
+      "description": "Audit end-to-end verification passes;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-audit-siem.tap"
+      ]
+    },
+    {
+      "id": 92,
+      "description": "Audit immutability passes;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-audit-siem.tap"
+      ]
+    },
+    {
+      "id": 93,
+      "description": "Audit sensitive-data leakage scan passes;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-audit-siem.tap"
+      ]
+    },
+    {
+      "id": 94,
+      "description": "SIEM real T5 event delivery passes;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-audit-siem.tap"
+      ]
+    },
+    {
+      "id": 95,
+      "description": "SIEM UNKNOWN/retry semantics pass;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-audit-siem.tap"
+      ]
+    },
+    {
+      "id": 96,
+      "description": "SIEM restart/recovery passes;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-audit-siem.tap"
+      ]
+    },
+    {
+      "id": 97,
+      "description": "SIEM outage does not corrupt/block ordinary RAG when policy says optional/degraded;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-audit-siem.tap"
+      ]
+    },
+    {
+      "id": 98,
+      "description": "SIEM redaction passes;",
+      "status": "PASS",
+      "evidence": [
+        "tests/reports/t5-audit-siem.tap"
+      ]
+    },
+    {
+      "id": 99,
+      "description": "T5 introduced zero unauthorized modifications to protected governing documents;",
+      "status": "PASS",
+      "evidence": [
+        "reports/security/t5-protected-paths-after.json"
+      ]
+    },
+    {
+      "id": 100,
+      "description": "`ASVS_L3_RELEASE_GATE` is recomputed and reported independently; it may remain NO without making T5 PARTIAL when only release-only controls remain open;",
+      "status": "PASS",
+      "evidence": [
+        "reports/security/asvs-5.0-l3.json"
+      ]
+    }
+  ]
+}

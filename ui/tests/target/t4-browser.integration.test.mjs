@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
-import { spawn } from 'node:child_process';
-import { createServer } from 'node:http';
+import { spawn, execFileSync } from 'node:child_process';
+import { createServer, request as httpRequest } from 'node:http';
+import { createServer as createHttpsServer } from 'node:https';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { createServer as createNetServer } from 'node:net';
 import { tmpdir } from 'node:os';
@@ -42,7 +43,9 @@ async function stop(child) {
 async function chromeSession(directory) {
   const profile = join(directory, 'chrome-profile');
   const child = spawn('/usr/bin/google-chrome', ['--headless=new', '--no-sandbox', '--disable-dev-shm-usage',
-    '--disable-gpu', '--no-first-run', '--remote-debugging-port=0', `--user-data-dir=${profile}`, 'about:blank'],
+    '--disable-gpu', '--no-first-run', '--ignore-certificate-errors', '--no-proxy-server',
+    '--host-resolver-rules=MAP app.targoman.test 127.0.0.1,MAP auth.targoman.test 127.0.0.1',
+    '--remote-debugging-port=0', `--user-data-dir=${profile}`, 'about:blank'],
   { stdio: 'ignore' });
   const active = await until(async () => (await readFile(join(profile, 'DevToolsActivePort'), 'utf8')).trim(), 'Chrome DevTools startup');
   const debugPort = Number(active.split('\n')[0]);
@@ -75,12 +78,23 @@ async function chromeSession(directory) {
 test('Chrome exercises branded login, memory token, refresh cookie, tenant choice, public tools, replay and Auth-disabled UI',
   { skip: process.env.T4_REQUIRE_BROWSER !== '1', timeout: 90000 }, async () => {
     const directory = await mkdtemp(join(tmpdir(), 't4-browser-'));
-    const webPort = await port();
-    const origin = `http://127.0.0.1:${webPort}`;
+    const webPort = await port(), appPort = await port(), authPort = await port();
+    const origin = `https://app.targoman.test:${appPort}`;
+    const authOrigin = `https://auth.targoman.test:${authPort}`;
     const initialCookie = 'A'.repeat(43), rotatedCookie = 'B'.repeat(43);
     const calls = [];
     let refreshValue = initialCookie;
-    const mock = createServer(async (request, response) => {
+    const mockHandler = async (request, response) => {
+      if (request.url?.startsWith('/api/auth/')) {
+        response.setHeader('Access-Control-Allow-Origin', origin);
+        response.setHeader('Access-Control-Allow-Credentials', 'true');
+        response.setHeader('Vary', 'Origin');
+        if (request.method === 'OPTIONS') {
+          response.setHeader('Access-Control-Allow-Methods', 'POST');
+          response.setHeader('Access-Control-Allow-Headers', 'content-type, accept');
+          response.writeHead(204).end(); return;
+        }
+      }
       const chunks = []; for await (const chunk of request) chunks.push(chunk);
       const body = Buffer.concat(chunks).toString('utf8');
       calls.push({ path: request.url, authorization: request.headers.authorization ?? null,
@@ -94,23 +108,23 @@ test('Chrome exercises branded login, memory token, refresh cookie, tenant choic
         if (!parsed.tenantId) { response.writeHead(200, { 'content-type': 'application/json' })
           .end('{"status":"TENANT_SELECTION_REQUIRED","tenants":["tenant-a","tenant-b"]}'); return; }
         refreshValue = initialCookie;
-        response.setHeader('Set-Cookie', `__Secure-tg_refresh=${initialCookie}; HttpOnly; Secure; SameSite=Strict; Path=/api/auth`);
+        response.setHeader('Set-Cookie', `__Host-tg_refresh=${initialCookie}; HttpOnly; Secure; SameSite=Strict; Path=/`);
         response.writeHead(200, { 'content-type': 'application/json' })
           .end(JSON.stringify({ accessToken: 'header.payload.signature', tenantId: parsed.tenantId })); return;
       }
       if (request.url === '/api/auth/refresh') {
         const cookie = request.headers.cookie ?? '';
-        if (cookie.includes(`__Secure-tg_refresh=${refreshValue}`)) {
+        if (cookie.includes(`__Host-tg_refresh=${refreshValue}`)) {
           refreshValue = String.fromCharCode(refreshValue.charCodeAt(0) + 1).repeat(43);
-          response.setHeader('Set-Cookie', `__Secure-tg_refresh=${refreshValue}; HttpOnly; Secure; SameSite=Strict; Path=/api/auth`);
+          response.setHeader('Set-Cookie', `__Host-tg_refresh=${refreshValue}; HttpOnly; Secure; SameSite=Strict; Path=/`);
           response.writeHead(200, { 'content-type': 'application/json' })
             .end('{"accessToken":"header.rotated.signature","tenantId":"tenant-b"}'); return;
         }
-        response.setHeader('Set-Cookie', '__Secure-tg_refresh=; Max-Age=0; HttpOnly; Secure; SameSite=Strict; Path=/api/auth');
+        response.setHeader('Set-Cookie', '__Host-tg_refresh=; Max-Age=0; HttpOnly; Secure; SameSite=Strict; Path=/');
         response.writeHead(401, { 'content-type': 'application/json' }).end('{"error":"INVALID_SESSION"}'); return;
       }
       if (request.url === '/api/auth/logout') {
-        response.setHeader('Set-Cookie', '__Secure-tg_refresh=; Max-Age=0; HttpOnly; Secure; SameSite=Strict; Path=/api/auth');
+        response.setHeader('Set-Cookie', '__Host-tg_refresh=; Max-Age=0; HttpOnly; Secure; SameSite=Strict; Path=/');
         response.writeHead(204).end(); return;
       }
       if (request.url === '/api/translate') {
@@ -130,28 +144,55 @@ test('Chrome exercises branded login, memory token, refresh cookie, tenant choic
           .end('event: meta\ndata: {"count":1,"batches":1}\n\nevent: batch\ndata: {"produced":1,"items":[{"question":"What?","answer":"Answer."}]}\n\nevent: done\ndata: {"produced":1}\n\n'); return;
       }
       response.writeHead(404).end();
-    });
+    };
+    const mock = createServer(mockHandler);
     await new Promise(resolve => mock.listen(0, '127.0.0.1', resolve));
     const mockAddress = mock.address(); assert.ok(mockAddress && typeof mockAddress !== 'string');
     const source = JSON.parse(await readFile('deploy/examples/development/platform.cjson', 'utf8'));
     const limits = Object.fromEntries(Object.entries(source.admission).map(([module, policy]) =>
       [module, { ...policy, outputTokens: module === 'faq' ? 20000 : 2000 }]));
-    const auth = { enabled: true, issuer: 'https://auth.example.invalid', audience: 'targoman-api',
+    const auth = { enabled: true, issuer: 'https://auth.example.invalid', publicOrigin: authOrigin,
+      allowedApplicationOrigins: [origin], audience: 'targoman-api',
       accessTokenSeconds: 300, activeKid: 'v1', privateKeyRef: 'file:/run/secrets/access-private',
       publicKeys: [{ kid: 'v1', publicKeyRef: 'file:/run/secrets/access-public' }],
       session: { absoluteLifetimeSeconds: 2592000, refreshLifetimeSeconds: 604800, inactivityLifetimeSeconds: 604800 },
+      password: { contextWords: [], compromised: { kind: 'LOCAL_SHA1', directory: '/tmp/t4-breach-fixture' } },
       authenticatedAdmission: limits, privilegedAdmission: limits };
-    const config = { ...source, brand: { ...source.brand, displayName: 'Browser Test Brand' },
+    const config = { ...source, web: { publicOrigin: origin }, brand: { ...source.brand, displayName: 'Browser Test Brand' },
       http: { ...source.http, apiInternalUrl: `http://127.0.0.1:${mockAddress.port}`, allowedOrigins: [origin] }, auth };
     const enabledPath = join(directory, 'enabled.cjson'), disabledPath = join(directory, 'disabled.cjson');
     await writeFile(enabledPath, JSON.stringify(config));
     await writeFile(disabledPath, JSON.stringify({ ...config, auth: { enabled: false } }));
+    const keyPath = join(directory, 'test-key.pem'), certPath = join(directory, 'test-cert.pem');
+    execFileSync('openssl', ['req', '-x509', '-newkey', 'rsa:2048', '-nodes', '-keyout', keyPath, '-out', certPath,
+      '-days', '1', '-subj', '/CN=targoman.test', '-addext', 'subjectAltName=DNS:app.targoman.test,DNS:auth.targoman.test'], { stdio: 'ignore' });
+    const tls = { key: await readFile(keyPath), cert: await readFile(certPath) };
+    const appProxy = createHttpsServer(tls, (request, response) => {
+      const upstream = httpRequest({ host: '127.0.0.1', port: webPort, path: request.url, method: request.method,
+        headers: { ...request.headers, host: `127.0.0.1:${webPort}` } }, upstreamResponse => {
+        response.writeHead(upstreamResponse.statusCode ?? 502, upstreamResponse.headers); upstreamResponse.pipe(response);
+      });
+      upstream.on('error', () => response.writeHead(502).end()); request.pipe(upstream);
+    });
+    const authServer = createHttpsServer(tls, (request, response) => {
+      if (!request.url?.startsWith('/api/auth/')) { response.writeHead(404).end(); return; }
+      void mockHandler(request, response);
+    });
+    await Promise.all([new Promise(resolve => appProxy.listen(appPort, '127.0.0.1', resolve)),
+      new Promise(resolve => authServer.listen(authPort, '127.0.0.1', resolve))]);
     let web, browser;
     try {
       web = await startWeb(enabledPath, webPort);
       browser = await chromeSession(directory);
       await browser.send('Page.navigate', { url: `${origin}/login` });
       await until(() => browser.evaluate('document.querySelector("#login-email") !== null'), 'login form');
+      const csp = await browser.evaluate('fetch("/login").then(response=>response.headers.get("content-security-policy"))');
+      assert.match(csp, /script-src[^;]*'nonce-[A-Za-z0-9+/=-]+'/);
+      assert.match(csp, /frame-ancestors 'none'/);
+      assert.ok(csp.includes(`connect-src 'self' ${authOrigin}`));
+      assert.ok(!csp.includes('unsafe-eval') && !/script-src[^;]*unsafe-inline/u.test(csp),csp);
+      await browser.evaluate('(() => { const script=document.createElement("script");script.textContent="window.__cspInjected=true";document.body.append(script); })()');
+      assert.equal(await browser.evaluate('window.__cspInjected===true'), false);
       await new Promise(resolve => setTimeout(resolve, 1500));
       assert.equal(await browser.evaluate('document.title.includes("Browser Test Brand")'), true);
       await browser.evaluate(`(() => { const select=document.getElementById('locale-choice'); select.value='en';
@@ -177,8 +218,10 @@ test('Chrome exercises branded login, memory token, refresh cookie, tenant choic
       await until(() => browser.evaluate('document.querySelector("[role=status]")?.textContent?.includes("tenant-b")'), 'login success');
       assert.equal(await browser.evaluate('document.cookie.includes("tg_refresh")'), false);
       assert.equal(await browser.evaluate('JSON.stringify([localStorage,sessionStorage]).includes("header.payload.signature")'), false);
-      const cookies = await browser.send('Network.getCookies', { urls: [`${origin}/api/auth/refresh`] });
-      assert.ok(cookies.cookies.some(item => item.name === '__Secure-tg_refresh' && item.httpOnly && item.secure && item.path === '/api/auth'));
+      const cookies = await browser.send('Network.getCookies', { urls: [`${authOrigin}/api/auth/refresh`] });
+      assert.ok(cookies.cookies.some(item => item.name === '__Host-tg_refresh' && item.httpOnly && item.secure && item.path === '/'));
+      const appCookies = await browser.send('Network.getCookies', { urls: [origin] });
+      assert.equal(appCookies.cookies.some(item => item.name === '__Host-tg_refresh'), false);
       await browser.send('Page.navigate', { url: `${origin}/translate` });
       await until(() => browser.evaluate('document.querySelector("#translate-text") !== null'), 'translator page');
       await until(() => browser.evaluate('document.querySelector("button.login-link") === null && document.body.textContent.includes("tenant-b")'), 'restored session');
@@ -214,7 +257,7 @@ test('Chrome exercises branded login, memory token, refresh cookie, tenant choic
       assert.ok(calls.filter(call => call.path?.startsWith('/api/faq')).every(call => call.authorization?.startsWith('Bearer header.') && call.tenant === 'tenant-b'));
       await browser.evaluate('document.querySelector(".shell-tools button:last-child")?.click()');
       await until(() => browser.evaluate('document.querySelector(".login-link") !== null'), 'logout UI');
-      assert.ok(calls.some(call => call.path === '/api/auth/logout' && call.cookie?.includes('__Secure-tg_refresh=')));
+      assert.ok(calls.some(call => call.path === '/api/auth/logout' && call.cookie?.includes('__Host-tg_refresh=')));
       await browser.send('Page.navigate', { url: `${origin}/login` });
       await until(() => browser.evaluate('document.querySelector("#login-email") !== null'), 'second login');
       await new Promise(resolve => setTimeout(resolve, 800));
@@ -229,12 +272,12 @@ test('Chrome exercises branded login, memory token, refresh cookie, tenant choic
       await new Promise(resolve => setTimeout(resolve, 100));
       await browser.evaluate('document.querySelector("form").requestSubmit()');
       await until(() => browser.evaluate('document.querySelector("[role=status]")?.textContent?.includes("tenant-b")'), 'second login success');
-      const firstRefresh = await browser.evaluate(`fetch('/api/auth/refresh',{method:'POST',credentials:'same-origin'})
+      const firstRefresh = await browser.evaluate(`fetch('${authOrigin}/api/auth/refresh',{method:'POST',credentials:'include'})
         .then(async response => ({status:response.status, body:await response.json()}))`);
       assert.equal(firstRefresh.status, 200);
-      await browser.send('Network.setCookie', { name: '__Secure-tg_refresh', value: initialCookie,
-        url: `${origin}/api/auth/refresh`, path: '/api/auth', secure: true, httpOnly: true, sameSite: 'Strict' });
-      const replay = await browser.evaluate(`fetch('/api/auth/refresh',{method:'POST',credentials:'same-origin'})
+      await browser.send('Network.setCookie', { name: '__Host-tg_refresh', value: initialCookie,
+        url: `${authOrigin}/api/auth/refresh`, path: '/', secure: true, httpOnly: true, sameSite: 'Strict' });
+      const replay = await browser.evaluate(`fetch('${authOrigin}/api/auth/refresh',{method:'POST',credentials:'include'})
         .then(response => response.status)`);
       assert.equal(replay, 401);
       await stop(web); web = undefined;
@@ -251,6 +294,7 @@ test('Chrome exercises branded login, memory token, refresh cookie, tenant choic
     } finally {
       if (browser) await browser.close();
       await stop(web);
+      await Promise.all([new Promise(resolve => appProxy.close(resolve)), new Promise(resolve => authServer.close(resolve))]);
       await new Promise(resolve => mock.close(resolve));
       await rm(directory, { recursive: true, force: true });
     }

@@ -1,0 +1,12 @@
+
+> targoman_llm@1.0.0 check:web
+> npm run check --workspace @targoman/web
+
+
+> @targoman/web@1.0.0 check
+> svelte-kit sync && svelte-check --tsconfig ./tsconfig.json
+
+Loading svelte-check in workspace: /home/user/Projects/vadja/ui/apps/web
+Getting Svelte diagnostics...
+
+svelte-check found 0 errors and 0 warnings

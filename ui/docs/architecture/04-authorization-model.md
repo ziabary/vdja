@@ -3392,3 +3392,28 @@ Authorization behavior is deterministic and testable.
 The default authorization question is:
 
 > **Which identity is acting, in which tenant and scope, on which resource, for which operation, which facts and policies apply, and which single Authority decision proves that access is permitted?**
+
+## T4 production decision boundary
+
+`clsAuthorityService` is the production entry point for generic protected
+resource decisions. Authority persistence resolves registered permissions,
+identity and role grants, ACL, clearance, organization ancestry, schedules, and
+authorization version from one repeatable-read snapshot. The pure decision
+kernel evaluates these facts. The service commits a semantic Audit event and
+durable SIEM export record before returning ALLOW or DENY; an Audit write
+failure rejects the operation and prevents protected materialization.
+
+Callers provide only factual resource identifiers, tenant, owner,
+classification, and organization. They must use the service's authorized
+materialization or field projection path for protected content. A worker acting
+on behalf of a human retains the original human actor, tenant, session when
+applicable, request, and correlation context. A service identity cannot replace
+the human's permissions. Direct use of the pure kernel is reserved for
+Authority internals and conformance tests.
+
+The current target production call-site inventory is
+`docs/security/07-t4-authority-decision-boundary.md`. Every production
+consumer must cross this audited service boundary; `ARCH-AUTH-004` rejects
+direct pure-evaluator imports/calls outside Authority and tests. New T5
+consumers require ALLOW and DENY Audit evidence and fail-closed tests before
+the T5 completion security gate can pass.
