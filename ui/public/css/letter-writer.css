@@ -1,0 +1,31 @@
+.writer-result { min-height: 34rem; }
+.writer-empty { padding: 8rem 1rem; text-align: center; color: var(--secretariat-muted); }
+.writer-empty > i { font-size: 3rem; color: var(--secretariat-accent); }
+.writer-paper { line-height: 2.2; background: var(--secretariat-panel-bg); color: var(--bs-body-color); resize: vertical; min-height: 28rem; }
+.writer-markdown { overflow-wrap: anywhere; }
+#letterPreview { border: 1px solid var(--bs-border-color); border-radius: .375rem; padding: 1.25rem; overflow-x: auto; }
+.writer-markdown h1, .writer-markdown h2, .writer-markdown h3,
+.writer-markdown h4, .writer-markdown h5, .writer-markdown h6 { font-size: 1.15em; line-height: 1.8; margin: 1.2em 0 .6em; }
+.writer-markdown > :first-child { margin-top: 0; }
+.writer-markdown > :last-child { margin-bottom: 0; }
+.writer-markdown ul, .writer-markdown ol { padding-inline-start: 1.8em; }
+.writer-markdown blockquote { border-inline-start: 3px solid var(--bs-border-color); padding-inline-start: 1rem; color: var(--bs-secondary-color); }
+.writer-markdown table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+.writer-markdown th, .writer-markdown td { border: 1px solid var(--bs-border-color); padding: .4rem .7rem; text-align: start; }
+.writer-markdown pre { direction: ltr; text-align: left; white-space: pre-wrap; background: var(--bs-tertiary-bg); padding: .75rem; border-radius: .375rem; }
+.writer-item { border: 1px solid var(--secretariat-border); border-radius: 12px; padding: 1rem; overflow-wrap: anywhere; }
+.writer-item p { white-space: pre-wrap; }
+fieldset { min-width: 0; }
+code { direction: ltr; display: inline-block; }
+#printLetter { display: none; }
+@media print {
+  body { background: white; color: black; }
+  main > :not(#printLetter) { display: none !important; }
+  #printLetter { display: block; color: black; line-height: 2.2; font-size: 12pt; }
+  #printLetter blockquote { color: #333; border-color: #777; }
+  #printLetter th, #printLetter td { border-color: #bbb; }
+  #printLetter pre { background: #f5f7fa; color: black; }
+  #printLetter a, #printLetter code { color: inherit; }
+  main.container { max-width: 100%; padding: 0 !important; }
+  @page { size: A4; margin: 20mm; }
+}

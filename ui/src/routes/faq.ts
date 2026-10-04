@@ -21,6 +21,9 @@ const upload = multer({ dest: os.tmpdir(), limits: { fileSize: 200 * 1024 * 1024
 const MAX_FAQS = 100;
 const BATCH_SIZE = 10;
 const MAX_ANSWER_WORDS = 250;
+// startNewChat caps each request at 2000 output tokens. Leave room for Persian
+// tokenization, questions and JSON fields when deciding how many FAQs fit.
+const MAX_OUTPUT_TOKENS = 2000;
 const MAX_SOURCE_CHARS = 2_000_000;
 // Persian text can approach one token per 2–3 characters on the active model.
 // Keeping each source part below this value leaves room for prompts, history and output.
@@ -167,10 +170,16 @@ router.post("/faq", upload.single("file"), async (req: Request, res: Response) =
     res.setHeader("X-Accel-Buffering", "no");
     res.flushHeaders();
 
-    const questionBatches = Math.ceil(count / BATCH_SIZE);
+    const llmServers = configManager.active().llmServers;
+    const configuredOutputTokens = llmServers.faq?.maxTokens ?? llmServers.summarize?.maxTokens ?? llmServers.rag?.maxTokens ?? MAX_OUTPUT_TOKENS;
+    const outputTokenLimit = Math.min(MAX_OUTPUT_TOKENS, configuredOutputTokens);
+    const tokensPerFaq = answerWords * 3 + 150;
+    const itemsPerBatch = Math.min(BATCH_SIZE, Math.max(1, Math.floor(outputTokenLimit / tokensPerFaq)));
+    const questionBatches = Math.ceil(count / itemsPerBatch);
     const sourceBatches = Math.ceil(selected.length / MAX_BATCH_SOURCE_CHARS);
     // Never create a source batch that cannot produce at least one FAQ.
-    const batches = Math.min(count, Math.max(questionBatches, sourceBatches));
+    const sourceParts = Math.min(count, sourceBatches);
+    const batches = Math.max(questionBatches, sourceParts);
 
     sendEvent(res, "meta", { fileName: file.originalname, sourceChars: extracted.text.length, selectedChars: selected.length, pageCount: extracted.pageCount, count, batches });
     const questions: string[] = [...priorQuestions];
@@ -178,14 +187,16 @@ router.post("/faq", upload.single("file"), async (req: Request, res: Response) =
 
     for (let batch = 0; batch < batches && !res.destroyed; batch++) {
       const remainingBatches = batches - batch;
-      const wanted = Math.min(BATCH_SIZE, Math.ceil((count - produced) / remainingBatches));
-      const source = batchSource(selected, batch, batches);
+      const wanted = Math.min(itemsPerBatch, Math.ceil((count - produced) / remainingBatches));
+      const sourcePart = Math.floor(batch * sourceParts / batches);
+      const source = batchSource(selected, sourcePart, sourceParts);
+      const targetWords = Math.ceil(answerWords * 0.7);
       const toneInstruction = tone === "conversational"
         ? `Write BOTH questions and answers in genuinely conversational, everyday language. Do not merely simplify formal prose. For Persian, use natural spoken forms such as «می‌تونه»، «چطور»، «اگه»، «چی» and «برای اینکه» where appropriate; avoid formal constructions such as «می‌تواند»، «می‌باشد»، «چگونه»، «در صورتی که» and «چیست». Keep facts exact while making the wording sound like a helpful person speaking.`
         : `Write both questions and answers in a formal, professional register suitable for publication.`;
-      const systemPrompt = `You generate grounded FAQs from supplied document content. Return ONLY a valid JSON array. Each item must have exactly question, answer, and section string fields. Never invent facts. Questions must be distinct. Answers must be self-contained and no longer than ${answerWords} words. ${toneInstruction} Preserve exact names, numbers, and qualifications from the source.`;
-      const userPrompt = `Generate exactly ${wanted} FAQ items.\nOutput language: ${language === "source" ? "same as the source" : language === "fa" ? "Persian" : "English"}.\nMandatory register: ${tone === "conversational" ? "conversational and spoken; reject formal wording before returning the JSON" : "formal and professional"}.\nRequested focus: ${focus || "none"}.\nQuestions already used (do not repeat): ${JSON.stringify(questions)}\n\nDOCUMENT PART ${batch + 1}/${batches}:\n${source}`;      
-      const raw = await generate("تولید FAQ", enuLLMServices.FAQ, systemPrompt, userPrompt, Math.min(2000, wanted * (answerWords + 60)), 0.2, { store: false, background: false, throwOnError: true });
+      const systemPrompt = `You generate grounded FAQs from supplied document content. Return ONLY a valid JSON array. Each item must have exactly question, answer, and section string fields. Never invent facts. Questions must be distinct. Give each answer enough source-backed detail to stand alone. When the document supports it, aim for ${targetWords} to ${answerWords} words per answer; include relevant conditions, steps, exceptions, and examples. Never exceed ${answerWords} words or pad an answer when the source lacks detail. ${toneInstruction} Preserve exact names, numbers, and qualifications from the source.`;
+      const userPrompt = `Generate exactly ${wanted} FAQ items.\nOutput language: ${language === "source" ? "same as the source" : language === "fa" ? "Persian" : "English"}.\nMandatory register: ${tone === "conversational" ? "conversational and spoken; reject formal wording before returning the JSON" : "formal and professional"}.\nRequested focus: ${focus || "none"}.\nQuestions already used (do not repeat): ${JSON.stringify(questions)}\n\nDOCUMENT PART ${sourcePart + 1}/${sourceParts}:\n${source}`;
+      const raw = await generate("تولید FAQ", enuLLMServices.FAQ, systemPrompt, userPrompt, Math.min(outputTokenLimit, wanted * tokensPerFaq), 0.2, { store: false, background: false, throwOnError: true });
       const items = parseItems(raw).slice(0, wanted);      
       if (!items.length) throw new Error("مدل هیچ FAQ معتبری تولید نکرد");
       questions.push(...items.map(item => item.question));

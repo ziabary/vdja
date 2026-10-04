@@ -5,11 +5,12 @@ configManager.init(path.resolve(process.cwd(), '.config.json'));
 const cfg = configManager.active();
 
 const db = cfg.db;
-const client = db.activeType;
+const client = ({ pgsql: 'pg', sqlite: 'sqlite3', mysql: 'mysql2', mssql: 'mssql' } as Record<string, string>)[db.activeType];
+if (!client) throw new Error(`Unsupported db.activeType: ${db.activeType}`);
 
 let connection: any;
 
-switch (client) {
+switch (db.activeType) {
   case 'sqlite':
     connection = { filename: path.resolve(process.cwd(), db.sqlite.paths.base) };
     break;
@@ -27,7 +28,7 @@ switch (client) {
     };
     break;
   default:
-    throw new Error(`Unsupported db.activeType: ${client}`);
+    throw new Error(`Unsupported db.activeType: ${db.activeType}`);
 }
 
 const baseConfig = {
@@ -47,7 +48,7 @@ const baseConfig = {
 console.log("Current working dir:", process.cwd());
 console.log("Migrations directory:", baseConfig.migrations.directory);
 console.log("Resolved migration path:", path.resolve(process.cwd(), baseConfig.migrations.directory));
-console.log("Active DB config:", JSON.stringify(cfg.db[cfg.db.activeType], null, 2));
+console.log("Active DB type:", db.activeType);
 
 export default {
   development: baseConfig,
@@ -56,4 +57,3 @@ export default {
   },
   // test / staging if needed
 };
-

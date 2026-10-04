@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="fa" dir="rtl" data-bs-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>مدیریت نامه‌نویس</title>
+  <script src="/js/theme-init.js"></script>
+  <link rel="stylesheet" href="/css/bootstrap/bootstrap.rtl.min.css">
+  <link rel="stylesheet" href="/fonts/IranSansX/fontiran.css">
+  <link rel="stylesheet" href="/fonts/fontawesome/active/all.css">
+  <link rel="stylesheet" href="/css/app-nav.css">
+  <link rel="stylesheet" href="/css/secretariat.css">
+  <link rel="stylesheet" href="/css/letter-writer.css">
+</head>
+<body data-service="/">
+  <main class="container py-4 fa-num">
+    <header class="d-flex flex-wrap align-items-center gap-3 mb-4">
+      <a href="/" aria-label="صفحه اصلی"><img src="/img/logo-light.png" alt="لوگوی فاپا" class="bi-color secretariat-logo"></a>
+      <div class="flex-grow-1"><h1 class="h3 mb-1">مدیریت نامه‌نویس</h1><p class="text-secondary mb-0">قواعد نگارش، سبک‌ها و قالب‌های نامه</p></div>
+      <a href="/letter-writer" class="btn btn-outline-primary">صفحه نامه‌نویس</a>
+      <span data-app-services></span>
+      <button id="btnToggleDarkMode" class="btn btn-outline-secondary fa-solid fa-moon" type="button" aria-label="تغییر حالت روشن و تاریک" title="تغییر حالت روشن و تاریک"></button>
+      <span data-app-account data-service="/" data-login-back="letter-writer-admin"></span>
+    </header>
+    <div id="notice" class="alert d-none" role="status" aria-live="polite"></div>
+    <div id="adminContent" class="d-none">
+      <section class="admin-panel mb-4">
+        <h2 class="h5">قواعد پایه نگارش سازمان</h2>
+        <p class="text-secondary">این قواعد در همه قالب‌ها و فرمت آزاد الزامی است و بر سبک‌های تکمیلی اولویت دارد.</p>
+        <p class="small text-secondary">نگارش اداری به‌صورت مجهول و غیرشخصی انجام می‌شود؛ مانند «درخواست می‌شود» و «به استحضار می‌رسد». اول‌شخص فقط با فعال کردن الزام صریح در قالب نوع نامه مجاز است و در فرمت آزاد استفاده نمی‌شود.</p>
+        <form id="settingsForm" class="d-grid gap-3"><div><label for="policy" class="form-label">دستور نگارش مدیر</label><textarea id="policy" name="instructions" class="form-control" rows="4" required maxlength="3000" placeholder="لحن، واژگان، نحوه شروع و پایان و قواعد سازمان را بنویسید."></textarea></div><button class="btn btn-primary justify-self-start" type="submit">ذخیره قواعد پایه</button></form>
+      </section>
+      <section class="admin-panel mb-4">
+        <h2 class="h5 mb-3">سبک‌های نگارش</h2>
+        <div class="row g-4">
+          <div class="col-lg-5"><form id="styleForm" class="d-grid gap-3">
+            <h3 id="styleFormTitle" class="h6">افزودن سبک</h3>
+            <div><label for="styleName" class="form-label">نام سبک</label><input id="styleName" name="name" class="form-control" required maxlength="160"></div>
+            <div><label for="styleInstructions" class="form-label">دستور نگارش</label><textarea id="styleInstructions" name="instructions" class="form-control" rows="5" required maxlength="2500" placeholder="مثلاً نامه کوتاه، رسمی و با درخواست صریح نوشته شود."></textarea></div>
+            <label class="form-check"><input name="enabled" class="form-check-input" type="checkbox" checked><span class="form-check-label">قابل انتخاب برای کاربران</span></label>
+            <div class="d-flex gap-2"><button class="btn btn-primary" type="submit">ذخیره سبک</button><button id="cancelStyle" class="btn btn-outline-secondary d-none" type="button">انصراف از ویرایش</button></div>
+          </form></div>
+          <div class="col-lg-7"><div id="stylesList" class="d-grid gap-3"></div></div>
+        </div>
+      </section>
+      <section class="admin-panel">
+        <h2 class="h5 mb-3">انواع نامه و قالب‌ها</h2>
+        <div class="row g-4">
+          <div class="col-lg-5"><form id="templateForm" class="d-grid gap-3">
+            <h3 id="templateFormTitle" class="h6">افزودن قالب</h3>
+            <div><label for="templateName" class="form-label">نام نوع نامه</label><input id="templateName" name="name" class="form-control" required maxlength="160" placeholder="مثلاً معرفی‌نامه"></div>
+            <div><label for="templateDescription" class="form-label">توضیح کوتاه برای کاربران</label><input id="templateDescription" name="description" class="form-control" maxlength="500"></div>
+            <div><label for="templateStyle" class="form-label">سبک پیش‌فرض قالب</label><select id="templateStyle" name="styleKey" class="form-select"><option value="">سبک پایه مدیر</option></select></div>
+            <div><label for="templateStructure" class="form-label">ساختار و فرمت نامه</label><textarea id="templateStructure" name="structure" class="form-control" rows="8" required maxlength="4000" placeholder="موضوع: {{subject}}&#10;{{recipient}}&#10;با سلام و احترام&#10;[متن درخواست]&#10;با احترام&#10;{{sender}}"></textarea>
+              <div class="form-text">متغیرهای قابل استفاده: <code>{{recipient}}</code> گیرنده، <code>{{recipientTitle}}</code> سمت، <code>{{subject}}</code> موضوع و موضوع پیشنهادی، <code>{{sender}}</code> فرستنده و <code>{{details}}</code> توضیحات. گیرنده و سمت خالی با [نام گیرنده] و [سمت گیرنده] جایگزین می‌شوند. بخش‌های مورد انتظار را داخل کروشه شرح دهید.</div>
+            </div>
+            <div><label for="templateInstructions" class="form-label">دستورهای ویژه این قالب</label><textarea id="templateInstructions" name="instructions" class="form-control" rows="3" maxlength="2000"></textarea></div>
+            <div><label class="form-check"><input name="requiresFirstPerson" class="form-check-input" type="checkbox"><span class="form-check-label">این نوع نامه الزاماً با اول‌شخص نوشته شود</span></label><div class="form-text">فقط برای الگوهایی فعال شود که اول‌شخص را صریحاً الزامی می‌کنند. در حالت عادی نگارش مجهول و غیرشخصی است.</div></div>
+            <label class="form-check"><input name="enabled" class="form-check-input" type="checkbox" checked><span class="form-check-label">قالب فعال باشد</span></label>
+            <div class="d-flex gap-2"><button class="btn btn-primary" type="submit">ذخیره قالب</button><button id="cancelTemplate" class="btn btn-outline-secondary d-none" type="button">انصراف از ویرایش</button></div>
+          </form></div>
+          <div class="col-lg-7"><div id="templatesList" class="d-grid gap-3"></div></div>
+        </div>
+      </section>
+    </div>
+  </main>
+  <script>window.page = { serviceName: '/' };</script>
+  <script src="/js/vendors/bootstrap.bundle.min.js"></script>
+  <script src="/js/common.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/app-nav.js"></script>
+  <script src="/js/letter-writer-common.js"></script>
+  <script src="/js/letter-writer-admin.js"></script>
+</body>
+</html>

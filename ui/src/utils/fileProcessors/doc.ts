@@ -1,6 +1,7 @@
 import { execFile } from "child_process";
 import * as fs from "fs/promises";
 import * as path from "path";
+import { pathToFileURL } from "url";
 import { normalizePersianText } from "../i18n";
 import { createTempDir, removeTempDir } from "../common";
 import { type IntfFileMeta, type IntfTextExtractResult } from "../../interfaces/file";
@@ -139,8 +140,10 @@ async function sectionText(section:IntfVirtualSection, i:number, tmpFolder:strin
 
 async function getFileSections(file: IntfFileMeta) {
   const ext = path.extname(file.originalname).toLowerCase();
-  await fs.rename(file.path, file.path+ext)
-  file.path=file.path+ext
+  if (!file.path.toLowerCase().endsWith(ext)) {
+    await fs.rename(file.path, file.path + ext);
+    file.path += ext;
+  }
 
   const json = await new Promise<{ blocks: IntfPandocBlock[], meta: { title: string } }>((resolve, reject) =>
     execFile("pandoc", [file.path, "-t", "json"], (err, stdout) =>
@@ -154,6 +157,22 @@ async function getFileSections(file: IntfFileMeta) {
   return sections
 }
 
+function isPandocUnavailable(error: unknown) {
+  return (error as NodeJS.ErrnoException)?.code === "ENOENT";
+}
+
+async function extractWithLibreOffice(file: IntfFileMeta, tmpFolder: string) {
+  const profile = pathToFileURL(path.join(tmpFolder, "profile")).href;
+  await new Promise<void>((resolve, reject) =>
+    execFile("libreoffice", [
+      `-env:UserInstallation=${profile}`, "--headless", "--convert-to", "txt:Text",
+      "--outdir", tmpFolder, file.path,
+    ], { timeout: 120_000 }, error => error ? reject(error) : resolve())
+  );
+  const output = path.join(tmpFolder, `${path.basename(file.path, path.extname(file.path))}.txt`);
+  return normalizePersianText(await fs.readFile(output, "utf8"));
+}
+
 
 export async function extractFromDoc(
   file: IntfFileMeta,
@@ -164,7 +183,14 @@ export async function extractFromDoc(
 
   const tmpFolder = await createTempDir("doc-extract");
   try {
-    const sections = await getFileSections(file)
+    let sections: IntfVirtualSection[];
+    try { sections = await getFileSections(file); }
+    catch (error) {
+      if (!isPandocUnavailable(error)) throw error;
+      const text = await extractWithLibreOffice(file, tmpFolder);
+      return { meta: { pageCount: 1, title: file.originalname }, stripped: text.length > maxChars,
+        text: fromPage > 0 ? "" : text.slice(0, maxChars) };
+    }
 
     // --- Pagination: simple fake pages by sections ---
     const start = fromPage;
@@ -201,7 +227,14 @@ export async function extractFromDocInteractive(
 ) {
   const tmpFolder = await createTempDir("doc-extract");
   try {
-    const sections = await  getFileSections(file)
+    let sections: IntfVirtualSection[];
+    try { sections = await getFileSections(file); }
+    catch (error) {
+      if (!isPandocUnavailable(error)) throw error;
+      const text = await extractWithLibreOffice(file, tmpFolder);
+      if (onSection && text.trim()) await onSection(1, text, 1);
+      return [{ title: file.originalname, blocks: [] }];
+    }
     for (let i = 0; i < sections.length; i++) {
       const text = await sectionText(sections[i]!, i, tmpFolder)
       if (onSection) await onSection(i + 1, text, sections.length);

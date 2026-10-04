@@ -94,8 +94,18 @@
             <a href="/"><img src="img/logo-light.png" alt="لوگو" class="bi-color logo" /></a>
             <h3 class="mb-4" id="title">ورود به گفتگو</h3>
             <div id="blkBaseLogin">
+              <div id="blkOIDC">
+                <button id="oidcBtn" class="btn btn-primary w-100 mb-3" autofocus>
+                  ورود با حساب سازمانی
+                </button>
+                <div class="faded-line-container mb-3" aria-hidden="true">
+                  <span class="faded-line"></span>
+                  <span class="or-by">یا</span>
+                  <span class="faded-line"></span>
+                </div>
+              </div>
               <div class="mb-4">
-                <label class="form-label fw-bold">کلید اختصاصی (حداقل ۱۶ کاراکتر)</label>
+                <label class="form-label fw-bold" for="userToken">کلید اختصاصی ناشناس (حداقل ۱۶ کاراکتر)</label>
                 <div class="input-group">
                   <input type="password" id="userToken" class="form-control form-control-lg"
                     placeholder="کلید را وارد یا تولید کنید ..." />
@@ -128,73 +138,6 @@
                 </div>
               </div>
 
-              <div id="blkOIDC" class="hidden">
-                <div class="d-flex mb-3">
-                  <style>
-                    .faded-line-container {
-                      display: flex;
-                      align-items: center;
-                      gap: 10px;
-                      /* space between the elements */
-                      width: 100%;
-                      max-width: 400px;
-                      /* adjust as needed */
-                      margin: 0 auto;
-                    }
-
-                    .faded-line {
-                      flex: 1;
-                      /* auto-growing */
-                      height: 1px;
-                      background: linear-gradient(to right, transparent, #222, transparent);
-                      background-size: 100% 100%;
-                      background-repeat: no-repeat;
-                      position: relative;
-                    }
-
-                    .faded-line::before {
-                      content: '';
-                      position: absolute;
-                      top: 0;
-                      left: 0;
-                      right: 0;
-                      height: 100%;
-                      background: linear-gradient(to right, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.2));
-                      background-size: 100% 100%;
-                      background-repeat: no-repeat;
-                      z-index: 1;
-                    }
-
-                    .faded-line::after {
-                      content: '';
-                      position: absolute;
-                      top: 0;
-                      left: 0;
-                      right: 0;
-                      height: 100%;
-                      background: linear-gradient(to right, transparent, #222, transparent);
-                      background-size: 100% 100%;
-                      background-repeat: no-repeat;
-                      z-index: 0;
-                    }
-
-                    .or-by {
-                      font-size: 14px;
-                      font-weight: normal;
-                    }
-                  </style>
-                  <div class="faded-line-container">
-                    <span class="faded-line"></span>
-                    <span class="or-by">و یا</span>
-                    <span class="faded-line"></span>
-                  </div>
-                </div>
-                <div class="d-flex mb-3 ">
-                  <button id="oidcBtn" class="btn btn-light w-100 mb-2">
-                    ورود با حساب سازمانی
-                  </button>
-                </div>
-              </div>
             </div>
             <div id="secBaleOTP" class="hidden">
               <div class="mb-4 text-center">
@@ -232,7 +175,7 @@
             </p>
             <p>
               <span class="me-2 d-inline-block">❗</span>
-              تمام داده‌های ارائه‌شده و چت‌ها در صورتی که توسط خودتان حذف
+              تمام داده‌های ارائه‌شده و چت‌های با ورود ناشناس در صورتی که توسط خودتان حذف
               نشوند، پس از ۷ روز از آخرین ورود به سامانه حذف خواهند شد.
             </p>
           </div>
@@ -269,6 +212,7 @@
       missing_flow: 'نشست ورود سازمانی منقضی شده است. دوباره تلاش کنید.',
       invalid_flow_state: 'نشست ورود سازمانی معتبر نیست. دوباره تلاش کنید.',
       oidc_disabled: 'ورود سازمانی در حال حاضر فعال نیست.',
+      oidc_unavailable: 'سرویس ورود سازمانی در دسترس نیست. کمی بعد دوباره تلاش کنید.',
       oidc_denied: 'امکان ورود به سرویس با این حساب وجود ندارد.',
       oidc_conflict: 'اطلاعات این حساب سازمانی قبلاً ثبت شده است. با مدیر سامانه تماس بگیرید.',
       oidc: 'ورود سازمانی کامل نشد. دوباره تلاش کنید.',
@@ -323,9 +267,14 @@
     const lblBale = document.getElementById("lblBale");
 
     fetch('/api/auth/methods', { cache: 'no-store' })
-      .then(res => res.ok ? res.json() : { oidc: false })
-      .then(methods => blkOIDC.classList.toggle('hidden', !methods.oidc))
-      .catch(() => blkOIDC.classList.add('hidden'));
+      .then(res => {
+        if (!res.ok) throw new Error('Authentication methods unavailable');
+        return res.json();
+      })
+      .then(methods => {
+        if (methods.oidc === false) blkOIDC.classList.add('hidden');
+      })
+      .catch(err => console.warn('Could not load authentication methods:', err));
 
     let otpTimer = null
     let isPasswordVisible = false;

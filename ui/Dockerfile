@@ -53,6 +53,7 @@ RUN sed -i 's|https://dl-cdn.alpinelinux.org/alpine/|https://mirror.arvancloud.i
 # Runtime packages your app needs (PDF/OCR/fonts)
 RUN apk add --no-cache \
     poppler-utils \
+    libreoffice \
     tesseract-ocr \
     tesseract-ocr-data-eng \
     tesseract-ocr-data-fas \
@@ -71,6 +72,8 @@ RUN node -e "require('@napi-rs/canvas').createCanvas(1, 1).toBuffer('image/png')
 
 # Copy the fully bundled + obfuscated single file (prompts are now hidden)
 COPY --from=builder /app/dist/index.js ./dist/index.js
+
+RUN mkdir -p /data/secretariat && chown node:node /data/secretariat
 
 ENTRYPOINT ["/sbin/tini", "--"]
 EXPOSE 3000

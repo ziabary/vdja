@@ -32,6 +32,9 @@ import files from './routes/shares';
 import widget from './routes/widget';
 import crm from './routes/crm';
 import faq from './routes/faq';
+import secretariat from './routes/secretariat';
+import letterWriter from './routes/letterWriter';
+import { startSecretariatSync } from './services/secretariatService';
 import { publicWidgetCors } from './services/widgetService';
 import type { IntfExHttp } from './interfaces/exHttp';
 import { enuLLMServices } from './interfaces/config';
@@ -144,7 +147,9 @@ app.use((req, res, next) => {
     files,
     widget,
     crm,
-    faq
+    faq,
+    secretariat,
+    letterWriter
   ])
 
 
@@ -188,6 +193,7 @@ app.use((req, res, next) => {
   });
 
   Object.values(enuLLMServices).forEach(installMonitor);
+  startSecretariatSync();
 }
 
 init(); 

@@ -120,12 +120,16 @@ services:
 
   ui:
     <<: *ui_base
+    environment:
+      - "TZ=Asia/Tehran"
+      - "SECRETARIAT_STORAGE_DIR=/data/secretariat"
     ports:
       - "0.0.0.0:80:3000"
     volumes:
       - ./config.json:/app/.config.json:ro
       - ./logs/ui:/app/logs
       - ./upload:/data/upload:ro
+      - secretariat_data:/data/secretariat
 
 
   mysql:
@@ -149,3 +153,6 @@ services:
 networks:
   net:
     driver: bridge
+
+volumes:
+  secretariat_data:

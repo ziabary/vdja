@@ -19,6 +19,9 @@ export interface IntfPrivileges {
   isVerified?: boolean
   manageShares?: boolean
   apiAccess?: boolean
+  secretariatOperator?: boolean
+  secretariatAdmin?: boolean
+  letterWriterAdmin?: boolean
 }
 
 export interface IntfAuth {
@@ -32,4 +35,3 @@ export interface IntfRefreshTokenPayload {
   key: string;
   type: "refresh";
 }
-

@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="fa" dir="rtl" data-bs-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>نامه‌نویس</title>
+  <script src="/js/theme-init.js"></script>
+  <link rel="stylesheet" href="/css/bootstrap/bootstrap.rtl.min.css">
+  <link rel="stylesheet" href="/fonts/IranSansX/fontiran.css">
+  <link rel="stylesheet" href="/fonts/fontawesome/active/all.css">
+  <link rel="stylesheet" href="/css/app-nav.css">
+  <link rel="stylesheet" href="/css/secretariat.css">
+  <link rel="stylesheet" href="/css/letter-writer.css">
+</head>
+<body data-service="/">
+  <main class="container py-4 fa-num">
+    <header class="d-flex flex-wrap align-items-center gap-3 mb-4">
+      <a href="/" aria-label="صفحه اصلی"><img src="/img/logo-light.png" alt="لوگوی فاپا" class="bi-color secretariat-logo"></a>
+      <div class="flex-grow-1"><h1 class="h3 mb-1">نامه‌نویس</h1><p class="text-secondary mb-0"> موضوع را شرح دهید؛ نامه با سبک سازمان نوشته می‌شود.</p></div>
+      <a class="btn btn-outline-secondary" href="/secretariat">دبیرخانه هوشمند</a>
+      <a id="adminLink" class="btn btn-outline-primary d-none" href="/letter-writer-admin">مدیریت نامه‌نویس</a>
+      <span data-app-services></span>
+      <button id="btnToggleDarkMode" class="btn btn-outline-secondary fa-solid fa-moon" type="button" aria-label="تغییر حالت روشن و تاریک" title="تغییر حالت روشن و تاریک"></button>
+      <span data-app-account data-service="/" data-login-back="letter-writer"></span>
+    </header>
+    <div id="notice" class="alert d-none" role="status" aria-live="polite"></div>
+    <div class="row g-4">
+      <section class="col-lg-5 writer-input">
+        <div class="admin-panel">
+          <h2 class="h5 mb-3">اطلاعات نامه</h2>
+          <form id="letterForm">
+            <fieldset id="letterFields" disabled class="d-grid gap-3">
+              <div><label for="templateKey" class="form-label">نوع نامه <span class="text-secondary small">(اختیاری)</span></label><select id="templateKey" name="templateKey" class="form-select"><option value="">فرمت آزاد</option></select><div id="templateHelp" class="form-text">ساختار نامه بر اساس موضوع شما انتخاب می‌شود.</div></div>
+              <div><label for="styleKey" class="form-label">سبک نگارش <span class="text-secondary small">(اختیاری)</span></label><select id="styleKey" name="styleKey" class="form-select"><option value="">سبک پایه مدیر</option></select><div class="form-text">قواعد پایه نگارش مدیر در همه نامه‌ها، از جمله فرمت آزاد، رعایت می‌شود.</div></div>
+              <div><label for="recipient" class="form-label">گیرنده نامه <span class="text-secondary small">(اختیاری)</span></label><input id="recipient" name="recipient" class="form-control" maxlength="255" placeholder="در صورت خالی بودن: [نام گیرنده]"></div>
+              <div><label for="recipientTitle" class="form-label">سمت یا عنوان گیرنده <span class="text-secondary small">(اختیاری)</span></label><input id="recipientTitle" name="recipientTitle" class="form-control" maxlength="255" placeholder="در صورت خالی بودن: [سمت گیرنده]"></div>
+              <div><label for="subject" class="form-label">موضوع نامه <span class="text-secondary small">(اختیاری)</span></label><input id="subject" name="subject" class="form-control" maxlength="500" placeholder="اگر خالی باشد، از توضیحات پیشنهاد می‌شود"><div id="subjectSuggestion" class="form-text" aria-live="polite"></div></div>
+              <div><label for="sender" class="form-label">نام و سمت فرستنده <span class="text-secondary small">(اختیاری)</span></label><input id="sender" name="sender" class="form-control" maxlength="255"></div>
+              <div><label for="details" class="form-label">توضیحات و خواسته شما <span class="text-danger small">(اجباری)</span></label><textarea id="details" name="details" class="form-control" rows="6" required maxlength="6000" placeholder="هدف نامه، نکات ضروری، سوابق و اقدامی که از گیرنده انتظار دارید را بنویسید."></textarea><div class="form-text">برای گیرنده و سمت نامشخص، جای‌نگهدار در متن نامه قرار می‌گیرد.</div></div>
+              <button id="generateButton" class="btn btn-primary py-2" type="submit"><i class="fa-solid fa-wand-magic-sparkles ms-2"></i>نوشتن نامه</button>
+            </fieldset>
+          </form>
+        </div>
+      </section>
+      <section class="col-lg-7">
+        <div class="admin-panel writer-result" aria-busy="false">
+          <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3"><h2 class="h5 mb-0">متن نامه</h2><span id="resultMeta" class="text-secondary small"></span></div>
+          <div id="emptyResult" class="writer-empty"><i class="fa-solid fa-file-pen mb-3" aria-hidden="true"></i><p class="mb-1">نامه شما اینجا آماده می‌شود.</p><small>اطلاعات نامه را تکمیل کنید و «نوشتن نامه» را بزنید.</small></div>
+          <div id="generating" class="d-none py-5 text-center" role="status"><span class="spinner-border text-primary mb-3" aria-hidden="true"></span><p>در حال بررسی اطلاعات و نگارش نامه با سبک انتخاب‌شده…</p></div>
+          <div id="resultContent" class="d-none">
+            <div class="d-flex flex-wrap align-items-center gap-2 mb-3 writer-view-controls" role="group" aria-label="نمایش و ویرایش نامه">
+              <button id="previewButton" class="btn btn-sm btn-primary" type="button" aria-pressed="true" aria-controls="letterPreview">نمایش نامه</button>
+              <button id="editButton" class="btn btn-sm btn-outline-primary" type="button" aria-pressed="false" aria-controls="letterEditor">ویرایش متن</button>
+              <span class="small text-secondary">پیش از استفاده، متن نامه را مرور کنید.</span>
+            </div>
+            <article id="letterPreview" class="writer-paper writer-markdown" aria-label="متن نامه" tabindex="0"></article>
+            <div id="letterEditor" class="d-none">
+              <label for="letterBody" class="form-label small text-secondary">متن نامه؛ قالب‌بندی Markdown پشتیبانی می‌شود.</label>
+              <textarea id="letterBody" class="form-control writer-paper" rows="22" spellcheck="false" autocomplete="off"></textarea>
+            </div>
+            <div class="d-flex flex-wrap gap-2 mt-3 writer-actions">
+              <button id="copyButton" class="btn btn-primary" type="button"><i class="fa-solid fa-copy ms-2"></i>کپی متن</button>
+              <button id="downloadButton" class="btn btn-outline-primary" type="button">دانلود متن</button>
+              <button id="printButton" class="btn btn-outline-secondary" type="button">چاپ نامه</button>
+              <button id="regenerateButton" class="btn btn-outline-secondary" type="button">نگارش دوباره</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+    <div class="alert alert-info small mt-4 mb-0" role="alert">
+      <p class="mb-0">
+        <span class="me-2">⚠️</span>
+        بنا به دلایل امنیتی، نامه‌های تولیدشده در سامانه ذخیره نمی‌شوند و با تازه‌سازی (رفرش) صفحه حذف خواهند شد.
+        پیش از رفرش یا بستن صفحه، متن نامه را کپی یا دانلود کنید.
+      </p>
+    </div>
+    <div id="printLetter" class="writer-markdown" aria-hidden="true"></div>
+  </main>
+  <script>window.page = { serviceName: '/' };</script>
+  <script src="/js/vendors/bootstrap.bundle.min.js"></script>
+  <script src="/js/common.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/app-nav.js"></script>
+  <script src="/js/vendors/marked.min.js"></script>
+  <script src="/js/letter-writer-common.js"></script>
+  <script src="/js/letter-writer.js"></script>
+</body>
+</html>

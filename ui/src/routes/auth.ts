@@ -18,6 +18,10 @@ import { parseQueryToString } from "../utils/common";
 const router: Router = express.Router();
 let openIDClient: oidc.Configuration;
 
+function allowInsecureOidcHttp(): boolean {
+  return Boolean(configManager.active().OIDC.allowInsecureHttp || process.env.NODE_ENV === 'development');
+}
+
 interface AuthRequestBody {
   userKeyMD5: string;
   [key: string]: string
@@ -185,12 +189,14 @@ router.post("/auth/logout", async (apiReq: Request, apiRes: Response) => {
  */
 router.get("/auth/methods", (_apiReq: Request, apiRes: Response) => {
   apiRes.setHeader("Cache-Control", "no-store");
-  apiRes.json({ oidc: Boolean(configManager.active().OIDC.active && openIDClient) });
+  apiRes.json({ oidc: configManager.active().OIDC.active });
 });
 
 router.get("/auth/oidc/login", async (apiReq: Request, apiRes: Response) => {
-  if (!configManager.active().OIDC.active || !openIDClient)
+  if (!configManager.active().OIDC.active)
     return apiRes.redirect("/login?error=oidc_disabled");
+  if (!openIDClient)
+    return apiRes.redirect("/login?error=oidc_unavailable");
 
   const codeVerifier = oidc.randomPKCECodeVerifier();
   const codeChallenge = await oidc.calculatePKCECodeChallenge(codeVerifier);
@@ -220,7 +226,7 @@ router.get("/auth/oidc/login", async (apiReq: Request, apiRes: Response) => {
 
   apiRes.cookie("oidc_flow", signOIDCFlow(flow, configManager.active().jwt.baseSecret), {
     httpOnly: true,
-    secure: !configManager.active().OIDC.allowInsecureHttp,
+    secure: !allowInsecureOidcHttp(),
     sameSite: "lax",
     path: "/api/auth/oidc",
     maxAge: 5 * 60 * 1000
@@ -263,8 +269,10 @@ router.get("/auth/oidc/login", async (apiReq: Request, apiRes: Response) => {
 router.get("/auth/oidc/callback", async (apiReq: Request, apiRes: Response) => {
   apiRes.setHeader("Cache-Control", "no-store");
   apiRes.clearCookie("oidc_flow", { path: "/api/auth/oidc" });
-  if (!configManager.active().OIDC.active || !openIDClient)
+  if (!configManager.active().OIDC.active)
     return apiRes.redirect("/login?error=oidc_disabled");
+  if (!openIDClient)
+    return apiRes.redirect("/login?error=oidc_unavailable");
   const cookie = apiReq.cookies.oidc_flow;
   if (!cookie)
     return apiRes.redirect("/login.html?error=missing_flow");
@@ -345,10 +353,9 @@ async function sendJWT(user: Partial<IntfUser>, apiRes: Response, redirectTo?: s
   const ttlRaw = configManager.active().jwt.refreshTTL
   const cookieMaxAge = typeof ttlRaw === 'number' ? ttlRaw * 1000 : ms(ttlRaw as StringValue);
 
-  const oidcConfig = configManager.active().OIDC;
   apiRes.cookie("refreshToken", refreshToken, {
     httpOnly: true,
-    secure: !oidcConfig.allowInsecureHttp,
+    secure: !allowInsecureOidcHttp(),
     sameSite: "strict",
     path: "/api/",
     ...(cookieMaxAge ? { maxAge: cookieMaxAge } : {}),
@@ -685,39 +692,39 @@ router.post("/auth/verifyOTP", async (apiReq: Request, apiRes: Response) => {
   throw new exHttpInvalidParams("کد وارد شده صحیح نمی‌باشد")
 })
 
-async function initOpenID() {
+function initOpenID(): void {
   const OIDC = configManager.active().OIDC
   if (!OIDC?.active) return
 
   const issuerUrl = new URL(OIDC.issuer);
-  if (issuerUrl.protocol === 'http:' && !OIDC.allowInsecureHttp)
+  const allowInsecureHttp = allowInsecureOidcHttp();
+  if (issuerUrl.protocol === 'http:' && !allowInsecureHttp)
     throw new Error('OIDC issuer uses HTTP. Set OIDC.allowInsecureHttp=true only for trusted development networks, or configure HTTPS.');
 
-  openIDClient = await oidc.discovery(
-    issuerUrl,
-    OIDC.clientId,
-    OIDC.clientSecret,
-    // optional client auth method (default is ClientSecretPost if secret present)
-    OIDC.clientSecret ? oidc.ClientSecretPost(OIDC.clientSecret) : undefined,
-    // optional options object
-    {
-      // algorithm: 'oidc',           // default, can be 'oauth2' for plain OAuth
-      timeout: 30,
-      ...(OIDC.allowInsecureHttp ? { execute: [oidc.allowInsecureRequests] } : {}),
+  async function discover(): Promise<void> {
+    try {
+      const client = await oidc.discovery(
+        issuerUrl,
+        OIDC.clientId,
+        OIDC.clientSecret,
+        OIDC.clientSecret ? oidc.ClientSecretPost(OIDC.clientSecret) : undefined,
+        {
+          timeout: 30,
+          ...(allowInsecureHttp ? { execute: [oidc.allowInsecureRequests] } : {}),
+        }
+      );
+      openIDClient = client;
+      logger.info(`OIDC discovered issuer: ${client.serverMetadata().issuer}`);
+    } catch (err) {
+      logger.warn(`OIDC discovery failed; retrying in 30 seconds: ${String(err)}`);
+      setTimeout(() => void discover(), 30_000).unref();
     }
-  );
-  logger.info(`OIDC discovered issuer: ${openIDClient.serverMetadata().issuer}`);
+  }
 
-  /*const issuer = await oidc.discovery(OIDC.issuer);
-  openIDClient = new oidc.Client({
-    client_id: OIDC.clientId,
-    client_secret: OIDC.clientSecret,
-    redirect_uris: [OIDC.callbackUri],
-    response_types: ["code"],
-  });*/
+  void discover();
 }
 
 export default async function init(): Promise<Router> {
-  await initOpenID()
+  initOpenID()
   return router;
 }

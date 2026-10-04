@@ -8,6 +8,7 @@ import configManager from "../utils/configManager";
 import type { IntfChunkPayload } from "../interfaces/llm";
 import type { IntfExHttp } from "../interfaces/exHttp";
 import type { IntfChunk } from "../interfaces/file";
+import { compactSearchText } from "../utils/persianSearch";
 import {
   resolveStructuredVersions,
   STRUCTURED_RAG_FORMAT,
@@ -189,6 +190,7 @@ export default function vectorDB() {
 
       const payload = {
         text: chunk.text,
+        ...(collectionKey === 'SECRETARIAT_LETTERS' ? { secretariat_search_compact: compactSearchText(chunk.text) } : {}),
         chunk_index: i,
         chunk_time: meta.time,
         title,
@@ -484,7 +486,7 @@ export default function vectorDB() {
         logger.deepDebug({removing: {collectionKey, fileId, len: pointIds.length, next_page_offset}})
 
       if (pointIds.length > 0) 
-        await VDBClient.delete(collectionKey, { points: pointIds });
+        await VDBClient.delete(collectionKey, { points: pointIds, wait: true });
       
 
       removed += pointIds.length;

@@ -5,7 +5,7 @@
     "main": "dist/index.js",
     "type": "module",
     "scripts": {
-        "sdev": "node --import tsx --watch src/index.ts",
+        "sdev": "NODE_ENV=development node --import tsx --watch src/index.ts",
         "build": "tsup src/index.ts --format esm --dts",
         "lint": "node ./node_modules/eslint/bin/eslint.js 'src/**/*.{ts,tsx}'",
         "fix": "node ./node_modules/eslint/bin/eslint.js 'src/**/*.{ts,tsx}' --fix",
@@ -24,7 +24,13 @@
         "db:rollback": "node ./node_modules/tsx/dist/cli.mjs ./db/knexfile.ts migrate:rollback",
         "db:reset": "node ./node_modules/tsx/dist/cli.mjs ./db/knexfile.ts migrate:rollback --all && node ./node_modules/tsx/dist/cli.mjs ./db/knexfile.ts migrate:latest && node ./node_modules/tsx/dist/cli.mjs ./db/knexfile.ts seed:run",
         "db:make": "node ./node_modules/tsx/dist/cli.mjs ./db/knexfile.ts migrate:make -x ts",
-        "db:check": "node ./node_modules/tsx/dist/cli.mjs ./db/check-tables.ts"
+        "db:check": "node ./node_modules/tsx/dist/cli.mjs ./db/check-tables.ts",
+        "db:seed:secretariat": "node --import tsx db/seed-secretariat-demo.ts",
+        "db:index:secretariat-demo": "NODE_ENV=production node --import tsx db/index-secretariat-demo.ts",
+        "test:letter-writer": "node --import tsx --test tests/letter-writer.test.ts tests/letter-writer-ui.test.mjs tests/letter-writer-migration.test.mjs",
+        "test:letter-writer:live": "NODE_ENV=production node --import tsx tests/letter-writer-live.ts",
+        "benchmark:secretariat": "NODE_ENV=production node --import tsx db/benchmark-secretariat.ts",
+        "db:clean:secretariat-wizard-index": "NODE_ENV=production node --import tsx db/clean-secretariat-wizard-index.ts"
     },
     "keywords": [
         "LLM",
@@ -58,6 +64,7 @@
         "glob": "^13.0.6",
         "html-minifier-next": "^5.1.2",
         "javascript-obfuscator": "^5.3.0",
+        "jsdom": "26.1.0",
         "nodemon": "^3.1.11",
         "streamsaver": "^2.0.6",
         "tedious": "^19.2.1",

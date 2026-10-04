@@ -28,6 +28,7 @@ async function runMigrations() {
   } catch (err: any) {
     console.error('Migration failed:', err.message || err);
     if (err.stack) console.error(err.stack.split('\n').slice(0, 8).join('\n'));
+    process.exitCode = 1;
   } finally {
     await db.destroy();
   }
