@@ -43,6 +43,8 @@ function errorResponse(error: unknown): Readonly<{ status: number; code: string 
   const code = error instanceof Error ? error.message : '';
   if (['INVALID_ACCESS_TOKEN','INVALID_EXECUTION_SUBJECT','EXECUTION_SUBJECT_INACTIVE'].includes(code)) return { status:401,code:'INVALID_SESSION' };
   if (code === 'PROTECTED_EGRESS_DENIED') return {status:403,code:'PROTECTED_EGRESS_DENIED'};
+  if (code === 'CHAT_NOT_FOUND') return {status:404,code};
+  if (code === 'CHAT_LIMIT') return {status:409,code};
   if (code.startsWith('INVALID_')) return {status:400,code:'INVALID_KNOWLEDGE_INPUT'};
   if (error instanceof Error && 'type' in error && error.type === 'entity.too.large') return {status:413,code:'INPUT_LIMIT_EXCEEDED'};
   return {status:500,code:'INTERNAL_ERROR'};
@@ -54,7 +56,7 @@ export function registerKnowledgeApi(app: Express, snapshot: intfConfigurationSn
   const router = express.Router();
   const logFailure=(req:Request,res:Response,safe:Readonly<{status:number;code:string}>)=>logOperational({
     severity:safe.status>=500?'ERROR':'WARN',component:'knowledge-api',event:'request_failed',
-    context:res.locals.publicContext as intfExecutionContext|undefined,method:req.method,route:req.route?.path??'UNMATCHED',
+    ...(res.locals.publicContext?{context:res.locals.publicContext as intfExecutionContext}:{}),method:req.method,route:req.route?.path??'UNMATCHED',
     status:String(safe.status),errorClass:safe.code});
   router.use(async (req, res, next) => {
     res.setHeader('Cache-Control','private, no-store'); res.setHeader('Vary','Origin, Authorization');
@@ -84,8 +86,9 @@ export function registerKnowledgeApi(app: Express, snapshot: intfConfigurationSn
   router.get('/documents/:id/operations',route(async(req,res)=>res.json(await managed.documents.operations(context(res),text(req.params.id)))));
   router.get('/documents/:id/versions/:versionId/content',route(async(req,res)=>res.json({text:await managed.files.read(context(res),text(req.params.id),text(req.params.versionId))})));
   router.get('/documents/:id/versions/:versionId/download',route(async(req,res)=>{
+    const range=req.header('range'),ifNoneMatch=req.header('if-none-match'),ifRange=req.header('if-range');
     const result=await managed.files.download(context(res),{documentId:text(req.params.id),versionId:text(req.params.versionId),
-      ...(req.header('range')?{range:req.header('range')}:{}),...(req.header('if-none-match')?{ifNoneMatch:req.header('if-none-match')}:{}),...(req.header('if-range')?{ifRange:req.header('if-range')}: {})});
+      ...(range?{range}:{}),...(ifNoneMatch?{ifNoneMatch}:{}),...(ifRange?{ifRange}: {})});
     res.status(result.status);for(const[key,value]of Object.entries(result.headers))res.setHeader(key,value);
     if(result.body)await pipeline(result.body,res);else res.end();
   }));
@@ -101,6 +104,46 @@ export function registerKnowledgeApi(app: Express, snapshot: intfConfigurationSn
   router.post('/transfers/:id/reconcile',route(async(req,res)=>res.json(await managed.files.reconcile(context(res),text(req.params.id)))));
   const knowledge=managed.knowledge;
   if(knowledge){
+    router.get('/personal',route(async(_req,res)=>{const id=await knowledge.personalSpace(context(res));res.json(await knowledge.status(context(res),id));}));
+    router.put('/personal/documents/:documentId',route(async(req,res)=>{
+      const id=await knowledge.personalSpace(context(res));
+      await knowledge.addMembership(context(res),{spaceId:id,documentId:text(req.params.documentId),mode:enuMembershipMode.Current,pinnedVersionId:null});
+      res.status(204).end();
+    }));
+    router.delete('/personal/documents/:documentId',route(async(req,res)=>{
+      const id=await knowledge.personalSpace(context(res)),documentId=text(req.params.documentId);
+      const status=await knowledge.status(context(res),id);
+      if(!status.memberships.some(member=>member.documentId===documentId)){res.status(404).json({error:'DOCUMENT_NOT_FOUND'});return;}
+      await knowledge.removeMembership(context(res),id,documentId);
+      await managed.documents.retire(context(res),documentId);
+      res.status(204).end();
+    }));
+    if(managed.personalChats){
+      const chats=managed.personalChats;
+      router.get('/personal/chats',route(async(_req,res)=>res.json({items:await chats.list(context(res))})));
+      router.post('/personal/chats',route(async(_req,res)=>res.status(201).json(await chats.create(context(res)))));
+      router.get('/personal/chats/:id/messages',route(async(req,res)=>res.json({items:await chats.messages(context(res),text(req.params.id))})));
+      router.delete('/personal/chats/:id',route(async(req,res)=>{await chats.retire(context(res),text(req.params.id));res.status(204).end();}));
+      router.delete('/personal/chats',route(async(_req,res)=>{await chats.retire(context(res),null);res.status(204).end();}));
+      router.post('/personal/chats/:id/ask',route(async(req,res)=>{
+        const body=object(req.body,['question']),controller=new AbortController();req.once('aborted',()=>controller.abort());
+        res.once('close',()=>{if(!res.writableEnded)controller.abort();});
+        const answer=await chats.ask(context(res),text(req.params.id),text(body.question,65536),controller.signal);
+        if(!req.header('accept')?.includes('text/event-stream')){res.json(answer);return;}
+        await managed.subject.assertActive(context(res));
+        res.setHeader('Content-Type','text/event-stream; charset=utf-8');res.setHeader('X-Accel-Buffering','no');
+        const send=async(event:enuKnowledgeStreamEvent,data:unknown)=>{if(controller.signal.aborted)throw new Error('CANCELLED');
+          if(!res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`))await new Promise<void>((resolve,reject)=>{
+            const cleanup=()=>{res.off('drain',drain);res.off('close',close);};
+            const drain=()=>{cleanup();resolve();},close=()=>{cleanup();reject(new Error('CANCELLED'));};
+            res.once('drain',drain);res.once('close',close);
+          });};
+        const characters=Array.from(answer.answer);
+        for(let offset=0;offset<characters.length;offset+=256)await send(enuKnowledgeStreamEvent.Delta,{text:characters.slice(offset,offset+256).join('')});
+        await send(enuKnowledgeStreamEvent.Citations,{citations:answer.citations});
+        await send(enuKnowledgeStreamEvent.Done,{status:enuKnowledgeStreamState.Succeeded});res.end();
+      }));
+    }
     router.get('/spaces',route(async(req,res)=>res.json(await knowledge.list(context(res),req.query.cursor===undefined?null:text(req.query.cursor),req.query.limit===undefined?25:integer(Number(req.query.limit))))));
     router.post('/spaces',route(async(req,res)=>{const body=object(req.body,['id','title','classification']);await knowledge.createSpace(context(res),{id:text(body.id),title:text(body.title),classification:classification(body.classification)});res.status(201).json({id:body.id});}));
     router.get('/spaces/:id',route(async(req,res)=>res.json(await knowledge.status(context(res),text(req.params.id)))));

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-03T18:31:57.362Z",
+  "generatedAt": "2026-10-04T12:45:47.970Z",
   "status": "PASS",
   "providerScope": "PROTOCOL_FIXTURES_NOT_LIVE_VLLM",
   "customerReleaseAuthorized": false,
@@ -7,14 +7,14 @@
     {
       "customer": "customer-a",
       "status": "PASS",
-      "sourceHash": "a05545c4d316b7b6ab901202417b09cbe196e163e4cd3b1fcaeced05bf4d82cf",
+      "sourceHash": "318f1d2e3eef1b27078e104d4a4e7fb701862feb959947ed8aa7acb7da7629c4",
       "images": {
-        "api": "sha256:adeec276168f4255d3d5913627ea01a93910e1919b0c122c3b031aa9a738096b",
-        "worker": "sha256:c017fd517f0b509cabf9473265c21165d1785a34fc26c8618e5e514dcd85b93b",
-        "web": "sha256:5d4217857959cce30fb659ddbed3860c504633c8ff6515cd20889c2fa843fff4"
+        "api": "sha256:9f6f0f0749f64518858f54e34f6f4344ce481aa7bc408c4374ed23c17c0bd67b",
+        "worker": "sha256:476956f64341eb32fef158e889070536e06cdebdb89c2a2838a6098a5298fbc7",
+        "web": "sha256:6353a21b0a4d79b03e9cf89aa4e5a272d8150ae03497c3992c32a037083fdfb3"
       },
       "sbom": "tests/reports/oci/customer-a-sbom.cdx.json",
-      "vulnerabilityScan": "FAIL",
+      "vulnerabilityScan": "NOT_VERIFIED",
       "scope": "LOCAL_ACCEPTANCE_CONFIG_AND_PROTOCOL_MODELS",
       "checks": [
         "PRIVATE_STORAGE",
@@ -26,18 +26,16 @@
         "WEB_BRAND",
         "NO_MYSQL_KNEX_LEGACY_RAG",
         "GRACEFUL_DRAIN"
-      ],
-      "vulnerabilityEvidence": "reports/security/t5-supply-chain.json",
-      "vulnerabilityScope": "REPRESENTATIVE_CUSTOMER_A_API_IMAGE_AND_SHIPPED_RUNTIME_LOCK"
+      ]
     },
     {
       "customer": "customer-b",
       "status": "PASS",
-      "sourceHash": "a05545c4d316b7b6ab901202417b09cbe196e163e4cd3b1fcaeced05bf4d82cf",
+      "sourceHash": "318f1d2e3eef1b27078e104d4a4e7fb701862feb959947ed8aa7acb7da7629c4",
       "images": {
-        "api": "sha256:02f3644440585562324431dfca266dfb7b0a9f3a59fada0ea3520fcd1ce0a0b5",
-        "worker": "sha256:6f7d8c660358a9a3e0c38af1705c1ea545cfc7f23f4ab20c22eacec6a9822d49",
-        "web": "sha256:b3bcac58dfc7baba3b5403e00fc7ea25016cab83a3e1ba1fa0c412e6c4cce29b"
+        "api": "sha256:4627437cd987c2874e1f6f7073e66c1641d027401e8540cb1056d792f33b351b",
+        "worker": "sha256:a96581032579ef8442a93ca66b78ae5786c70878417e4499343a184c1d0cca7d",
+        "web": "sha256:cbde516ba6ff54c2fddf46fd5add32399c02d3b7a1f10f2a2fd0a3f2478d6ae4"
       },
       "sbom": "tests/reports/oci/customer-b-sbom.cdx.json",
       "vulnerabilityScan": "NOT_VERIFIED",
@@ -57,11 +55,11 @@
     {
       "customer": "customer-c",
       "status": "PASS",
-      "sourceHash": "a05545c4d316b7b6ab901202417b09cbe196e163e4cd3b1fcaeced05bf4d82cf",
+      "sourceHash": "318f1d2e3eef1b27078e104d4a4e7fb701862feb959947ed8aa7acb7da7629c4",
       "images": {
-        "api": "sha256:2355b9b44f4af98965564da3fe31122f3fa92aea4db3966ebad990ab997aa2f5",
-        "worker": "sha256:e5af8d52a753bbb9476f55895168e0327b779fc82fff843735b5888755522e68",
-        "web": "sha256:310647d06f6f39a0ccbd8619fd65ded528ab55ed9b3bf47ded56678448aae018"
+        "api": "sha256:aa19ac263b48152a64677e213a58f5574f5e39230a418d0dede2650d6acf4d0d",
+        "worker": "sha256:c02eeaa673d471a0e0ad0ee3c27023697a278efcd617f50611361a37610188cb",
+        "web": "sha256:8bae2ca4e680dd1b00addd50added8b9fb79faa2513d9787a3c6a8a3b1a728e2"
       },
       "sbom": "tests/reports/oci/customer-c-sbom.cdx.json",
       "vulnerabilityScan": "NOT_VERIFIED",

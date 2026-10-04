@@ -10,7 +10,7 @@ interface intfMysqlDictionaryRow {
   readonly dicSynonyms: string | null; readonly dicAntonyms: string | null; readonly dicRelExp: string | null;
   readonly dicRelWord: string | null; readonly dicPronunciation: string | null; readonly dicExamples: string | null; readonly dicExtra: string | null;
 }
-function option(name: string, fallback: string): string { const at = process.argv.indexOf(name); if (at < 0) return fallback; if (!process.argv[at + 1]) throw new Error(`${name} requires a value`); return process.argv[at + 1]; }
+function option(name: string, fallback: string): string { const at = process.argv.indexOf(name); if (at < 0) return fallback; const value=process.argv[at+1]; if (!value) throw new Error(`${name} requires a value`); return value; }
 function parseLegacy(value: string | null): unknown { if (!value) return null; try { return JSON.parse(value) as unknown; } catch { return null; } }
 function mysqlRow(row: intfMysqlDictionaryRow): intfDictionaryRow {
   const translations = parseLegacy(row.dicTranslation);

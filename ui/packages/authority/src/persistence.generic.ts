@@ -65,6 +65,12 @@ export async function resolveAuthorityFacts(pool: pg.Pool, lookup: intfAuthority
 async function resolveFactsInSnapshot(tx: pg.PoolClient, lookup: intfAuthorityLookup): Promise<typAuthorityResolution> {
   const { context, path, resource } = lookup;
   const actorId = context.actorId!;
+  if(context.actorKind==='HUMAN'&&context.sessionId){
+    const session=await tx.query(`SELECT ses_id FROM session_core.tbl_ses_session WHERE ses_id=$1 AND ses_identity__idn_id=$2
+      AND ses_tenant_id=$3 AND ses_authorization_version=$4 AND ses_revoked_at IS NULL AND ses_expires_at>CURRENT_TIMESTAMP`,
+      [context.sessionId,actorId,context.tenantId,context.authorizationVersion]);
+    if(!session.rowCount)return{kind:'DENY',reason:'INVALID_OR_INACTIVE_SESSION',policyVersion:null};
+  }
     const actor = await tx.query<intfActorRow>(`SELECT i.idn_kind, i.idn_state, m.idm_state, m.idm_authorization_version,
       c.auc_level, p.aup_value_kind, p.aup_all_default, p.aup_policy_version, CURRENT_TIMESTAMP AS current_time
       FROM identity.tbl_idn_identity i

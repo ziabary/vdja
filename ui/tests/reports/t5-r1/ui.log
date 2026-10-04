@@ -1,0 +1,21 @@
+
+> targoman_llm@1.0.0 test:ui
+> npm run test --workspace @targoman/web
+
+
+> @targoman/web@1.0.0 test
+> vitest run
+
+
+ RUN  v5.0.3 /home/user/Projects/vadja/ui/apps/web
+
+
+ Test Files  14 passed (14)
+      Tests  107 passed (107)
+   Start at  16:20:39
+   Duration  1.34s (transform 59%, import 18%, environment 11%, tests 11%, worker 1%)
+
+  Transform  transforming modules took 4.45s · 59% of tracked time, re-done on every run
+             persist transforms across runs with fsModuleCache: true
+             learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns
+

@@ -1,3 +1,6 @@
+import {clsRetentionService} from '../../../packages/data-governance/src/retention.js';
+import {createRetentionRepository} from '../../../packages/data-governance/src/persistence.js';
+import {clsClamdScanner,enuMalwareMode} from '../../../packages/file-processing/src/malware.js';
 import type { intfConfigurationSnapshot } from '../../../packages/configuration/src/index.js';
 import { resolveSecretRef } from '../../../packages/configuration/src/index.js';
 import { createTargetDatabaseAdapter } from '../../../packages/persistence/src/target.js';
@@ -24,6 +27,8 @@ import { createAiRunPersistence } from '../../../packages/ai-router/src/persiste
 import { clsAiEgressGovernance } from '../../../packages/data-governance/src/index.js';
 import { createKnowledgeRepository } from '../../../packages/knowledge/src/persistence.js';
 import { clsKnowledgeService } from '../../../packages/knowledge/src/service.js';
+import {clsPersonalChatService} from '../../../packages/knowledge/src/personal-chat.js';
+import {createPersonalChatRepository} from '../../../packages/knowledge/src/persistence/chat.js';
 import { clsQdrantAdapter } from '../../../packages/knowledge/src/adapters/qdrant.js';
 import {createMachineIdentityPersistence} from '../../../packages/identity/src/persistence.js';
 import {enuAuthorityDecision} from '../../../packages/authority/src/index.js';
@@ -47,7 +52,8 @@ export async function composeDocumentKnowledge(pool: Awaited<ReturnType<typeof c
     audit: { async record(tx, ctx, action, id) { await audit.record(tx, ctx, { action, result: 'SUCCEEDED', resource: { type: 'document', id } }); } } });
   const files = new clsFileManagement({ transactions, subject, documents, jobs, storage,
     transfers: createTransferRepository(), admission: createFileAdmissionPersistence(), usage: createFileUsagePersistence(), audit,
-    configuration: config.fileManagement, limits: config.fileProcessing,
+    configuration: config.fileManagement,
+    ...(config.fileManagement.security.malware&&config.fileManagement.security.malware.mode!==enuMalwareMode.Disabled?{malware:new clsClamdScanner(config.fileManagement.security.malware)}:{}), limits: config.fileProcessing,
     ...(config.fileManagement.limitTiers?{actorLimits:async(ctx,documentId)=>{
       const facts=(await documents.facts(ctx,[documentId]))[0];
       if(!facts)throw new Error('FILE_DENIED');
@@ -75,10 +81,17 @@ export async function composeDocumentKnowledge(pool: Awaited<ReturnType<typeof c
     knowledge = new clsKnowledgeService({ transactions, subject, authority, documents, files, jobs, ai, vectors, audit,
       repository: createKnowledgeRepository(), admission: createQueryAdmissionPersistence(pool), usage:createRagUsagePersistence(),configuration: config.knowledge });
   }
-  return { transactions, jobs, subject, documents, files, knowledge,usage:createRagUsagePersistence(), async readiness() {
+  const governance=new clsRetentionService({transactions,jobs,repository:createRetentionRepository(),subject:{async assertActive(ctx){if(ctx.actorKind==='PLATFORM_SERVICE')await createMachineIdentityPersistence(pool).platformService(ctx);else await subject.assertActive(ctx);}},authority,
+    now:()=>new Date(),leaseMs:300000,
+    facts:async(tx,ctx,id)=>{const facts=await documents.retentionFactsWithin(tx,ctx,id);return{...facts,retainedReferences:facts.retainedReferences||!!await knowledge?.retentionReferencesWithin(tx,ctx,id),activeMaterializations:await files.activeMaterializationsWithin(tx,ctx)};},
+    purge:async(ctx,request,permit)=>{await knowledge?.purge(ctx,permit);await files.purge(ctx,permit);await transactions.run(ctx,tx=>documents.purgeWithin(tx,ctx,permit));},
+    audit:async(tx,ctx,record)=>{await audit.record(tx,ctx,{action:'data-governance.retention.changed',result:'SUCCEEDED',reason:record.state,resource:{type:'document',id:record.resourceId}});}
+  });
+  const personalChats=knowledge?new clsPersonalChatService({transactions,subject,knowledge,repository:createPersonalChatRepository()}):null;
+  return { transactions, jobs, subject, documents, files, knowledge,personalChats,governance,usage:createRagUsagePersistence(), async readiness() {
     const [file, index] = await Promise.allSettled([files.ready(), vectors?.ready() ?? Promise.resolve()]);
     const ai=await protectedAi?.probeReadiness();
     return { files: file.status === 'fulfilled' ? 'READY' : 'UNAVAILABLE', knowledge: !knowledge ? 'DISABLED' : index.status === 'fulfilled' ? 'READY' : 'UNAVAILABLE',
-      protectedAi:ai?.status??'DISABLED',unavailableTasks:ai?.unavailableTasks??[] } as const;
+      malware:await files.malwareReadiness(),protectedAi:ai?.status??'DISABLED',unavailableTasks:ai?.unavailableTasks??[] } as const;
   }, async close() { if ('close' in storage && typeof storage.close === 'function') storage.close(); } };
 }

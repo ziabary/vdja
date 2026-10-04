@@ -1,6 +1,31 @@
 import {readFile,writeFile} from 'node:fs/promises';
+import {hash,sourceFingerprint,verificationContractFingerprint} from './t5-r1-source.mjs';
+import {DIRECT_CONTROL_CASES,blockerClass} from './t5-asvs-evidence.mjs';
 const assessment=JSON.parse(await readFile('reports/security/asvs-5.0-l3.json','utf8'));
 const classification=JSON.parse(await readFile('reports/security/rag-asvs-classification.json','utf8'));
+const fingerprint=await sourceFingerprint();
+const contract=await verificationContractFingerprint();
+const serviceBoundary=JSON.parse(await readFile('reports/security/t5-service-boundary-assessment.json','utf8'));
+const authorityInventory=JSON.parse(await readFile('reports/security/t5-authority-inventory.json','utf8'));
+const currentService=serviceBoundary.sourceHash===fingerprint.sourceHash&&serviceBoundary.verificationContractHash===contract.verificationContractHash;
+const currentInventory=authorityInventory.sourceHash===fingerprint.sourceHash&&authorityInventory.verificationContractHash===contract.verificationContractHash;
+let execution;try{execution=JSON.parse(await readFile('tests/reports/t5-r1-execution.json','utf8'));}catch{execution=null;}
+const currentExecution=execution?.sourceHash===fingerprint.sourceHash&&execution?.verificationContractHash===contract.verificationContractHash&&execution.status==='PASS';
+async function executedControlCase(caseName){
+ if(!currentExecution||!caseName)return null;
+ for(const result of execution.results){
+  if(result.status!=='PASS'||result.exitCode!==0||result.skipped!==0)continue;
+  const test=result.cases?.find(value=>value.name===caseName&&value.status==='PASS'&&!value.skipped);
+  if(!test?.file||!result.artifact||!fingerprint.files[test.file]||fingerprint.files[test.file]!==execution.files?.[test.file])continue;
+  try{
+   const [artifact,source]=await Promise.all([readFile(result.artifact,'utf8'),readFile(test.file,'utf8')]);
+   if(hash(artifact)!==result.artifactHash||!source.includes(caseName))continue;
+   if(!artifact.split('\n').some(line=>{try{const event=JSON.parse(line);return event.type==='test:pass'&&event.name===caseName&&event.file?.endsWith('/'+test.file)&&!event.skip&&!event.todo;}catch{return false;}}))continue;
+   return {testFile:test.file,testCase:caseName,reportArtifact:result.artifact,artifactHash:result.artifactHash,sourceHash:fingerprint.sourceHash};
+  }catch{continue;}
+ }
+ return null;
+}
 // Explicit, control-by-control reviews. These are judgments, not status inference from test names.
 const reviews={
 'V1.1.1':['PASS','JSON و UTF-8 یک‌بار خوانده می‌شوند؛ سؤال و متن chunk دوباره URL/HTML decode نمی‌شوند.'],
@@ -110,6 +135,18 @@ const reviews={
 'V5.4.2':['PASS','با فعال‌شدن download کنترل از N/A به applicable تغییر کرد؛ filename*=UTF-8 percent encoding و attachment tested است.'],
 'V5.4.3':['FAIL','با دانلود original Asset کنترل applicable است؛ scanner ضدبدافزار تمام فرمت‌ها و signature update/retry/quarantine provider هنوز وجود ندارد.']
 };
+reviews['V16.3.2']=['NOT_VERIFIED','مرز Authority پس از T5 فهرست‌برداری شده است؛ شاهد ALLOW و DENY و SIEM برای همهٔ مصرف‌کنندگان تازه هنوز کامل نیست.'];
+reviews['V5.4.3']=['NOT_VERIFIED','پورت و adapter ضدبدافزار clamd و policy fail-closed آزموده شده‌اند؛ scanner واقعی، به‌روزرسانی امضا و profile مشتری هنوز اثبات نشده‌اند.'];
+reviews['V14.2.7']=['NOT_VERIFIED','purge نرم‌افزاری LOCAL/S3 و legal hold در آزمون واقعی اجرا شده‌اند؛ انقضا/حذف backup مشتری هنوز اثبات نشده است.'];
+reviews['V15.2.5']=['NOT_VERIFIED','Linux namespace و scratch خصوصی در آزمون parser اجرا شدند؛ isolation و limits میزبان استقرار مشتری هنوز اثبات نشده‌اند.'];
+for(const [id,key] of [['V12.3.5','V12_3_5'],['V13.2.1','V13_2_1']]){
+ const control=currentService?serviceBoundary.controls[key]:null;
+ reviews[id]=[!control?'NOT_VERIFIED':control.platformCapabilityStatus==='GAP'?'FAIL':control.customerDeploymentStatus==='PASS'?'PASS':'NOT_VERIFIED',
+  !control?'ارزیابی جاری مرزهای سرویس در دسترس نیست.':`توان پلتفرم: ${control.platformCapabilityStatus}؛ استقرار مشتری: ${control.customerDeploymentStatus}. ${control.reason}`];
+}
+const uncoveredFamilies=currentInventory?authorityInventory.operationFamilies.filter(family=>family.status!=='PASS').map(family=>family.name):[];
+reviews['V16.3.2']=[currentInventory&&authorityInventory.allPostT5DecisionsAudited==='PASS'&&uncoveredFamilies.length===0?'PASS':'NOT_VERIFIED',
+ currentInventory?`خانواده‌های فاقد شاهد کامل ALLOW/DENY/Audit/SIEM: ${uncoveredFamilies.join('؛ ')||'هیچ'}.`:'فهرست Authority با source/contract جاری در دسترس نیست.'];
 const groups=[
  [/^V[12]\./,['packages/file-processing/src/index.ts','packages/file-processing/src/office-archive.ts','packages/configuration/src/index.ts','apps/api/src/knowledge.ts','tests/reports/t5-foundations.log','tests/reports/t5-integrations.log']],
  [/^V[34]\./,['apps/api/src/knowledge.ts','apps/web/src/lib/knowledge/Workspace.svelte','apps/web/src/hooks.server.ts','tests/reports/t5-browser.log','tests/reports/auth-http-regression.log','tests/target/t44-static-headers.integration.test.mjs']],
@@ -122,10 +159,14 @@ const required=new Set(classification.controls.filter(c=>c.verifyDuringT5).map(c
 for(const c of assessment.controls){
  const id=c.id.replace('v5.0.0-',''),review=reviews[id];
  if(required.has(c.id)&&!review)throw new Error(`MISSING_T5_REVIEW:${id}`);
- c.postT5=review?.[0]??c.postT4;
- c.t5Verification=review?{reviewedAt:new Date().toISOString(),scope:'CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT',verifyDuringT5:required.has(c.id),additionalT5Scope:!required.has(c.id),
-   observed:review[1],evidencePaths:[...(groups.find(([pattern])=>pattern.test(id))?.[1]??[]),...(['V15.1.2','V15.2.1'].includes(id)?['reports/security/t5-supply-chain.json','tests/reports/oci/acceptance.json','tests/reports/oci/customer-a-sbom.cdx.json','tests/reports/oci/runtime-vulnerabilities.json','tests/reports/oci/runtime-dependency-vulnerabilities.json']:[])],
-   missingEvidence:['FAIL','NOT_VERIFIED'].includes(review[0])?review[1]:null,
+ const testCase=DIRECT_CONTROL_CASES[id],matched=await executedControlCase(testCase);
+ const canonicalEvidence=id==='V16.3.2'&&currentInventory&&authorityInventory.allPostT5DecisionsAudited==='PASS'
+  ||['V12.3.5','V13.2.1'].includes(id)&&currentService&&serviceBoundary.controls[id==='V12.3.5'?'V12_3_5':'V13_2_1'].customerDeploymentStatus==='PASS';
+ const verified=review?.[0]==='PASS'&&(!matched||!testCase)&&!canonicalEvidence?['NOT_VERIFIED','شاهد آزمون اجراشدهٔ مختص این کنترل برای source جاری ثبت نشده است.']:review;
+ c.postT5=verified?.[0]??c.postT4;
+ c.t5Verification=verified?{reviewedAt:new Date().toISOString(),scope:'CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT',verifyDuringT5:required.has(c.id),additionalT5Scope:!required.has(c.id),
+   observed:verified[1],directEvidence:matched??null,evidencePaths:[...(groups.find(([pattern])=>pattern.test(id))?.[1]??[]),...(matched?[matched.testFile,matched.reportArtifact]:[]),...(id==='V16.3.2'?['reports/security/t5-authority-inventory.json']:[]),...(['V12.3.5','V13.2.1'].includes(id)?['reports/security/t5-service-boundary-assessment.json']:[]),...(['V15.1.2','V15.2.1'].includes(id)?['reports/security/t5-supply-chain.json','tests/reports/oci/acceptance.json','tests/reports/oci/customer-a-sbom.cdx.json','tests/reports/oci/runtime-vulnerabilities.json','tests/reports/oci/runtime-dependency-vulnerabilities.json']:[])],
+   missingEvidence:['FAIL','NOT_VERIFIED'].includes(verified[0])?verified[1]:null,
    exception:null}:{scope:'UNCHANGED_T4_SCOPE',observed:'وضعیت T4 حفظ شده است؛ این کنترل توسط T5 بسته اعلام نشده است.',evidencePaths:c.sourceOrTestPaths??[],missingEvidence:c.missingEvidence??null};
 }
 const count=controls=>({total:controls.length,PASS:controls.filter(c=>c.postT5==='PASS').length,FAIL:controls.filter(c=>c.postT5==='FAIL').length,
@@ -133,7 +174,7 @@ const count=controls=>({total:controls.length,PASS:controls.filter(c=>c.postT5==
 const current=count(assessment.controls),t5=assessment.controls.filter(c=>required.has(c.id)||c.t5Verification.additionalT5Scope),open=t5.filter(c=>['FAIL','NOT_VERIFIED'].includes(c.postT5));
 const releaseOnly=assessment.controls.filter(c=>!t5.includes(c)&&['FAIL','NOT_VERIFIED'].includes(c.postT5));
 assessment.postT5Counts=current;
-assessment.t5Assessment={generatedAt:new Date().toISOString(),verificationScope:'LOCAL_REAL_INFRASTRUCTURE_AND_PROTOCOL_PROVIDER_FIXTURES',verifyDuringT5Reviewed:required.size,
+assessment.t5Assessment={generatedAt:new Date().toISOString(),sourceHash:fingerprint.sourceHash,verificationContractHash:contract.verificationContractHash,verificationScope:currentExecution?'LOCAL_REAL_INFRASTRUCTURE_AND_PROTOCOL_PROVIDER_FIXTURES':'CURRENT_EXECUTION_NOT_VERIFIED',verifyDuringT5Reviewed:required.size,
  additionalT5Scope:t5.length-required.size,counts:count(t5),blockingFindings:open.length,approvedExceptions:0,releaseOnlyBlockingFindings:releaseOnly.length,
  ASVS_L3_RELEASE_GATE:current.FAIL+current.NOT_VERIFIED===0?'YES':'NO'};
 await writeFile('reports/security/asvs-5.0-l3.json',JSON.stringify(assessment,null,2)+'\n');
@@ -141,4 +182,12 @@ const escape=x=>String(x??'—').replaceAll('|','\\|').replaceAll('\n',' ');
 const rows=assessment.controls.map(c=>`| ${c.id} | ${c.level} | ${c.postT5} | ${escape(c.descriptionFa)} | ${escape(c.t5Verification.observed)} | ${c.t5Verification.evidencePaths.map(p=>'`'+p+'`').join('<br>')} |`);
 await writeFile('docs/security/03-t5-asvs-5.0-level3-assessment-fa.md',`# ارزیابی کامل وضعیت جاری ASVS 5.0.0 سطح ۳ پس از T5\n\nمنبع canonical: \`reports/security/asvs-5.0-l3.json\`. این سند مشتق از دادهٔ canonical است؛ ویرایش آن باید از workflow ارزیابی انجام شود. تاریخ: ${assessment.t5Assessment.generatedAt}.\n\n## دامنه و معیار نتیجه\n\nتمام ${current.total} کنترل سطح‌های ۱ تا ۳ پوشش داده شده‌اند. ${required.size} تعهد verifyDuringT5 و ${t5.length-required.size} کنترل تازه applicable دوباره ارزیابی شدند. وضعیت تاریخی postT4 و شمارش baseline حذف نشده‌اند. برای کنترل‌های خارج از تغییر T5، evidence تاریخی حفظ شده و ادعای اجرای مجدد مستقل همهٔ آنها نشده است. PASS فقط همان دامنهٔ بیان‌شده را اثبات می‌کند؛ نبود شاهد برای کل الزام NOT_VERIFIED و نقص پیاده‌سازی شناخته‌شده FAIL است. N/A دلیل scope دارد و معادل PASS نیست. استثنای تصویب‌شده: صفر.\n\nآزمون‌ها از PostgreSQL، Qdrant، Local/S3-compatible و browser واقعی استفاده می‌کنند؛ embedding/reranker/generation fixture پروتکل هستند و vLLM واقعی نیستند. TLS SIEM با CA اختصاصی بررسی شد. policy واقعی مشتری، mapping کاربران legacy، artifact/tokenizer مدل، scanner، sandbox، نگهداری/purge و امنیت زیرساخت از fixture نتیجه‌گیری نمی‌شوند.\n\n## شمارش جاری\n\n- PASS: ${current.PASS}\n- FAIL: ${current.FAIL}\n- NOT_VERIFIED: ${current.NOT_VERIFIED}\n- N/A: ${current.NOT_APPLICABLE}\n- مانع T5: ${open.length}\n- مانع فقط release: ${releaseOnly.length}\n- ASVS_L3_RELEASE_GATE: ${assessment.t5Assessment.ASVS_L3_RELEASE_GATE}\n\n## اجزای حساس و پرریسک\n\nLibreOffice و pdfjs فایل نامطمئن را پردازش می‌کنند؛ precheck، scratch خصوصی و timeout جای sandbox یا antivirus را نمی‌گیرند. Archive inflation دارای سقف است و DTD/entity، external relationship، macro و embedding Office رد می‌شوند. Native S3 SDK عملیات multipart با outcome نامعلوم دارد؛ intent پایدار و inspect/hash از retry کور جلوگیری می‌کند. Qdrant و provider شبکه‌ای فقط با مقصد و دادهٔ مجاز از ownerهای مربوط استفاده می‌شوند. مشتری باید isolation بدون شبکه، memory/CPU/file limits، signature update و verification تمام فرمت‌ها را فراهم و اثبات کند. تغییر architecture برای سیاست جدید بدون مجوز همین task مجاز نیست.\n\n## ماتریس کامل\n\n| کنترل | سطح | وضعیت جاری | الزام | نتیجهٔ بازبینی / شکاف | کد و شاهد |\n| --- | --- | --- | --- | --- | --- |\n${rows.join('\n')}\n`);
 await writeFile('reports/security/t5-asvs-review.json',JSON.stringify({source:'reports/security/asvs-5.0-l3.json',...assessment.t5Assessment,controls:t5.map(c=>({id:c.id,status:c.postT5,...c.t5Verification}))},null,2)+'\n');
+await writeFile('reports/security/t5-r1-open-findings.json',JSON.stringify({generatedAt:new Date().toISOString(),sourceHash:fingerprint.sourceHash,verificationContractHash:contract.verificationContractHash,
+ securityGate:open.length?'FAIL':'PASS',counts:{t5Scope:open.length,releaseOnly:releaseOnly.length},
+ controls:open.map(c=>{const id=c.id.replace('v5.0.0-',''),serviceKey=id==='V12.3.5'?'V12_3_5':id==='V13.2.1'?'V13_2_1':null;
+  const split=serviceKey&&currentService?serviceBoundary.controls[serviceKey]:null;
+  return{id:c.id,status:c.postT5,classification:split?.platformCapabilityStatus==='GAP'?'CODE_FIX_REQUIRED':split?.customerDeploymentStatus==='NOT_VERIFIED'?'DEPLOYMENT_EVIDENCE_REQUIRED':blockerClass(c.id),
+   ...(split?{platformCapabilityStatus:split.platformCapabilityStatus,customerDeploymentStatus:split.customerDeploymentStatus,
+    serviceBoundaryAssessment:'reports/security/t5-service-boundary-assessment.json'}:{}),reason:c.t5Verification.missingEvidence,
+   directEvidence:c.t5Verification.directEvidence??null};})},null,2)+'\n');
 console.log(JSON.stringify(assessment.t5Assessment));

@@ -61,18 +61,23 @@ test('cache excludes concurrent fills and kernel releases its lock when the hold
   const identity = { deploymentId: 'test', tenantId: 'tenant', assetId: randomUUID(), versionId: randomUUID(), representation: 'original' };
   const source = `import { clsFileCache } from './packages/file-management/src/cache.ts';
     import { Readable } from 'node:stream';
+    setInterval(() => {}, 1000);
     const [options, identity, descriptor] = process.argv.slice(1).map(JSON.parse);
     await new clsFileCache(options).open(identity, descriptor, async () => {
       process.stdout.write('LOCKED');
       return new Readable({read() {}});
     });`;
+  const childEnv = { ...process.env }; delete childEnv.NODE_TEST_CONTEXT;
   const child = spawn(process.execPath, ['--import', 'tsx', '--input-type=module', '-e', source,
-    JSON.stringify(options), JSON.stringify(identity), JSON.stringify(descriptor)], { stdio: ['ignore', 'pipe', 'ignore'] });
+    JSON.stringify(options), JSON.stringify(identity), JSON.stringify(descriptor)], { env: childEnv, stdio: ['ignore', 'pipe', 'pipe'] });
   try {
     await new Promise<void>((resolve, reject) => {
-      const timer = setTimeout(() => { child.kill('SIGKILL'); reject(new Error('CACHE_CRASH_FIXTURE_TIMEOUT')); }, 5000);
+      let output = '', errors = '';
+      child.stderr!.on('data', chunk => { errors += String(chunk).slice(0, 2000); });
+      const timer = setTimeout(() => { child.kill('SIGKILL'); reject(new Error(`CACHE_CRASH_FIXTURE_TIMEOUT:${output}:${errors}`)); }, 5000);
       child.once('error', error => { clearTimeout(timer); reject(error); });
-      child.stdout!.once('data', () => { clearTimeout(timer); resolve(); });
+      child.once('exit', code => { clearTimeout(timer); reject(new Error(`CACHE_CRASH_FIXTURE_EXIT:${code}:${errors}`)); });
+      child.stdout!.on('data', chunk => { output += String(chunk); if(output.includes('LOCKED')) { clearTimeout(timer); resolve(); } });
     });
     const stopped = new Promise<void>(resolve => child.once('close', () => resolve()));
     child.kill('SIGKILL'); await stopped;

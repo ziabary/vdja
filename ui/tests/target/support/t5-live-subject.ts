@@ -9,7 +9,7 @@ import { createSecurityAuditPersistence } from '../../../packages/audit/src/pers
 import { createTenantSession, validateAccessSession } from '../../../packages/session/src/persistence.js';
 import { createHumanExecutionSubjectGuard } from '../../../packages/session/src/subject.js';
 
-export async function createT5Subject(snapshot: intfConfigurationSnapshot, migration: pg.Pool, api: pg.Pool, worker: pg.Pool) {
+export async function createT5Subject(snapshot: intfConfigurationSnapshot, migration: pg.Pool, api: pg.Pool, worker: pg.Pool, deploymentId=snapshot.value.deployment.id) {
   const actorId = randomUUID(), membershipId = randomUUID(), grantId = randomUUID(), tenantId = `t5-${randomUUID()}`;
   const policy = { absoluteLifetimeSeconds: 3600, refreshLifetimeSeconds: 3600, inactivityLifetimeSeconds: 1800 };
   const administrative = { actorKind: 'PLATFORM_SERVICE' as const, actorId: 't5-test-fixture', correlationId: randomUUID(), source: 'T5_TEST_SETUP' };
@@ -23,7 +23,7 @@ export async function createT5Subject(snapshot: intfConfigurationSnapshot, migra
       VALUES ($1,$2,'LOW')`, [actorId, tenantId]);
   });
   const session = await createTenantSession(api, policy, actorId, membershipId, tenantId);
-  const context: intfExecutionContext = { deploymentId: snapshot.value.deployment.id, tenantId, actorKind: 'HUMAN', actorId,
+  const context: intfExecutionContext = { deploymentId, tenantId, actorKind: 'HUMAN', actorId,
     sessionId: session.sessionId, authorizationVersion: session.authorizationVersion, moduleId: 'knowledge',
     requestId: randomUUID().replaceAll('-', ''), correlationId: randomUUID(), source: 'T5_TEST', configFingerprint: snapshot.fingerprint };
   const authority = (pool: pg.Pool) => {

@@ -16,6 +16,7 @@ import { inspectRefreshCookie, refreshSetCookie, refreshClearCookie } from '../.
 import { createPublicApiRuntime } from './composition.js';
 import { enuAuthorityDecision } from '../../../packages/authority/src/index.js';
 import { registerKnowledgeApi } from './knowledge.js';
+import { clsOrganizationalOidc, safeOidcReturnPath } from '../../../packages/authentication/src/oidc.js';
 
 function arg(name: string, fallback: string): string { const at = process.argv.indexOf(name); return at < 0 ? fallback : process.argv[at + 1] ?? fallback; }
 function record(value: unknown): Record<string, unknown> { if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('INVALID_BODY'); return value as Record<string, unknown>; }
@@ -91,7 +92,7 @@ function authOrigin(snapshot: intfConfigurationSnapshot, req: Request, res: Resp
   if (origin && snapshot.value.auth?.enabled && snapshot.value.auth.allowedApplicationOrigins.includes(origin)) return true;
   res.status(403).json({ error: 'ORIGIN_DENIED' }); return false;
 }
-const AUTH_POST_PATH = /^\/api\/auth\/(?:login|refresh|logout)$/;
+const AUTH_POST_PATH = /^\/api\/auth\/(?:login|legacy-key|refresh|logout)$/;
 function allowedPreflightHeaders(value: string | undefined): boolean {
   if (!value) return false;
   const names = value.split(',').map(part => part.trim().toLowerCase());
@@ -139,12 +140,16 @@ export async function createPublicApi(snapshot: intfConfigurationSnapshot, secre
     next();
   });
   const upload = multer({ dest: tmpdir(), limits: { fileSize: snapshot.value.fileProcessing.maxUploadBytes } });
-  app.use((req, res, next) => { const started = Date.now(); const log = () => logOperational({ severity: res.statusCode >= 500 ? 'ERROR' : 'INFO', component: 'target-api', event: 'request_completed', context: res.locals.publicContext as intfExecutionContext | undefined, status: String(res.statusCode), durationMs: Date.now() - started, method: req.method, route: req.route?.path ?? "UNMATCHED" }); res.once('finish', log); next(); });
+  app.use((req, res, next) => { const started = Date.now(); const log = () => logOperational({ severity: res.statusCode >= 500 ? 'ERROR' : 'INFO', component: 'target-api', event: 'request_completed', ...(res.locals.publicContext ? {context:res.locals.publicContext as intfExecutionContext} : {}), status: String(res.statusCode), durationMs: Date.now() - started, method: req.method, route: req.route?.path ?? "UNMATCHED" }); res.once('finish', log); next(); });
   app.get('/health', (_req, res) => res.json({ status: 'ALIVE' }));
   app.get('/', (_req, res) => res.json({ status: 'ALIVE' }));
   app.get('/ready', async (_req, res) => { try {
     await runtime.databaseReady();
     const [ai, siem, managed] = await Promise.all([runtime.router.probeReadiness(), probeSiemReadiness(runtime.store.active().value.siem),runtime.managed?.readiness()]);
+    const modelConfigurationRequired=snapshot.value.deployment.id==='development'&&snapshot.value.knowledge?.enabled===true&&(!snapshot.value.ai.protected||!snapshot.value.dataGovernance);
+    if(modelConfigurationRequired){res.status(503).json({status:'NOT_READY',code:'DEVELOPMENT_RAG_MODEL_CONFIGURATION_REQUIRED',
+      dependencies:{postgres:'READY',files:managed?.files??'DISABLED',knowledge:'CONFIGURATION_REQUIRED',protectedAi:'CONFIGURATION_REQUIRED'},
+      unavailableTasks:['DOCUMENT_EMBED','QUERY_EMBED','RERANK','RAG_ANSWER']});return;}
     const status = ai.status === 'NOT_READY' ? 'NOT_READY' : ai.status === 'DEGRADED' || siem === 'DEGRADED' || managed?.files==='UNAVAILABLE' || managed?.knowledge==='UNAVAILABLE'||managed?.protectedAi==='UNAVAILABLE' ? 'DEGRADED' : 'READY';
     res.status(status === 'NOT_READY' ? 503 : 200).json({ status, dependencies: { postgres: 'READY', ai: ai.status, siem,files:managed?.files??'DISABLED',knowledge:managed?.knowledge??'DISABLED',protectedAi:managed?.protectedAi??'DISABLED' }, unavailableTasks: [...ai.unavailableTasks,...managed?.unavailableTasks??[]], fingerprint: runtime.store.active().fingerprint });
   } catch { res.status(503).json({ status: 'NOT_READY', dependencies: { postgres: 'UNAVAILABLE' } }); } });
@@ -168,6 +173,45 @@ export async function createPublicApi(snapshot: intfConfigurationSnapshot, secre
 
   if (runtime.authentication) {
     const authentication = runtime.authentication;
+    const methods=snapshot.value.auth?.enabled?snapshot.value.auth.methods:undefined;
+    const oidcPolicy=methods?.organizationalOidc;
+    const oidc=oidcPolicy?.enabled?new clsOrganizationalOidc(oidcPolicy,secretRoot):null;
+    app.get('/api/auth/methods',(_req,res)=>{
+      res.setHeader('Cache-Control','no-store');
+      res.json({organizationalOidc:Boolean(oidc),legacyKey:methods?.legacyKey.enabled===true,
+        developmentPassword:methods?.developmentPassword??snapshot.value.security.assuranceProfile==='DEVELOPMENT_PASSWORD'});
+    });
+    app.get('/api/auth/oidc/start',async(req,res)=>{
+      res.setHeader('Cache-Control','no-store');
+      if(!oidc){res.status(404).end();return;}
+      try{
+        const started=await oidc.begin(safeOidcReturnPath(req.query.returnTo));
+        await authentication.startOidcFlow(started.flow.state,started.flow.verifier,started.flow.nonce,started.flow.returnPath);
+        res.setHeader('Set-Cookie',`__Host-tg_oidc_state=${started.flow.state}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=300`);
+        res.redirect(303,started.url);
+      }catch{await runtime.securityAudit.record(securityContext(snapshot,req,'authentication'),'authentication.oidc_start_failed','FAILED');res.status(503).json({error:'OIDC_UNAVAILABLE'});}
+    });
+    app.get('/api/auth/oidc/callback',async(req,res)=>{
+      res.setHeader('Cache-Control','no-store');
+      res.setHeader('Set-Cookie','__Host-tg_oidc_state=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0');
+      const appOrigin=snapshot.value.web?.publicOrigin;
+      if(!oidc||!appOrigin){res.status(404).end();return;}
+      try{
+        const state=req.query.state;
+        const cookie=req.header('cookie')?.split(';').map(item=>item.trim()).find(item=>item.startsWith('__Host-tg_oidc_state='))?.slice('__Host-tg_oidc_state='.length);
+        if(typeof state!=='string'||!cookie||state!==cookie||!/^[-_A-Za-z0-9]{32,256}$/.test(state))throw new Error('OIDC_FLOW_INVALID');
+        const flow=await authentication.consumeOidcFlow(state);
+        if(!flow)throw new Error('OIDC_FLOW_EXPIRED');
+        const external=await oidc.complete(new URL(req.originalUrl,'https://local.invalid').search,{state,...flow});
+        const result=await authentication.loginOidcIdentity(external.issuer,external.subject);
+        if(result.kind!=='SIGNED_IN')throw new Error('OIDC_IDENTITY_UNMAPPED');
+        const ctx=securityContext(snapshot,req,'authentication','HUMAN',result.identityId,result.sessionId,result.tenantId);
+        await runtime.securityAudit.record(ctx,'authentication.success','SUCCEEDED');
+        await runtime.securityAudit.record(ctx,'session.created','SUCCEEDED');
+        res.append('Set-Cookie',refreshSetCookie(result.refreshToken));
+        res.redirect(303,`${appOrigin}${safeOidcReturnPath(flow.returnPath)}`);
+      }catch{await runtime.securityAudit.record(securityContext(snapshot,req,'authentication'),'authentication.oidc_callback_failed','FAILED');res.redirect(303,`${appOrigin}/login?error=oidc`);}
+    });
     app.get('/api/auth/me', async (req, res) => {
       res.setHeader('Cache-Control', 'no-store');
       const bearer = req.header('authorization');
@@ -179,6 +223,7 @@ export async function createPublicApi(snapshot: intfConfigurationSnapshot, secre
       } catch { res.status(401).json({ error: 'INVALID_SESSION' }); }
     });
     app.post('/api/auth/login', async (req, res, next) => { try {
+      if(methods && !methods.developmentPassword){res.status(404).end();return;}
       if (!authOrigin(snapshot, req, res)) return;
       res.setHeader('Cache-Control', 'no-store');
       const body = record(req.body);
@@ -200,6 +245,29 @@ export async function createPublicApi(snapshot: intfConfigurationSnapshot, secre
       res.setHeader('Set-Cookie', refreshSetCookie(result.refreshToken));
       res.json({ accessToken: result.accessToken, tenantId: result.tenantId });
     } catch (error) { next(error); } });
+    app.post('/api/auth/legacy-key',async(req,res,next)=>{try{
+      if(methods?.legacyKey.enabled!==true){res.status(404).end();return;}
+      if(!authOrigin(snapshot,req,res))return;
+      res.setHeader('Cache-Control','no-store');
+      const body=record(req.body),rawKey=string(body.key,256);
+      const tenantId=body.tenantId===undefined?undefined:string(body.tenantId,100);
+      const result=await authentication.loginLegacyKey(rawKey,req.socket.remoteAddress??'',tenantId);
+      if(result.kind==='INVALID'){
+        await runtime.securityAudit.record(securityContext(snapshot,req,'authentication'),'authentication.failed','FAILED');
+        res.status(401).json({error:'INVALID_CREDENTIALS'});return;
+      }
+      if(result.kind==='RATE_LIMITED'){
+        await runtime.securityAudit.record(securityContext(snapshot,req,'authentication'),'authentication.rate_limited','DENIED');
+        res.status(429).json({error:'LOGIN_RATE_LIMITED'});return;
+      }
+      if(result.kind==='TENANT_SELECTION_REQUIRED'){res.json({status:result.kind,tenants:result.tenants});return;}
+      const ctx=securityContext(snapshot,req,'authentication','HUMAN',result.identityId,result.sessionId,result.tenantId);
+      if(result.provisioned)await runtime.securityAudit.record(ctx,'authentication.legacy_provisioned','SUCCEEDED');
+      await runtime.securityAudit.record(ctx,'authentication.success','SUCCEEDED');
+      await runtime.securityAudit.record(ctx,'session.created','SUCCEEDED');
+      res.setHeader('Set-Cookie',refreshSetCookie(result.refreshToken));
+      res.json({accessToken:result.accessToken,tenantId:result.tenantId});
+    }catch(error){next(error);}});
     app.post('/api/auth/refresh', async (req, res, next) => { try {
       if (!authOrigin(snapshot, req, res)) return;
       res.setHeader('Cache-Control', 'no-store');
@@ -281,7 +349,7 @@ export async function createPublicApi(snapshot: intfConfigurationSnapshot, secre
   app.use((error: unknown, req: Request, res: Response, _next: express.NextFunction) => {
     const safe = safeError(error);
     logOperational({severity:safe.status>=500?'ERROR':'WARN',component:'target-api',event:'request_failed',
-      context:res.locals.publicContext as intfExecutionContext|undefined,status:String(safe.status),errorClass:safe.code,
+      ...(res.locals.publicContext?{context:res.locals.publicContext as intfExecutionContext}:{}),status:String(safe.status),errorClass:safe.code,
       method:req.method,route:req.route?.path??'UNMATCHED'});
     if (res.headersSent) {
       if (req.path.includes('/faq')) res.write(`event: error\ndata: ${JSON.stringify({ message: safe.code })}\n\n`);

@@ -61,6 +61,9 @@ export interface intfNormalizedVersion {
   readonly sha256: string; readonly processor: string; readonly state: enuVersionState;
 }
 export interface intfDocumentRepository {
+  retentionFacts(transaction:intfTransactionHandle,context:intfExecutionContext,id:string):Promise<Readonly<{retired:boolean;classification:typClassificationLevel;retainedReferences:boolean}>>;
+  retainedAssets(transaction:intfTransactionHandle,context:intfExecutionContext,id:string):Promise<readonly intfDocumentAsset[]>;
+  purgeContent(transaction:intfTransactionHandle,context:intfExecutionContext,id:string,leaseToken:string):Promise<void>;
   assertSnapshot(transaction:intfTransactionHandle,context:intfExecutionContext,expected:readonly intfDocumentFacts[]):Promise<void>;
   facts(transaction: intfTransactionHandle, context: intfExecutionContext, id: string): Promise<intfDocumentFacts | null>;
   factsBatch(transaction: intfTransactionHandle, context: intfExecutionContext,

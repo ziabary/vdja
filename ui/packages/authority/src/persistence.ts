@@ -1,3 +1,6 @@
+import type { intfTransactionHandle } from '../../contracts/src/transaction.js';
+import type { intfExecutionContext } from '../../contracts/src/index.js';
+import { resolveTargetTransaction } from '../../persistence/src/target-transaction.js';
 import type pg from 'pg';
 import { randomUUID } from 'node:crypto';
 import { withTargetTransaction } from '../../persistence/src/target.js';
@@ -32,6 +35,12 @@ function privileges(value: unknown): Readonly<Record<string, unknown>> | null {
 /** Resolve authority facts inside the owning capability; callers receive only a decision. */
 export function createAuthorityPersistence(pool: pg.Pool, deploymentId: string) {
   return {
+    async lockSnapshot(transaction:intfTransactionHandle,context:intfExecutionContext):Promise<void>{
+      if(!context.tenantId||!context.deploymentId||context.deploymentId!==deploymentId)throw new Error('INVALID_AUTHORITY_CONTEXT');
+      const tx=resolveTargetTransaction(transaction);
+      await tx.query("SELECT pg_catalog.pg_advisory_xact_lock_shared(pg_catalog.hashtextextended('authority.global',0))");
+      await tx.query("SELECT pg_catalog.pg_advisory_xact_lock_shared(pg_catalog.hashtextextended('authority.tenant.'||$1,0))",[context.tenantId]);
+    },
     resolve: (lookup: Parameters<typeof resolveAuthorityFacts>[1]) => resolveAuthorityFacts(pool, lookup),
     resolveBatch: (lookups: Parameters<typeof resolveAuthorityBatch>[1]) => resolveAuthorityBatch(pool, lookups),
     async authorizePublicTool(identityId: string, tenantId: string, module: keyof typeof PUBLIC_PERMISSION): Promise<typPublicToolAuthorityResult> {

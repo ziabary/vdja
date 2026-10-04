@@ -1,3 +1,4 @@
+import {enuMalwareMode} from '../../packages/file-processing/src/malware.js';
 import assert from 'node:assert/strict';
 import { randomUUID,createHash } from 'node:crypto';
 import { mkdtemp,rm } from 'node:fs/promises';
@@ -28,6 +29,7 @@ import { clsKnowledgeService } from '../../packages/knowledge/src/service.js';
 import { clsQdrantAdapter } from '../../packages/knowledge/src/adapters/qdrant.js';
 import { enuMembershipMode,type intfVectorIndexPort } from '../../packages/knowledge/src/index.js';
 import { clsProtectedAiRouter } from '../../packages/ai-router/src/protected.js';
+import { enuProtectedAiTask,type intfProtectedAiPort } from '../../packages/contracts/src/protected-ai.js';
 import { createAiRunPersistence } from '../../packages/ai-router/src/persistence.js';
 import { clsAiEgressGovernance } from '../../packages/data-governance/src/index.js';
 const config=process.env.T4_PG_CONFIG,secrets=process.env.T4_SECRETS_DIR;
@@ -43,7 +45,7 @@ test('secure RAG checkpoints prevent unauthorized materialization, reranking, ge
     const docs=new clsDocumentService({transactions:apiTx,repository,jobs,authority:identity.authority,subject:identity.subject,maxNormalizedChars:100000,audit:documentAudit});
     const workerDocs=new clsDocumentService({transactions:workerTx,repository,jobs,authority:identity.workerAuthority,subject:identity.workerSubject,maxNormalizedChars:100000,audit:documentAudit});
     const storage=new clsLocalStorageAdapter(join(root,'canonical'));
-    const fileConfig={enabled:true as const,storage:{kind:enuStorageKind.Local,profileId:'fixture',root:join(root,'canonical')},uploads:{mode:'PROXY' as const,partBytes:5242880,ttlMs:60000,timeoutMs:10000,maxConcurrent:10,maxBytes:10485760,maxPendingBytes:104857600,maxTenantStorageBytes:104857600,maxTenantAssets:100},downloads:{ranges:true,conditional:true,maxConcurrent:3},cache:{scope:'REPLICA_PRIVATE' as const,root:join(root,'cache'),maxBytes:10485760,maxEntries:10,ttlMs:60000,timeoutMs:10000},staging:{root:join(root,'staging'),maxBytes:10485760},security:{privateOnly:true as const,integrityRequired:true as const}};
+    const fileConfig={enabled:true as const,storage:{kind:enuStorageKind.Local,profileId:'fixture',root:join(root,'canonical')},uploads:{mode:'PROXY' as const,partBytes:5242880,ttlMs:60000,timeoutMs:10000,maxConcurrent:10,maxBytes:10485760,maxPendingBytes:104857600,maxTenantStorageBytes:104857600,maxTenantAssets:100},downloads:{ranges:true,conditional:true,maxConcurrent:3},cache:{scope:'REPLICA_PRIVATE' as const,root:join(root,'cache'),maxBytes:10485760,maxEntries:10,ttlMs:60000,timeoutMs:10000},staging:{root:join(root,'staging'),maxBytes:10485760},security:{privateOnly:true as const,integrityRequired:true as const,malware:{mode:enuMalwareMode.Disabled,timeoutMs:1000,maxBytes:10485760,policyVersion:'test-low-assurance-v1'}}};
     const files=new clsFileManagement({transactions:apiTx,subject:identity.subject,documents:docs,transfers:createTransferRepository(),storage,jobs,admission:createFileAdmissionPersistence(),usage:createFileUsagePersistence(),audit,configuration:fileConfig,limits:{maxUploadBytes:10485760,maxExtractedChars:100000,maxPages:100}});
     const router=(pool:typeof api,subject:typeof identity.subject,configuration=provider.configuration)=>new clsProtectedAiRouter({configuration:()=>({value:configuration,fingerprint:snapshot.fingerprint}),store:createAiRunPersistence(pool),subject,usage:createUsagePersistence(pool),
       governance:new clsAiEgressGovernance(provider.governance,async(ctx,event)=>{await createTransactionPort(pool).run(ctx,tx=>audit.record(tx,ctx,{action:event.allowed?'data-governance.egress.allowed':'data-governance.egress.denied',result:event.allowed?'SUCCEEDED':'DENIED',reason:event.reason,resource:{type:'endpoint',id:event.endpointId}}));})});
@@ -79,6 +81,52 @@ test('secure RAG checkpoints prevent unauthorized materialization, reranking, ge
         const bypassIndex:intfVectorIndexPort={...vector,search:(collection,query,filter,limit)=>adapter().search(collection,query,{...filter,documentIds:[a,b]},limit)};
         const guarded=new clsKnowledgeService({...knowledgePorts,vectors:bypassIndex,files:spyFiles});provider.calls.length=0;await guarded.ask(queryContext(),spaceId,'Explain normal operations');
         assert.ok(materialized.includes(versionA));assert.ok(!materialized.includes(versionB));assert.ok(!JSON.stringify(provider.calls).includes('FORBIDDEN_BETA_SECRET'));
+      });
+      await t.test('security revocation after coarse authorization stops vector retrieval before any protected source is used',async()=>{
+        const before=retrievals;provider.calls.length=0;
+        const guardedAi:intfProtectedAiPort={embeddingProfile:()=>ai.embeddingProfile(),execute:async request=>{
+          const result=await ai.execute(request);
+          if(request.task===enuProtectedAiTask.QueryEmbed)await identity.setPermissions({Knowledge:{query:true,Documents:{discover:true}}});
+          return result;
+        }};
+        try{await assert.rejects(new clsKnowledgeService({...knowledgePorts,ai:guardedAi}).ask(queryContext(),spaceId,'Revoke after coarse'),/KNOWLEDGE_DENIED/);
+          assert.equal(retrievals,before);assert.ok(!provider.calls.some(call=>call.path==='/score'||call.path==='/v1/chat/completions'));
+        }finally{await identity.setPermissions({Knowledge:{ALL:true}});}
+      });
+      await t.test('security revocation after vector hit rejects the candidate before materialization',async()=>{
+        const before=materialized.length;provider.calls.length=0;
+        const guardedVectors:intfVectorIndexPort={...vector,search:async(...args)=>{
+          const hits=await vector.search(...args);await identity.setPermissions({Knowledge:{query:true,Documents:{discover:true}}});return hits;
+        }};
+        try{const answer=await new clsKnowledgeService({...knowledgePorts,vectors:guardedVectors}).ask(queryContext(),spaceId,'Revoke after hit');
+          assert.deepEqual(answer.citations,[]);assert.equal(materialized.length,before);
+          assert.ok(!provider.calls.some(call=>call.path==='/score'||call.path==='/v1/chat/completions'));
+        }finally{await identity.setPermissions({Knowledge:{ALL:true}});}
+      });
+      await t.test('security revocation after final candidate decision denies before normalized materialization',async()=>{
+        const before=materialized.length;provider.calls.length=0;
+        const guardedFiles=Object.create(files) as clsFileManagement;
+        guardedFiles.materializeBatch=async(ctx,refs)=>{
+          await identity.setPermissions({Knowledge:{query:true,Documents:{discover:true}}});
+          return files.materializeBatch(ctx,refs);
+        };
+        try{await assert.rejects(new clsKnowledgeService({...knowledgePorts,files:guardedFiles}).ask(queryContext(),spaceId,'Revoke before materialize'),/KNOWLEDGE_DENIED|DOCUMENT_DENIED|FILE_DENIED|EXECUTION_SUBJECT_INACTIVE/);
+          assert.equal(materialized.length,before);
+          assert.ok(!provider.calls.some(call=>call.path==='/score'||call.path==='/v1/chat/completions'));
+        }finally{await identity.setPermissions({Knowledge:{ALL:true}});}
+      });
+      for(const [phase,task,forbiddenPath]of [
+        ['materialization before reranker',enuProtectedAiTask.Rerank,'/score'],
+        ['reranker before generation',enuProtectedAiTask.Answer,'/v1/chat/completions']
+      ]as const)await t.test(`security revocation after ${phase} prevents next provider dispatch`,async()=>{
+        provider.calls.length=0;
+        const guardedAi:intfProtectedAiPort={embeddingProfile:()=>ai.embeddingProfile(),execute:async request=>{
+          if(request.task===task)await identity.setPermissions({Knowledge:{query:true,Documents:{discover:true}}});
+          return ai.execute(request);
+        }};
+        try{await assert.rejects(new clsKnowledgeService({...knowledgePorts,ai:guardedAi}).ask(queryContext(),spaceId,`Revoke at ${phase}`),/SECURITY_FENCE_DENIED/);
+          assert.ok(!provider.calls.some(call=>call.path===forbiddenPath));
+        }finally{await identity.setPermissions({Knowledge:{ALL:true}});}
       });
       await t.test('read is not use; use does not disclose/download; unknown citations and direct quotation fail closed',async()=>{
         await identity.setPermissions({Knowledge:{query:true,Documents:{read:true}}});const before=retrievals;provider.calls.length=0;

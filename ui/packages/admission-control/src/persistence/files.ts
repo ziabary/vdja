@@ -4,6 +4,8 @@ import { enuFileReservationKind, enuFileReservationState, type intfFileAdmission
 
 export function createFileAdmissionPersistence(): intfFileAdmissionPort {
   return {
+ async activeWithin(tx,ctx){const result=await resolveTargetTransaction(tx).query(`SELECT afr_id FROM admission.tbl_adm_file_reservation WHERE afr_deployment_id=$1 AND afr_tenant_id=$2 AND afr_state=$3 LIMIT 1`,[ctx.deploymentId,ctx.tenantId,enuFileReservationState.Reserved]);return !!result.rowCount;},
+ async purgedWithin(tx,ctx,id){await resolveTargetTransaction(tx).query(`UPDATE admission.tbl_adm_file_reservation SET afr_state=$4 WHERE afr_deployment_id=$1 AND afr_tenant_id=$2 AND afr_id=$3`,[ctx.deploymentId,ctx.tenantId,id,enuFileReservationState.Released]);},
     async reserve(transaction, context, policy, request) {
       if (!Number.isSafeInteger(request.bytes) || request.bytes < 1 || request.bytes > policy.maxBytes
         || !Number.isFinite(Date.parse(request.expiresAt)) || Date.parse(request.expiresAt) <= Date.now())

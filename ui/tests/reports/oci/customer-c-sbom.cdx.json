@@ -687,6 +687,11 @@
     },
     {
       "type": "library",
+      "name": "bubblewrap",
+      "version": "0.8.0-2+deb12u1"
+    },
+    {
+      "type": "library",
       "name": "ca-certificates",
       "version": "20250419~deb12u1"
     },
@@ -1383,7 +1388,7 @@
     {
       "type": "library",
       "name": "libpcre2-8-0:amd64",
-      "version": "10.42-1+deb12u1"
+      "version": "10.42-1+deb12u2"
     },
     {
       "type": "library",

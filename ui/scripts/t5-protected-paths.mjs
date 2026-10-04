@@ -1,7 +1,11 @@
+import {compareProtectedFiles} from './t5-protected-policy.mjs';
 import {readFile,readdir,writeFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import {join} from 'node:path';
-const baseline=JSON.parse(await readFile('reports/security/t5-protected-paths-before.json','utf8'));
+const baselinePath=process.env.T5_PROTECTED_BASELINE??'reports/security/t5-protected-paths-before.json';
+const outputPath=process.env.T5_PROTECTED_OUTPUT??'reports/security/t5-protected-paths-after.json';
+const baseline=JSON.parse(await readFile(baselinePath,'utf8'));
+if(baseline.task==='T5-R1'&&baseline.authorizedChanges.length)throw new Error('R1_PROTECTED_AUTHORIZATION_FORBIDDEN');
 const files={};
 const {execFileSync}=await import('node:child_process');
 async function walk(path,all=false){for(const entry of await readdir(path,{withFileTypes:true})){if(['.git','node_modules','.svelte-kit','build','dist','.aws','.codex','.agents'].includes(entry.name))continue;
@@ -20,6 +24,7 @@ const comparisons=Object.keys(files).filter(path=>path.endsWith('AGENTS.md')&&!t
 });
 const changes=[...new Set([...trackedBaseline,...Object.keys(files).filter(path=>!path.endsWith('AGENTS.md')||trackedBaseline.includes(path))])]
  .filter(path=>files[path]!==baseline.files[path]).map(path=>({path,authorized:authorized.has(path),before:baseline.files[path]??null,after:files[path]??null}));
-const violations=changes.filter(change=>!change.authorized).length+comparisons.filter(value=>!value.unchanged).length;
+const policy=baseline.task==='T5-R1'?compareProtectedFiles(baseline,files):{unauthorizedCount:changes.filter(change=>!change.authorized).length};
+const violations=policy.unauthorizedCount+comparisons.filter(value=>!value.unchanged).length;
 const result={generatedAt:new Date().toISOString(),status:violations===0?'PASS':'FAIL',unauthorizedCount:violations,changes,scopedComparisons:comparisons,files};
-await writeFile('reports/security/t5-protected-paths-after.json',JSON.stringify(result,null,2)+'\n');console.log(JSON.stringify({status:result.status,unauthorizedCount:violations,comparedFiles:Object.keys(files).length}));if(violations)process.exitCode=1;
+await writeFile(outputPath,JSON.stringify(result,null,2)+'\n');console.log(JSON.stringify({status:result.status,unauthorizedCount:violations,comparedFiles:Object.keys(files).length}));if(violations)process.exitCode=1;

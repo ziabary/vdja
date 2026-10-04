@@ -1,3 +1,4 @@
+import {enuMalwareMode} from '../../packages/file-processing/src/malware.js';
 import assert from 'node:assert/strict';
 import { randomUUID, createHash } from 'node:crypto';
 import { mkdtemp, rm } from 'node:fs/promises';
@@ -38,7 +39,7 @@ test('File Management enforces real Session/Authority before verified upload com
         maxPendingBytes: 41943040, maxTenantStorageBytes: 104857600, maxTenantAssets: 100 },
       downloads: { ranges: true, conditional: true, maxConcurrent: 4 },
       cache: { scope: 'REPLICA_PRIVATE' as const, root: join(root, 'cache'), maxBytes: 10485760, maxEntries: 5, ttlMs: 60000, timeoutMs: 10000 },
-      staging: { root: join(root, 'staging'), maxBytes: 10485760 }, security: { privateOnly: true as const, integrityRequired: true as const } };
+      staging: { root: join(root, 'staging'), maxBytes: 10485760 }, security: { privateOnly: true as const, integrityRequired:true as const,malware:{mode:enuMalwareMode.Disabled,timeoutMs:1000,maxBytes:10485760,policyVersion:'test-low-assurance-v1'}} };
     const ports = { transactions, subject: fixture.subject, documents, transfers: createTransferRepository(), storage, jobs,
       admission: createFileAdmissionPersistence(), usage: createFileUsagePersistence(), audit, configuration,
       limits: { maxUploadBytes: 10485760, maxExtractedChars: 100000, maxPages: 100 } };
@@ -92,6 +93,12 @@ test('File Management enforces real Session/Authority before verified upload com
         assert.deepEqual(await read((await new clsFileManagement(ports).download(context, { documentId, versionId })).body), content);
         await fixture.setPermissions({ Knowledge: { ALL: true } });
         await assert.rejects(files.download({ ...context, tenantId: 'other-tenant' }, { documentId, versionId }), /INACTIVE|FILE_DENIED/);
+      });
+      await t.test('revocation after download authorization and before first byte yields no protected content',async()=>{
+        const pending=await files.download(context,{documentId,versionId});
+        await fixture.setPermissions({Knowledge:{Documents:{read:true}}});let emitted=0;
+        await assert.rejects(async()=>{for await(const chunk of pending.body!){emitted+=chunk.length;}},/FILE_DENIED/);
+        assert.equal(emitted,0);await fixture.setPermissions({Knowledge:{ALL:true}});
       });
       await t.test('invalid signature/hash never creates Asset, Version, or processing Job', async () => {
         const bad = await files.initiate(context, { documentId, idempotencyKey: 'malicious-pdf', filename: 'malicious.pdf',

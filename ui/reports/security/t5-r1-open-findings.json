@@ -1,0 +1,445 @@
+{
+  "generatedAt": "2026-10-04T12:50:53.605Z",
+  "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a",
+  "verificationContractHash": "17f13383778b2511b16aa6e88d1aea5909a499bf9891e0a7a2f539c84e834b80",
+  "securityGate": "FAIL",
+  "counts": {
+    "t5Scope": 61,
+    "releaseOnly": 69
+  },
+  "controls": [
+    {
+      "id": "v5.0.0-V1.1.1",
+      "status": "NOT_VERIFIED",
+      "classification": "TEST_EVIDENCE_REQUIRED",
+      "reason": "شاهد آزمون اجراشدهٔ مختص این کنترل برای source جاری ثبت نشده است.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V1.2.2",
+      "status": "NOT_VERIFIED",
+      "classification": "TEST_EVIDENCE_REQUIRED",
+      "reason": "شاهد آزمون اجراشدهٔ مختص این کنترل برای source جاری ثبت نشده است.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V1.2.3",
+      "status": "NOT_VERIFIED",
+      "classification": "TEST_EVIDENCE_REQUIRED",
+      "reason": "شاهد آزمون اجراشدهٔ مختص این کنترل برای source جاری ثبت نشده است.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V1.3.2",
+      "status": "NOT_VERIFIED",
+      "classification": "TEST_EVIDENCE_REQUIRED",
+      "reason": "شاهد آزمون اجراشدهٔ مختص این کنترل برای source جاری ثبت نشده است.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V1.3.3",
+      "status": "NOT_VERIFIED",
+      "classification": "EXTERNAL_DEPENDENCY_REQUIRED",
+      "reason": "نام و آرگومان تبدیل ثابت و bounded است؛ ایمنی تمامی ورودی‌های PDF/DOC در parser native اثبات نشده است.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V1.3.7",
+      "status": "NOT_VERIFIED",
+      "classification": "TEST_EVIDENCE_REQUIRED",
+      "reason": "شاهد آزمون اجراشدهٔ مختص این کنترل برای source جاری ثبت نشده است.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V1.3.12",
+      "status": "NOT_VERIFIED",
+      "classification": "TEST_EVIDENCE_REQUIRED",
+      "reason": "الگوها ثابت و ورودی‌ها bounded هستند؛ ارزیابی worst-case همهٔ regexها و کتابخانه‌ها ثبت نشده است.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V1.4.1",
+      "status": "NOT_VERIFIED",
+      "classification": "EXTERNAL_DEPENDENCY_REQUIRED",
+      "reason": "بخش TS managed است؛ native parser/LibreOffice و وابستگی‌ها به بررسی memory safety و آسیب‌پذیری نیاز دارند.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V1.5.1",
+      "status": "NOT_VERIFIED",
+      "classification": "EXTERNAL_DEPENDENCY_REQUIRED",
+      "reason": "OOXML/ODT دارای DTD/entity و external relationship رد می‌شود؛ تنظیم XXE تمامی مسیرهای LibreOffice/DOC اثبات نشده است.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V1.5.2",
+      "status": "NOT_VERIFIED",
+      "classification": "TEST_EVIDENCE_REQUIRED",
+      "reason": "شاهد آزمون اجراشدهٔ مختص این کنترل برای source جاری ثبت نشده است.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V1.5.3",
+      "status": "NOT_VERIFIED",
+      "classification": "EXTERNAL_DEPENDENCY_REQUIRED",
+      "reason": "JSON و UTF-8 strict مشترک‌اند؛ differential parsing فایل باینری و مفسر Office کاملاً آزموده نشده است.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V2.1.1",
+      "status": "NOT_VERIFIED",
+      "classification": "TEST_EVIDENCE_REQUIRED",
+      "reason": "شاهد آزمون اجراشدهٔ مختص این کنترل برای source جاری ثبت نشده است.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V2.1.2",
+      "status": "NOT_VERIFIED",
+      "classification": "TEST_EVIDENCE_REQUIRED",
+      "reason": "شاهد آزمون اجراشدهٔ مختص این کنترل برای source جاری ثبت نشده است.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V3.2.3",
+      "status": "NOT_VERIFIED",
+      "classification": "TEST_EVIDENCE_REQUIRED",
+      "reason": "شاهد آزمون اجراشدهٔ مختص این کنترل برای source جاری ثبت نشده است.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V3.4.3",
+      "status": "NOT_VERIFIED",
+      "classification": "DEPLOYMENT_EVIDENCE_REQUIRED",
+      "reason": "CSP کد و آزمون پایه موجود است؛ CSP L3 همهٔ پاسخ‌ها از زنجیرهٔ edge مشتری هنوز تأیید نشده است.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V3.4.5",
+      "status": "NOT_VERIFIED",
+      "classification": "TEST_EVIDENCE_REQUIRED",
+      "reason": "شاهد آزمون اجراشدهٔ مختص این کنترل برای source جاری ثبت نشده است.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V3.4.6",
+      "status": "NOT_VERIFIED",
+      "classification": "TEST_EVIDENCE_REQUIRED",
+      "reason": "شاهد آزمون اجراشدهٔ مختص این کنترل برای source جاری ثبت نشده است.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V3.4.7",
+      "status": "NOT_VERIFIED",
+      "classification": "DEPLOYMENT_EVIDENCE_REQUIRED",
+      "reason": "مسیر CSP reporting وجود دارد؛ فعال‌سازی و دریافت report در deployment مشتری اثبات نشده است.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V3.4.8",
+      "status": "NOT_VERIFIED",
+      "classification": "TEST_EVIDENCE_REQUIRED",
+      "reason": "شاهد آزمون اجراشدهٔ مختص این کنترل برای source جاری ثبت نشده است.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V4.2.5",
+      "status": "NOT_VERIFIED",
+      "classification": "TEST_EVIDENCE_REQUIRED",
+      "reason": "شاهد آزمون اجراشدهٔ مختص این کنترل برای source جاری ثبت نشده است.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V5.2.2",
+      "status": "NOT_VERIFIED",
+      "classification": "EXTERNAL_DEPENDENCY_REQUIRED",
+      "reason": "UTF-8 کامل و ساختار archive کنترل می‌شوند؛ magic PDF/OLE اثبات تخصصی تمام محتوای PDF/DOC نیست.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V5.4.3",
+      "status": "NOT_VERIFIED",
+      "classification": "EXTERNAL_DEPENDENCY_REQUIRED",
+      "reason": "پورت و adapter ضدبدافزار clamd و policy fail-closed آزموده شده‌اند؛ scanner واقعی، به‌روزرسانی امضا و profile مشتری هنوز اثبات نشده‌اند.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V10.1.1",
+      "status": "NOT_VERIFIED",
+      "classification": "TEST_EVIDENCE_REQUIRED",
+      "reason": "refresh cookie محدود به Auth و access token در حافظه است؛ الگوی BFF با token فقط backend و مرور همهٔ consumerها هنوز تأیید نشده است.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V11.5.1",
+      "status": "NOT_VERIFIED",
+      "classification": "TEST_EVIDENCE_REQUIRED",
+      "reason": "refresh secret و کلید آزمون CSPRNG هستند؛ بازبینی exhaustive purpose/entropy شناسه‌ها و credentialهای واقعی باقی است.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V11.5.2",
+      "status": "NOT_VERIFIED",
+      "classification": "TEST_EVIDENCE_REQUIRED",
+      "reason": "از crypto استاندارد استفاده می‌شود؛ رفتار زیر بار سنگین RNG و entropy زیرساخت واقعی آزمایش نشده است.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V11.7.2",
+      "status": "NOT_VERIFIED",
+      "classification": "DEPLOYMENT_EVIDENCE_REQUIRED",
+      "reason": "Qdrant payload opaque و provider content حداقلی است؛ encryption-at-rest و پس از مصرف در volumes واقعی اثبات نشده است.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V12.3.1",
+      "status": "NOT_VERIFIED",
+      "classification": "DEPLOYMENT_EVIDENCE_REQUIRED",
+      "reason": "S3/provider/SIEM production TLS validation دارند؛ PostgreSQL، gateway، monitoring و همهٔ اتصال‌های deployment مشتری اثبات نشده‌اند.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V12.3.3",
+      "status": "NOT_VERIFIED",
+      "classification": "DEPLOYMENT_EVIDENCE_REQUIRED",
+      "reason": "محیط آزمون loopback HTTP دارد؛ TLS همهٔ اتصال‌های داخلی استقرار مشتری نیازمند evidence است.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V12.3.4",
+      "status": "NOT_VERIFIED",
+      "classification": "DEPLOYMENT_EVIDENCE_REQUIRED",
+      "reason": "CA اختصاصی SIEM در آزمون معتبر بود؛ trust stores و certificate تمام سرویس‌های واقعی ارائه نشده‌اند.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V12.3.5",
+      "status": "FAIL",
+      "classification": "CODE_FIX_REQUIRED",
+      "platformCapabilityStatus": "GAP",
+      "customerDeploymentStatus": "NOT_VERIFIED",
+      "serviceBoundaryAssessment": "reports/security/t5-service-boundary-assessment.json",
+      "reason": "توان پلتفرم: GAP؛ استقرار مشتری: NOT_VERIFIED. Current source supports some boundary controls, but static/replayable credentials or missing client identity remain. No customer topology, certificate, IAM or credential-lifetime evidence is supplied.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V13.1.1",
+      "status": "NOT_VERIFIED",
+      "classification": "TEST_EVIDENCE_REQUIRED",
+      "reason": "شاهد آزمون اجراشدهٔ مختص این کنترل برای source جاری ثبت نشده است.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V13.1.2",
+      "status": "NOT_VERIFIED",
+      "classification": "TEST_EVIDENCE_REQUIRED",
+      "reason": "pool/Admission/config concurrency محدودند؛ saturation تمام client connection poolها و محیط مشتری اثبات نشده است.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V13.2.1",
+      "status": "FAIL",
+      "classification": "CODE_FIX_REQUIRED",
+      "platformCapabilityStatus": "GAP",
+      "customerDeploymentStatus": "NOT_VERIFIED",
+      "serviceBoundaryAssessment": "reports/security/t5-service-boundary-assessment.json",
+      "reason": "توان پلتفرم: GAP؛ استقرار مشتری: NOT_VERIFIED. Current source supports some boundary controls, but static/replayable credentials or missing client identity remain. No customer topology, certificate, IAM or credential-lifetime evidence is supplied.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V13.2.2",
+      "status": "NOT_VERIFIED",
+      "classification": "DEPLOYMENT_EVIDENCE_REQUIRED",
+      "reason": "API/Worker در PG least-privilege و RLS آزموده شدند؛ IAM واقعی bucket، Qdrant و secret volume هنوز تأیید نشده‌اند.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V13.2.3",
+      "status": "NOT_VERIFIED",
+      "classification": "DEPLOYMENT_EVIDENCE_REQUIRED",
+      "reason": "fixture credentials تصادفی هستند؛ non-default بودن credentialهای واقعی مشتری قابل نتیجه‌گیری نیست.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V13.2.5",
+      "status": "NOT_VERIFIED",
+      "classification": "TEST_EVIDENCE_REQUIRED",
+      "reason": "allowlist برنامه وجود دارد؛ OS/network confinement native parser و gateway allowlist واقعی آزموده نشده است.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V13.2.6",
+      "status": "NOT_VERIFIED",
+      "classification": "TEST_EVIDENCE_REQUIRED",
+      "reason": "timeout/retry/Admission در focused tests اجرا شده‌اند؛ compliance connection maxima همهٔ transports زیر بار هنوز پوشش کامل ندارد.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V13.3.2",
+      "status": "NOT_VERIFIED",
+      "classification": "DEPLOYMENT_EVIDENCE_REQUIRED",
+      "reason": "secretRefs و role-specific PG secrets در OCI تعریف شده‌اند؛ mounted files/IAM/rotation واقعی least privilege نیازمند evidence است.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V14.1.1",
+      "status": "NOT_VERIFIED",
+      "classification": "DEPLOYMENT_EVIDENCE_REQUIRED",
+      "reason": "Document classification و payload categories مشخص‌اند؛ نگاشت کامل مقررات/privacy هر مشتری ارائه نشده است.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V14.1.2",
+      "status": "NOT_VERIFIED",
+      "classification": "DEPLOYMENT_EVIDENCE_REQUIRED",
+      "reason": "Audit/egress/cache/integrity boundaries مستند است؛ retention، legal hold، encryption و privacy policy کامل مشتری تصویب نشده است.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V14.2.2",
+      "status": "NOT_VERIFIED",
+      "classification": "DEPLOYMENT_EVIDENCE_REQUIRED",
+      "reason": "cache private و bounded/hash-verified است؛ secure purge و encryption backend/edge مشتری اثبات نشده است.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V14.2.4",
+      "status": "NOT_VERIFIED",
+      "classification": "DEPLOYMENT_EVIDENCE_REQUIRED",
+      "reason": "Authority و integrity/redaction اجرا شده‌اند؛ تمام الزامات protection level در retention/encryption/privacy واقعی اثبات نشده‌اند.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V14.2.7",
+      "status": "NOT_VERIFIED",
+      "classification": "DEPLOYMENT_EVIDENCE_REQUIRED",
+      "reason": "purge نرم‌افزاری LOCAL/S3 و legal hold در آزمون واقعی اجرا شده‌اند؛ انقضا/حذف backup مشتری هنوز اثبات نشده است.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V15.1.2",
+      "status": "NOT_VERIFIED",
+      "classification": "TEST_EVIDENCE_REQUIRED",
+      "reason": "SBOM واقعی هر سه تصویر و اسکن محلی dependency/image موجود است؛ attestation منبع تمام وابستگی‌ها و provenance امضاشدهٔ production هنوز اثبات نشده است.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V15.1.4",
+      "status": "NOT_VERIFIED",
+      "classification": "TEST_EVIDENCE_REQUIRED",
+      "reason": "شاهد آزمون اجراشدهٔ مختص این کنترل برای source جاری ثبت نشده است.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V15.1.5",
+      "status": "NOT_VERIFIED",
+      "classification": "TEST_EVIDENCE_REQUIRED",
+      "reason": "شاهد آزمون اجراشدهٔ مختص این کنترل برای source جاری ثبت نشده است.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V15.2.1",
+      "status": "FAIL",
+      "classification": "SUPPLY_CHAIN_REQUIRED",
+      "reason": "اسکن واقعی تصویر و lock وابستگی‌ها آسیب‌پذیری‌های باز دارد؛ Node/OS و upload dependencies اصلاح و toolchain غیرضروری حذف شدند ولی remediation تمام یافته‌ها و SLA مشتری بسته نیست.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V15.2.5",
+      "status": "NOT_VERIFIED",
+      "classification": "DEPLOYMENT_EVIDENCE_REQUIRED",
+      "reason": "Linux namespace و scratch خصوصی در آزمون parser اجرا شدند؛ isolation و limits میزبان استقرار مشتری هنوز اثبات نشده‌اند.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V15.3.1",
+      "status": "NOT_VERIFIED",
+      "classification": "TEST_EVIDENCE_REQUIRED",
+      "reason": "شاهد آزمون اجراشدهٔ مختص این کنترل برای source جاری ثبت نشده است.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V15.3.6",
+      "status": "NOT_VERIFIED",
+      "classification": "TEST_EVIDENCE_REQUIRED",
+      "reason": "شاهد آزمون اجراشدهٔ مختص این کنترل برای source جاری ثبت نشده است.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V15.3.7",
+      "status": "NOT_VERIFIED",
+      "classification": "TEST_EVIDENCE_REQUIRED",
+      "reason": "schema body و header مشخص هستند؛ تست exhaustive duplicate query/header/transport parser pollution هنوز ثبت نشده است.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V15.4.2",
+      "status": "NOT_VERIFIED",
+      "classification": "TEST_EVIDENCE_REQUIRED",
+      "reason": "job lease و Document snapshot publication fence آزموده شدند؛ atomicity دقیق grant revocation و materialization/provider dispatch در تمام interleavingها اثبات نشده است.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V15.4.4",
+      "status": "NOT_VERIFIED",
+      "classification": "TEST_EVIDENCE_REQUIRED",
+      "reason": "capacity bounded است؛ starvation/fairness بلندمدت با actorهای متعدد و حجم production آزموده نشده است.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V16.1.1",
+      "status": "NOT_VERIFIED",
+      "classification": "DEPLOYMENT_EVIDENCE_REQUIRED",
+      "reason": "inventory برنامه/DB/SIEM در گزارش فارسی آمده؛ destination، access و retention همهٔ لایه‌های مشتری مشخص نیست.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V16.2.2",
+      "status": "NOT_VERIFIED",
+      "classification": "DEPLOYMENT_EVIDENCE_REQUIRED",
+      "reason": "timestampها UTC هستند؛ هم‌زمانی NTP تمام hostها و dependencies مشتری اثبات نشده است.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V16.2.3",
+      "status": "NOT_VERIFIED",
+      "classification": "DEPLOYMENT_EVIDENCE_REQUIRED",
+      "reason": "برنامه stdout، canonical PG و selected SIEM دارد؛ agentهای log و retention destination واقعی هنوز بررسی نشده‌اند.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V16.3.2",
+      "status": "NOT_VERIFIED",
+      "classification": "TEST_EVIDENCE_REQUIRED",
+      "reason": "خانواده‌های فاقد شاهد کامل ALLOW/DENY/Audit/SIEM: Document discover؛ Document read؛ Document download؛ Document use؛ Document quote؛ Document manage؛ Knowledge Space access؛ RAG coarse use authorization؛ final RAG candidate authorization؛ File Management download؛ File Management internal materialization/use؛ tenant deny؛ ACL deny؛ classification deny؛ revoked subject.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V16.4.1",
+      "status": "NOT_VERIFIED",
+      "classification": "TEST_EVIDENCE_REQUIRED",
+      "reason": "شاهد آزمون اجراشدهٔ مختص این کنترل برای source جاری ثبت نشده است.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V16.4.2",
+      "status": "NOT_VERIFIED",
+      "classification": "DEPLOYMENT_EVIDENCE_REQUIRED",
+      "reason": "DB audit immutability برای API/Worker موفق است؛ حفاظت stdout، host collector و destination مشتری آزموده نشده است.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V16.4.3",
+      "status": "NOT_VERIFIED",
+      "classification": "DEPLOYMENT_EVIDENCE_REQUIRED",
+      "reason": "receiver مستقل TLS در fixture موفق است؛ SOC واقعی، ACL/retention و جدایی کامل deployment تأیید نشده است.",
+      "directEvidence": null
+    },
+    {
+      "id": "v5.0.0-V16.5.4",
+      "status": "NOT_VERIFIED",
+      "classification": "DEPLOYMENT_EVIDENCE_REQUIRED",
+      "reason": "last-resort handler payload را log نمی‌کند و با drain/exit fail-closed برای supervisor جایگزین می‌شود؛ availability و restart policy همهٔ entrypointها در deployment واقعی هنوز اثبات نشده است.",
+      "directEvidence": null
+    }
+  ]
+}

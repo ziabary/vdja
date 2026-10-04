@@ -13,7 +13,7 @@ export function enabledPublicModules(snapshot:intfConfigurationSnapshot):readonl
 export function publicBrand(snapshot:intfConfigurationSnapshot):intfBrandProjection{
   const {brand}=snapshot.value;
   return parsePublicBrand({version:snapshot.fingerprint.slice(0,12),displayName:brand.displayName,shortName:brand.shortName,
-    primaryColor:brand.primaryColor,logoLight:{path:brand.logo,alt:brand.displayName},logoDark:{path:brand.logo,alt:brand.displayName},
+    primaryColor:brand.primaryColor,logoLight:{path:brand.logoLight??brand.logo,alt:brand.displayName},logoDark:{path:brand.logo,alt:brand.displayName},
     favicon:brand.favicon,supportUrl:brand.supportUrl,legalUrl:brand.legalUrl});
 }
 export function enabledUiModules(snapshot:intfConfigurationSnapshot):readonly typUiModuleId[]{return enabledPublicModules(snapshot) as readonly typUiModuleId[];}

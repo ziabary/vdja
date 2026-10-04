@@ -1,0 +1,45 @@
+{
+  "generatedAt": "2026-10-04T12:52:32.380Z",
+  "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a",
+  "verificationContractHash": "17f13383778b2511b16aa6e88d1aea5909a499bf9891e0a7a2f539c84e834b80",
+  "directEvidenceStatus": "PASS",
+  "platformChecks": {
+    "authorityBeforeRetrieval": true,
+    "finalCandidateBeforeMaterialization": true,
+    "tenantAndClassificationIsolation": true,
+    "rerankerAndLlmExclusion": true,
+    "citationAndQuote": true,
+    "protectedEgress": true,
+    "boundedContext": true,
+    "promptInjectionPlatform": true,
+    "browserEscaping": true,
+    "auditAndSiem": true
+  },
+  "genaiChecks": {
+    "authorityBeforeRetrieval": true,
+    "finalCandidateBeforeMaterialization": true,
+    "tenantAndClassificationIsolation": true,
+    "rerankerAndLlmExclusion": true,
+    "citationAndQuote": true,
+    "protectedEgress": true,
+    "boundedContext": true,
+    "promptInjectionPlatform": true,
+    "browserEscaping": true,
+    "auditAndSiem": true,
+    "actualApprovedModels": false,
+    "actualModelBrowser": false
+  },
+  "GENAI_RAG_SECURITY_GATE": "FAIL",
+  "T5_COMPLETION_SECURITY_GATE": "FAIL",
+  "ASVS_L3_RELEASE_GATE": "NO",
+  "checks": {
+    "sourceCurrent": true,
+    "asvsCurrent": true,
+    "inventoryCurrent": true,
+    "ociCurrent": true,
+    "supplyCurrent": true,
+    "modelCurrent": false,
+    "protectedCurrent": true
+  },
+  "modelReason": "ACTUAL_APPROVED_MODEL_CONFIG_REQUIRED"
+}

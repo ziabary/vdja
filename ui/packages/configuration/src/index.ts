@@ -1,3 +1,4 @@
+import {enuMalwareMode,type intfMalwareConfiguration} from '../../file-processing/src/malware.js';
 import { createHash } from 'node:crypto';
 import { readFile, realpath } from 'node:fs/promises';
 import { resolve, sep } from 'node:path';
@@ -31,10 +32,10 @@ export type typFileManagementConfiguration = Readonly<{ enabled: false }> | Read
   downloads: Readonly<{ ranges: boolean; conditional: boolean; maxConcurrent: number }>;
   cache: Readonly<{ scope: 'REPLICA_PRIVATE'; root: string; maxBytes: number; maxEntries: number; ttlMs: number; timeoutMs: number }>;
   staging: Readonly<{ root: string; maxBytes: number }>;
-  security: Readonly<{ privateOnly: true; integrityRequired: true }>;
+  security: Readonly<{ privateOnly: true; integrityRequired: true; malware?:intfMalwareConfiguration }>;
 }>;
-export interface intfBrandConfiguration { readonly displayName: string; readonly shortName: string; readonly logo: string; readonly favicon: string; readonly primaryColor: string; readonly supportUrl: string; readonly legalUrl: string }
-export interface intfDatabaseConfiguration { readonly host: string; readonly port: number; readonly name: string; readonly apiUser: string; readonly workerUser: string; readonly migrationUser: string; readonly apiPasswordRef: typSecretRef; readonly workerPasswordRef: typSecretRef; readonly migrationPasswordRef: typSecretRef; readonly maxConnections: number }
+export interface intfBrandConfiguration { readonly displayName: string; readonly shortName: string; readonly logo: string; readonly logoLight?: string; readonly favicon: string; readonly primaryColor: string; readonly supportUrl: string; readonly legalUrl: string }
+export interface intfDatabaseConfiguration { readonly host: string; readonly port: number; readonly name: string; readonly apiUser: string; readonly workerUser: string; readonly migrationUser: string; readonly apiPasswordRef: typSecretRef; readonly workerPasswordRef: typSecretRef; readonly migrationPasswordRef: typSecretRef; readonly maxConnections: number; readonly tls?:Readonly<{caRef:typSecretRef;serverName:string}> }
 export interface intfAiEndpointConfiguration { readonly id: string; readonly enabled: boolean; readonly provider: 'OPENAI_COMPATIBLE'; readonly baseUrl: string; readonly model: string; readonly capabilities: readonly typAiTask[]; readonly priority: number; readonly weight: number; readonly maxConcurrent: number; readonly connectTimeoutMs: number; readonly firstTokenTimeoutMs: number; readonly totalTimeoutMs: number; readonly credentialRef?: typSecretRef }
 export interface intfAiTaskPolicy { readonly preferredEndpoints: readonly string[]; readonly maxAttempts: number; readonly circuitFailureThreshold: number; readonly circuitOpenMs: number }
 export interface intfAdmissionPolicy { readonly requestsPerMinute: number; readonly concurrent: number; readonly dailyRequests: number; readonly dailyInputChars: number; readonly inputChars: number; readonly uploadBytes: number; readonly outputTokens: number; readonly tokenBudget: number }
@@ -48,6 +49,12 @@ export interface intfSessionSecurityPolicy {
 export type typBreachProvider = Readonly<{ kind: 'LOCAL_SHA1'; directory: string }>
   | Readonly<{ kind: 'RANGE_API'; baseUrl: string; timeoutMs: number }>;
 export interface intfPasswordConfiguration { readonly contextWords: readonly string[]; readonly compromised: typBreachProvider }
+export enum enuAuthenticationMethod { OrganizationalOidc = 'ORGANIZATIONAL_OIDC', LegacyKey = 'LEGACY_KEY', DevelopmentPassword = 'DEVELOPMENT_PASSWORD' }
+export interface intfOidcConfiguration { readonly enabled: boolean; readonly issuer?: string; readonly clientId?: string;
+  readonly clientSecretRef?: typSecretRef; readonly scopes?: readonly string[]; readonly callbackUri?: string;
+  readonly provisioning?: 'DISABLED' | 'DEVELOPMENT'; }
+export interface intfLegacyKeyConfiguration { readonly enabled: boolean; readonly selfProvision: boolean;
+  readonly onboardingTenantId?: string; readonly onboardingRoleId?: string }
 export type typAuthConfiguration = Readonly<{ enabled: false }> | Readonly<{
   enabled: true; issuer: string; audience: string; accessTokenSeconds: number;
   publicOrigin: string; allowedApplicationOrigins: readonly string[];
@@ -57,6 +64,7 @@ export type typAuthConfiguration = Readonly<{ enabled: false }> | Readonly<{
   privilegedAdmission: Readonly<Record<typModuleId, intfAdmissionPolicy>>;
   activeKid: string; privateKeyRef: typSecretRef;
   publicKeys: readonly Readonly<{ kid: string; publicKeyRef: typSecretRef }>[];
+  methods?: Readonly<{ organizationalOidc: intfOidcConfiguration; legacyKey: intfLegacyKeyConfiguration; developmentPassword: boolean }>;
 }>;
 export interface intfPlatformConfiguration {
   readonly configVersion: 1;
@@ -174,7 +182,7 @@ export function validateFileManagement(value: unknown, deploymentId: string, max
   for (const directory of directories) for (const other of directories)
     if (directory !== other && directory.startsWith(`${other}/`)) fail(path, 'canonical storage, staging and cache must have separate directories');
   if (new Set(directories).size !== directories.length) fail(path, 'canonical storage, staging and cache must have separate directories');
-  const security = object(x.security, `${path}.security`, ['privateOnly', 'integrityRequired']);
+  const security = object(x.security, `${path}.security`, ['privateOnly', 'integrityRequired','malware']);
   if (security.privateOnly !== true || security.integrityRequired !== true) fail(`${path}.security`, 'private storage and integrity verification are mandatory');
   let limitTiers: Extract<typFileManagementConfiguration, { enabled: true }>['limitTiers'];
   if (x.limitTiers !== undefined) {
@@ -192,7 +200,16 @@ export function validateFileManagement(value: unknown, deploymentId: string, max
     for (const key of ['maxBytes', 'maxConcurrent', 'maxPendingBytes', 'maxStorageBytes', 'maxAssets'] as const)
       if (limitTiers.privileged[key] < limitTiers.authenticated[key]) fail(`${path}.limitTiers.privileged.${key}`, 'must be at least authenticated limit');
   }
-  return { enabled: true, storage, uploads, downloads, cache, staging, ...(limitTiers ? { limitTiers } : {}), security: { privateOnly: true, integrityRequired: true } };
+  let malware:intfMalwareConfiguration|undefined;
+  if(security.malware===undefined)fail(`${path}.security.malware`,'explicit scanning policy required');
+  if(security.malware!==undefined){
+    const m=object(security.malware,`${path}.security.malware`,['mode','socketPath','timeoutMs','maxBytes','policyVersion']);
+    if(!Object.values(enuMalwareMode).includes(m.mode as enuMalwareMode))fail(`${path}.security.malware.mode`,'explicit malware policy required');
+    const socketPath=m.socketPath===undefined?undefined:string(m.socketPath,`${path}.security.malware.socketPath`);
+    if(m.mode!==enuMalwareMode.Disabled&&(!socketPath||!socketPath.startsWith('/')||socketPath.includes('..')))fail(`${path}.security.malware.socketPath`,'absolute private Unix socket required');
+    malware={mode:m.mode as enuMalwareMode,...(socketPath?{socketPath}:{}),timeoutMs:integer(m.timeoutMs,`${path}.security.malware.timeoutMs`,1,900000),maxBytes:integer(m.maxBytes,`${path}.security.malware.maxBytes`,1,maxUploadBytes),policyVersion:identifier(m.policyVersion,`${path}.security.malware.policyVersion`)};
+  }
+  return { enabled: true, storage, uploads, downloads, cache, staging, ...(limitTiers ? { limitTiers } : {}), security: { privateOnly: true, integrityRequired: true,...(malware?{malware}:{}) } };
 }
 
 // JSON-with-comments parser adapted from Sepidjoo's string-aware comment scan.
@@ -214,15 +231,17 @@ export function parseCjson(input: string): unknown {
 }
 
 function brand(value: unknown): intfBrandConfiguration {
-  const x = object(value, 'brand', ['displayName', 'shortName', 'logo', 'favicon', 'primaryColor', 'supportUrl', 'legalUrl']);
-  const asset = (key: 'logo' | 'favicon'): string => { const v = string(x[key], `brand.${key}`, 256); if (!/^\/brand\/[A-Za-z0-9][A-Za-z0-9/_-]*\.(?:svg|png|ico|webp)$/.test(v) || v.includes('..')) fail(`brand.${key}`, 'expected safe /brand/ asset path'); return v; };
+  const x = object(value, 'brand', ['displayName', 'shortName', 'logo', 'logoLight', 'favicon', 'primaryColor', 'supportUrl', 'legalUrl']);
+  const asset = (key: 'logo' | 'logoLight' | 'favicon'): string => { const v = string(x[key], `brand.${key}`, 256); if (!/^\/brand\/[A-Za-z0-9][A-Za-z0-9/_-]*\.(?:svg|png|ico|webp)$/.test(v) || v.includes('..')) fail(`brand.${key}`, 'expected safe /brand/ asset path'); return v; };
   const primaryColor = string(x.primaryColor, 'brand.primaryColor', 7);
   if (!/^#[0-9a-fA-F]{6}$/.test(primaryColor)) fail('brand.primaryColor', 'expected #RRGGBB');
-  return { displayName: string(x.displayName, 'brand.displayName'), shortName: string(x.shortName, 'brand.shortName'), logo: asset('logo'), favicon: asset('favicon'), primaryColor, supportUrl: url(x.supportUrl, 'brand.supportUrl', ['https:']), legalUrl: url(x.legalUrl, 'brand.legalUrl', ['https:']) };
+  return { displayName: string(x.displayName, 'brand.displayName'), shortName: string(x.shortName, 'brand.shortName'), logo: asset('logo'), ...(x.logoLight===undefined?{}:{logoLight:asset('logoLight')}), favicon: asset('favicon'), primaryColor, supportUrl: url(x.supportUrl, 'brand.supportUrl', ['https:']), legalUrl: url(x.legalUrl, 'brand.legalUrl', ['https:']) };
 }
 function database(value: unknown): intfDatabaseConfiguration {
-  const x = object(value, 'database', ['host', 'port', 'name', 'apiUser', 'workerUser', 'migrationUser', 'apiPasswordRef', 'workerPasswordRef', 'migrationPasswordRef', 'maxConnections']);
-  return { host: string(x.host, 'database.host'), port: integer(x.port, 'database.port', 1, 65535), name: databaseIdentifier(x.name, 'database.name'), apiUser: databaseIdentifier(x.apiUser, 'database.apiUser'), workerUser: databaseIdentifier(x.workerUser, 'database.workerUser'), migrationUser: databaseIdentifier(x.migrationUser, 'database.migrationUser'), apiPasswordRef: secret(x.apiPasswordRef, 'database.apiPasswordRef'), workerPasswordRef: secret(x.workerPasswordRef, 'database.workerPasswordRef'), migrationPasswordRef: secret(x.migrationPasswordRef, 'database.migrationPasswordRef'), maxConnections: integer(x.maxConnections, 'database.maxConnections', 1, 100) };
+  const x = object(value, 'database', ['host', 'port', 'name', 'apiUser', 'workerUser', 'migrationUser', 'apiPasswordRef', 'workerPasswordRef', 'migrationPasswordRef', 'maxConnections','tls']);
+  let tls:intfDatabaseConfiguration['tls'];
+  if(x.tls!==undefined){const t=object(x.tls,'database.tls',['caRef','serverName']);const serverName=string(t.serverName,'database.tls.serverName',253);if(!/^[a-zA-Z0-9](?:[a-zA-Z0-9.-]*[a-zA-Z0-9])?$/u.test(serverName))fail('database.tls.serverName','expected certificate DNS name');tls={caRef:secret(t.caRef,'database.tls.caRef'),serverName};}
+  return { host: string(x.host, 'database.host'), port: integer(x.port, 'database.port', 1, 65535), name: databaseIdentifier(x.name, 'database.name'), apiUser: databaseIdentifier(x.apiUser, 'database.apiUser'), workerUser: databaseIdentifier(x.workerUser, 'database.workerUser'), migrationUser: databaseIdentifier(x.migrationUser, 'database.migrationUser'), apiPasswordRef: secret(x.apiPasswordRef, 'database.apiPasswordRef'), workerPasswordRef: secret(x.workerPasswordRef, 'database.workerPasswordRef'), migrationPasswordRef: secret(x.migrationPasswordRef, 'database.migrationPasswordRef'), maxConnections: integer(x.maxConnections, 'database.maxConnections', 1, 100),...(tls?{tls}:{}) };
 }
 function endpoint(value: unknown, index: number): intfAiEndpointConfiguration {
   const path = `ai.endpoints[${index}]`, x = object(value, path, ['id', 'enabled', 'provider', 'baseUrl', 'model', 'capabilities', 'priority', 'weight', 'maxConcurrent', 'connectTimeoutMs', 'firstTokenTimeoutMs', 'totalTimeoutMs', 'credentialRef']);
@@ -275,9 +294,9 @@ function siem(value: unknown): intfSiemConfiguration {
   return { enabled, destinationId: identifier(x.destinationId, 'siem.destinationId'), url: enabled ? url(x.url, 'siem.url', ['https:']) : typeof x.url === 'string' ? x.url : '', ...(credentialRef ? { credentialRef } : {}), timeoutMs: integer(x.timeoutMs, 'siem.timeoutMs', 100, 120000), maxAttempts: integer(x.maxAttempts, 'siem.maxAttempts', 1, 20), events, deliveryGuarantee: deliveryGuarantee as intfSiemConfiguration['deliveryGuarantee'] };
 }
 
-function auth(value: unknown, maxUploadBytes: number, derivedContextWords: readonly string[]): typAuthConfiguration | undefined {
+function auth(value: unknown, maxUploadBytes: number, derivedContextWords: readonly string[], deploymentId: string, tenantId: string): typAuthConfiguration | undefined {
   if (value === undefined) return undefined;
-  const x = object(value, 'auth', ['enabled', 'issuer', 'audience', 'accessTokenSeconds', 'publicOrigin', 'allowedApplicationOrigins', 'session', 'password', 'authenticatedAdmission', 'privilegedAdmission', 'activeKid', 'privateKeyRef', 'publicKeys']);
+  const x = object(value, 'auth', ['enabled', 'issuer', 'audience', 'accessTokenSeconds', 'publicOrigin', 'allowedApplicationOrigins', 'session', 'password', 'authenticatedAdmission', 'privilegedAdmission', 'activeKid', 'privateKeyRef', 'publicKeys', 'methods']);
   if (!bool(x.enabled, 'auth.enabled')) {
     if (Object.keys(x).length !== 1) fail('auth', 'disabled auth must contain only enabled');
     return { enabled: false };
@@ -288,6 +307,33 @@ function auth(value: unknown, maxUploadBytes: number, derivedContextWords: reado
   const allowedApplicationOrigins = list(x.allowedApplicationOrigins, 'auth.allowedApplicationOrigins').map((item, index) => origin(item, `auth.allowedApplicationOrigins[${index}]`));
   if (!allowedApplicationOrigins.length || allowedApplicationOrigins.some(item => !item.startsWith('https://'))) fail('auth.allowedApplicationOrigins', 'at least one HTTPS application origin required');
   unique(allowedApplicationOrigins, 'auth.allowedApplicationOrigins');
+  let methods: Extract<typAuthConfiguration, { enabled: true }>['methods'];
+  if (x.methods !== undefined) {
+    const raw = object(x.methods, 'auth.methods', ['organizationalOidc','legacyKey','developmentPassword']);
+    const oidc = object(raw.organizationalOidc, 'auth.methods.organizationalOidc', ['enabled','issuer','clientId','clientSecretRef','scopes','callbackUri','provisioning']);
+    const legacy = object(raw.legacyKey, 'auth.methods.legacyKey', ['enabled','selfProvision','onboardingTenantId','onboardingRoleId']);
+    const oidcEnabled = bool(oidc.enabled, 'auth.methods.organizationalOidc.enabled');
+    const legacyEnabled = bool(legacy.enabled, 'auth.methods.legacyKey.enabled');
+    const selfProvision = bool(legacy.selfProvision, 'auth.methods.legacyKey.selfProvision');
+    const developmentPassword = bool(raw.developmentPassword, 'auth.methods.developmentPassword');
+    if (selfProvision && (!legacyEnabled || deploymentId !== 'development')) fail('auth.methods.legacyKey.selfProvision', 'development only');
+    const onboardingTenantId = legacy.onboardingTenantId === undefined ? undefined : identifier(legacy.onboardingTenantId, 'auth.methods.legacyKey.onboardingTenantId');
+    if (selfProvision && onboardingTenantId !== tenantId) fail('auth.methods.legacyKey.onboardingTenantId', 'explicit deployment tenant required');
+    const onboardingRoleId=legacy.onboardingRoleId===undefined?undefined:string(legacy.onboardingRoleId,'auth.methods.legacyKey.onboardingRoleId',36);
+    if(selfProvision&&(!onboardingRoleId||!/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/.test(onboardingRoleId)))
+      fail('auth.methods.legacyKey.onboardingRoleId','explicit Authority role UUID required');
+    if (developmentPassword && deploymentId !== 'development' && !deploymentId.startsWith('test-')) fail('auth.methods.developmentPassword', 'development only');
+    const callbackUri = oidcEnabled ? url(oidc.callbackUri, 'auth.methods.organizationalOidc.callbackUri', ['https:']) : undefined;
+    if (oidcEnabled && new URL(callbackUri!).origin !== publicOrigin) fail('auth.methods.organizationalOidc.callbackUri', 'Auth origin required');
+    const scopes = oidcEnabled ? list(oidc.scopes, 'auth.methods.organizationalOidc.scopes').map((item,index)=>string(item, `auth.methods.organizationalOidc.scopes[${index}]`,64)) : undefined;
+    if (oidcEnabled && !scopes?.includes('openid')) fail('auth.methods.organizationalOidc.scopes', 'openid required');
+    const provisioning = oidcEnabled ? (oidc.provisioning ?? 'DISABLED') : undefined;
+    if (provisioning !== undefined && !['DISABLED','DEVELOPMENT'].includes(String(provisioning))) fail('auth.methods.organizationalOidc.provisioning','invalid policy');
+    if (provisioning === 'DEVELOPMENT') fail('auth.methods.organizationalOidc.provisioning','automatic provisioning is not configured; import an issuer+subject mapping');
+    methods = { organizationalOidc: oidcEnabled ? {enabled:true,issuer:url(oidc.issuer,'auth.methods.organizationalOidc.issuer',['https:']),clientId:string(oidc.clientId,'auth.methods.organizationalOidc.clientId'),
+      ...(oidc.clientSecretRef ? { clientSecretRef:secret(oidc.clientSecretRef,'auth.methods.organizationalOidc.clientSecretRef') } : {}),scopes:scopes!,callbackUri:callbackUri!,provisioning:provisioning as 'DISABLED'|'DEVELOPMENT'} : {enabled:false},
+      legacyKey:{enabled:legacyEnabled,selfProvision,...(onboardingTenantId?{onboardingTenantId}:{}),...(onboardingRoleId?{onboardingRoleId}:{})},developmentPassword };
+  }
   const audience = string(x.audience, 'auth.audience', 100);
   const accessTokenSeconds = integer(x.accessTokenSeconds, 'auth.accessTokenSeconds', 1, 300);
   const sessionRaw = object(x.session, 'auth.session', ['absoluteLifetimeSeconds', 'refreshLifetimeSeconds', 'inactivityLifetimeSeconds']);
@@ -328,7 +374,7 @@ function auth(value: unknown, maxUploadBytes: number, derivedContextWords: reado
   unique(publicKeys.map(key => key.kid), 'auth.publicKeys');
   if (!publicKeys.some(key => key.kid === activeKid)) fail('auth.activeKid', 'no matching public key');
   return { enabled: true, issuer, audience, accessTokenSeconds, publicOrigin, allowedApplicationOrigins, session, password, authenticatedAdmission, privilegedAdmission, activeKid,
-    privateKeyRef: secret(x.privateKeyRef, 'auth.privateKeyRef'), publicKeys };
+    privateKeyRef: secret(x.privateKeyRef, 'auth.privateKeyRef'), publicKeys, ...(methods ? { methods } : {}) };
 }
 
 export function validateConfiguration(value: unknown): intfPlatformConfiguration {
@@ -374,11 +420,14 @@ export function validateConfiguration(value: unknown): intfPlatformConfiguration
   } };
   const branded = brand(root.brand);
   const authConfig = auth(root.auth, fileProcessing.maxUploadBytes,
-    [branded.displayName, branded.shortName, deployment.id, deployment.tenantId]);
+    [branded.displayName, branded.shortName, deployment.id, deployment.tenantId], deployment.id, deployment.tenantId);
   const fileManagement = root.fileManagement === undefined ? undefined : validateFileManagement(root.fileManagement, deployment.id, fileProcessing.maxUploadBytes);
+  if(fileManagement?.enabled&&assuranceProfile==='CUSTOMER_L3'&&fileManagement.security.malware?.mode!==enuMalwareMode.Required)fail('fileManagement.security.malware.mode','CUSTOMER_L3 requires malware scanning');
   if (fileManagement?.enabled && !authConfig?.enabled) fail('fileManagement.enabled', 'managed files require authenticated Identity/Session contracts');
-  if (knowledge?.enabled && (!authConfig?.enabled || !fileManagement?.enabled || !aiConfig.protected || !dataGovernance))
-    fail('knowledge.enabled', 'authenticated File Management, protected AI registry and explicit Data Governance required');
+  if (knowledge?.enabled && (!authConfig?.enabled || !fileManagement?.enabled))
+    fail('knowledge.enabled', 'authenticated File Management required');
+  if (knowledge?.enabled && (!aiConfig.protected || !dataGovernance) && deployment.id !== 'development')
+    fail('knowledge.enabled', 'protected AI registry and explicit Data Governance required');
   if (authConfig?.enabled) {
     if (!web || !web.publicOrigin.startsWith('https://')) fail('web.publicOrigin', 'HTTPS application origin required with Auth');
     if (!authConfig.allowedApplicationOrigins.includes(web.publicOrigin) || !http.allowedOrigins.includes(web.publicOrigin))
@@ -393,7 +442,7 @@ export function validateConfiguration(value: unknown): intfPlatformConfiguration
   const worker = { pollMs: integer(w.pollMs, 'worker.pollMs', 100, 60000), claimLeaseMs: integer(w.claimLeaseMs, 'worker.claimLeaseMs', 1000, 3600000), ...(workerIdentity ? { identityId: workerIdentity } : {}) };
   const o = object(root.observability, 'observability', ['level']); if (!['INFO', 'WARN', 'ERROR'].includes(String(o.level))) fail('observability.level', 'invalid level');
   const a = object(root.audit, 'audit', ['retentionDays']), u = object(root.usage, 'usage', ['retentionDays']), r = object(root.retention, 'retention', ['policyRef']);
-  return { configVersion: 1, deployment, modules, brand: branded, ...(web ? { web } : {}), database: database(root.database), ai: aiConfig, ...(dataGovernance ? { dataGovernance } : {}), ...(knowledge ? { knowledge } : {}), admission: admission(root.admission, fileProcessing.maxUploadBytes), siem: siem(root.siem), security, ...(root.auth === undefined ? {} : { auth: authConfig }), fileProcessing, ...(fileManagement ? { fileManagement } : {}), http, worker, observability: { level: o.level as 'INFO' | 'WARN' | 'ERROR' }, audit: { retentionDays: integer(a.retentionDays, 'audit.retentionDays', 1, 36500) }, usage: { retentionDays: integer(u.retentionDays, 'usage.retentionDays', 1, 36500) }, retention: { policyRef: string(r.policyRef, 'retention.policyRef') } };
+  return { configVersion: 1, deployment, modules, brand: branded, ...(web ? { web } : {}), database: database(root.database), ai: aiConfig, ...(dataGovernance ? { dataGovernance } : {}), ...(knowledge ? { knowledge } : {}), admission: admission(root.admission, fileProcessing.maxUploadBytes), siem: siem(root.siem), security, ...(authConfig === undefined ? {} : { auth: authConfig }), fileProcessing, ...(fileManagement ? { fileManagement } : {}), http, worker, observability: { level: o.level as 'INFO' | 'WARN' | 'ERROR' }, audit: { retentionDays: integer(a.retentionDays, 'audit.retentionDays', 1, 36500) }, usage: { retentionDays: integer(u.retentionDays, 'usage.retentionDays', 1, 36500) }, retention: { policyRef: string(r.policyRef, 'retention.policyRef') } };
 }
 
 function canonical(value: unknown): unknown {

@@ -1,3 +1,4 @@
+import {clsLinuxParserSandbox,exParserSandbox} from './sandbox.js';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { readFile, lstat, realpath, mkdtemp, copyFile, stat, rm, open } from 'node:fs/promises';
@@ -5,7 +6,6 @@ import { constants } from 'node:fs';
 import { extname, join, resolve, sep } from 'node:path';
 import { tmpdir } from 'node:os';
 import { pathToFileURL } from 'node:url';
-import * as pdfjs from 'pdfjs-dist/legacy/build/pdf.mjs';
 import { precheckOfficeArchive, type intfArchiveLimits } from './office-archive.js';
 
 const run = promisify(execFile);
@@ -92,44 +92,6 @@ export async function extractText(file: intfUploadedFile, limits: intfFileLimits
     let content: string; try { content = new TextDecoder('utf-8', { fatal: true }).decode(bytes); } catch { throw new exFileProcessing('INVALID_FILE'); }
     return { text: content.slice(0, maxChars), pageCount: 1, stripped: content.length > maxChars, processor: 'utf8-v1' };
   }
-  if (ext === '.pdf') {
-    const task = pdfjs.getDocument({ data: new Uint8Array(bytes), disableFontFace: true, useSystemFonts: true });
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    const deadline = new Promise<never>((_resolve, reject) => {
-      timer = setTimeout(() => { void task.destroy().catch(() => undefined); reject(new exFileProcessing('EXTRACTION_FAILED')); }, 30_000);
-    });
-    const parse = async (): Promise<intfExtractedText> => {
-      let document: Awaited<typeof task.promise>;
-      try { document = await task.promise; }
-      catch { throw new exFileProcessing('INVALID_FILE'); }
-      try {
-        if (document.numPages > limits.maxPages) throw new exFileProcessing('PAGE_LIMIT');
-        const parts: string[] = []; let length = 0, stripped = false;
-        for (let pageNo = 1; pageNo <= document.numPages; pageNo += 1) {
-          const page = await document.getPage(pageNo);
-          const content = await page.getTextContent();
-          const text = content.items.map(item => 'str' in item ? item.str : '').join(' ');
-          const chunk = `${pageNo > 1 ? `\n<!-- PAGE ${pageNo} -->\n` : ''}${text}`;
-          if (length + chunk.length > maxChars) { parts.push(chunk.slice(0, maxChars - length)); stripped = true; break; }
-          parts.push(chunk); length += chunk.length;
-        }
-        return { text: parts.join(''), pageCount: document.numPages, stripped, processor: 'pdfjs-v1' };
-      } finally { await document.destroy(); }
-    };
-    try { return await Promise.race([parse(), deadline]); }
-    finally { if (timer) clearTimeout(timer); }
-  }
-  const directory = await mkdtemp(join(tmpdir(), 'targoman-doc-'));
-  const officeProfile = join(tmpdir(), `targoman-lo-${directory.split(sep).pop()}`);
-  try {
-    const input = join(directory, `input${ext}`), output = join(directory, 'input.txt');
-    await copyFile(actual, input);
-    try { await run('libreoffice', [`-env:UserInstallation=${pathToFileURL(officeProfile).href}`, '--headless', '--convert-to', 'txt:Text', '--outdir', directory, input], { timeout: 30000, maxBuffer: 100000 }); }
-    catch { throw new exFileProcessing('EXTRACTION_FAILED'); }
-    const meta = await stat(output).catch(() => null);
-    if (!meta || meta.size > limits.maxExtractedChars * 8) throw new exFileProcessing('EXTRACTION_FAILED');
-    const content = new TextDecoder('utf-8', { fatal: false }).decode(await readFile(output));
-    return { text: content.slice(0, maxChars), pageCount: 1, stripped: content.length > maxChars, processor: 'libreoffice-v1' };
-  } finally { await Promise.all([rm(directory, { recursive: true, force: true }),
-    rm(officeProfile, { recursive: true, force: true })]); }
+  try{return await new clsLinuxParserSandbox().extract(actual,ext,maxChars,limits.maxPages);}
+  catch(error){throw new exFileProcessing(error instanceof exParserSandbox&&error.code==='PAGE_LIMIT'?'PAGE_LIMIT':'EXTRACTION_FAILED');}
 }

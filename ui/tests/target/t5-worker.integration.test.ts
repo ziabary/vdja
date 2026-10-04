@@ -14,7 +14,7 @@ const config=process.env.T4_PG_CONFIG,secrets=process.env.T4_SECRETS_DIR;
 if(process.env.T5_REQUIRE_LIVE==='1'&&(!config||!secrets))throw new Error('T5_LIVE_CONFIGURATION_REQUIRED');
 test('durable Worker heartbeat, claim replacement, shutdown, bounded retry and original Session revocation',{skip:!config||!secrets,timeout:30000},async t=>{
   const snapshot=await loadConfiguration(config!),api=await createTargetPool(snapshot,'api',secrets),worker=await createTargetPool(snapshot,'worker',secrets),migration=await createTargetPool(snapshot,'migration',secrets);
-  const identity=await createT5Subject(snapshot,migration,api,worker),context=identity.context,serviceId=randomUUID(),membershipId=randomUUID();
+  const identity=await createT5Subject(snapshot,migration,api,worker,`worker-${randomUUID()}`),context=identity.context,serviceId=randomUUID(),membershipId=randomUUID();
   const machine={...context,actorKind:'PLATFORM_SERVICE' as const,actorId:serviceId,sessionId:null,source:'T5_DURABLE_WORKER'};
   const transactions=createTransactionPort(worker),apiTransactions=createTransactionPort(api),jobs=createJobPersistence(),audit=createSemanticAuditPersistence({...snapshot.value.siem,enabled:false});
   await withTargetTransaction(migration,context,async tx=>{await tx.query("INSERT INTO identity.tbl_idn_identity(idn_id,idn_kind,idn_display_name) VALUES ($1,'PLATFORM_SERVICE','T5 heartbeat Worker')",[serviceId]);await tx.query('INSERT INTO identity.tbl_idn_membership(idm_id,idm_identity__idn_id,idm_tenant_id) VALUES ($1,$2,$3)',[membershipId,serviceId,context.tenantId]);});

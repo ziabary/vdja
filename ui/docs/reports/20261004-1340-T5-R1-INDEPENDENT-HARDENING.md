@@ -2,366 +2,218 @@
 
 - Report Path: /home/user/Projects/vadja/ui/docs/reports/20261004-1340-T5-R1-INDEPENDENT-HARDENING.md
 - Created At: 2026-10-04T10:10:45.357Z
-- Status: IN_PROGRESS
+- Status: PARTIAL
 
 ## Purpose and Scope
 
-- Purpose: T5-R1-INDEPENDENT-HARDENING
-- Scope: Repository-modifying task for architecture guardrails and conformance enforcement.
+Complete the T5-R1 independent hardening prompt and reassess current evidence without changing protected governing sources.
 
 ## Governing Sources
 
-- AGENTS.md
-- docs/architecture/00-manifest.md
-- docs/architecture/01-system-architecture.md
-- docs/architecture/02-engineering-conventions.md
-- docs/architecture/03-persistence-and-database.md
-- docs/architecture/04-authorization-model.md
-- docs/architecture/05-module-architecture.md
-- docs/architecture/06-document-and-rag.md
-- docs/architecture/07-ai-router.md
-- docs/architecture/08-deployment-architecture.md
-- docs/architecture/09-notification-and-ticketing.md
-- docs/architecture/10-commercial-architecture.md
+`AGENTS.md`; `docs/architecture/00-manifest.md` through `10-commercial-architecture.md`; protected task inputs `docs/prompts/T5-R1.MD` and `docs/prompts/T5-final.md`.
 
 ## Initial Repository State
 
-- Repository baseline at task start.
-- The repo is a legacy monorepo-like application workspace with target architecture folders present but not yet implemented as canonical manifests/contracts.
+The T5-R1 source and test work was already in progress and uncommitted. Completion and ASVS evidence was stale, local PostgreSQL was stopped, and approved actual-model and customer deployment evidence was unavailable. A protected-file baseline was captured.
 
 ## Pre-existing Workspace Changes
 
-- Not yet inspected.
+Inherited R1 edits and untracked files were part of this continuing task; the inventory below accounts for the resulting worktree without claiming sole authorship of each line. Unrelated user files in sibling directories outside `ui` were left untouched.
 
 ## Files Added
 
-- Not yet recorded.
+- `docs/backend/13-t5-r1-hardening.md`
+- `docs/deployment/04-t5-r1-service-boundaries.md`
+- `docs/security/00-current-status.md`
+- `docs/security/08-t5-authority-decision-boundary-fa.md`
+- `packages/data-governance/src/persistence.ts`
+- `packages/data-governance/src/retention.ts`
+- `packages/file-management/src/scratch-quota.ts`
+- `packages/file-processing/src/malware.ts`
+- `packages/file-processing/src/native-parser.mjs`
+- `packages/file-processing/src/sandbox.ts`
+- `packages/persistence/src/target-migrations/021-deployment-worker-queue.sql`
+- `packages/persistence/src/target-migrations/022-authority-materialization-fence.sql`
+- `packages/persistence/src/target-migrations/023-governance-retention-lifecycle.sql`
+- `packages/persistence/src/target-migrations/024-governed-owner-purge.sql`
+- `packages/persistence/src/target-migrations/025-governed-owner-rls-scope.sql`
+- `reports/security/t5-acceptance-evidence.json`
+- `reports/security/t5-authority-inventory.json`
+- `reports/security/t5-live-model-evidence.json`
+- `reports/security/t5-r1-open-findings.json`
+- `reports/security/t5-r1-protected-before.json`
+- `scripts/t5-acceptance-evidence.mjs`
+- `scripts/t5-asvs-evidence.mjs`
+- `scripts/t5-authority-inventory.mjs`
+- `scripts/t5-evidence-gate.mjs`
+- `scripts/t5-protected-policy.mjs`
+- `scripts/t5-r1-acceptance.mjs`
+- `scripts/t5-r1-reporter.mjs`
+- `scripts/t5-r1-source.mjs`
+- `tests/reports/t5-r1-execution.json`
+- `tests/reports/t5-r1/architecture.log`
+- `tests/reports/t5-r1/audit-siem.log`
+- `tests/reports/t5-r1/auth-http.log`
+- `tests/reports/t5-r1/authority-conformance.log`
+- `tests/reports/t5-r1/authority-inventory.log`
+- `tests/reports/t5-r1/authority-live.log`
+- `tests/reports/t5-r1/browser.log`
+- `tests/reports/t5-r1/build-web.log`
+- `tests/reports/t5-r1/foundations.log`
+- `tests/reports/t5-r1/integrations.log`
+- `tests/reports/t5-r1/r1-hardening.log`
+- `tests/reports/t5-r1/strict-target.log`
+- `tests/reports/t5-r1/strict-web.log`
+- `tests/reports/t5-r1/t5-architecture.log`
+- `tests/reports/t5-r1/ui.log`
+- `tests/target/support/t5-adversarial-corpus.ts`
+- `tests/target/t5-authority-post-t5-inventory.test.mjs`
+- `tests/target/t5-cache-concurrency.test.ts`
+- `tests/target/t5-evidence-selftest.test.mjs`
+- `tests/target/t5-genai-adversarial.test.ts`
+- `tests/target/t5-job-idempotency-security.integration.test.ts`
+- `tests/target/t5-malware-policy.test.ts`
+- `tests/target/t5-parser-sandbox.test.ts`
+- `tests/target/t5-protected-policy.test.mjs`
+- `tests/target/t5-retention-purge.integration.test.ts`
+- `tests/target/t5-security-race.integration.test.ts`
+- `tests/target/t5-worker-multitenant.integration.test.ts`
 
 ## Files Modified
 
-- Not yet recorded.
+- `apps/api/src/index.ts`
+- `apps/api/src/knowledge.ts`
+- `apps/runtime/src/composition.ts`
+- `apps/worker/src/composition.ts`
+- `deploy/customer.Dockerfile`
+- `docs/reports/20261004-1340-T5-R1-INDEPENDENT-HARDENING.md`
+- `docs/security/03-t5-asvs-5.0-level3-assessment-fa.md`
+- `docs/security/03-t5-rag-security-delta-fa.md`
+- `docs/security/06-t5-genai-rag-security-gate.md`
+- `modules/faq/src/service.ts`
+- `modules/summarizer/src/service.ts`
+- `modules/translator/src/persistence/migrate.ts`
+- `modules/translator/src/service.ts`
+- `packages/admission-control/src/files.ts`
+- `packages/admission-control/src/persistence/files.ts`
+- `packages/ai-router/src/index.ts`
+- `packages/ai-router/src/protected.ts`
+- `packages/authority/src/persistence.generic.ts`
+- `packages/authority/src/persistence.ts`
+- `packages/authority/src/service.ts`
+- `packages/configuration/src/cli.ts`
+- `packages/configuration/src/index.ts`
+- `packages/contracts/src/protected-ai.ts`
+- `packages/documents/src/index.ts`
+- `packages/documents/src/persistence.ts`
+- `packages/documents/src/service.ts`
+- `packages/file-management/src/cache.ts`
+- `packages/file-management/src/persistence.ts`
+- `packages/file-management/src/private-filesystem.ts`
+- `packages/file-management/src/service.ts`
+- `packages/file-management/src/staging.ts`
+- `packages/file-management/src/transfers.ts`
+- `packages/file-processing/src/index.ts`
+- `packages/jobs/src/index.ts`
+- `packages/jobs/src/persistence.ts`
+- `packages/jobs/src/worker.ts`
+- `packages/knowledge/src/adapters/qdrant.ts`
+- `packages/knowledge/src/index.ts`
+- `packages/knowledge/src/persistence.ts`
+- `packages/knowledge/src/service.ts`
+- `packages/persistence/src/target.ts`
+- `packages/storage/src/adapters/local.ts`
+- `packages/storage/src/adapters/s3.ts`
+- `packages/storage/src/index.ts`
+- `reports/security/asvs-5.0-l3.json`
+- `reports/security/rag-security-gate.json`
+- `reports/security/t5-asvs-review.json`
+- `reports/security/t5-completion-gate.json`
+- `reports/security/t5-protected-paths-after.json`
+- `reports/security/t5-supply-chain.json`
+- `scripts/t5-audit-siem.mjs`
+- `scripts/t5-completion-gate.mjs`
+- `scripts/t5-live-model-acceptance.ts`
+- `scripts/t5-protected-paths.mjs`
+- `scripts/t5-security-assessment.mjs`
+- `scripts/t5-supply-chain.mjs`
+- `tests/architecture/staticAnalysis.test.ts`
+- `tests/architecture/support/staticAnalysis.ts`
+- `tests/configuration/t5-file-management.test.ts`
+- `tests/reports/oci/acceptance.json`
+- `tests/reports/oci/customer-a-api-build.log`
+- `tests/reports/oci/customer-a-sbom.cdx.json`
+- `tests/reports/oci/customer-a-web-build.log`
+- `tests/reports/oci/customer-a-worker-build.log`
+- `tests/reports/oci/customer-b-api-build.log`
+- `tests/reports/oci/customer-b-sbom.cdx.json`
+- `tests/reports/oci/customer-b-web-build.log`
+- `tests/reports/oci/customer-b-worker-build.log`
+- `tests/reports/oci/customer-c-api-build.log`
+- `tests/reports/oci/customer-c-sbom.cdx.json`
+- `tests/reports/oci/customer-c-web-build.log`
+- `tests/reports/oci/customer-c-worker-build.log`
+- `tests/reports/oci/dependency-vulnerabilities.json`
+- `tests/reports/oci/runtime-dependency-vulnerabilities.json`
+- `tests/reports/oci/runtime-vulnerabilities.json`
+- `tests/reports/t5-audit-siem.tap`
+- `tests/target/support/t5-live-subject.ts`
+- `tests/target/support/t5-runtime-fixture.ts`
+- `tests/target/t44-authority-live.integration.test.ts`
+- `tests/target/t5-file-cache.test.ts`
+- `tests/target/t5-file-management.integration.test.ts`
+- `tests/target/t5-rag-security.integration.test.ts`
+- `tests/target/t5-worker.integration.test.ts`
+- `tsconfig.target.json`
 
 ## Files Deleted
 
-- Not yet recorded.
+- None.
 
 ## Implementation Summary
 
-- Task started with red-first architecture guardrails and repository activity tracking.
+CONFIRMED_DEFECT: deployment Worker claiming was tied to one tenant; identity/idempotency and materialization had race risks. IMPLEMENTED_FIX: deployment-wide claims with per-job human/tenant context, stable idempotency identity, authorization fences and provider checks. VERIFIED: live PostgreSQL two-tenant, retry and deterministic race tests pass.
+
+CONFIRMED_DEFECT: cache/staging, scanner, parser and retention needed stronger fail-closed and concurrency behavior. IMPLEMENTED_FIX: isolated cache fill, bounded staging, clamd-compatible scanner port, parser subprocess sandbox and governed purge/hold. VERIFIED: focused and live local tests pass; deployment evidence remains open.
+
+CONFIRMED_FALSE_POSITIVE_EVIDENCE: broad T5 feature success had produced unsupported acceptance and ASVS PASS claims. IMPLEMENTED_FIX: source/artifact-bound criterion map, negative gate self-tests, conservative ASVS reassessment and independent completion gate. VERIFIED: map integrity passes; 60 direct PASS, 37 NOT_VERIFIED, 3 FAIL.
+
+The ASVS blocker classifier initially missed the version prefix. Its regression is fixed; 61 current blockers are individually classified in `reports/security/t5-r1-open-findings.json`. The historical start-gate backlog remains intact.
 
 ## Architecture Decisions / Deviations
 
-- No production implementation was added.
-- Red-first guardrails intentionally describe the target architecture rather than legacy behavior.
+No governing architecture or prompt changed. Authority remains the only authorization owner. The inventory found 37 post-T5 production consumer sites and zero production bypasses. Complete ALLOW/DENY Audit/SIEM proof for every consumer remains NOT_VERIFIED.
 
 ## Tests and Verification
 
-- Not yet executed.
+PASS: final T5-R1 source-bound runner; strict target/web, Authority conformance 39/39, live Authority 7/7, Auth HTTP 1/1, foundations 34/34, integrations 90/90, hardening 70/70, browser 1/1, Audit/SIEM 7/7, architecture/UI/build. Zero skipped cases. PASS: independent RAG start gate with TLS verification enabled; OCI A/B/C API/Worker/Web; protected gate (68 files, zero unauthorized). PASS: evidence-map positive and negative self-tests. FAIL as designed: completion and GenAI gates, customer ASVS release and shipped-runtime supply scan. Actual approved model corpus: 0/0, NOT_VERIFIED.
 
 ## Expected Failures
 
-- Missing target package manifests and module manifests are expected red results.
+T5 remains PARTIAL: 37 criteria NOT_VERIFIED, 3 FAIL, 61 T5-scope blockers, 69 separate release-only blockers, and full post-T5 Authority audit coverage unproved. Trivy reports 97 HIGH/CRITICAL shipped-runtime findings and zero fixes available in the pinned offline database; none waived. Approved model config, real scanner, customer service authentication/TLS, parser host isolation and backup purge proof are absent.
 
 ## Unexpected Failures
 
-- None recorded yet.
+None remain in the final suite. The initial RAG gate inherited host `NODE_TLS_REJECT_UNAUTHORIZED=0` and correctly failed SIEM verification; rerun with TLS verification enabled passed.
 
 ## Production Code Changes
 
-- None recorded; production code remains untouched.
+Worker queue/identity, Authority/materialization fences, AI Router protected dispatch, File Management/cache/staging, scanner/parser, retention/purge, Storage, Document and Knowledge integrations were hardened. See path inventory above.
 
 ## Final Repository State
 
-- Initial git-status capture recorded below.
-
-```text
- M ui/AGENTS.md
- M ui/apps/api/src/composition.ts
- M ui/apps/api/src/index.ts
- M ui/apps/web/src/hooks.server.ts
- M ui/apps/web/src/lib/api/client.ts
- M ui/apps/web/src/lib/api/transport.ts
- M ui/apps/web/src/lib/auth/client.svelte.ts
- M ui/apps/web/src/routes/(public)/login/+page.svelte
- M ui/apps/web/src/routes/(user)/+layout.svelte
- M ui/apps/web/src/routes/+layout.server.ts
- M ui/apps/web/src/routes/+layout.svelte
- M ui/apps/web/src/routes/api/[...path]/+server.ts
- M ui/apps/web/tests/public-tools/AuthHarness.svelte
- M ui/apps/web/vite.config.ts
- M ui/apps/worker/src/composition.ts
- M ui/apps/worker/src/index.ts
- M ui/deploy/customer.Dockerfile
- M ui/deploy/entrypoint.mjs
- M ui/deploy/examples/customer-a/platform.cjson
- M ui/deploy/examples/customer-b/platform.cjson
- M ui/deploy/examples/customer-c/platform.cjson
- M ui/deploy/examples/development/platform.cjson
- M ui/deploy/runtime/package-lock.json
- M ui/deploy/runtime/package.json
- M ui/docs/architecture/04-authorization-model.md
- M ui/docs/architecture/06-document-and-rag.md
- M ui/docs/architecture/08-deployment-architecture.md
- M ui/docs/backend/04-t4-identity-session-authority.md
- D ui/docs/prompts/T5-addendum.md
- D ui/docs/prompts/T5.md
- M ui/docs/security/01-asvs-5.0-level3-assessment-fa.md
- M ui/modules/faq/src/service.ts
- M ui/package-lock.json
- M ui/package.json
- M ui/packages/admission-control/package.json
- M ui/packages/admission-control/src/persistence.ts
- M ui/packages/ai-router/src/index.ts
- M ui/packages/ai-router/src/persistence.ts
- M ui/packages/audit/src/index.ts
- M ui/packages/audit/src/persistence.ts
- M ui/packages/audit/src/persistence/security.ts
- M ui/packages/authentication/src/index.ts
- M ui/packages/authority/src/index.ts
- M ui/packages/authority/src/persistence.ts
- M ui/packages/configuration/src/index.ts
- M ui/packages/contracts/package.json
- M ui/packages/contracts/src/index.ts
- M ui/packages/file-processing/src/index.ts
- D ui/packages/file-processing/src/service.ts
- M ui/packages/observability/src/index.ts
- M ui/packages/persistence/src/target.ts
- M ui/packages/security-telemetry/src/persistence.ts
- M ui/packages/security-telemetry/src/worker.ts
- M ui/packages/session/src/cookie.ts
- M ui/packages/session/src/persistence.ts
- M ui/packages/usage/package.json
- M ui/packages/usage/src/persistence.ts
- M ui/reports/security/asvs-5.0-l3.json
- M ui/scripts/customer-release.mjs
- M ui/scripts/t4-gate.mjs
- M ui/scripts/t4-target-architecture.ts
- M ui/tests/architecture/staticAnalysis.test.ts
- M ui/tests/architecture/support/staticAnalysis.ts
- M ui/tests/configuration/configuration.test.ts
- M ui/tests/target/runtime.integration.test.ts
- M ui/tests/target/t4-auth-cookie.test.ts
- M ui/tests/target/t4-auth-http.integration.test.ts
- M ui/tests/target/t4-auth-service.test.ts
- M ui/tests/target/t4-authenticated-public.integration.test.ts
- M ui/tests/target/t4-browser.integration.test.mjs
- M ui/tests/target/t4-web-auth-proxy.test.ts
- M ui/tsconfig.target.json
-?? ui/apps/api/src/knowledge.ts
-?? ui/apps/runtime/src/composition.ts
-?? ui/apps/web/src/lib/api/gateway.server.ts
-?? ui/apps/web/src/lib/knowledge/Workspace.svelte
-?? ui/apps/web/src/lib/knowledge/client.ts
-?? ui/apps/web/src/lib/knowledge/messages.ts
-?? ui/apps/web/src/routes/(user)/knowledge/+page.server.ts
-?? ui/apps/web/src/routes/(user)/knowledge/+page.svelte
-?? ui/deploy/web-security-headers.mjs
-?? ui/docs/backend/06-t5-rag-legacy-inventory.md
-?? ui/docs/backend/07-t5-rag-data-migration.md
-?? ui/docs/backend/08-document-core.md
-?? ui/docs/backend/09-knowledge-rag.md
-?? ui/docs/backend/10-rag-authorization-flow.md
-?? ui/docs/backend/11-file-management.md
-?? ui/docs/backend/12-storage-and-transfer.md
-?? ui/docs/deployment/03-rag-customer-release.md
-?? ui/docs/prompts/T4.3-B.md
-?? ui/docs/prompts/T4.4-C.md
-?? ui/docs/prompts/T4.4.md
-?? ui/docs/prompts/T5-R1.MD
-?? ui/docs/prompts/T5-final.md
-?? ui/docs/reports/20261003-1330-ASVS-T4-APPLICABILITY-EVIDENCE.md
-?? ui/docs/reports/20261003-1406-T4-SECURITY-IMPLEMENTATION-CLOSURE.md
-?? ui/docs/reports/20261003-1513-RAG-SECURITY-READINESS-T4.md
-?? ui/docs/reports/20261003-1621-RAG-SECURITY-GATE-CORRECTION.md
-?? ui/docs/reports/20261003-1734-DOCUMENT-KNOWLEDGE-RAG-T5.md
-?? ui/docs/security/03-t5-asvs-5.0-level3-assessment-fa.md
-?? ui/docs/security/03-t5-rag-security-delta-fa.md
-?? ui/docs/security/04-t4-asvs-applicability-matrix-fa.md
-?? ui/docs/security/05-t4-rag-security-readiness-fa.md
-?? ui/docs/security/06-t5-genai-rag-security-gate.md
-?? ui/docs/security/07-t4-authority-decision-boundary.md
-?? ui/docs/verification/02-t5-audit-siem-verification-fa.md
-?? ui/packages/admission-control/src/files.ts
-?? ui/packages/admission-control/src/persistence/files.ts
-?? ui/packages/admission-control/src/persistence/query.ts
-?? ui/packages/admission-control/src/query.ts
-?? ui/packages/ai-router/src/protected.ts
-?? ui/packages/audit/src/persistence/semantic.ts
-?? ui/packages/audit/src/semantic.ts
-?? ui/packages/authentication/src/password-policy.ts
-?? ui/packages/authority/src/contracts.ts
-?? ui/packages/authority/src/persistence.generic.ts
-?? ui/packages/authority/src/service.ts
-?? ui/packages/configuration/src/knowledge.ts
-?? ui/packages/configuration/src/protected-ai.ts
-?? ui/packages/contracts/src/execution-subject.ts
-?? ui/packages/contracts/src/knowledge.ts
-?? ui/packages/contracts/src/protected-ai.ts
-?? ui/packages/contracts/src/transaction.ts
-?? ui/packages/data-governance/package.json
-?? ui/packages/data-governance/src/index.ts
-?? ui/packages/documents/package.json
-?? ui/packages/documents/src/index.ts
-?? ui/packages/documents/src/persistence.ts
-?? ui/packages/documents/src/service.ts
-?? ui/packages/file-management/package.json
-?? ui/packages/file-management/src/cache.ts
-?? ui/packages/file-management/src/index.ts
-?? ui/packages/file-management/src/persistence.ts
-?? ui/packages/file-management/src/persistence/storage-migration.ts
-?? ui/packages/file-management/src/private-filesystem.ts
-?? ui/packages/file-management/src/public-service.ts
-?? ui/packages/file-management/src/range.ts
-?? ui/packages/file-management/src/service.ts
-?? ui/packages/file-management/src/staging.ts
-?? ui/packages/file-management/src/storage-migration.ts
-?? ui/packages/file-management/src/temporary.ts
-?? ui/packages/file-management/src/transfers.ts
-?? ui/packages/file-processing/src/office-archive.ts
-?? ui/packages/identity/package.json
-?? ui/packages/identity/src/persistence.ts
-?? ui/packages/jobs/package.json
-?? ui/packages/jobs/src/index.ts
-?? ui/packages/jobs/src/persistence.ts
-?? ui/packages/jobs/src/worker.ts
-?? ui/packages/knowledge/package.json
-?? ui/packages/knowledge/src/adapters/qdrant.ts
-?? ui/packages/knowledge/src/chunking.ts
-?? ui/packages/knowledge/src/disclosure.ts
-?? ui/packages/knowledge/src/index.ts
-?? ui/packages/knowledge/src/legacy-migration.ts
-?? ui/packages/knowledge/src/persistence.ts
-?? ui/packages/knowledge/src/service.ts
-?? ui/packages/observability/src/process-errors.ts
-?? ui/packages/persistence/src/target-migrations/007-authority-rag-foundation.sql
-?? ui/packages/persistence/src/target-migrations/009-document-and-durable-jobs.sql
-?? ui/packages/persistence/src/target-migrations/010-file-transfer-admission-and-evidence.sql
-?? ui/packages/persistence/src/target-migrations/011-knowledge-vocabulary-and-worker-subjects.sql
-?? ui/packages/persistence/src/target-migrations/012-knowledge-spaces-and-projections.sql
-?? ui/packages/persistence/src/target-migrations/013-worker-ai-and-audit-context.sql
-?? ui/packages/persistence/src/target-migrations/014-ai-execution-subject-evidence.sql
-?? ui/packages/persistence/src/target-migrations/015-rag-work-consumption.sql
-?? ui/packages/persistence/src/target-migrations/016-knowledge-requested-index-state.sql
-?? ui/packages/persistence/src/target-migrations/017-storage-migration-proof.sql
-?? ui/packages/persistence/src/target-migrations/018-machine-transfer-expiry-vocabulary.sql
-?? ui/packages/persistence/src/target-migrations/019-explicit-audit-initiator.sql
-?? ui/packages/persistence/src/target-migrations/020-file-actor-admission.sql
-?? ui/packages/persistence/src/target-transaction.ts
-?? ui/packages/security-telemetry/src/csp-report.ts
-?? ui/packages/session/src/subject.ts
-?? ui/packages/storage/package.json
-?? ui/packages/storage/src/adapters/local.ts
-?? ui/packages/storage/src/adapters/s3.ts
-?? ui/packages/storage/src/factory.ts
-?? ui/packages/storage/src/index.ts
-?? ui/packages/usage/src/files.ts
-?? ui/packages/usage/src/persistence/files.ts
-?? ui/packages/usage/src/persistence/rag.ts
-?? ui/packages/usage/src/rag.ts
-?? ui/reports/security/rag-asvs-classification.json
-?? ui/reports/security/rag-security-gate.json
-?? ui/reports/security/t4-target-scope-inventory.json
-?? ui/reports/security/t5-asvs-review.json
-?? ui/reports/security/t5-completion-gate.json
-?? ui/reports/security/t5-protected-paths-after.json
-?? ui/reports/security/t5-protected-paths-before.json
-?? ui/reports/security/t5-security-delta-backlog.json
-?? ui/reports/security/t5-supply-chain.json
-?? ui/scripts/classify-rag-asvs.mjs
-?? ui/scripts/rag-security-gate.mjs
-?? ui/scripts/rag-security-policy.mjs
-?? ui/scripts/reassess-t44c-asvs.mjs
-?? ui/scripts/t5-acceptance.mjs
-?? ui/scripts/t5-audit-siem.mjs
-?? ui/scripts/t5-completion-gate.mjs
-?? ui/scripts/t5-legacy-migration-plan.ts
-?? ui/scripts/t5-live-model-acceptance.ts
-?? ui/scripts/t5-oci-acceptance.ts
-?? ui/scripts/t5-protected-paths.mjs
-?? ui/scripts/t5-security-assessment.mjs
-?? ui/scripts/t5-supply-chain.mjs
-?? ui/scripts/t5-target-architecture.ts
-?? ui/tests/architecture/t5TargetArchitecture.test.ts
-?? ui/tests/configuration/t5-file-management.test.ts
-?? ui/tests/reports/auth-http-regression.log
-?? ui/tests/reports/authority-conformance.log
-?? ui/tests/reports/authority-live.log
-?? ui/tests/reports/build-web.log
-?? ui/tests/reports/oci/acceptance.json
-?? ui/tests/reports/oci/customer-a-api-build.log
-?? ui/tests/reports/oci/customer-a-sbom.cdx.json
-?? ui/tests/reports/oci/customer-a-web-build.log
-?? ui/tests/reports/oci/customer-a-worker-build.log
-?? ui/tests/reports/oci/customer-b-api-build.log
-?? ui/tests/reports/oci/customer-b-sbom.cdx.json
-?? ui/tests/reports/oci/customer-b-web-build.log
-?? ui/tests/reports/oci/customer-b-worker-build.log
-?? ui/tests/reports/oci/customer-c-api-build.log
-?? ui/tests/reports/oci/customer-c-sbom.cdx.json
-?? ui/tests/reports/oci/customer-c-web-build.log
-?? ui/tests/reports/oci/customer-c-worker-build.log
-?? ui/tests/reports/oci/dependency-vulnerabilities.json
-?? ui/tests/reports/oci/pre-bundle-fix-customer-a-api-runtime.log
-?? ui/tests/reports/oci/pre-bundle-fix-customer-a-web-runtime.log
-?? ui/tests/reports/oci/pre-bundle-fix-customer-a-worker-runtime.log
-?? ui/tests/reports/oci/runtime-dependency-vulnerabilities.json
-?? ui/tests/reports/oci/runtime-vulnerabilities.json
-?? ui/tests/reports/strict-target.log
-?? ui/tests/reports/strict-web.log
-?? ui/tests/reports/t5-acceptance.json
-?? ui/tests/reports/t5-architecture.log
-?? ui/tests/reports/t5-audit-siem.log
-?? ui/tests/reports/t5-audit-siem.tap
-?? ui/tests/reports/t5-browser.log
-?? ui/tests/reports/t5-foundations.log
-?? ui/tests/reports/t5-integrations.log
-?? ui/tests/reports/t5-target-architecture.json
-?? ui/tests/reports/target-architecture.log
-?? ui/tests/target/support/t5-browser-session.mjs
-?? ui/tests/target/support/t5-live-subject.ts
-?? ui/tests/target/support/t5-provider-fixture.ts
-?? ui/tests/target/support/t5-qdrant-fixture.ts
-?? ui/tests/target/support/t5-runtime-fixture.ts
-?? ui/tests/target/support/t5-s3-fixture.ts
-?? ui/tests/target/t4-csp.test.ts
-?? ui/tests/target/t4-file-security.test.ts
-?? ui/tests/target/t4-password-policy.test.ts
-?? ui/tests/target/t44-authority-live.integration.test.ts
-?? ui/tests/target/t44-rag-gate-policy.test.mjs
-?? ui/tests/target/t44-release-policy.test.mjs
-?? ui/tests/target/t44-static-headers.integration.test.mjs
-?? ui/tests/target/t5-audit-siem.integration.test.ts
-?? ui/tests/target/t5-browser.integration.test.mjs
-?? ui/tests/target/t5-chunking.test.ts
-?? ui/tests/target/t5-document-jobs.integration.test.ts
-?? ui/tests/target/t5-failure-runtime.integration.test.ts
-?? ui/tests/target/t5-file-cache.test.ts
-?? ui/tests/target/t5-file-limits.integration.test.ts
-?? ui/tests/target/t5-file-management.integration.test.ts
-?? ui/tests/target/t5-file-staging.test.ts
-?? ui/tests/target/t5-knowledge-projection.integration.test.ts
-?? ui/tests/target/t5-legacy-migration.test.ts
-?? ui/tests/target/t5-machine-expiry.integration.test.ts
-?? ui/tests/target/t5-process-errors.test.ts
-?? ui/tests/target/t5-protected-ai.integration.test.ts
-?? ui/tests/target/t5-rag-security.integration.test.ts
-?? ui/tests/target/t5-runtime.integration.test.ts
-?? ui/tests/target/t5-s3-storage.integration.test.ts
-?? ui/tests/target/t5-storage-contract.test.ts
-?? ui/tests/target/t5-storage-migration.integration.test.ts
-?? ui/tests/target/t5-transfer-persistence.integration.test.ts
-?? ui/tests/target/t5-worker.integration.test.ts
-```
+Combined T5-R1 changes remain uncommitted. Protected governing diff and baseline comparison are zero. Local execution, OCI and derived security reports are current for their respective source hashes. T5 remains PARTIAL; customer Level-3 release and next business-module migration are not authorized.
 
 ## Acceptance Criteria
 
-- The reported change set is documented and verified.
-- The repository remains in a red-first guardrail state until the target architecture is implemented.
+| Criterion | Result | Evidence |
+| --- | --- | --- |
+| 1 | PASS | Two-tenant Worker, idempotency, race and infrastructure regressions in `tests/reports/t5-r1-execution.json`. |
+| 2 | PASS | Criterion-map integrity; 60 direct evidence entries and zero broad-derived PASS. |
+| 3 | PASS | Protected-path gate: zero unauthorized changes. |
+| 4 | FAIL | Full T5 completion: 37 NOT_VERIFIED and 3 FAIL acceptance criteria. |
+| 5 | FAIL | Actual model, T5 security and customer ASVS release gates remain open. |
 
 ## Open Issues
 
-- Target architecture manifests and package contracts are intentionally absent and expected to fail against the guardrails.
-
----
-
-Generated by scripts/activity-report.ts
+REMAINS_NOT_VERIFIED: 37 acceptance criteria, ASVS V15.4.2 full scope, post-T5 Authority Audit/SIEM coverage, actual approved model behavior. RELEASE_ONLY: 69 separate customer ASVS blockers. EXTERNAL_EVIDENCE_REQUIRED: approved model config, scanner/signatures, customer TLS/service identity/rotation, host sandbox, IAM and backup purge. CODE_FIX_REQUIRED: V12.3.5 and V13.2.1 remain open. No approved exceptions.

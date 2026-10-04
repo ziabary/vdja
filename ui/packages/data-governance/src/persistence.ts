@@ -1,0 +1,10 @@
+import {resolveTargetTransaction} from '../../persistence/src/target-transaction.js';
+import {enuRetentionState,type intfRetentionRecord,type intfRetentionRepository} from './retention.js';
+interface intfRetentionRow {grt_resource_id:string;grt_request_id:string;grt_state:enuRetentionState;grt_policy_version:string;grt_eligible_after:Date;grt_backup_obligation:string;grt_lease_token:string|null;grt_lease_until:Date|null}
+function record(row:intfRetentionRow):intfRetentionRecord{return{resourceId:row.grt_resource_id,requestId:row.grt_request_id,state:row.grt_state,policyVersion:row.grt_policy_version,eligibleAfter:row.grt_eligible_after.toISOString(),backupObligation:row.grt_backup_obligation,leaseToken:row.grt_lease_token,leaseUntil:row.grt_lease_until?.toISOString()??null};}
+const COLUMNS='grt_resource_id,grt_request_id,grt_state,grt_policy_version,grt_eligible_after,grt_backup_obligation,grt_lease_token,grt_lease_until';
+export function createRetentionRepository():intfRetentionRepository{return{
+ async register(tx,ctx,value){await resolveTargetTransaction(tx).query(`INSERT INTO data_governance.tbl_gov_retention (grt_deployment_id,grt_tenant_id,${COLUMNS}) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,NULL,NULL)`,[ctx.deploymentId,ctx.tenantId,value.resourceId,value.requestId,value.state,value.policyVersion,value.eligibleAfter,value.backupObligation]);},
+ async lock(tx,ctx,id){const value=await resolveTargetTransaction(tx).query<intfRetentionRow>(`SELECT ${COLUMNS} FROM data_governance.tbl_gov_retention WHERE grt_deployment_id=$1 AND grt_tenant_id=$2 AND grt_resource_id=$3 FOR UPDATE`,[ctx.deploymentId,ctx.tenantId,id]);return value.rows[0]?record(value.rows[0]):null;},
+ async save(tx,ctx,value){const result=await resolveTargetTransaction(tx).query(`UPDATE data_governance.tbl_gov_retention SET grt_state=$4,grt_lease_token=$5,grt_lease_until=$6,grt_request_id=$7 WHERE grt_deployment_id=$1 AND grt_tenant_id=$2 AND grt_resource_id=$3 RETURNING grt_resource_id`,[ctx.deploymentId,ctx.tenantId,value.resourceId,value.state,value.leaseToken,value.leaseUntil,value.requestId]);if(!result.rowCount)throw new Error('RETENTION_NOT_FOUND');}
+};}

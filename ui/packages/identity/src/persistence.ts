@@ -1,6 +1,18 @@
 import type pg from 'pg';
 import type { intfExecutionContext } from '../../contracts/src/index.js';
-import { withTargetTransaction } from '../../persistence/src/target.js';
+import { withTargetTransaction,type typTargetClient } from '../../persistence/src/target.js';
+import {randomUUID} from 'node:crypto';
+
+/** A development-only anonymous onboarding identity with no implicit grants. */
+export async function createDevelopmentLegacyIdentity(tx:typTargetClient,tenantId:string):Promise<{identityId:string;membershipId:string}>{
+  if(tenantId!=='development')throw new Error('INVALID_DEVELOPMENT_ONBOARDING');
+  const identityId=randomUUID(),membershipId=randomUUID();
+  await tx.query(`INSERT INTO identity.tbl_idn_identity(idn_id,idn_kind,idn_display_name,idn_email_normalized)
+    VALUES($1,'HUMAN','Development legacy key user',$2)`,[identityId,`legacy-${identityId}@development.invalid`]);
+  await tx.query(`INSERT INTO identity.tbl_idn_membership(idm_id,idm_identity__idn_id,idm_tenant_id)
+    VALUES($1,$2,$3)`,[membershipId,identityId,tenantId]);
+  return{identityId,membershipId};
+}
 
 /** Identity facts only. Authority remains the sole permission decision engine. */
 export function createMachineIdentityPersistence(pool: pg.Pool) {

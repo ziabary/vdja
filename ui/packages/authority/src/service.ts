@@ -1,3 +1,4 @@
+import type { intfTransactionHandle } from '../../contracts/src/transaction.js';
 import type { intfExecutionContext } from '../../contracts/src/index.js';
 import { enuAuthorityDecision, evaluateAuthority, getPrivValue,
   type intfAuthorityFacts, type intfAuthorityGrant, type intfAuthorityResult,
@@ -16,6 +17,7 @@ export interface intfAuthorityDecisionEvidence {
 }
 export enum enuAuthorityLimitTier { Authenticated = 'AUTHENTICATED', Privileged = 'PRIVILEGED' }
 export interface intfAuthorityPorts {
+  readonly lockSnapshot?: (transaction:intfTransactionHandle,context:intfExecutionContext)=>Promise<void>;
   readonly resolve: (lookup: intfAuthorityLookup) => Promise<typAuthorityResolution>;
   readonly resolveBatch?: (lookups: readonly intfAuthorityLookup[]) => Promise<readonly typAuthorityResolution[]>;
   readonly authorizePublicTool: (identityId: string, tenantId: string,
@@ -45,6 +47,11 @@ function facts(context: intfExecutionContext, resource: intfProtectedResourceFac
 /** The only production Authority facade: no decision is returned unless its evidence commits. */
 export class clsAuthorityService {
   constructor(private readonly ports: intfAuthorityPorts) {}
+  /** Acquire before fresh authorization; release at the owning short transaction commit. */
+  async lockSnapshot(transaction:intfTransactionHandle,context:intfExecutionContext):Promise<void>{
+    if(!this.ports.lockSnapshot)throw new Error('AUTHORITY_SNAPSHOT_UNAVAILABLE');
+    await this.ports.lockSnapshot(transaction,context);
+  }
   async fileLimitTier(request: intfPersistedAuthorityRequest): Promise<enuAuthorityLimitTier> {
     const decision = await this.authorize({ ...request, path: 'Knowledge.Files.elevatedLimits' });
     return decision.decision === enuAuthorityDecision.Permit ? enuAuthorityLimitTier.Privileged : enuAuthorityLimitTier.Authenticated;
@@ -103,10 +110,12 @@ export class clsAuthorityService {
       requireClassification: request.requireClassification ?? !!resource,
       allDefault: resolved.allDefault, denies: [] };
     const denies: string[] = [];
+    const {acl: _acl,...resourceWithoutAcl}=inputFacts.resource??{};
+    const {resource:_resource,...factsWithoutResource}=inputFacts;
     for (const grant of resolved.denyGrants) {
       const denyValue = getPrivValue(grant.privileges, path, resolved.allDefault);
-      const match = evaluateAuthority({ ...base, facts: { ...inputFacts,
-        resource: inputFacts.resource ? { ...inputFacts.resource, acl: undefined } : undefined },
+      const match = evaluateAuthority({ ...base, facts: { ...factsWithoutResource,
+        ...(inputFacts.resource?{resource:resourceWithoutAcl}:{}) },
         requireClassification: false, grants: [grant],
         ...(resolved.valueKind === 'CRUD' && crudOperation ? { crud: { value: denyValue, operation: crudOperation } } : {}) });
       if (match.decision === enuAuthorityDecision.Permit) denies.push(path);

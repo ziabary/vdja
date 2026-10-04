@@ -1,3 +1,4 @@
+import {enuMalwareMode} from '../../packages/file-processing/src/malware.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { validateFileManagement } from '../../packages/configuration/src/index.js';
@@ -9,7 +10,7 @@ function profile(): Record<string, unknown> {
       maxBytes: MAX_UPLOAD, maxPendingBytes: 60000000, maxTenantStorageBytes: 100000000, maxTenantAssets: 100 },
     downloads: { ranges: true, conditional: true, maxConcurrent: 3 },
     cache: { scope: 'REPLICA_PRIVATE', root: '/tmp/targoman-cache', maxBytes: 40000000, maxEntries: 10, ttlMs: 60000, timeoutMs: 30000 },
-    staging: { root: '/tmp/targoman-staging', maxBytes: 60000000 }, security: { privateOnly: true, integrityRequired: true } };
+    staging: { root: '/tmp/targoman-staging', maxBytes: 60000000 }, security: { privateOnly: true, integrityRequired: true,malware:{mode:enuMalwareMode.Disabled,timeoutMs:1000,maxBytes:MAX_UPLOAD,policyVersion:'test-low-assurance-v1'} } };
 }
 test('managed transfer configuration selects one adapter with external credentials and strict bounds', () => {
   assert.equal(validateFileManagement(profile(), 'test-files', MAX_UPLOAD).enabled, true);

@@ -13,7 +13,8 @@ export async function createTargetPool(snapshot: intfConfigurationSnapshot, role
   const user = role === 'api' ? database.apiUser : role === 'worker' ? database.workerUser : database.migrationUser;
   const ref = role === 'api' ? database.apiPasswordRef : role === 'worker' ? database.workerPasswordRef : database.migrationPasswordRef;
   const password = await resolveSecretRef(ref, secretRoot);
-  return new pg.Pool({ host: database.host, port: database.port, database: database.name, user, password, max: role === 'migration' ? 1 : database.maxConnections, idleTimeoutMillis: 10000, connectionTimeoutMillis: 3000, application_name: `targoman-${role}` });
+  const ssl=database.tls?{ca:await resolveSecretRef(database.tls.caRef,secretRoot),servername:database.tls.serverName,rejectUnauthorized:true}:undefined;
+  return new pg.Pool({ host: database.host, port: database.port, database: database.name, user, password, ...(ssl?{ssl}:{}),max: role === 'migration' ? 1 : database.maxConnections, idleTimeoutMillis: 10000, connectionTimeoutMillis: 3000, application_name: `targoman-${role}` });
 }
 export const createTargetDatabaseAdapter = createTargetPool;
 export function createTargetReadinessPersistence(pool: pg.Pool): () => Promise<void> {

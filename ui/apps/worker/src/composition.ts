@@ -1,3 +1,4 @@
+import {enuRetentionJob} from '../../../packages/data-governance/src/retention.js';
 import type { intfConfigurationSnapshot } from '../../../packages/configuration/src/index.js';
 import { createTargetDatabaseAdapter } from '../../../packages/persistence/src/target.js';
 import { createSiemExportPersistence } from '../../../packages/security-telemetry/src/persistence.js';
@@ -44,12 +45,13 @@ export async function createWorkerRuntime(snapshot: intfConfigurationSnapshot, s
       handlers.set(enuKnowledgeJob.Rebuild, async (job, fence,signal) => knowledge.rebuild(
         { ...job.subject, source: 'KNOWLEDGE_INDEXING_WORKER' }, payloadId(job.payload.spaceId), payloadId(job.payload.generationId), fence,signal));
     }
+    handlers.set(enuRetentionJob.Purge,async(job,fence)=>managed.governance.execute({...job.subject,source:'GOVERNANCE_PURGE_WORKER'},payloadId(job.payload.resourceId),job.leaseToken,fence,payloadId(job.payload.requestId)));
     handlers.set(enuFileJob.Reconcile, async job => {
       const value = await managed.files.reconcile({ ...job.subject, source: 'FILE_RECONCILIATION_WORKER' }, payloadId(job.payload.transferId));
       if ('state' in value && [enuTransferState.Unresolved, enuTransferState.Verifying].includes(value.state)) throw new Error('TRANSFER_UNRESOLVED');
     });
     const expiryContext=async(job:Parameters<intfJobHandler>[0]):Promise<intfExecutionContext>=>({...workerContext,
-      authorizationVersion:await machine.platformService(workerContext),requestId:job.subject.requestId,correlationId:job.subject.correlationId,source:'FILE_EXPIRY_WORKER',
+      tenantId:job.subject.tenantId,authorizationVersion:await machine.platformService({...workerContext,tenantId:job.subject.tenantId}),requestId:job.subject.requestId,correlationId:job.subject.correlationId,source:'FILE_EXPIRY_WORKER',
       initiator:{actorKind:job.subject.actorKind,actorId:job.subject.actorId}});
     handlers.set(enuFileJob.Expire, async job => managed.files.expireAsService(await expiryContext(job), payloadId(job.payload.transferId)));
     jobs = new clsJobWorker({ transactions: managed.transactions, jobs: managed.jobs,

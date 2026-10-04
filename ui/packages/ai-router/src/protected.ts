@@ -103,7 +103,7 @@ export class clsProtectedAiRouter implements intfProtectedAiPort {
         await this.ports.store.finishAttempt({...attempt,status:request.signal?.aborted?'CANCELLED':'FAILED',errorClass:last instanceof exAiRouter?last.safeClass:'NETWORK_OR_PROVIDER_FAILURE'});
         logOperational({severity:'WARN',component:'ai-router',event:'protected_attempt_completed',context:ctx,status:request.signal?.aborted?'CANCELLED':'FAILED',runId,aiTask:request.task,
           endpointId:endpoint.id,modelId:model.modelId,attemptCount:attempts,errorClass:last instanceof exAiRouter?last.safeClass:'NETWORK_OR_PROVIDER_FAILURE',durationMs:Date.now()-started});
-        if(request.signal?.aborted||providerCompleted)break;
+        if(request.signal?.aborted||providerCompleted||last instanceof exAiRouter&&last.code==='SECURITY_FENCE_DENIED')break;
       }finally{await this.ports.store.releaseEndpointCapacity(runId,run,endpoint.id);}
     }
     await this.ports.store.finishRun({runId,status:request.signal?.aborted?'CANCELLED':'FAILED',errorClass:last instanceof exAiRouter?last.safeClass:last?.message==='PROTECTED_EGRESS_DENIED'?'PROTECTED_EGRESS_DENIED':'NO_ELIGIBLE_ENDPOINT'});
@@ -116,7 +116,10 @@ export class clsProtectedAiRouter implements intfProtectedAiPort {
         :{model:model.modelId,input:request.texts,encoding_format:'float'};
     const credential=endpoint.credentialRef?await resolveSecretRef(endpoint.credentialRef,this.ports.secretRoot):null;
     const signal=request.signal?AbortSignal.any([request.signal,AbortSignal.timeout(endpoint.timeoutMs)]):AbortSignal.timeout(endpoint.timeoutMs);
-    signal.throwIfAborted();await this.ports.subject.assertActive(request.context);signal.throwIfAborted();
+    signal.throwIfAborted();
+    try{await this.ports.subject.assertActive(request.context);await request.securityFence?.();}
+    catch{throw new exAiRouter('SECURITY_FENCE_DENIED',false,'SECURITY_FENCE_DENIED');}
+    signal.throwIfAborted();
     const response=await fetch(new URL(path,endpoint.baseUrl),{method:'POST',redirect:'error',headers:{'Content-Type':'application/json',...(credential?{Authorization:`Bearer ${credential}`}:{})},body:JSON.stringify(body),signal});
     if(!response.ok){await response.body?.cancel();failure(response.status>=500?'PROVIDER_5XX':'PROVIDER_REJECTED');}
     const data=await readProviderJson(response,maxResponseBytes);

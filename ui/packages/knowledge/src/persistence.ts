@@ -18,7 +18,8 @@ function scope(context: intfExecutionContext): readonly [string,string] {
   if (!context.deploymentId || !context.tenantId) throw new exKnowledge('INVALID_KNOWLEDGE');
   return [context.deploymentId,context.tenantId];
 }
-function space(row: intfSpaceRow): intfKnowledgeSpace { return { type: 'knowledge_space', id: row.ksp_id, tenantId: row.ksp_tenant_id,
+function space(row: intfSpaceRow): intfKnowledgeSpace { return {
+ type: 'knowledge_space', id: row.ksp_id, tenantId: row.ksp_tenant_id,
   ownerId: row.ksp_owner_id, classification: row.ksp_classification, title: row.ksp_title, lifecycle: row.ksp_lifecycle,
   securityVersion: Number(row.ksp_security_version), generationId: row.ksp_generation_id, projectionSecurityVersion: null,
   pendingGenerationId:row.ksp_pending_generation_id,requestedIndexState:row.ksp_index_state }; }
@@ -31,6 +32,9 @@ function chunk(row: intfChunkRow): intfKnowledgeChunk { return { id: row.kch_id,
   membershipSecurityVersion: Number(row.kch_membership_security_version) }; }
 export function createKnowledgeRepository(): intfKnowledgeRepository {
   const repository: intfKnowledgeRepository = {
+ async retentionReferences(tx,ctx,id){const result=await resolveTargetTransaction(tx).query(`SELECT kmb_document_id FROM knowledge.tbl_knw_membership JOIN knowledge.tbl_knw_space ON kmb_deployment_id=ksp_deployment_id AND kmb_tenant_id=ksp_tenant_id AND kmb_space__ksp_id=ksp_id WHERE kmb_deployment_id=$1 AND kmb_tenant_id=$2 AND kmb_document_id=$3 AND ksp_lifecycle='ACTIVE' AND kmb_lifecycle='ACTIVE' LIMIT 1`,[ctx.deploymentId,ctx.tenantId,id]);return !!result.rowCount;},
+ async purgeProjections(tx,ctx,id){const result=await resolveTargetTransaction(tx).query<{collection:string;generationId:string;spaceId:string}>(`SELECT DISTINCT kgn_collection AS collection,kch_generation__kgn_id AS "generationId",kch_space__ksp_id AS "spaceId" FROM knowledge.tbl_knw_chunk JOIN knowledge.tbl_knw_generation ON kgn_deployment_id=kch_deployment_id AND kgn_tenant_id=kch_tenant_id AND kgn_id=kch_generation__kgn_id WHERE kch_deployment_id=$1 AND kch_tenant_id=$2 AND kch_document_id=$3`,[ctx.deploymentId,ctx.tenantId,id]);return result.rows;},
+ async purgeMetadata(tx,ctx,id,leaseToken){await resolveTargetTransaction(tx).query('SELECT knowledge.fn_knw_purge_document($1,$2,$3,$4)',[ctx.deploymentId,ctx.tenantId,id,leaseToken]);},
     async requestIndex(tx,context,spaceId,generationId){
       await resolveTargetTransaction(tx).query(`UPDATE knowledge.tbl_knw_space SET ksp_pending_generation_id=$4,ksp_index_state=$5
         WHERE ksp_deployment_id=$1 AND ksp_tenant_id=$2 AND ksp_id=$3 AND ksp_lifecycle=$6`,
@@ -76,18 +80,25 @@ export function createKnowledgeRepository(): intfKnowledgeRepository {
       const result = await client.query(`INSERT INTO knowledge.tbl_knw_membership
         (kmb_deployment_id,kmb_tenant_id,kmb_space__ksp_id,kmb_document_id,kmb_mode,kmb_pinned_version_id)
         VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT (kmb_deployment_id,kmb_tenant_id,kmb_space__ksp_id,kmb_document_id)
-        DO UPDATE SET kmb_mode=EXCLUDED.kmb_mode,kmb_pinned_version_id=EXCLUDED.kmb_pinned_version_id,
+        DO UPDATE SET kmb_mode=EXCLUDED.kmb_mode,kmb_pinned_version_id=EXCLUDED.kmb_pinned_version_id,kmb_lifecycle='ACTIVE',
           kmb_security_version=knowledge.tbl_knw_membership.kmb_security_version+1
-        WHERE ROW(knowledge.tbl_knw_membership.kmb_mode,knowledge.tbl_knw_membership.kmb_pinned_version_id)
-          IS DISTINCT FROM ROW(EXCLUDED.kmb_mode,EXCLUDED.kmb_pinned_version_id) RETURNING kmb_document_id`,
+        WHERE ROW(knowledge.tbl_knw_membership.kmb_mode,knowledge.tbl_knw_membership.kmb_pinned_version_id,knowledge.tbl_knw_membership.kmb_lifecycle)
+          IS DISTINCT FROM ROW(EXCLUDED.kmb_mode,EXCLUDED.kmb_pinned_version_id,'ACTIVE') RETURNING kmb_document_id`,
         [...scope(context),input.spaceId,input.documentId,input.mode,input.pinnedVersionId]);
       if (result.rowCount) await client.query(`UPDATE knowledge.tbl_knw_space SET ksp_security_version=ksp_security_version+1
         WHERE ksp_deployment_id=$1 AND ksp_tenant_id=$2 AND ksp_id=$3`,[...scope(context),input.spaceId]);
     },
+    async removeMembership(tx,context,spaceId,documentId){const client=resolveTargetTransaction(tx);
+      const removed=await client.query(`UPDATE knowledge.tbl_knw_membership SET kmb_lifecycle='RETIRED',kmb_security_version=kmb_security_version+1
+        WHERE kmb_deployment_id=$1 AND kmb_tenant_id=$2 AND kmb_space__ksp_id=$3 AND kmb_document_id=$4 AND kmb_lifecycle='ACTIVE'`,
+        [...scope(context),spaceId,documentId]);
+      if(removed.rowCount)await client.query(`UPDATE knowledge.tbl_knw_space SET ksp_security_version=ksp_security_version+1
+        WHERE ksp_deployment_id=$1 AND ksp_tenant_id=$2 AND ksp_id=$3`,[...scope(context),spaceId]);
+    },
     async memberships(tx,context,id) {
       const result = await resolveTargetTransaction(tx).query<{ kmb_space__ksp_id:string;kmb_document_id:string;kmb_mode:enuMembershipMode;kmb_pinned_version_id:string|null;kmb_security_version:string }>(
         `SELECT kmb_space__ksp_id,kmb_document_id,kmb_mode,kmb_pinned_version_id,kmb_security_version FROM knowledge.tbl_knw_membership
-         WHERE kmb_deployment_id=$1 AND kmb_tenant_id=$2 AND kmb_space__ksp_id=$3 ORDER BY kmb_document_id LIMIT 1001`,[...scope(context),id]);
+         WHERE kmb_deployment_id=$1 AND kmb_tenant_id=$2 AND kmb_space__ksp_id=$3 AND kmb_lifecycle='ACTIVE' ORDER BY kmb_document_id LIMIT 1001`,[...scope(context),id]);
       if (result.rows.length>1000) throw new exKnowledge('INVALID_KNOWLEDGE');
       return result.rows.map(row=>({spaceId:row.kmb_space__ksp_id,documentId:row.kmb_document_id,mode:row.kmb_mode,
         pinnedVersionId:row.kmb_pinned_version_id,securityVersion:Number(row.kmb_security_version)}));
@@ -96,7 +107,7 @@ export function createKnowledgeRepository(): intfKnowledgeRepository {
       const result = await resolveTargetTransaction(tx).query<{ kmb_space__ksp_id: string }>(
         `SELECT kmb_space__ksp_id FROM knowledge.tbl_knw_membership JOIN knowledge.tbl_knw_space
            ON ksp_deployment_id=kmb_deployment_id AND ksp_tenant_id=kmb_tenant_id AND ksp_id=kmb_space__ksp_id
-         WHERE kmb_deployment_id=$1 AND kmb_tenant_id=$2 AND kmb_document_id=$3 AND ksp_lifecycle=$4
+         WHERE kmb_deployment_id=$1 AND kmb_tenant_id=$2 AND kmb_document_id=$3 AND ksp_lifecycle=$4 AND kmb_lifecycle='ACTIVE'
          ORDER BY kmb_space__ksp_id LIMIT 1001`, [...scope(context),id,enuKnowledgeState.Active]);
       if(result.rows.length>1000)throw new exKnowledge('INVALID_KNOWLEDGE');
       return result.rows.map(row=>row.kmb_space__ksp_id);

@@ -1,3 +1,4 @@
+import {enuMalwareMode} from '../../../packages/file-processing/src/malware.js';
 import { randomUUID,generateKeyPairSync,randomBytes } from 'node:crypto';
 import { mkdtemp,cp,writeFile,rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -23,12 +24,14 @@ export async function startT5RuntimeFixture(kind:'LOCAL'|'S3_COMPATIBLE'='LOCAL'
   try {
   const configPath=process.env.T4_PG_CONFIG,secretsPath=process.env.T4_SECRETS_DIR;
   if(!configPath||!secretsPath)throw new Error('T5_LIVE_CONFIGURATION_REQUIRED');
-  const baseline=await loadConfiguration(configPath),migration=await createTargetPool(baseline,'migration',secretsPath),apiPool=await createTargetPool(baseline,'api',secretsPath),workerPool=await createTargetPool(baseline,'worker',secretsPath);
+  const root=await mkdtemp(join(tmpdir(),'t5-runtime-')),secretRoot=join(root,'secrets');
+  cleanup.push(()=>rm(root,{recursive:true,force:true}));
+  const loaded=await loadConfiguration(configPath),baselinePath=join(root,'baseline.cjson');
+  await writeFile(baselinePath,JSON.stringify({...loaded.value,deployment:{...loaded.value.deployment,id:`test-r1-runtime-${randomUUID()}`}}),{mode:0o600});
+  const baseline=await loadConfiguration(baselinePath),migration=await createTargetPool(baseline,'migration',secretsPath),apiPool=await createTargetPool(baseline,'api',secretsPath),workerPool=await createTargetPool(baseline,'worker',secretsPath);
   cleanup.push(()=>migration.end(),()=>apiPool.end(),()=>workerPool.end());
   const identity=await createT5Subject(baseline,migration,apiPool,workerPool),context=identity.context;
   cleanup.push(()=>identity.clean());
-  const root=await mkdtemp(join(tmpdir(),'t5-runtime-')),secretRoot=join(root,'secrets');
-  cleanup.push(()=>rm(root,{recursive:true,force:true}));
   await cp(secretsPath,secretRoot,{recursive:true});
   const qdrant=await startQdrantFixture();cleanup.push(()=>qdrant.close());
   const provider=await startProviderFixture();cleanup.push(()=>provider.close());
@@ -58,7 +61,7 @@ export async function startT5RuntimeFixture(kind:'LOCAL'|'S3_COMPATIBLE'='LOCAL'
   const raw={...baseline.value,auth:fixtureAuth,web:{publicOrigin:applicationOrigin},http:{...baseline.value.http,allowedOrigins:[applicationOrigin],...(origins?{apiPort:origins.apiPort,apiInternalUrl:`http://127.0.0.1:${origins.apiPort}`}:{})},deployment:{...baseline.value.deployment,tenantId:context.tenantId},worker:{...baseline.value.worker,identityId:serviceId},
     siem:siem??{...baseline.value.siem,enabled:false},ai:{...baseline.value.ai,protected:approvedModels?.ai??provider.configuration},dataGovernance:approvedModels?.governance??provider.governance,
     fileManagement:{enabled:true,storage,uploads:{mode:'PROXY',partBytes:5242880,ttlMs:60000,timeoutMs:10000,maxConcurrent:4,maxBytes:10485760,maxPendingBytes:41943040,maxTenantStorageBytes:104857600,maxTenantAssets:100},
-      downloads:{ranges:true,conditional:true,maxConcurrent:4},cache:{scope:'REPLICA_PRIVATE',root:join(root,'cache'),maxBytes:10485760,maxEntries:5,ttlMs:60000,timeoutMs:10000},staging:{root:join(root,'staging'),maxBytes:10485760},security:{privateOnly:true,integrityRequired:true}},
+      downloads:{ranges:true,conditional:true,maxConcurrent:4},cache:{scope:'REPLICA_PRIVATE',root:join(root,'cache'),maxBytes:10485760,maxEntries:5,ttlMs:60000,timeoutMs:10000},staging:{root:join(root,'staging'),maxBytes:10485760},security:{privateOnly:true,integrityRequired: true,malware:{mode:enuMalwareMode.Disabled,timeoutMs:1000,maxBytes:10485760,policyVersion:'test-low-assurance-v1'} }},
     knowledge:{enabled:true,indexProfileId:'fixture-profile-v1',chunkingProfile:'utf16-window-v1',chunkChars:256,overlapChars:0,qdrant:{endpoint:qdrant.endpoint,apiKeyRef:'file:/run/secrets/qdrant',timeoutMs:5000,maxResponseBytes:1048576},
       query:{maxQuestionBytes:1024,candidateLimit:20,contextBytes:10000,maxOutputTokens:200},admission:{requestsPerMinute:1000,concurrent:5,dailyRequests:1000,dailyInputChars:1000000,inputChars:10000,uploadBytes:0,outputTokens:1000,tokenBudget:1000000}}};
   const configurationPath=join(root,'platform.cjson');await writeFile(configurationPath,JSON.stringify(raw),{mode:0o600});const snapshot=await loadConfiguration(configurationPath);
@@ -92,6 +95,7 @@ export async function startT5RuntimeFixture(kind:'LOCAL'|'S3_COMPATIBLE'='LOCAL'
         await tx.query('DELETE FROM knowledge.tbl_knw_projection WHERE kpr_tenant_id=$1',[context.tenantId]);await tx.query('UPDATE knowledge.tbl_knw_space SET ksp_generation_id=NULL WHERE ksp_tenant_id=$1',[context.tenantId]);
         for(const[table,column]of[['knowledge.tbl_knw_chunk','kch_tenant_id'],['knowledge.tbl_knw_membership','kmb_tenant_id'],['knowledge.tbl_knw_space','ksp_tenant_id'],['knowledge.tbl_knw_generation','kgn_tenant_id'],['file_management.tbl_fil_part','fpt_tenant_id'],['file_management.tbl_fil_transfer','ftr_tenant_id'],['jobs.tbl_job_work','job_tenant_id']]as const)await tx.query(`DELETE FROM ${table} WHERE ${column}=$1`,[context.tenantId]);
         await tx.query('UPDATE documents.tbl_doc_document SET doc_current_version_id=NULL WHERE doc_tenant_id=$1',[context.tenantId]);
+        await tx.query('DELETE FROM data_governance.tbl_gov_retention WHERE grt_tenant_id=$1',[context.tenantId]);
         for(const[table,column]of[['documents.tbl_doc_asset','ast_tenant_id'],['documents.tbl_doc_version','dvr_tenant_id'],['documents.tbl_doc_document','doc_tenant_id'],['admission.tbl_adm_file_reservation','afr_tenant_id'],['usage.tbl_usg_file_consumption','ufc_tenant_id']]as const)await tx.query(`DELETE FROM ${table} WHERE ${column}=$1`,[context.tenantId]);
         await tx.query('DELETE FROM identity.tbl_idn_membership WHERE idm_id=$1',[serviceMembership]);await tx.query('DELETE FROM identity.tbl_idn_identity WHERE idn_id=$1',[serviceId]);
       });await identity.clean();await apiPool.end();await workerPool.end();await migration.end();await provider.close();await qdrant.close();await s3?.close();await rm(root,{recursive:true,force:true});

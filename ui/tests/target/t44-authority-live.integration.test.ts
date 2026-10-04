@@ -28,6 +28,7 @@ test('real persisted Authority resolves object, field, ACL, classification, scop
     const tenantA = `t44-a-${suffix}`, tenantB = `t44-b-${suffix}`;
     const ids = { a: randomUUID(), b: randomUUID(), c: randomUUID(), d: randomUUID() };
     const membership = Object.fromEntries(Object.entries(ids).map(([name]) => [name, randomUUID()])) as Record<keyof typeof ids, string>;
+    const workerSessionId = randomUUID();
     const resources = { a: randomUUID(), b: randomUUID(), high: randomUUID(), other: randomUUID() };
     const permissions = {
       read: `${root}.Resource.read`, edit: `${root}.Resource.edit`,
@@ -71,6 +72,10 @@ test('real persisted Authority resolves object, field, ACL, classification, scop
             (auc_identity__idn_id,auc_tenant_id,auc_level) VALUES ($1,$2,$3)`,
           [id, tenantA, key === 'a' ? 'HIGH' : 'LOW']);
         }
+        await tx.query(`INSERT INTO session_core.tbl_ses_session
+          (ses_id,ses_identity__idn_id,ses_membership__idm_id,ses_tenant_id,ses_family_id,ses_authorization_version,ses_expires_at)
+          VALUES ($1,$2,$3,$4,$5,1,clock_timestamp() + interval '1 hour')`,
+          [workerSessionId,ids.d,membership.d,tenantA,randomUUID()]);
         await tx.query(`INSERT INTO authority.tbl_aut_org_edge
           (aoe_tenant_id,aoe_child_id,aoe_parent_id) VALUES ($1,'org-child','org-parent')`, [tenantA]);
         for (const [key, path] of Object.entries(permissions)) {
@@ -248,7 +253,7 @@ test('real persisted Authority resolves object, field, ACL, classification, scop
       });
 
       await t.test('HUMAN origin, mandatory Audit, SIEM retry, redaction and audit immutability', async () => {
-        const workerContext = context('d', { source: 'WORKER_ON_BEHALF', sessionId: randomUUID(),
+        const workerContext = context('d', { source: 'WORKER_ON_BEHALF', sessionId: workerSessionId,
           requestId: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', correlationId: randomUUID() });
         assert.equal((await authority.authorize({ context: workerContext, path: permissions.read, resource: resourceA })).decision, 'ALLOW');
         const invalidService = new clsAuthorityService({ ...persistence,
@@ -302,6 +307,7 @@ test('real persisted Authority resolves object, field, ACL, classification, scop
         await tx.query('DELETE FROM authority.tbl_aut_role WHERE aur_tenant_id = $1', [tenantA]);
         await tx.query('DELETE FROM authority.tbl_aut_org_edge WHERE aoe_tenant_id = $1', [tenantA]);
         await tx.query('DELETE FROM authority.tbl_aut_clearance WHERE auc_tenant_id = $1', [tenantA]);
+        await tx.query('DELETE FROM session_core.tbl_ses_session WHERE ses_id = $1', [workerSessionId]);
         await tx.query('DELETE FROM identity.tbl_idn_membership WHERE idm_tenant_id = $1', [tenantA]);
         await tx.query('DELETE FROM identity.tbl_idn_identity WHERE idn_id = ANY($1::uuid[])', [Object.values(ids)]);
         await tx.query('DELETE FROM authority.tbl_aut_permission WHERE aup_module_id = $1', [`fixture-${suffix}`]);

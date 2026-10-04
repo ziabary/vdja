@@ -3,7 +3,7 @@ import { Agent } from 'node:https';
 import { Readable } from 'node:stream';
 import { S3Client, HeadBucketCommand, GetBucketAclCommand, GetBucketPolicyCommand, CreateMultipartUploadCommand, UploadPartCommand,
   ListPartsCommand, ListMultipartUploadsCommand, CompleteMultipartUploadCommand,
-  AbortMultipartUploadCommand, HeadObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
+  AbortMultipartUploadCommand, HeadObjectCommand, GetObjectCommand,DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { enuStorageKind, enuStorageOutcome, exStorage, validateStorageKey, validateStorageDescriptor,
   type intfStorageDescriptor, type intfStoragePart, type intfStoragePartObservation, type intfStoragePort,
   type typStorageMutation } from '../index.js';
@@ -76,6 +76,7 @@ export class clsS3StorageAdapter implements intfStoragePort {
     }
     catch { throw new exStorage('STORAGE_UNAVAILABLE'); }
   }
+  async purge(key:string):Promise<void>{validateStorageKey(key);await this.client.send(new DeleteObjectCommand({Bucket:this.options.bucket,Key:key}),{abortSignal:this.signal()});if(await this.inspect(key))throw new exStorage('STORAGE_UNAVAILABLE');}
   async begin(descriptor: intfStorageDescriptor, transferId: string): Promise<typStorageMutation> {
     validateStorageDescriptor(descriptor);
     try {

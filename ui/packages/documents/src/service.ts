@@ -1,3 +1,4 @@
+import {resolvePurgePermit,type intfPurgePermit} from '../../data-governance/src/retention.js';
 import { createHash, randomUUID } from 'node:crypto';
 import type { intfExecutionContext, intfCursorPage } from '../../contracts/src/index.js';
 import type { intfTransactionHandle, intfTransactionPort } from '../../contracts/src/transaction.js';
@@ -37,6 +38,9 @@ export class clsDocumentService {
     if (!Number.isSafeInteger(ports.maxNormalizedChars) || ports.maxNormalizedChars < 1)
       throw new exDocument('INVALID_DOCUMENT');
   }
+  async retentionFactsWithin(tx:intfTransactionHandle,context:intfExecutionContext,id:string){return this.ports.repository.retentionFacts(tx,context,id);}
+  async retainedAssets(context:intfExecutionContext,permit:intfPurgePermit):Promise<readonly intfDocumentAsset[]>{const request=resolvePurgePermit(permit,context);return this.ports.transactions.run(context,tx=>this.ports.repository.retainedAssets(tx,context,request.resourceId));}
+  async purgeWithin(tx:intfTransactionHandle,context:intfExecutionContext,permit:intfPurgePermit):Promise<void>{const request=resolvePurgePermit(permit,context);if(!request.leaseToken)throw new exDocument('DOCUMENT_DENIED');await this.ports.repository.purgeContent(tx,context,request.resourceId,request.leaseToken);}
   async authorize(context: intfExecutionContext, operation: enuDocumentOperation,
     facts: intfDocumentFacts): Promise<boolean> {
     await this.ports.subject.assertActive(context);
@@ -164,6 +168,10 @@ export class clsDocumentService {
       && operation !== enuDocumentOperation.Quote) throw new exDocument('INVALID_DOCUMENT');
     identifier(versionId);
     return this.ports.transactions.run(context, async tx => {
+      await this.ports.authority.lockSnapshot(tx,knowledgeContext(context));
+      const locked=await this.ports.repository.facts(tx,context,documentId);
+      if(!locked)throw new exDocument('DOCUMENT_DENIED');
+      await this.ports.repository.assertSnapshot(tx,context,[locked]);
       const facts = await this.require(tx, context, documentId, operation);
       if (facts.currentVersionId !== versionId) throw new exDocument('STALE_DOCUMENT');
       const text = await this.ports.repository.normalized(tx, context, versionId);
@@ -177,9 +185,12 @@ export class clsDocumentService {
       || references.length > 1000) throw new exDocument('INVALID_DOCUMENT');
     for (const reference of references) { identifier(reference.documentId); identifier(reference.versionId); }
     const unique = [...new Set(references.map(reference => reference.documentId))];
-    const facts = await this.facts(context, unique), permitted = await this.authorizeMany(context, operation, facts);
-    if (unique.some(id => !permitted.get(id))) throw new exDocument('DOCUMENT_DENIED');
     return this.ports.transactions.run(context, async tx => {
+      await this.ports.authority.lockSnapshot(tx,knowledgeContext(context));
+      const facts=await this.ports.repository.factsBatch(tx,context,unique);
+      await this.ports.repository.assertSnapshot(tx,context,facts);
+      const permitted=await this.authorizeMany(context,operation,facts);
+      if(unique.some(id=>!permitted.get(id)))throw new exDocument('DOCUMENT_DENIED');
       const versions = await this.ports.repository.normalizedBatch(tx, context, references.map(reference => reference.versionId));
       const byId = new Map(versions.map(version => [version.versionId, version]));
       const texts = new Map<string, string>();

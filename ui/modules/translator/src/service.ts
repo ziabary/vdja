@@ -20,7 +20,7 @@ export async function translate(storage: intfPublicOperationPersistence, diction
       const runId = randomUUID();
       return { value: { kind: 'DICTIONARY', dictionary: found } as const, usage: [{ runId, inputChars: text.length, uploadedBytes: 0, inputTokens: 0, outputTokens: 0, providerMs: 0 }] };
     }
-    const result = await router.run({ task: 'TRANSLATE', moduleId: 'translator', requestId: context.requestId, correlationId: context.correlationId, deploymentId: context.deploymentId, tenantId: context.tenantId, actorKind: context.actorKind, actorId: context.actorId, messages: [{ role: 'system', content: SYSTEM_PROMPT }, { role: 'user', content: `Translate from ${LANGUAGES[input.sourceLang]} to ${LANGUAGES[input.targetLang]}: ${text}` }], maxOutputTokens: policy.outputTokens, temperature: 0.7, signal: input.signal }, onDelta);
+    const result = await router.run({ task: 'TRANSLATE', moduleId: 'translator', requestId: context.requestId, correlationId: context.correlationId, deploymentId: context.deploymentId, tenantId: context.tenantId, actorKind: context.actorKind, actorId: context.actorId, messages: [{ role: 'system', content: SYSTEM_PROMPT }, { role: 'user', content: `Translate from ${LANGUAGES[input.sourceLang]} to ${LANGUAGES[input.targetLang]}: ${text}` }], maxOutputTokens: policy.outputTokens, temperature: 0.7, ...(input.signal?{signal:input.signal}:{}) }, onDelta);
     return { value: { kind: 'STREAM', markdown: result.output, runId: result.runId } as const, usage: [{ runId: result.runId, inputChars: text.length, uploadedBytes: 0, inputTokens: result.inputTokens, outputTokens: result.outputTokens, providerMs: result.durationMs }] };
   } });
 }

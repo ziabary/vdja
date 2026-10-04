@@ -1,29 +1,32 @@
 {
   "source": "reports/security/asvs-5.0-l3.json",
-  "generatedAt": "2026-10-03T18:33:14.612Z",
+  "generatedAt": "2026-10-04T12:50:53.600Z",
+  "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a",
+  "verificationContractHash": "17f13383778b2511b16aa6e88d1aea5909a499bf9891e0a7a2f539c84e834b80",
   "verificationScope": "LOCAL_REAL_INFRASTRUCTURE_AND_PROTOCOL_PROVIDER_FIXTURES",
   "verifyDuringT5Reviewed": 102,
-  "additionalT5Scope": 4,
+  "additionalT5Scope": 5,
   "counts": {
-    "total": 106,
-    "PASS": 62,
-    "FAIL": 6,
-    "NOT_VERIFIED": 35,
+    "total": 107,
+    "PASS": 43,
+    "FAIL": 3,
+    "NOT_VERIFIED": 58,
     "NOT_APPLICABLE": 3
   },
-  "blockingFindings": 41,
+  "blockingFindings": 61,
   "approvedExceptions": 0,
   "releaseOnlyBlockingFindings": 69,
   "ASVS_L3_RELEASE_GATE": "NO",
   "controls": [
     {
       "id": "v5.0.0-V1.1.1",
-      "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.610Z",
+      "status": "NOT_VERIFIED",
+      "reviewedAt": "2026-10-04T12:50:53.595Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
-      "observed": "JSON و UTF-8 یک‌بار خوانده می‌شوند؛ سؤال و متن chunk دوباره URL/HTML decode نمی‌شوند.",
+      "observed": "شاهد آزمون اجراشدهٔ مختص این کنترل برای source جاری ثبت نشده است.",
+      "directEvidence": null,
       "evidencePaths": [
         "packages/file-processing/src/index.ts",
         "packages/file-processing/src/office-archive.ts",
@@ -32,24 +35,33 @@
         "tests/reports/t5-foundations.log",
         "tests/reports/t5-integrations.log"
       ],
-      "missingEvidence": null,
+      "missingEvidence": "شاهد آزمون اجراشدهٔ مختص این کنترل برای source جاری ثبت نشده است.",
       "exception": null
     },
     {
       "id": "v5.0.0-V1.1.2",
       "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.611Z",
+      "reviewedAt": "2026-10-04T12:50:53.595Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "پاسخ و citation با JSON serialization و interpolation متنی Svelte در مقصد escape می‌شوند.",
+      "directEvidence": {
+        "testFile": "tests/target/t5-browser.integration.test.mjs",
+        "testCase": "built Svelte RAG UI uses real Identity/Session/Authority, managed upload, durable processing, derived retrieval and authorized citations",
+        "reportArtifact": "tests/reports/t5-r1/browser.log",
+        "artifactHash": "a43eece9814b624bf3cf88f02d5dc2860444d432bcb834326ba848b58a7cdeeb",
+        "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a"
+      },
       "evidencePaths": [
         "packages/file-processing/src/index.ts",
         "packages/file-processing/src/office-archive.ts",
         "packages/configuration/src/index.ts",
         "apps/api/src/knowledge.ts",
         "tests/reports/t5-foundations.log",
-        "tests/reports/t5-integrations.log"
+        "tests/reports/t5-integrations.log",
+        "tests/target/t5-browser.integration.test.mjs",
+        "tests/reports/t5-r1/browser.log"
       ],
       "missingEvidence": null,
       "exception": null
@@ -57,30 +69,40 @@
     {
       "id": "v5.0.0-V1.2.1",
       "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.611Z",
+      "reviewedAt": "2026-10-04T12:50:53.596Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "سرآیند filename با RFC 5987 و متن HTML با Svelte escape می‌شود؛ نمایش HTML فعال وجود ندارد.",
+      "directEvidence": {
+        "testFile": "tests/target/t4-file-security.test.ts",
+        "testCase": "display filename preserves Persian basename and removes dangerous metadata",
+        "reportArtifact": "tests/reports/t5-r1/foundations.log",
+        "artifactHash": "e98f36033ab05c8b1aa891b40b62fec1cc7a59ab86f7da5b4ac20670847225cb",
+        "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a"
+      },
       "evidencePaths": [
         "packages/file-processing/src/index.ts",
         "packages/file-processing/src/office-archive.ts",
         "packages/configuration/src/index.ts",
         "apps/api/src/knowledge.ts",
         "tests/reports/t5-foundations.log",
-        "tests/reports/t5-integrations.log"
+        "tests/reports/t5-integrations.log",
+        "tests/target/t4-file-security.test.ts",
+        "tests/reports/t5-r1/foundations.log"
       ],
       "missingEvidence": null,
       "exception": null
     },
     {
       "id": "v5.0.0-V1.2.2",
-      "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.611Z",
+      "status": "NOT_VERIFIED",
+      "reviewedAt": "2026-10-04T12:50:53.596Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
-      "observed": "شناسهٔ UUID در مسیر کنترل و encode می‌شود؛ مقصدها از CJSON با پروتکل محدود هستند.",
+      "observed": "شاهد آزمون اجراشدهٔ مختص این کنترل برای source جاری ثبت نشده است.",
+      "directEvidence": null,
       "evidencePaths": [
         "packages/file-processing/src/index.ts",
         "packages/file-processing/src/office-archive.ts",
@@ -89,17 +111,18 @@
         "tests/reports/t5-foundations.log",
         "tests/reports/t5-integrations.log"
       ],
-      "missingEvidence": null,
+      "missingEvidence": "شاهد آزمون اجراشدهٔ مختص این کنترل برای source جاری ثبت نشده است.",
       "exception": null
     },
     {
       "id": "v5.0.0-V1.2.3",
-      "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.611Z",
+      "status": "NOT_VERIFIED",
+      "reviewedAt": "2026-10-04T12:50:53.596Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
-      "observed": "هیچ تولید JavaScript از پاسخ مدل انجام نمی‌شود؛ JSON.stringify در API و SIEM استفاده می‌شود.",
+      "observed": "شاهد آزمون اجراشدهٔ مختص این کنترل برای source جاری ثبت نشده است.",
+      "directEvidence": null,
       "evidencePaths": [
         "packages/file-processing/src/index.ts",
         "packages/file-processing/src/office-archive.ts",
@@ -108,17 +131,18 @@
         "tests/reports/t5-foundations.log",
         "tests/reports/t5-integrations.log"
       ],
-      "missingEvidence": null,
+      "missingEvidence": "شاهد آزمون اجراشدهٔ مختص این کنترل برای source جاری ثبت نشده است.",
       "exception": null
     },
     {
       "id": "v5.0.0-V1.2.9",
       "status": "NOT_APPLICABLE",
-      "reviewedAt": "2026-10-03T18:33:14.611Z",
+      "reviewedAt": "2026-10-04T12:50:53.596Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "در سطح T5 هیچ regex از رشتهٔ کاربر ساخته نمی‌شود؛ الگوها ثابت‌اند.",
+      "directEvidence": null,
       "evidencePaths": [
         "packages/file-processing/src/index.ts",
         "packages/file-processing/src/office-archive.ts",
@@ -132,12 +156,13 @@
     },
     {
       "id": "v5.0.0-V1.3.2",
-      "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.611Z",
+      "status": "NOT_VERIFIED",
+      "reviewedAt": "2026-10-04T12:50:53.596Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
-      "observed": "کد هدف eval یا اجرای expression مدل ندارد؛ خروجی مدل فقط دادهٔ schema-validated است.",
+      "observed": "شاهد آزمون اجراشدهٔ مختص این کنترل برای source جاری ثبت نشده است.",
+      "directEvidence": null,
       "evidencePaths": [
         "packages/file-processing/src/index.ts",
         "packages/file-processing/src/office-archive.ts",
@@ -146,17 +171,18 @@
         "tests/reports/t5-foundations.log",
         "tests/reports/t5-integrations.log"
       ],
-      "missingEvidence": null,
+      "missingEvidence": "شاهد آزمون اجراشدهٔ مختص این کنترل برای source جاری ثبت نشده است.",
       "exception": null
     },
     {
       "id": "v5.0.0-V1.3.3",
       "status": "NOT_VERIFIED",
-      "reviewedAt": "2026-10-03T18:33:14.611Z",
+      "reviewedAt": "2026-10-04T12:50:53.596Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "نام و آرگومان تبدیل ثابت و bounded است؛ ایمنی تمامی ورودی‌های PDF/DOC در parser native اثبات نشده است.",
+      "directEvidence": null,
       "evidencePaths": [
         "packages/file-processing/src/index.ts",
         "packages/file-processing/src/office-archive.ts",
@@ -171,30 +197,40 @@
     {
       "id": "v5.0.0-V1.3.5",
       "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.611Z",
+      "reviewedAt": "2026-10-04T12:50:53.596Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "Markdown/HTML پاسخ یا فایل به‌عنوان زبان اجرایی render نمی‌شود؛ متن escaped نمایش داده می‌شود.",
+      "directEvidence": {
+        "testFile": "tests/target/t5-browser.integration.test.mjs",
+        "testCase": "built Svelte RAG UI uses real Identity/Session/Authority, managed upload, durable processing, derived retrieval and authorized citations",
+        "reportArtifact": "tests/reports/t5-r1/browser.log",
+        "artifactHash": "a43eece9814b624bf3cf88f02d5dc2860444d432bcb834326ba848b58a7cdeeb",
+        "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a"
+      },
       "evidencePaths": [
         "packages/file-processing/src/index.ts",
         "packages/file-processing/src/office-archive.ts",
         "packages/configuration/src/index.ts",
         "apps/api/src/knowledge.ts",
         "tests/reports/t5-foundations.log",
-        "tests/reports/t5-integrations.log"
+        "tests/reports/t5-integrations.log",
+        "tests/target/t5-browser.integration.test.mjs",
+        "tests/reports/t5-r1/browser.log"
       ],
       "missingEvidence": null,
       "exception": null
     },
     {
       "id": "v5.0.0-V1.3.7",
-      "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.611Z",
+      "status": "NOT_VERIFIED",
+      "reviewedAt": "2026-10-04T12:50:53.596Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
-      "observed": "trusted prompt ثابت است؛ متن retrieved در دادهٔ user قرار می‌گیرد و template اجرایی تولید نمی‌کند.",
+      "observed": "شاهد آزمون اجراشدهٔ مختص این کنترل برای source جاری ثبت نشده است.",
+      "directEvidence": null,
       "evidencePaths": [
         "packages/file-processing/src/index.ts",
         "packages/file-processing/src/office-archive.ts",
@@ -203,17 +239,18 @@
         "tests/reports/t5-foundations.log",
         "tests/reports/t5-integrations.log"
       ],
-      "missingEvidence": null,
+      "missingEvidence": "شاهد آزمون اجراشدهٔ مختص این کنترل برای source جاری ثبت نشده است.",
       "exception": null
     },
     {
       "id": "v5.0.0-V1.3.10",
       "status": "NOT_APPLICABLE",
-      "reviewedAt": "2026-10-03T18:33:14.611Z",
+      "reviewedAt": "2026-10-04T12:50:53.596Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "format string اجرایی یا printf با template کاربر در سطح T5 وجود ندارد.",
+      "directEvidence": null,
       "evidencePaths": [
         "packages/file-processing/src/index.ts",
         "packages/file-processing/src/office-archive.ts",
@@ -228,11 +265,12 @@
     {
       "id": "v5.0.0-V1.3.12",
       "status": "NOT_VERIFIED",
-      "reviewedAt": "2026-10-03T18:33:14.611Z",
+      "reviewedAt": "2026-10-04T12:50:53.596Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "الگوها ثابت و ورودی‌ها bounded هستند؛ ارزیابی worst-case همهٔ regexها و کتابخانه‌ها ثبت نشده است.",
+      "directEvidence": null,
       "evidencePaths": [
         "packages/file-processing/src/index.ts",
         "packages/file-processing/src/office-archive.ts",
@@ -247,11 +285,12 @@
     {
       "id": "v5.0.0-V1.4.1",
       "status": "NOT_VERIFIED",
-      "reviewedAt": "2026-10-03T18:33:14.611Z",
+      "reviewedAt": "2026-10-04T12:50:53.596Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "بخش TS managed است؛ native parser/LibreOffice و وابستگی‌ها به بررسی memory safety و آسیب‌پذیری نیاز دارند.",
+      "directEvidence": null,
       "evidencePaths": [
         "packages/file-processing/src/index.ts",
         "packages/file-processing/src/office-archive.ts",
@@ -266,18 +305,27 @@
     {
       "id": "v5.0.0-V1.4.2",
       "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.611Z",
+      "reviewedAt": "2026-10-04T12:50:53.596Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "اندازه، صفحه، range، multipart و جمع ظرفیت با safe integer و bounds کنترل می‌شوند.",
+      "directEvidence": {
+        "testFile": "tests/target/t5-file-limits.integration.test.ts",
+        "testCase": "Authority selects file tiers; Admission enforces distributed actor and hard limits after elevation and revocation",
+        "reportArtifact": "tests/reports/t5-r1/integrations.log",
+        "artifactHash": "68c374a460f71e091d472493cbe205cee30715ccee3252bc4b54847159a649a0",
+        "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a"
+      },
       "evidencePaths": [
         "packages/file-processing/src/index.ts",
         "packages/file-processing/src/office-archive.ts",
         "packages/configuration/src/index.ts",
         "apps/api/src/knowledge.ts",
         "tests/reports/t5-foundations.log",
-        "tests/reports/t5-integrations.log"
+        "tests/reports/t5-integrations.log",
+        "tests/target/t5-file-limits.integration.test.ts",
+        "tests/reports/t5-r1/integrations.log"
       ],
       "missingEvidence": null,
       "exception": null
@@ -285,18 +333,27 @@
     {
       "id": "v5.0.0-V1.4.3",
       "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.611Z",
+      "reviewedAt": "2026-10-04T12:50:53.596Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "staging/profile/file handle در finally آزاد می‌شوند؛ stream حتی پیش از مصرف روی destroy ظرفیت و منبع را آزاد می‌کند.",
+      "directEvidence": {
+        "testFile": "tests/target/t5-file-staging.test.ts",
+        "testCase": "noncanonical staging streams bounded verified bytes, cleans failure and never exposes partial content",
+        "reportArtifact": "tests/reports/t5-r1/foundations.log",
+        "artifactHash": "e98f36033ab05c8b1aa891b40b62fec1cc7a59ab86f7da5b4ac20670847225cb",
+        "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a"
+      },
       "evidencePaths": [
         "packages/file-processing/src/index.ts",
         "packages/file-processing/src/office-archive.ts",
         "packages/configuration/src/index.ts",
         "apps/api/src/knowledge.ts",
         "tests/reports/t5-foundations.log",
-        "tests/reports/t5-integrations.log"
+        "tests/reports/t5-integrations.log",
+        "tests/target/t5-file-staging.test.ts",
+        "tests/reports/t5-r1/foundations.log"
       ],
       "missingEvidence": null,
       "exception": null
@@ -304,11 +361,12 @@
     {
       "id": "v5.0.0-V1.5.1",
       "status": "NOT_VERIFIED",
-      "reviewedAt": "2026-10-03T18:33:14.611Z",
+      "reviewedAt": "2026-10-04T12:50:53.596Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "OOXML/ODT دارای DTD/entity و external relationship رد می‌شود؛ تنظیم XXE تمامی مسیرهای LibreOffice/DOC اثبات نشده است.",
+      "directEvidence": null,
       "evidencePaths": [
         "packages/file-processing/src/index.ts",
         "packages/file-processing/src/office-archive.ts",
@@ -322,12 +380,13 @@
     },
     {
       "id": "v5.0.0-V1.5.2",
-      "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.611Z",
+      "status": "NOT_VERIFIED",
+      "reviewedAt": "2026-10-04T12:50:53.596Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
-      "observed": "JSON پویا unknown است و با allowlist کلید/type/range محدود می‌شود؛ deserialization کلاس اجرایی وجود ندارد.",
+      "observed": "شاهد آزمون اجراشدهٔ مختص این کنترل برای source جاری ثبت نشده است.",
+      "directEvidence": null,
       "evidencePaths": [
         "packages/file-processing/src/index.ts",
         "packages/file-processing/src/office-archive.ts",
@@ -336,17 +395,18 @@
         "tests/reports/t5-foundations.log",
         "tests/reports/t5-integrations.log"
       ],
-      "missingEvidence": null,
+      "missingEvidence": "شاهد آزمون اجراشدهٔ مختص این کنترل برای source جاری ثبت نشده است.",
       "exception": null
     },
     {
       "id": "v5.0.0-V1.5.3",
       "status": "NOT_VERIFIED",
-      "reviewedAt": "2026-10-03T18:33:14.611Z",
+      "reviewedAt": "2026-10-04T12:50:53.596Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "JSON و UTF-8 strict مشترک‌اند؛ differential parsing فایل باینری و مفسر Office کاملاً آزموده نشده است.",
+      "directEvidence": null,
       "evidencePaths": [
         "packages/file-processing/src/index.ts",
         "packages/file-processing/src/office-archive.ts",
@@ -360,12 +420,13 @@
     },
     {
       "id": "v5.0.0-V2.1.1",
-      "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.611Z",
+      "status": "NOT_VERIFIED",
+      "reviewedAt": "2026-10-04T12:50:53.596Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
-      "observed": "قالب UUID، SHA-256، MIME، mode، محدودیت اندازه و manifest در مستندات قرارداد ثبت شده‌اند.",
+      "observed": "شاهد آزمون اجراشدهٔ مختص این کنترل برای source جاری ثبت نشده است.",
+      "directEvidence": null,
       "evidencePaths": [
         "packages/file-processing/src/index.ts",
         "packages/file-processing/src/office-archive.ts",
@@ -374,17 +435,18 @@
         "tests/reports/t5-foundations.log",
         "tests/reports/t5-integrations.log"
       ],
-      "missingEvidence": null,
+      "missingEvidence": "شاهد آزمون اجراشدهٔ مختص این کنترل برای source جاری ثبت نشده است.",
       "exception": null
     },
     {
       "id": "v5.0.0-V2.1.2",
-      "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.611Z",
+      "status": "NOT_VERIFIED",
+      "reviewedAt": "2026-10-04T12:50:53.596Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
-      "observed": "رابطهٔ Document/Version/Asset، hash/length، pinned/current و model dimension مستند است.",
+      "observed": "شاهد آزمون اجراشدهٔ مختص این کنترل برای source جاری ثبت نشده است.",
+      "directEvidence": null,
       "evidencePaths": [
         "packages/file-processing/src/index.ts",
         "packages/file-processing/src/office-archive.ts",
@@ -393,24 +455,33 @@
         "tests/reports/t5-foundations.log",
         "tests/reports/t5-integrations.log"
       ],
-      "missingEvidence": null,
+      "missingEvidence": "شاهد آزمون اجراشدهٔ مختص این کنترل برای source جاری ثبت نشده است.",
       "exception": null
     },
     {
       "id": "v5.0.0-V2.1.3",
       "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.611Z",
+      "reviewedAt": "2026-10-04T12:50:53.596Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "سقف hard tenant و دو tier actor، concurrency/pending/storage/assets در قرارداد File Management مستند هستند.",
+      "directEvidence": {
+        "testFile": "tests/configuration/t5-file-management.test.ts",
+        "testCase": "identity tiers cannot exceed hard platform limits or lower the privileged tier",
+        "reportArtifact": "tests/reports/t5-r1/foundations.log",
+        "artifactHash": "e98f36033ab05c8b1aa891b40b62fec1cc7a59ab86f7da5b4ac20670847225cb",
+        "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a"
+      },
       "evidencePaths": [
         "packages/file-processing/src/index.ts",
         "packages/file-processing/src/office-archive.ts",
         "packages/configuration/src/index.ts",
         "apps/api/src/knowledge.ts",
         "tests/reports/t5-foundations.log",
-        "tests/reports/t5-integrations.log"
+        "tests/reports/t5-integrations.log",
+        "tests/configuration/t5-file-management.test.ts",
+        "tests/reports/t5-r1/foundations.log"
       ],
       "missingEvidence": null,
       "exception": null
@@ -418,18 +489,27 @@
     {
       "id": "v5.0.0-V2.2.1",
       "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.611Z",
+      "reviewedAt": "2026-10-04T12:50:53.596Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "HTTP/config/manifest/provider input با allowlist نوع، الگو و bounds اعتبارسنجی می‌شود.",
+      "directEvidence": {
+        "testFile": "tests/configuration/t5-file-management.test.ts",
+        "testCase": "managed transfer configuration selects one adapter with external credentials and strict bounds",
+        "reportArtifact": "tests/reports/t5-r1/foundations.log",
+        "artifactHash": "e98f36033ab05c8b1aa891b40b62fec1cc7a59ab86f7da5b4ac20670847225cb",
+        "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a"
+      },
       "evidencePaths": [
         "packages/file-processing/src/index.ts",
         "packages/file-processing/src/office-archive.ts",
         "packages/configuration/src/index.ts",
         "apps/api/src/knowledge.ts",
         "tests/reports/t5-foundations.log",
-        "tests/reports/t5-integrations.log"
+        "tests/reports/t5-integrations.log",
+        "tests/configuration/t5-file-management.test.ts",
+        "tests/reports/t5-r1/foundations.log"
       ],
       "missingEvidence": null,
       "exception": null
@@ -437,18 +517,27 @@
     {
       "id": "v5.0.0-V2.2.3",
       "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.611Z",
+      "reviewedAt": "2026-10-04T12:50:53.596Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "hash واقعی با descriptor، media/extension/signature و embedding profile با dimensions تطبیق داده می‌شود.",
+      "directEvidence": {
+        "testFile": "tests/target/t5-file-management.integration.test.ts",
+        "testCase": "invalid signature/hash never creates Asset, Version, or processing Job",
+        "reportArtifact": "tests/reports/t5-r1/integrations.log",
+        "artifactHash": "68c374a460f71e091d472493cbe205cee30715ccee3252bc4b54847159a649a0",
+        "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a"
+      },
       "evidencePaths": [
         "packages/file-processing/src/index.ts",
         "packages/file-processing/src/office-archive.ts",
         "packages/configuration/src/index.ts",
         "apps/api/src/knowledge.ts",
         "tests/reports/t5-foundations.log",
-        "tests/reports/t5-integrations.log"
+        "tests/reports/t5-integrations.log",
+        "tests/target/t5-file-management.integration.test.ts",
+        "tests/reports/t5-r1/integrations.log"
       ],
       "missingEvidence": null,
       "exception": null
@@ -456,18 +545,27 @@
     {
       "id": "v5.0.0-V2.3.1",
       "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.611Z",
+      "reviewedAt": "2026-10-04T12:50:53.596Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "lease و state machine اجازهٔ commit پیش از upload/verification یا تغییر descriptor در retry نمی‌دهد.",
+      "directEvidence": {
+        "testFile": "tests/target/t5-transfer-persistence.integration.test.ts",
+        "testCase": "one live lease owns transfer mutation and checksum/size intent survives retry",
+        "reportArtifact": "tests/reports/t5-r1/integrations.log",
+        "artifactHash": "68c374a460f71e091d472493cbe205cee30715ccee3252bc4b54847159a649a0",
+        "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a"
+      },
       "evidencePaths": [
         "packages/file-processing/src/index.ts",
         "packages/file-processing/src/office-archive.ts",
         "packages/configuration/src/index.ts",
         "apps/api/src/knowledge.ts",
         "tests/reports/t5-foundations.log",
-        "tests/reports/t5-integrations.log"
+        "tests/reports/t5-integrations.log",
+        "tests/target/t5-transfer-persistence.integration.test.ts",
+        "tests/reports/t5-r1/integrations.log"
       ],
       "missingEvidence": null,
       "exception": null
@@ -475,18 +573,27 @@
     {
       "id": "v5.0.0-V2.3.2",
       "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.611Z",
+      "reviewedAt": "2026-10-04T12:50:53.597Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "Admission در PostgreSQL سقف actor و hard tenant را حتی با مجوز elevated اعمال می‌کند.",
+      "directEvidence": {
+        "testFile": "tests/target/t5-transfer-persistence.integration.test.ts",
+        "testCase": "concurrent replicas cannot over-reserve storage and committed storage stays charged",
+        "reportArtifact": "tests/reports/t5-r1/integrations.log",
+        "artifactHash": "68c374a460f71e091d472493cbe205cee30715ccee3252bc4b54847159a649a0",
+        "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a"
+      },
       "evidencePaths": [
         "packages/file-processing/src/index.ts",
         "packages/file-processing/src/office-archive.ts",
         "packages/configuration/src/index.ts",
         "apps/api/src/knowledge.ts",
         "tests/reports/t5-foundations.log",
-        "tests/reports/t5-integrations.log"
+        "tests/reports/t5-integrations.log",
+        "tests/target/t5-transfer-persistence.integration.test.ts",
+        "tests/reports/t5-r1/integrations.log"
       ],
       "missingEvidence": null,
       "exception": null
@@ -494,18 +601,27 @@
     {
       "id": "v5.0.0-V2.3.3",
       "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.611Z",
+      "reviewedAt": "2026-10-04T12:50:53.597Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "Asset/Version/Job/Usage/Audit در یک transaction commit یا rollback می‌شوند؛ remote intent پیش از side effect پایدار است.",
+      "directEvidence": {
+        "testFile": "tests/target/t5-document-jobs.integration.test.ts",
+        "testCase": "asset/version/job transaction rolls back at the crash boundary",
+        "reportArtifact": "tests/reports/t5-r1/integrations.log",
+        "artifactHash": "68c374a460f71e091d472493cbe205cee30715ccee3252bc4b54847159a649a0",
+        "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a"
+      },
       "evidencePaths": [
         "packages/file-processing/src/index.ts",
         "packages/file-processing/src/office-archive.ts",
         "packages/configuration/src/index.ts",
         "apps/api/src/knowledge.ts",
         "tests/reports/t5-foundations.log",
-        "tests/reports/t5-integrations.log"
+        "tests/reports/t5-integrations.log",
+        "tests/target/t5-document-jobs.integration.test.ts",
+        "tests/reports/t5-r1/integrations.log"
       ],
       "missingEvidence": null,
       "exception": null
@@ -513,18 +629,27 @@
     {
       "id": "v5.0.0-V2.3.4",
       "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.611Z",
+      "reviewedAt": "2026-10-04T12:50:53.597Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "advisory locks، SKIP LOCKED، lease fence و snapshot locks رقابت رزرو و انتشار را کنترل می‌کنند.",
+      "directEvidence": {
+        "testFile": "tests/target/t5-document-jobs.integration.test.ts",
+        "testCase": "lease fencing prevents replaced Worker from settling durable work",
+        "reportArtifact": "tests/reports/t5-r1/integrations.log",
+        "artifactHash": "68c374a460f71e091d472493cbe205cee30715ccee3252bc4b54847159a649a0",
+        "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a"
+      },
       "evidencePaths": [
         "packages/file-processing/src/index.ts",
         "packages/file-processing/src/office-archive.ts",
         "packages/configuration/src/index.ts",
         "apps/api/src/knowledge.ts",
         "tests/reports/t5-foundations.log",
-        "tests/reports/t5-integrations.log"
+        "tests/reports/t5-integrations.log",
+        "tests/target/t5-document-jobs.integration.test.ts",
+        "tests/reports/t5-r1/integrations.log"
       ],
       "missingEvidence": null,
       "exception": null
@@ -532,18 +657,27 @@
     {
       "id": "v5.0.0-V3.2.1",
       "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.611Z",
+      "reviewedAt": "2026-10-04T12:50:53.597Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "دانلود attachment/nosniff است؛ محتوا JSON یا متن است و خودکار HTML اجرا نمی‌شود.",
+      "directEvidence": {
+        "testFile": "tests/target/t5-browser.integration.test.mjs",
+        "testCase": "built Svelte RAG UI uses real Identity/Session/Authority, managed upload, durable processing, derived retrieval and authorized citations",
+        "reportArtifact": "tests/reports/t5-r1/browser.log",
+        "artifactHash": "a43eece9814b624bf3cf88f02d5dc2860444d432bcb834326ba848b58a7cdeeb",
+        "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a"
+      },
       "evidencePaths": [
         "apps/api/src/knowledge.ts",
         "apps/web/src/lib/knowledge/Workspace.svelte",
         "apps/web/src/hooks.server.ts",
         "tests/reports/t5-browser.log",
         "tests/reports/auth-http-regression.log",
-        "tests/target/t44-static-headers.integration.test.mjs"
+        "tests/target/t44-static-headers.integration.test.mjs",
+        "tests/target/t5-browser.integration.test.mjs",
+        "tests/reports/t5-r1/browser.log"
       ],
       "missingEvidence": null,
       "exception": null
@@ -551,30 +685,40 @@
     {
       "id": "v5.0.0-V3.2.2",
       "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.611Z",
+      "reviewedAt": "2026-10-04T12:50:53.597Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "متن فایل و مدل با interpolation امن نمایش داده می‌شود؛ browser injection fixture اجرا شده است.",
+      "directEvidence": {
+        "testFile": "tests/target/t5-browser.integration.test.mjs",
+        "testCase": "built Svelte RAG UI uses real Identity/Session/Authority, managed upload, durable processing, derived retrieval and authorized citations",
+        "reportArtifact": "tests/reports/t5-r1/browser.log",
+        "artifactHash": "a43eece9814b624bf3cf88f02d5dc2860444d432bcb834326ba848b58a7cdeeb",
+        "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a"
+      },
       "evidencePaths": [
         "apps/api/src/knowledge.ts",
         "apps/web/src/lib/knowledge/Workspace.svelte",
         "apps/web/src/hooks.server.ts",
         "tests/reports/t5-browser.log",
         "tests/reports/auth-http-regression.log",
-        "tests/target/t44-static-headers.integration.test.mjs"
+        "tests/target/t44-static-headers.integration.test.mjs",
+        "tests/target/t5-browser.integration.test.mjs",
+        "tests/reports/t5-r1/browser.log"
       ],
       "missingEvidence": null,
       "exception": null
     },
     {
       "id": "v5.0.0-V3.2.3",
-      "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.611Z",
+      "status": "NOT_VERIFIED",
+      "reviewedAt": "2026-10-04T12:50:53.597Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
-      "observed": "کامپوننت‌ها scoped و strict هستند؛ DOM globals برای authority یا state استفاده نمی‌شود.",
+      "observed": "شاهد آزمون اجراشدهٔ مختص این کنترل برای source جاری ثبت نشده است.",
+      "directEvidence": null,
       "evidencePaths": [
         "apps/api/src/knowledge.ts",
         "apps/web/src/lib/knowledge/Workspace.svelte",
@@ -583,17 +727,18 @@
         "tests/reports/auth-http-regression.log",
         "tests/target/t44-static-headers.integration.test.mjs"
       ],
-      "missingEvidence": null,
+      "missingEvidence": "شاهد آزمون اجراشدهٔ مختص این کنترل برای source جاری ثبت نشده است.",
       "exception": null
     },
     {
       "id": "v5.0.0-V3.4.3",
       "status": "NOT_VERIFIED",
-      "reviewedAt": "2026-10-03T18:33:14.611Z",
+      "reviewedAt": "2026-10-04T12:50:53.597Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "CSP کد و آزمون پایه موجود است؛ CSP L3 همهٔ پاسخ‌ها از زنجیرهٔ edge مشتری هنوز تأیید نشده است.",
+      "directEvidence": null,
       "evidencePaths": [
         "apps/api/src/knowledge.ts",
         "apps/web/src/lib/knowledge/Workspace.svelte",
@@ -607,12 +752,13 @@
     },
     {
       "id": "v5.0.0-V3.4.5",
-      "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.611Z",
+      "status": "NOT_VERIFIED",
+      "reviewedAt": "2026-10-04T12:50:53.597Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
-      "observed": "no-referrer در Web و سرآیندهای deployment تعریف و در regression بررسی شده است.",
+      "observed": "شاهد آزمون اجراشدهٔ مختص این کنترل برای source جاری ثبت نشده است.",
+      "directEvidence": null,
       "evidencePaths": [
         "apps/api/src/knowledge.ts",
         "apps/web/src/lib/knowledge/Workspace.svelte",
@@ -621,17 +767,18 @@
         "tests/reports/auth-http-regression.log",
         "tests/target/t44-static-headers.integration.test.mjs"
       ],
-      "missingEvidence": null,
+      "missingEvidence": "شاهد آزمون اجراشدهٔ مختص این کنترل برای source جاری ثبت نشده است.",
       "exception": null
     },
     {
       "id": "v5.0.0-V3.4.6",
-      "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.611Z",
+      "status": "NOT_VERIFIED",
+      "reviewedAt": "2026-10-04T12:50:53.597Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
-      "observed": "frame-ancestors در Web/adapter و policy استقرار تعریف شده؛ embed RAG مجاز نشده است.",
+      "observed": "شاهد آزمون اجراشدهٔ مختص این کنترل برای source جاری ثبت نشده است.",
+      "directEvidence": null,
       "evidencePaths": [
         "apps/api/src/knowledge.ts",
         "apps/web/src/lib/knowledge/Workspace.svelte",
@@ -640,17 +787,18 @@
         "tests/reports/auth-http-regression.log",
         "tests/target/t44-static-headers.integration.test.mjs"
       ],
-      "missingEvidence": null,
+      "missingEvidence": "شاهد آزمون اجراشدهٔ مختص این کنترل برای source جاری ثبت نشده است.",
       "exception": null
     },
     {
       "id": "v5.0.0-V3.4.7",
       "status": "NOT_VERIFIED",
-      "reviewedAt": "2026-10-03T18:33:14.611Z",
+      "reviewedAt": "2026-10-04T12:50:53.597Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "مسیر CSP reporting وجود دارد؛ فعال‌سازی و دریافت report در deployment مشتری اثبات نشده است.",
+      "directEvidence": null,
       "evidencePaths": [
         "apps/api/src/knowledge.ts",
         "apps/web/src/lib/knowledge/Workspace.svelte",
@@ -664,12 +812,13 @@
     },
     {
       "id": "v5.0.0-V3.4.8",
-      "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.611Z",
+      "status": "NOT_VERIFIED",
+      "reviewedAt": "2026-10-04T12:50:53.597Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
-      "observed": "COOP same-origin در Web و static response policy اعمال می‌شود.",
+      "observed": "شاهد آزمون اجراشدهٔ مختص این کنترل برای source جاری ثبت نشده است.",
+      "directEvidence": null,
       "evidencePaths": [
         "apps/api/src/knowledge.ts",
         "apps/web/src/lib/knowledge/Workspace.svelte",
@@ -678,24 +827,33 @@
         "tests/reports/auth-http-regression.log",
         "tests/target/t44-static-headers.integration.test.mjs"
       ],
-      "missingEvidence": null,
+      "missingEvidence": "شاهد آزمون اجراشدهٔ مختص این کنترل برای source جاری ثبت نشده است.",
       "exception": null
     },
     {
       "id": "v5.0.0-V3.5.1",
       "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.611Z",
+      "reviewedAt": "2026-10-04T12:50:53.597Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "mutation محافظت‌شده Bearer غیرساده لازم دارد؛ refresh/logout origin و CSRF policy مستقل دارند.",
+      "directEvidence": {
+        "testFile": "tests/target/t4-auth-http.integration.test.ts",
+        "testCase": "HTTP login, Origin, refresh replay, concurrent refresh, logout and disabled Auth",
+        "reportArtifact": "tests/reports/t5-r1/auth-http.log",
+        "artifactHash": "d58e3fac05d3bafae39a0c86eec57e0626dc4eb79e04c39fb6c73579e424fddd",
+        "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a"
+      },
       "evidencePaths": [
         "apps/api/src/knowledge.ts",
         "apps/web/src/lib/knowledge/Workspace.svelte",
         "apps/web/src/hooks.server.ts",
         "tests/reports/t5-browser.log",
         "tests/reports/auth-http-regression.log",
-        "tests/target/t44-static-headers.integration.test.mjs"
+        "tests/target/t44-static-headers.integration.test.mjs",
+        "tests/target/t4-auth-http.integration.test.ts",
+        "tests/reports/t5-r1/auth-http.log"
       ],
       "missingEvidence": null,
       "exception": null
@@ -703,18 +861,27 @@
     {
       "id": "v5.0.0-V3.5.2",
       "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.611Z",
+      "reviewedAt": "2026-10-04T12:50:53.597Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "JSON/raw multipart و Authorization غیرساده‌اند؛ origin allowlist و browser regression فعلی بررسی شد.",
+      "directEvidence": {
+        "testFile": "tests/target/t4-auth-http.integration.test.ts",
+        "testCase": "HTTP login, Origin, refresh replay, concurrent refresh, logout and disabled Auth",
+        "reportArtifact": "tests/reports/t5-r1/auth-http.log",
+        "artifactHash": "d58e3fac05d3bafae39a0c86eec57e0626dc4eb79e04c39fb6c73579e424fddd",
+        "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a"
+      },
       "evidencePaths": [
         "apps/api/src/knowledge.ts",
         "apps/web/src/lib/knowledge/Workspace.svelte",
         "apps/web/src/hooks.server.ts",
         "tests/reports/t5-browser.log",
         "tests/reports/auth-http-regression.log",
-        "tests/target/t44-static-headers.integration.test.mjs"
+        "tests/target/t44-static-headers.integration.test.mjs",
+        "tests/target/t4-auth-http.integration.test.ts",
+        "tests/reports/t5-r1/auth-http.log"
       ],
       "missingEvidence": null,
       "exception": null
@@ -722,18 +889,27 @@
     {
       "id": "v5.0.0-V3.5.7",
       "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.611Z",
+      "reviewedAt": "2026-10-04T12:50:53.597Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "asset JS عمومی state کاربر را حمل نمی‌کند؛ دادهٔ protected فقط در پاسخ authenticated API است.",
+      "directEvidence": {
+        "testFile": "tests/target/t5-browser.integration.test.mjs",
+        "testCase": "built Svelte RAG UI uses real Identity/Session/Authority, managed upload, durable processing, derived retrieval and authorized citations",
+        "reportArtifact": "tests/reports/t5-r1/browser.log",
+        "artifactHash": "a43eece9814b624bf3cf88f02d5dc2860444d432bcb834326ba848b58a7cdeeb",
+        "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a"
+      },
       "evidencePaths": [
         "apps/api/src/knowledge.ts",
         "apps/web/src/lib/knowledge/Workspace.svelte",
         "apps/web/src/hooks.server.ts",
         "tests/reports/t5-browser.log",
         "tests/reports/auth-http-regression.log",
-        "tests/target/t44-static-headers.integration.test.mjs"
+        "tests/target/t44-static-headers.integration.test.mjs",
+        "tests/target/t5-browser.integration.test.mjs",
+        "tests/reports/t5-r1/browser.log"
       ],
       "missingEvidence": null,
       "exception": null
@@ -741,18 +917,27 @@
     {
       "id": "v5.0.0-V3.5.8",
       "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.611Z",
+      "reviewedAt": "2026-10-04T12:50:53.597Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "Bearer باید صریح ارسال شود؛ download دارای CORP same-origin و no-store است.",
+      "directEvidence": {
+        "testFile": "tests/target/t5-browser.integration.test.mjs",
+        "testCase": "built Svelte RAG UI uses real Identity/Session/Authority, managed upload, durable processing, derived retrieval and authorized citations",
+        "reportArtifact": "tests/reports/t5-r1/browser.log",
+        "artifactHash": "a43eece9814b624bf3cf88f02d5dc2860444d432bcb834326ba848b58a7cdeeb",
+        "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a"
+      },
       "evidencePaths": [
         "apps/api/src/knowledge.ts",
         "apps/web/src/lib/knowledge/Workspace.svelte",
         "apps/web/src/hooks.server.ts",
         "tests/reports/t5-browser.log",
         "tests/reports/auth-http-regression.log",
-        "tests/target/t44-static-headers.integration.test.mjs"
+        "tests/target/t44-static-headers.integration.test.mjs",
+        "tests/target/t5-browser.integration.test.mjs",
+        "tests/reports/t5-r1/browser.log"
       ],
       "missingEvidence": null,
       "exception": null
@@ -760,18 +945,27 @@
     {
       "id": "v5.0.0-V4.1.1",
       "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.611Z",
+      "reviewedAt": "2026-10-04T12:50:53.597Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "JSON/stream/file Content-Type مشخص است؛ دانلود text دارای charset=utf-8 است.",
+      "directEvidence": {
+        "testFile": "tests/target/t5-file-management.integration.test.ts",
+        "testCase": "File Management enforces real Session/Authority before verified upload commit and cache/range downloads",
+        "reportArtifact": "tests/reports/t5-r1/integrations.log",
+        "artifactHash": "68c374a460f71e091d472493cbe205cee30715ccee3252bc4b54847159a649a0",
+        "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a"
+      },
       "evidencePaths": [
         "apps/api/src/knowledge.ts",
         "apps/web/src/lib/knowledge/Workspace.svelte",
         "apps/web/src/hooks.server.ts",
         "tests/reports/t5-browser.log",
         "tests/reports/auth-http-regression.log",
-        "tests/target/t44-static-headers.integration.test.mjs"
+        "tests/target/t44-static-headers.integration.test.mjs",
+        "tests/target/t5-file-management.integration.test.ts",
+        "tests/reports/t5-r1/integrations.log"
       ],
       "missingEvidence": null,
       "exception": null
@@ -779,30 +973,40 @@
     {
       "id": "v5.0.0-V4.1.4",
       "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.611Z",
+      "reviewedAt": "2026-10-04T12:50:53.597Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "router فقط methodهای تعریف‌شده را ثبت می‌کند و method پشتیبانی‌نشده mutation ایجاد نمی‌کند.",
+      "directEvidence": {
+        "testFile": "tests/target/t5-runtime.integration.test.ts",
+        "testCase": "anonymous/mismatched tenant fail and all file operations run through the API File Management boundary",
+        "reportArtifact": "tests/reports/t5-r1/integrations.log",
+        "artifactHash": "68c374a460f71e091d472493cbe205cee30715ccee3252bc4b54847159a649a0",
+        "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a"
+      },
       "evidencePaths": [
         "apps/api/src/knowledge.ts",
         "apps/web/src/lib/knowledge/Workspace.svelte",
         "apps/web/src/hooks.server.ts",
         "tests/reports/t5-browser.log",
         "tests/reports/auth-http-regression.log",
-        "tests/target/t44-static-headers.integration.test.mjs"
+        "tests/target/t44-static-headers.integration.test.mjs",
+        "tests/target/t5-runtime.integration.test.ts",
+        "tests/reports/t5-r1/integrations.log"
       ],
       "missingEvidence": null,
       "exception": null
     },
     {
       "id": "v5.0.0-V4.2.5",
-      "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.611Z",
+      "status": "NOT_VERIFIED",
+      "reviewedAt": "2026-10-04T12:50:53.597Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
-      "observed": "شناسه‌ها، نام فایل، مقصد و secret ref bounded هستند؛ payload خام در URI یا header ارسال نمی‌شود.",
+      "observed": "شاهد آزمون اجراشدهٔ مختص این کنترل برای source جاری ثبت نشده است.",
+      "directEvidence": null,
       "evidencePaths": [
         "apps/api/src/knowledge.ts",
         "apps/web/src/lib/knowledge/Workspace.svelte",
@@ -811,23 +1015,32 @@
         "tests/reports/auth-http-regression.log",
         "tests/target/t44-static-headers.integration.test.mjs"
       ],
-      "missingEvidence": null,
+      "missingEvidence": "شاهد آزمون اجراشدهٔ مختص این کنترل برای source جاری ثبت نشده است.",
       "exception": null
     },
     {
       "id": "v5.0.0-V5.1.1",
       "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.611Z",
+      "reviewedAt": "2026-10-04T12:50:53.598Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "types/ext/MIME/bytes/archive bounds و quarantine behavior در File Management مستند شده است.",
+      "directEvidence": {
+        "testFile": "tests/target/t4-file-security.test.ts",
+        "testCase": "upload media type, extension, signature, and temporary path agree",
+        "reportArtifact": "tests/reports/t5-r1/foundations.log",
+        "artifactHash": "e98f36033ab05c8b1aa891b40b62fec1cc7a59ab86f7da5b4ac20670847225cb",
+        "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a"
+      },
       "evidencePaths": [
         "packages/file-management/src/service.ts",
         "packages/admission-control/src/persistence/files.ts",
         "tests/target/t5-file-limits.integration.test.ts",
         "tests/target/t4-file-security.test.ts",
-        "tests/reports/t5-integrations.log"
+        "tests/reports/t5-integrations.log",
+        "tests/target/t4-file-security.test.ts",
+        "tests/reports/t5-r1/foundations.log"
       ],
       "missingEvidence": null,
       "exception": null
@@ -835,11 +1048,12 @@
     {
       "id": "v5.0.0-V5.2.2",
       "status": "NOT_VERIFIED",
-      "reviewedAt": "2026-10-03T18:33:14.611Z",
+      "reviewedAt": "2026-10-04T12:50:53.598Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "UTF-8 کامل و ساختار archive کنترل می‌شوند؛ magic PDF/OLE اثبات تخصصی تمام محتوای PDF/DOC نیست.",
+      "directEvidence": null,
       "evidencePaths": [
         "packages/file-management/src/service.ts",
         "packages/admission-control/src/persistence/files.ts",
@@ -853,17 +1067,26 @@
     {
       "id": "v5.0.0-V5.2.4",
       "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.611Z",
+      "reviewedAt": "2026-10-04T12:50:53.598Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "رزرو distributed با actor ID اندازه، تعداد، pending و retained bytes را محدود می‌کند؛ elevation hard cap را دور نمی‌زند.",
+      "directEvidence": {
+        "testFile": "tests/target/t5-file-limits.integration.test.ts",
+        "testCase": "Authority selects file tiers; Admission enforces distributed actor and hard limits after elevation and revocation",
+        "reportArtifact": "tests/reports/t5-r1/integrations.log",
+        "artifactHash": "68c374a460f71e091d472493cbe205cee30715ccee3252bc4b54847159a649a0",
+        "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a"
+      },
       "evidencePaths": [
         "packages/file-management/src/service.ts",
         "packages/admission-control/src/persistence/files.ts",
         "tests/target/t5-file-limits.integration.test.ts",
         "tests/target/t4-file-security.test.ts",
-        "tests/reports/t5-integrations.log"
+        "tests/reports/t5-integrations.log",
+        "tests/target/t5-file-limits.integration.test.ts",
+        "tests/reports/t5-r1/integrations.log"
       ],
       "missingEvidence": null,
       "exception": null
@@ -871,17 +1094,26 @@
     {
       "id": "v5.0.0-V5.4.1",
       "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.611Z",
+      "reviewedAt": "2026-10-04T12:50:53.598Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "نام display از مسیر جداست؛ traversal/controls/bidi حذف یا رد و Content-Disposition مشخص است.",
+      "directEvidence": {
+        "testFile": "tests/target/t4-file-security.test.ts",
+        "testCase": "display filename preserves Persian basename and removes dangerous metadata",
+        "reportArtifact": "tests/reports/t5-r1/foundations.log",
+        "artifactHash": "e98f36033ab05c8b1aa891b40b62fec1cc7a59ab86f7da5b4ac20670847225cb",
+        "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a"
+      },
       "evidencePaths": [
         "packages/file-management/src/service.ts",
         "packages/admission-control/src/persistence/files.ts",
         "tests/target/t5-file-limits.integration.test.ts",
         "tests/target/t4-file-security.test.ts",
-        "tests/reports/t5-integrations.log"
+        "tests/reports/t5-integrations.log",
+        "tests/target/t4-file-security.test.ts",
+        "tests/reports/t5-r1/foundations.log"
       ],
       "missingEvidence": null,
       "exception": null
@@ -889,29 +1121,39 @@
     {
       "id": "v5.0.0-V5.4.2",
       "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "reviewedAt": "2026-10-04T12:50:53.598Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": false,
       "additionalT5Scope": true,
       "observed": "با فعال‌شدن download کنترل از N/A به applicable تغییر کرد؛ filename*=UTF-8 percent encoding و attachment tested است.",
+      "directEvidence": {
+        "testFile": "tests/target/t5-file-management.integration.test.ts",
+        "testCase": "File Management enforces real Session/Authority before verified upload commit and cache/range downloads",
+        "reportArtifact": "tests/reports/t5-r1/integrations.log",
+        "artifactHash": "68c374a460f71e091d472493cbe205cee30715ccee3252bc4b54847159a649a0",
+        "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a"
+      },
       "evidencePaths": [
         "packages/file-management/src/service.ts",
         "packages/admission-control/src/persistence/files.ts",
         "tests/target/t5-file-limits.integration.test.ts",
         "tests/target/t4-file-security.test.ts",
-        "tests/reports/t5-integrations.log"
+        "tests/reports/t5-integrations.log",
+        "tests/target/t5-file-management.integration.test.ts",
+        "tests/reports/t5-r1/integrations.log"
       ],
       "missingEvidence": null,
       "exception": null
     },
     {
       "id": "v5.0.0-V5.4.3",
-      "status": "FAIL",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "status": "NOT_VERIFIED",
+      "reviewedAt": "2026-10-04T12:50:53.598Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": false,
       "additionalT5Scope": true,
-      "observed": "با دانلود original Asset کنترل applicable است؛ scanner ضدبدافزار تمام فرمت‌ها و signature update/retry/quarantine provider هنوز وجود ندارد.",
+      "observed": "پورت و adapter ضدبدافزار clamd و policy fail-closed آزموده شده‌اند؛ scanner واقعی، به‌روزرسانی امضا و profile مشتری هنوز اثبات نشده‌اند.",
+      "directEvidence": null,
       "evidencePaths": [
         "packages/file-management/src/service.ts",
         "packages/admission-control/src/persistence/files.ts",
@@ -919,24 +1161,33 @@
         "tests/target/t4-file-security.test.ts",
         "tests/reports/t5-integrations.log"
       ],
-      "missingEvidence": "با دانلود original Asset کنترل applicable است؛ scanner ضدبدافزار تمام فرمت‌ها و signature update/retry/quarantine provider هنوز وجود ندارد.",
+      "missingEvidence": "پورت و adapter ضدبدافزار clamd و policy fail-closed آزموده شده‌اند؛ scanner واقعی، به‌روزرسانی امضا و profile مشتری هنوز اثبات نشده‌اند.",
       "exception": null
     },
     {
       "id": "v5.0.0-V8.1.3",
       "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "reviewedAt": "2026-10-04T12:50:53.598Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "tenant/deployment/actor/session/authVersion/ACL/classification/time/grant schedule در flow و Authority مستند است.",
+      "directEvidence": {
+        "testFile": "tests/target/t44-authority-live.integration.test.ts",
+        "testCase": "real persisted Authority resolves object, field, ACL, classification, scope, schedule, version and audited SIEM decisions",
+        "reportArtifact": "tests/reports/t5-r1/authority-live.log",
+        "artifactHash": "52b8f4524b755e40492e3bbbb750f1e71e73758d1b540bfa819097cce7b5a7d3",
+        "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a"
+      },
       "evidencePaths": [
         "docs/backend/10-rag-authorization-flow.md",
         "packages/authority/src/service.ts",
         "packages/knowledge/src/service.ts",
         "tests/reports/authority-conformance.log",
         "tests/reports/authority-live.log",
-        "tests/reports/t5-integrations.log"
+        "tests/reports/t5-integrations.log",
+        "tests/target/t44-authority-live.integration.test.ts",
+        "tests/reports/t5-r1/authority-live.log"
       ],
       "missingEvidence": null,
       "exception": null
@@ -944,18 +1195,27 @@
     {
       "id": "v5.0.0-V8.1.4",
       "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "reviewedAt": "2026-10-04T12:50:53.598Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "عملیات مستقل و fail-closed tenant/classification/deny و fresh subject در checkpointها مستند شده‌اند.",
+      "directEvidence": {
+        "testFile": "tests/target/t5-rag-security.integration.test.ts",
+        "testCase": "Authority before retrieval limits the real vector query; revoked source bytes never reach reranker or LLM",
+        "reportArtifact": "tests/reports/t5-r1/integrations.log",
+        "artifactHash": "68c374a460f71e091d472493cbe205cee30715ccee3252bc4b54847159a649a0",
+        "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a"
+      },
       "evidencePaths": [
         "docs/backend/10-rag-authorization-flow.md",
         "packages/authority/src/service.ts",
         "packages/knowledge/src/service.ts",
         "tests/reports/authority-conformance.log",
         "tests/reports/authority-live.log",
-        "tests/reports/t5-integrations.log"
+        "tests/reports/t5-integrations.log",
+        "tests/target/t5-rag-security.integration.test.ts",
+        "tests/reports/t5-r1/integrations.log"
       ],
       "missingEvidence": null,
       "exception": null
@@ -963,11 +1223,12 @@
     {
       "id": "v5.0.0-V8.4.2",
       "status": "NOT_APPLICABLE",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "reviewedAt": "2026-10-04T12:50:53.598Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "مسیرهای این task CRUD منابع کاربر هستند؛ interface مدیریت platform/device posture در scope اجراشده وجود ندارد. افزودن چنین interface نیازمند delta جدید است.",
+      "directEvidence": null,
       "evidencePaths": [
         "docs/backend/10-rag-authorization-flow.md",
         "packages/authority/src/service.ts",
@@ -982,11 +1243,12 @@
     {
       "id": "v5.0.0-V10.1.1",
       "status": "NOT_VERIFIED",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "reviewedAt": "2026-10-04T12:50:53.598Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "refresh cookie محدود به Auth و access token در حافظه است؛ الگوی BFF با token فقط backend و مرور همهٔ consumerها هنوز تأیید نشده است.",
+      "directEvidence": null,
       "evidencePaths": [
         "docs/backend/10-rag-authorization-flow.md",
         "packages/authority/src/service.ts",
@@ -1001,18 +1263,27 @@
     {
       "id": "v5.0.0-V11.2.5",
       "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "reviewedAt": "2026-10-04T12:50:53.598Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "JWT/signature نامعتبر fail closed است؛ خطاهای crypto و secret به کاربر یا log منتقل نمی‌شوند.",
+      "directEvidence": {
+        "testFile": "tests/target/t5-protected-ai.integration.test.ts",
+        "testCase": "malformed vectors, index duplicates, wrong model, oversized responses and redirects fail before result publication",
+        "reportArtifact": "tests/reports/t5-r1/integrations.log",
+        "artifactHash": "68c374a460f71e091d472493cbe205cee30715ccee3252bc4b54847159a649a0",
+        "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a"
+      },
       "evidencePaths": [
         "docs/deployment/03-rag-customer-release.md",
         "packages/ai-router/src/protected.ts",
         "packages/knowledge/src/service.ts",
         "packages/storage/src/adapters/s3.ts",
         "tests/reports/t5-integrations.log",
-        "tests/reports/t5-browser.log"
+        "tests/reports/t5-browser.log",
+        "tests/target/t5-protected-ai.integration.test.ts",
+        "tests/reports/t5-r1/integrations.log"
       ],
       "missingEvidence": null,
       "exception": null
@@ -1020,11 +1291,12 @@
     {
       "id": "v5.0.0-V11.5.1",
       "status": "NOT_VERIFIED",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "reviewedAt": "2026-10-04T12:50:53.598Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "refresh secret و کلید آزمون CSPRNG هستند؛ بازبینی exhaustive purpose/entropy شناسه‌ها و credentialهای واقعی باقی است.",
+      "directEvidence": null,
       "evidencePaths": [
         "docs/deployment/03-rag-customer-release.md",
         "packages/ai-router/src/protected.ts",
@@ -1039,11 +1311,12 @@
     {
       "id": "v5.0.0-V11.5.2",
       "status": "NOT_VERIFIED",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "reviewedAt": "2026-10-04T12:50:53.598Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "از crypto استاندارد استفاده می‌شود؛ رفتار زیر بار سنگین RNG و entropy زیرساخت واقعی آزمایش نشده است.",
+      "directEvidence": null,
       "evidencePaths": [
         "docs/deployment/03-rag-customer-release.md",
         "packages/ai-router/src/protected.ts",
@@ -1058,11 +1331,12 @@
     {
       "id": "v5.0.0-V11.7.2",
       "status": "NOT_VERIFIED",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "reviewedAt": "2026-10-04T12:50:53.598Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "Qdrant payload opaque و provider content حداقلی است؛ encryption-at-rest و پس از مصرف در volumes واقعی اثبات نشده است.",
+      "directEvidence": null,
       "evidencePaths": [
         "docs/deployment/03-rag-customer-release.md",
         "packages/ai-router/src/protected.ts",
@@ -1077,11 +1351,12 @@
     {
       "id": "v5.0.0-V12.3.1",
       "status": "NOT_VERIFIED",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "reviewedAt": "2026-10-04T12:50:53.598Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "S3/provider/SIEM production TLS validation دارند؛ PostgreSQL، gateway، monitoring و همهٔ اتصال‌های deployment مشتری اثبات نشده‌اند.",
+      "directEvidence": null,
       "evidencePaths": [
         "docs/deployment/03-rag-customer-release.md",
         "packages/ai-router/src/protected.ts",
@@ -1096,18 +1371,27 @@
     {
       "id": "v5.0.0-V12.3.2",
       "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "reviewedAt": "2026-10-04T12:50:53.599Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "TLS verification خاموش رد می‌شود؛ SIEM با CA مشخص آزموده شده و fetch/SDK validation پیش‌فرض حفظ شده است.",
+      "directEvidence": {
+        "testFile": "tests/target/t5-audit-siem.integration.test.ts",
+        "testCase": "actual upload/processing/index/query evidence reaches a TLS receiver with matching original Session/request",
+        "reportArtifact": "tests/reports/t5-r1/audit-siem.log",
+        "artifactHash": "aedd364e0aabffbcb29f1fbcde723ffd6ac16e94b783c8336f5e0978d8a44732",
+        "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a"
+      },
       "evidencePaths": [
         "docs/deployment/03-rag-customer-release.md",
         "packages/ai-router/src/protected.ts",
         "packages/knowledge/src/service.ts",
         "packages/storage/src/adapters/s3.ts",
         "tests/reports/t5-integrations.log",
-        "tests/reports/t5-browser.log"
+        "tests/reports/t5-browser.log",
+        "tests/target/t5-audit-siem.integration.test.ts",
+        "tests/reports/t5-r1/audit-siem.log"
       ],
       "missingEvidence": null,
       "exception": null
@@ -1115,11 +1399,12 @@
     {
       "id": "v5.0.0-V12.3.3",
       "status": "NOT_VERIFIED",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "reviewedAt": "2026-10-04T12:50:53.599Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "محیط آزمون loopback HTTP دارد؛ TLS همهٔ اتصال‌های داخلی استقرار مشتری نیازمند evidence است.",
+      "directEvidence": null,
       "evidencePaths": [
         "docs/deployment/03-rag-customer-release.md",
         "packages/ai-router/src/protected.ts",
@@ -1134,11 +1419,12 @@
     {
       "id": "v5.0.0-V12.3.4",
       "status": "NOT_VERIFIED",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "reviewedAt": "2026-10-04T12:50:53.599Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "CA اختصاصی SIEM در آزمون معتبر بود؛ trust stores و certificate تمام سرویس‌های واقعی ارائه نشده‌اند.",
+      "directEvidence": null,
       "evidencePaths": [
         "docs/deployment/03-rag-customer-release.md",
         "packages/ai-router/src/protected.ts",
@@ -1153,30 +1439,33 @@
     {
       "id": "v5.0.0-V12.3.5",
       "status": "FAIL",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "reviewedAt": "2026-10-04T12:50:53.599Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
-      "observed": "ثبت Worker machine جای mTLS/replay-resistant authentication همهٔ transportهای داخلی نیست؛ mesh/certificate implementation فعلی وجود ندارد.",
+      "observed": "توان پلتفرم: GAP؛ استقرار مشتری: NOT_VERIFIED. Current source supports some boundary controls, but static/replayable credentials or missing client identity remain. No customer topology, certificate, IAM or credential-lifetime evidence is supplied.",
+      "directEvidence": null,
       "evidencePaths": [
         "docs/deployment/03-rag-customer-release.md",
         "packages/ai-router/src/protected.ts",
         "packages/knowledge/src/service.ts",
         "packages/storage/src/adapters/s3.ts",
         "tests/reports/t5-integrations.log",
-        "tests/reports/t5-browser.log"
+        "tests/reports/t5-browser.log",
+        "reports/security/t5-service-boundary-assessment.json"
       ],
-      "missingEvidence": "ثبت Worker machine جای mTLS/replay-resistant authentication همهٔ transportهای داخلی نیست؛ mesh/certificate implementation فعلی وجود ندارد.",
+      "missingEvidence": "توان پلتفرم: GAP؛ استقرار مشتری: NOT_VERIFIED. Current source supports some boundary controls, but static/replayable credentials or missing client identity remain. No customer topology, certificate, IAM or credential-lifetime evidence is supplied.",
       "exception": null
     },
     {
       "id": "v5.0.0-V13.1.1",
-      "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "status": "NOT_VERIFIED",
+      "reviewedAt": "2026-10-04T12:50:53.599Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
-      "observed": "اتصال PG/Storage/Qdrant/Router/SIEM و عدم پشتیبانی از URL دلخواه کاربر مستند است.",
+      "observed": "شاهد آزمون اجراشدهٔ مختص این کنترل برای source جاری ثبت نشده است.",
+      "directEvidence": null,
       "evidencePaths": [
         "docs/deployment/03-rag-customer-release.md",
         "packages/ai-router/src/protected.ts",
@@ -1185,17 +1474,18 @@
         "tests/reports/t5-integrations.log",
         "tests/reports/t5-browser.log"
       ],
-      "missingEvidence": null,
+      "missingEvidence": "شاهد آزمون اجراشدهٔ مختص این کنترل برای source جاری ثبت نشده است.",
       "exception": null
     },
     {
       "id": "v5.0.0-V13.1.2",
       "status": "NOT_VERIFIED",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "reviewedAt": "2026-10-04T12:50:53.599Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "pool/Admission/config concurrency محدودند؛ saturation تمام client connection poolها و محیط مشتری اثبات نشده است.",
+      "directEvidence": null,
       "evidencePaths": [
         "docs/deployment/03-rag-customer-release.md",
         "packages/ai-router/src/protected.ts",
@@ -1210,18 +1500,27 @@
     {
       "id": "v5.0.0-V13.1.3",
       "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "reviewedAt": "2026-10-04T12:50:53.599Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "timeout، cleanup، lease، retry bounded و UNKNOWN/reconciliation برای dependencyها مستند است.",
+      "directEvidence": {
+        "testFile": "tests/target/t5-failure-runtime.integration.test.ts",
+        "testCase": "actual API/Worker/Storage/Qdrant pipeline fails closed on dependencies, admission, session, Authority and Governance",
+        "reportArtifact": "tests/reports/t5-r1/integrations.log",
+        "artifactHash": "68c374a460f71e091d472493cbe205cee30715ccee3252bc4b54847159a649a0",
+        "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a"
+      },
       "evidencePaths": [
         "docs/deployment/03-rag-customer-release.md",
         "packages/ai-router/src/protected.ts",
         "packages/knowledge/src/service.ts",
         "packages/storage/src/adapters/s3.ts",
         "tests/reports/t5-integrations.log",
-        "tests/reports/t5-browser.log"
+        "tests/reports/t5-browser.log",
+        "tests/target/t5-failure-runtime.integration.test.ts",
+        "tests/reports/t5-r1/integrations.log"
       ],
       "missingEvidence": null,
       "exception": null
@@ -1229,30 +1528,33 @@
     {
       "id": "v5.0.0-V13.2.1",
       "status": "FAIL",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "reviewedAt": "2026-10-04T12:50:53.599Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
-      "observed": "secretRef ثابت PG/Qdrant/S3 معیار credential کوتاه‌عمر و account اختصاصی همهٔ سرویس‌ها را اثبات یا پیاده‌سازی نمی‌کند.",
+      "observed": "توان پلتفرم: GAP؛ استقرار مشتری: NOT_VERIFIED. Current source supports some boundary controls, but static/replayable credentials or missing client identity remain. No customer topology, certificate, IAM or credential-lifetime evidence is supplied.",
+      "directEvidence": null,
       "evidencePaths": [
         "docs/deployment/03-rag-customer-release.md",
         "packages/ai-router/src/protected.ts",
         "packages/knowledge/src/service.ts",
         "packages/storage/src/adapters/s3.ts",
         "tests/reports/t5-integrations.log",
-        "tests/reports/t5-browser.log"
+        "tests/reports/t5-browser.log",
+        "reports/security/t5-service-boundary-assessment.json"
       ],
-      "missingEvidence": "secretRef ثابت PG/Qdrant/S3 معیار credential کوتاه‌عمر و account اختصاصی همهٔ سرویس‌ها را اثبات یا پیاده‌سازی نمی‌کند.",
+      "missingEvidence": "توان پلتفرم: GAP؛ استقرار مشتری: NOT_VERIFIED. Current source supports some boundary controls, but static/replayable credentials or missing client identity remain. No customer topology, certificate, IAM or credential-lifetime evidence is supplied.",
       "exception": null
     },
     {
       "id": "v5.0.0-V13.2.2",
       "status": "NOT_VERIFIED",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "reviewedAt": "2026-10-04T12:50:53.599Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "API/Worker در PG least-privilege و RLS آزموده شدند؛ IAM واقعی bucket، Qdrant و secret volume هنوز تأیید نشده‌اند.",
+      "directEvidence": null,
       "evidencePaths": [
         "docs/deployment/03-rag-customer-release.md",
         "packages/ai-router/src/protected.ts",
@@ -1267,11 +1569,12 @@
     {
       "id": "v5.0.0-V13.2.3",
       "status": "NOT_VERIFIED",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "reviewedAt": "2026-10-04T12:50:53.599Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "fixture credentials تصادفی هستند؛ non-default بودن credentialهای واقعی مشتری قابل نتیجه‌گیری نیست.",
+      "directEvidence": null,
       "evidencePaths": [
         "docs/deployment/03-rag-customer-release.md",
         "packages/ai-router/src/protected.ts",
@@ -1286,18 +1589,27 @@
     {
       "id": "v5.0.0-V13.2.4",
       "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "reviewedAt": "2026-10-04T12:50:53.599Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "protected egress با exact configured destination/task/classification و Data Governance محدود است؛ redirect ممنوع است.",
+      "directEvidence": {
+        "testFile": "tests/target/t5-failure-runtime.integration.test.ts",
+        "testCase": "Governance denial rejects generation before external content leaves its Router",
+        "reportArtifact": "tests/reports/t5-r1/integrations.log",
+        "artifactHash": "68c374a460f71e091d472493cbe205cee30715ccee3252bc4b54847159a649a0",
+        "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a"
+      },
       "evidencePaths": [
         "docs/deployment/03-rag-customer-release.md",
         "packages/ai-router/src/protected.ts",
         "packages/knowledge/src/service.ts",
         "packages/storage/src/adapters/s3.ts",
         "tests/reports/t5-integrations.log",
-        "tests/reports/t5-browser.log"
+        "tests/reports/t5-browser.log",
+        "tests/target/t5-failure-runtime.integration.test.ts",
+        "tests/reports/t5-r1/integrations.log"
       ],
       "missingEvidence": null,
       "exception": null
@@ -1305,11 +1617,12 @@
     {
       "id": "v5.0.0-V13.2.5",
       "status": "NOT_VERIFIED",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "reviewedAt": "2026-10-04T12:50:53.599Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "allowlist برنامه وجود دارد؛ OS/network confinement native parser و gateway allowlist واقعی آزموده نشده است.",
+      "directEvidence": null,
       "evidencePaths": [
         "docs/deployment/03-rag-customer-release.md",
         "packages/ai-router/src/protected.ts",
@@ -1324,11 +1637,12 @@
     {
       "id": "v5.0.0-V13.2.6",
       "status": "NOT_VERIFIED",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "reviewedAt": "2026-10-04T12:50:53.599Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "timeout/retry/Admission در focused tests اجرا شده‌اند؛ compliance connection maxima همهٔ transports زیر بار هنوز پوشش کامل ندارد.",
+      "directEvidence": null,
       "evidencePaths": [
         "docs/deployment/03-rag-customer-release.md",
         "packages/ai-router/src/protected.ts",
@@ -1343,11 +1657,12 @@
     {
       "id": "v5.0.0-V13.3.2",
       "status": "NOT_VERIFIED",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "reviewedAt": "2026-10-04T12:50:53.599Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "secretRefs و role-specific PG secrets در OCI تعریف شده‌اند؛ mounted files/IAM/rotation واقعی least privilege نیازمند evidence است.",
+      "directEvidence": null,
       "evidencePaths": [
         "docs/deployment/03-rag-customer-release.md",
         "packages/ai-router/src/protected.ts",
@@ -1362,11 +1677,12 @@
     {
       "id": "v5.0.0-V14.1.1",
       "status": "NOT_VERIFIED",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "reviewedAt": "2026-10-04T12:50:53.599Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "Document classification و payload categories مشخص‌اند؛ نگاشت کامل مقررات/privacy هر مشتری ارائه نشده است.",
+      "directEvidence": null,
       "evidencePaths": [
         "docs/deployment/03-rag-customer-release.md",
         "packages/ai-router/src/protected.ts",
@@ -1381,11 +1697,12 @@
     {
       "id": "v5.0.0-V14.1.2",
       "status": "NOT_VERIFIED",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "reviewedAt": "2026-10-04T12:50:53.599Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "Audit/egress/cache/integrity boundaries مستند است؛ retention، legal hold، encryption و privacy policy کامل مشتری تصویب نشده است.",
+      "directEvidence": null,
       "evidencePaths": [
         "docs/deployment/03-rag-customer-release.md",
         "packages/ai-router/src/protected.ts",
@@ -1400,11 +1717,12 @@
     {
       "id": "v5.0.0-V14.2.2",
       "status": "NOT_VERIFIED",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "reviewedAt": "2026-10-04T12:50:53.599Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "cache private و bounded/hash-verified است؛ secure purge و encryption backend/edge مشتری اثبات نشده است.",
+      "directEvidence": null,
       "evidencePaths": [
         "docs/deployment/03-rag-customer-release.md",
         "packages/ai-router/src/protected.ts",
@@ -1419,18 +1737,27 @@
     {
       "id": "v5.0.0-V14.2.3",
       "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "reviewedAt": "2026-10-04T12:50:53.599Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "مسیر RAG tracker خارجی ندارد؛ external model egress بدون exact Governance approval رد می‌شود.",
+      "directEvidence": {
+        "testFile": "tests/target/t5-protected-ai.integration.test.ts",
+        "testCase": "unapproved fallback receives zero bytes and approved provider failure does not grant egress",
+        "reportArtifact": "tests/reports/t5-r1/integrations.log",
+        "artifactHash": "68c374a460f71e091d472493cbe205cee30715ccee3252bc4b54847159a649a0",
+        "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a"
+      },
       "evidencePaths": [
         "docs/deployment/03-rag-customer-release.md",
         "packages/ai-router/src/protected.ts",
         "packages/knowledge/src/service.ts",
         "packages/storage/src/adapters/s3.ts",
         "tests/reports/t5-integrations.log",
-        "tests/reports/t5-browser.log"
+        "tests/reports/t5-browser.log",
+        "tests/target/t5-protected-ai.integration.test.ts",
+        "tests/reports/t5-r1/integrations.log"
       ],
       "missingEvidence": null,
       "exception": null
@@ -1438,11 +1765,12 @@
     {
       "id": "v5.0.0-V14.2.4",
       "status": "NOT_VERIFIED",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "reviewedAt": "2026-10-04T12:50:53.599Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "Authority و integrity/redaction اجرا شده‌اند؛ تمام الزامات protection level در retention/encryption/privacy واقعی اثبات نشده‌اند.",
+      "directEvidence": null,
       "evidencePaths": [
         "docs/deployment/03-rag-customer-release.md",
         "packages/ai-router/src/protected.ts",
@@ -1457,18 +1785,27 @@
     {
       "id": "v5.0.0-V14.2.5",
       "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "reviewedAt": "2026-10-04T12:50:53.599Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "protected response no-store و cache identity به asset/version/hash وابسته است؛ missing route محتوای protected دیگری بازنمی‌گرداند.",
+      "directEvidence": {
+        "testFile": "tests/target/t5-file-management.integration.test.ts",
+        "testCase": "warm/disposable cache, range and conditional requests cannot skip independent download authorization",
+        "reportArtifact": "tests/reports/t5-r1/integrations.log",
+        "artifactHash": "68c374a460f71e091d472493cbe205cee30715ccee3252bc4b54847159a649a0",
+        "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a"
+      },
       "evidencePaths": [
         "docs/deployment/03-rag-customer-release.md",
         "packages/ai-router/src/protected.ts",
         "packages/knowledge/src/service.ts",
         "packages/storage/src/adapters/s3.ts",
         "tests/reports/t5-integrations.log",
-        "tests/reports/t5-browser.log"
+        "tests/reports/t5-browser.log",
+        "tests/target/t5-file-management.integration.test.ts",
+        "tests/reports/t5-r1/integrations.log"
       ],
       "missingEvidence": null,
       "exception": null
@@ -1476,30 +1813,40 @@
     {
       "id": "v5.0.0-V14.2.6",
       "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "reviewedAt": "2026-10-04T12:50:53.599Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "discover/read/quote مستقل‌اند؛ backend فقط citation مجاز را می‌سازد و hidden source names/count/content را حذف می‌کند.",
+      "directEvidence": {
+        "testFile": "tests/target/t5-rag-security.integration.test.ts",
+        "testCase": "read is not use; use does not disclose/download; unknown citations and direct quotation fail closed",
+        "reportArtifact": "tests/reports/t5-r1/integrations.log",
+        "artifactHash": "68c374a460f71e091d472493cbe205cee30715ccee3252bc4b54847159a649a0",
+        "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a"
+      },
       "evidencePaths": [
         "docs/deployment/03-rag-customer-release.md",
         "packages/ai-router/src/protected.ts",
         "packages/knowledge/src/service.ts",
         "packages/storage/src/adapters/s3.ts",
         "tests/reports/t5-integrations.log",
-        "tests/reports/t5-browser.log"
+        "tests/reports/t5-browser.log",
+        "tests/target/t5-rag-security.integration.test.ts",
+        "tests/reports/t5-r1/integrations.log"
       ],
       "missingEvidence": null,
       "exception": null
     },
     {
       "id": "v5.0.0-V14.2.7",
-      "status": "FAIL",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "status": "NOT_VERIFIED",
+      "reviewedAt": "2026-10-04T12:50:53.599Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
-      "observed": "خودکارسازی retention/purge/legal hold محتوای canonical و تمام backupها پیاده‌سازی نشده؛ soft delete به‌تنهایی کافی نیست.",
+      "observed": "purge نرم‌افزاری LOCAL/S3 و legal hold در آزمون واقعی اجرا شده‌اند؛ انقضا/حذف backup مشتری هنوز اثبات نشده است.",
+      "directEvidence": null,
       "evidencePaths": [
         "docs/deployment/03-rag-customer-release.md",
         "packages/ai-router/src/protected.ts",
@@ -1508,24 +1855,33 @@
         "tests/reports/t5-integrations.log",
         "tests/reports/t5-browser.log"
       ],
-      "missingEvidence": "خودکارسازی retention/purge/legal hold محتوای canonical و تمام backupها پیاده‌سازی نشده؛ soft delete به‌تنهایی کافی نیست.",
+      "missingEvidence": "purge نرم‌افزاری LOCAL/S3 و legal hold در آزمون واقعی اجرا شده‌اند؛ انقضا/حذف backup مشتری هنوز اثبات نشده است.",
       "exception": null
     },
     {
       "id": "v5.0.0-V14.3.1",
       "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "reviewedAt": "2026-10-04T12:50:53.599Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "auth revision guard و logout protected state/DOM را پاک می‌کند؛ browser test نبود token/content در storage را بررسی می‌کند.",
+      "directEvidence": {
+        "testFile": "tests/target/t5-browser.integration.test.mjs",
+        "testCase": "built Svelte RAG UI uses real Identity/Session/Authority, managed upload, durable processing, derived retrieval and authorized citations",
+        "reportArtifact": "tests/reports/t5-r1/browser.log",
+        "artifactHash": "a43eece9814b624bf3cf88f02d5dc2860444d432bcb834326ba848b58a7cdeeb",
+        "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a"
+      },
       "evidencePaths": [
         "docs/deployment/03-rag-customer-release.md",
         "packages/ai-router/src/protected.ts",
         "packages/knowledge/src/service.ts",
         "packages/storage/src/adapters/s3.ts",
         "tests/reports/t5-integrations.log",
-        "tests/reports/t5-browser.log"
+        "tests/reports/t5-browser.log",
+        "tests/target/t5-browser.integration.test.mjs",
+        "tests/reports/t5-r1/browser.log"
       ],
       "missingEvidence": null,
       "exception": null
@@ -1533,18 +1889,27 @@
     {
       "id": "v5.0.0-V14.3.2",
       "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "reviewedAt": "2026-10-04T12:50:53.599Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "پاسخ authenticated و فایل private no-store هستند؛ browser و runtime regression اجرا شده‌اند.",
+      "directEvidence": {
+        "testFile": "tests/target/t5-browser.integration.test.mjs",
+        "testCase": "built Svelte RAG UI uses real Identity/Session/Authority, managed upload, durable processing, derived retrieval and authorized citations",
+        "reportArtifact": "tests/reports/t5-r1/browser.log",
+        "artifactHash": "a43eece9814b624bf3cf88f02d5dc2860444d432bcb834326ba848b58a7cdeeb",
+        "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a"
+      },
       "evidencePaths": [
         "docs/deployment/03-rag-customer-release.md",
         "packages/ai-router/src/protected.ts",
         "packages/knowledge/src/service.ts",
         "packages/storage/src/adapters/s3.ts",
         "tests/reports/t5-integrations.log",
-        "tests/reports/t5-browser.log"
+        "tests/reports/t5-browser.log",
+        "tests/target/t5-browser.integration.test.mjs",
+        "tests/reports/t5-r1/browser.log"
       ],
       "missingEvidence": null,
       "exception": null
@@ -1552,11 +1917,12 @@
     {
       "id": "v5.0.0-V15.1.2",
       "status": "NOT_VERIFIED",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "reviewedAt": "2026-10-04T12:50:53.599Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": false,
       "additionalT5Scope": true,
       "observed": "SBOM واقعی هر سه تصویر و اسکن محلی dependency/image موجود است؛ attestation منبع تمام وابستگی‌ها و provenance امضاشدهٔ production هنوز اثبات نشده است.",
+      "directEvidence": null,
       "evidencePaths": [
         "docs/deployment/03-rag-customer-release.md",
         "packages/ai-router/src/protected.ts",
@@ -1576,30 +1942,40 @@
     {
       "id": "v5.0.0-V15.1.3",
       "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "reviewedAt": "2026-10-04T12:50:53.600Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "extract/index/RAG و هزینهٔ مدل با durable jobs، Admission، concurrency و context/token bounds مستند است.",
+      "directEvidence": {
+        "testFile": "tests/target/t5-failure-runtime.integration.test.ts",
+        "testCase": "distributed query reservations reject additional API work before provider dispatch",
+        "reportArtifact": "tests/reports/t5-r1/integrations.log",
+        "artifactHash": "68c374a460f71e091d472493cbe205cee30715ccee3252bc4b54847159a649a0",
+        "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a"
+      },
       "evidencePaths": [
         "docs/deployment/03-rag-customer-release.md",
         "packages/ai-router/src/protected.ts",
         "packages/knowledge/src/service.ts",
         "packages/storage/src/adapters/s3.ts",
         "tests/reports/t5-integrations.log",
-        "tests/reports/t5-browser.log"
+        "tests/reports/t5-browser.log",
+        "tests/target/t5-failure-runtime.integration.test.ts",
+        "tests/reports/t5-r1/integrations.log"
       ],
       "missingEvidence": null,
       "exception": null
     },
     {
       "id": "v5.0.0-V15.1.4",
-      "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "status": "NOT_VERIFIED",
+      "reviewedAt": "2026-10-04T12:50:53.600Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
-      "observed": "LibreOffice/pdfjs، archive و S3 SDK به‌عنوان اجزای پرریسک در inventory امنیتی ثبت شده‌اند.",
+      "observed": "شاهد آزمون اجراشدهٔ مختص این کنترل برای source جاری ثبت نشده است.",
+      "directEvidence": null,
       "evidencePaths": [
         "docs/deployment/03-rag-customer-release.md",
         "packages/ai-router/src/protected.ts",
@@ -1608,17 +1984,18 @@
         "tests/reports/t5-integrations.log",
         "tests/reports/t5-browser.log"
       ],
-      "missingEvidence": null,
+      "missingEvidence": "شاهد آزمون اجراشدهٔ مختص این کنترل برای source جاری ثبت نشده است.",
       "exception": null
     },
     {
       "id": "v5.0.0-V15.1.5",
-      "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "status": "NOT_VERIFIED",
+      "reviewedAt": "2026-10-04T12:50:53.600Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
-      "observed": "native parse، protected egress و multipart mutation/UNKNOWN به‌عنوان functionality حساس مستند است.",
+      "observed": "شاهد آزمون اجراشدهٔ مختص این کنترل برای source جاری ثبت نشده است.",
+      "directEvidence": null,
       "evidencePaths": [
         "docs/deployment/03-rag-customer-release.md",
         "packages/ai-router/src/protected.ts",
@@ -1627,17 +2004,18 @@
         "tests/reports/t5-integrations.log",
         "tests/reports/t5-browser.log"
       ],
-      "missingEvidence": null,
+      "missingEvidence": "شاهد آزمون اجراشدهٔ مختص این کنترل برای source جاری ثبت نشده است.",
       "exception": null
     },
     {
       "id": "v5.0.0-V15.2.1",
       "status": "FAIL",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "reviewedAt": "2026-10-04T12:50:53.600Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": false,
       "additionalT5Scope": true,
       "observed": "اسکن واقعی تصویر و lock وابستگی‌ها آسیب‌پذیری‌های باز دارد؛ Node/OS و upload dependencies اصلاح و toolchain غیرضروری حذف شدند ولی remediation تمام یافته‌ها و SLA مشتری بسته نیست.",
+      "directEvidence": null,
       "evidencePaths": [
         "docs/deployment/03-rag-customer-release.md",
         "packages/ai-router/src/protected.ts",
@@ -1656,12 +2034,13 @@
     },
     {
       "id": "v5.0.0-V15.2.5",
-      "status": "FAIL",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "status": "NOT_VERIFIED",
+      "reviewedAt": "2026-10-04T12:50:53.600Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
-      "observed": "scratch خصوصی و timeout وجود دارد؛ sandbox parser بدون شبکه و با CPU/memory/file isolation مستقل پیاده‌سازی نشده است.",
+      "observed": "Linux namespace و scratch خصوصی در آزمون parser اجرا شدند؛ isolation و limits میزبان استقرار مشتری هنوز اثبات نشده‌اند.",
+      "directEvidence": null,
       "evidencePaths": [
         "docs/deployment/03-rag-customer-release.md",
         "packages/ai-router/src/protected.ts",
@@ -1670,17 +2049,18 @@
         "tests/reports/t5-integrations.log",
         "tests/reports/t5-browser.log"
       ],
-      "missingEvidence": "scratch خصوصی و timeout وجود دارد؛ sandbox parser بدون شبکه و با CPU/memory/file isolation مستقل پیاده‌سازی نشده است.",
+      "missingEvidence": "Linux namespace و scratch خصوصی در آزمون parser اجرا شدند؛ isolation و limits میزبان استقرار مشتری هنوز اثبات نشده‌اند.",
       "exception": null
     },
     {
       "id": "v5.0.0-V15.3.1",
-      "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "status": "NOT_VERIFIED",
+      "reviewedAt": "2026-10-04T12:50:53.600Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
-      "observed": "DTOهای نسخه، status، citation و operational metadata allowlist دارند؛ locators و raw grants به UI بازنمی‌گردند.",
+      "observed": "شاهد آزمون اجراشدهٔ مختص این کنترل برای source جاری ثبت نشده است.",
+      "directEvidence": null,
       "evidencePaths": [
         "docs/deployment/03-rag-customer-release.md",
         "packages/ai-router/src/protected.ts",
@@ -1689,36 +2069,46 @@
         "tests/reports/t5-integrations.log",
         "tests/reports/t5-browser.log"
       ],
-      "missingEvidence": null,
+      "missingEvidence": "شاهد آزمون اجراشدهٔ مختص این کنترل برای source جاری ثبت نشده است.",
       "exception": null
     },
     {
       "id": "v5.0.0-V15.3.2",
       "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "reviewedAt": "2026-10-04T12:50:53.600Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "provider/Qdrant/SIEM fetch redirect:error دارند؛ SDK مقصد ثابت و redirect provider در تست رد می‌شود.",
+      "directEvidence": {
+        "testFile": "tests/target/t5-protected-ai.integration.test.ts",
+        "testCase": "malformed vectors, index duplicates, wrong model, oversized responses and redirects fail before result publication",
+        "reportArtifact": "tests/reports/t5-r1/integrations.log",
+        "artifactHash": "68c374a460f71e091d472493cbe205cee30715ccee3252bc4b54847159a649a0",
+        "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a"
+      },
       "evidencePaths": [
         "docs/deployment/03-rag-customer-release.md",
         "packages/ai-router/src/protected.ts",
         "packages/knowledge/src/service.ts",
         "packages/storage/src/adapters/s3.ts",
         "tests/reports/t5-integrations.log",
-        "tests/reports/t5-browser.log"
+        "tests/reports/t5-browser.log",
+        "tests/target/t5-protected-ai.integration.test.ts",
+        "tests/reports/t5-r1/integrations.log"
       ],
       "missingEvidence": null,
       "exception": null
     },
     {
       "id": "v5.0.0-V15.3.6",
-      "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "status": "NOT_VERIFIED",
+      "reviewedAt": "2026-10-04T12:50:53.600Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
-      "observed": "ورودی‌ها exact-key validation و Map/Set دارند؛ privilege interpretation در Authority می‌ماند و dynamic merge ورودی در T5 وجود ندارد.",
+      "observed": "شاهد آزمون اجراشدهٔ مختص این کنترل برای source جاری ثبت نشده است.",
+      "directEvidence": null,
       "evidencePaths": [
         "docs/deployment/03-rag-customer-release.md",
         "packages/ai-router/src/protected.ts",
@@ -1727,17 +2117,18 @@
         "tests/reports/t5-integrations.log",
         "tests/reports/t5-browser.log"
       ],
-      "missingEvidence": null,
+      "missingEvidence": "شاهد آزمون اجراشدهٔ مختص این کنترل برای source جاری ثبت نشده است.",
       "exception": null
     },
     {
       "id": "v5.0.0-V15.3.7",
       "status": "NOT_VERIFIED",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "reviewedAt": "2026-10-04T12:50:53.600Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "schema body و header مشخص هستند؛ تست exhaustive duplicate query/header/transport parser pollution هنوز ثبت نشده است.",
+      "directEvidence": null,
       "evidencePaths": [
         "docs/deployment/03-rag-customer-release.md",
         "packages/ai-router/src/protected.ts",
@@ -1752,11 +2143,12 @@
     {
       "id": "v5.0.0-V15.4.2",
       "status": "NOT_VERIFIED",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "reviewedAt": "2026-10-04T12:50:53.600Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "job lease و Document snapshot publication fence آزموده شدند؛ atomicity دقیق grant revocation و materialization/provider dispatch در تمام interleavingها اثبات نشده است.",
+      "directEvidence": null,
       "evidencePaths": [
         "docs/deployment/03-rag-customer-release.md",
         "packages/ai-router/src/protected.ts",
@@ -1771,18 +2163,27 @@
     {
       "id": "v5.0.0-V15.4.3",
       "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "reviewedAt": "2026-10-04T12:50:53.600Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "locks در persistence/Storage owner و bounded transaction/lease هستند؛ retry و abandoned lease tests اجرا شده‌اند.",
+      "directEvidence": {
+        "testFile": "tests/target/t5-worker.integration.test.ts",
+        "testCase": "heartbeat prevents a competing replica from replacing a live long-running claim",
+        "reportArtifact": "tests/reports/t5-r1/integrations.log",
+        "artifactHash": "68c374a460f71e091d472493cbe205cee30715ccee3252bc4b54847159a649a0",
+        "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a"
+      },
       "evidencePaths": [
         "docs/deployment/03-rag-customer-release.md",
         "packages/ai-router/src/protected.ts",
         "packages/knowledge/src/service.ts",
         "packages/storage/src/adapters/s3.ts",
         "tests/reports/t5-integrations.log",
-        "tests/reports/t5-browser.log"
+        "tests/reports/t5-browser.log",
+        "tests/target/t5-worker.integration.test.ts",
+        "tests/reports/t5-r1/integrations.log"
       ],
       "missingEvidence": null,
       "exception": null
@@ -1790,11 +2191,12 @@
     {
       "id": "v5.0.0-V15.4.4",
       "status": "NOT_VERIFIED",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "reviewedAt": "2026-10-04T12:50:53.600Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "capacity bounded است؛ starvation/fairness بلندمدت با actorهای متعدد و حجم production آزموده نشده است.",
+      "directEvidence": null,
       "evidencePaths": [
         "docs/deployment/03-rag-customer-release.md",
         "packages/ai-router/src/protected.ts",
@@ -1809,11 +2211,12 @@
     {
       "id": "v5.0.0-V16.1.1",
       "status": "NOT_VERIFIED",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "reviewedAt": "2026-10-04T12:50:53.600Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "inventory برنامه/DB/SIEM در گزارش فارسی آمده؛ destination، access و retention همهٔ لایه‌های مشتری مشخص نیست.",
+      "directEvidence": null,
       "evidencePaths": [
         "packages/observability/src/index.ts",
         "packages/audit/src/persistence/semantic.ts",
@@ -1827,17 +2230,26 @@
     {
       "id": "v5.0.0-V16.2.1",
       "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "reviewedAt": "2026-10-04T12:50:53.600Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "metadata actor/session/initiator/request/correlation/tenant/task/run/time در Audit/Router/operational evidence ثبت می‌شود.",
+      "directEvidence": {
+        "testFile": "tests/target/t5-audit-siem.integration.test.ts",
+        "testCase": "actual upload/processing/index/query evidence reaches a TLS receiver with matching original Session/request",
+        "reportArtifact": "tests/reports/t5-r1/audit-siem.log",
+        "artifactHash": "aedd364e0aabffbcb29f1fbcde723ffd6ac16e94b783c8336f5e0978d8a44732",
+        "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a"
+      },
       "evidencePaths": [
         "packages/observability/src/index.ts",
         "packages/audit/src/persistence/semantic.ts",
         "packages/security-telemetry/src/worker.ts",
         "docs/verification/02-t5-audit-siem-verification-fa.md",
-        "tests/reports/t5-audit-siem.tap"
+        "tests/reports/t5-audit-siem.tap",
+        "tests/target/t5-audit-siem.integration.test.ts",
+        "tests/reports/t5-r1/audit-siem.log"
       ],
       "missingEvidence": null,
       "exception": null
@@ -1845,11 +2257,12 @@
     {
       "id": "v5.0.0-V16.2.2",
       "status": "NOT_VERIFIED",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "reviewedAt": "2026-10-04T12:50:53.600Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "timestampها UTC هستند؛ هم‌زمانی NTP تمام hostها و dependencies مشتری اثبات نشده است.",
+      "directEvidence": null,
       "evidencePaths": [
         "packages/observability/src/index.ts",
         "packages/audit/src/persistence/semantic.ts",
@@ -1863,11 +2276,12 @@
     {
       "id": "v5.0.0-V16.2.3",
       "status": "NOT_VERIFIED",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "reviewedAt": "2026-10-04T12:50:53.600Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "برنامه stdout، canonical PG و selected SIEM دارد؛ agentهای log و retention destination واقعی هنوز بررسی نشده‌اند.",
+      "directEvidence": null,
       "evidencePaths": [
         "packages/observability/src/index.ts",
         "packages/audit/src/persistence/semantic.ts",
@@ -1881,35 +2295,73 @@
     {
       "id": "v5.0.0-V16.2.5",
       "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "reviewedAt": "2026-10-04T12:50:53.600Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "Audit allowlist و SIEM envelope فقط metadata دارند؛ sentinel body/question/answer/locator/credential leakage scan موفق است.",
+      "directEvidence": {
+        "testFile": "tests/target/t5-audit-siem.integration.test.ts",
+        "testCase": "sensitive contents, prompts, answers and locators are absent from exported/canonical evidence",
+        "reportArtifact": "tests/reports/t5-r1/audit-siem.log",
+        "artifactHash": "aedd364e0aabffbcb29f1fbcde723ffd6ac16e94b783c8336f5e0978d8a44732",
+        "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a"
+      },
       "evidencePaths": [
         "packages/observability/src/index.ts",
         "packages/audit/src/persistence/semantic.ts",
         "packages/security-telemetry/src/worker.ts",
         "docs/verification/02-t5-audit-siem-verification-fa.md",
-        "tests/reports/t5-audit-siem.tap"
+        "tests/reports/t5-audit-siem.tap",
+        "tests/target/t5-audit-siem.integration.test.ts",
+        "tests/reports/t5-r1/audit-siem.log"
       ],
       "missingEvidence": null,
       "exception": null
     },
     {
-      "id": "v5.0.0-V16.3.3",
-      "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "id": "v5.0.0-V16.3.2",
+      "status": "NOT_VERIFIED",
+      "reviewedAt": "2026-10-04T12:50:53.600Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
-      "verifyDuringT5": true,
-      "additionalT5Scope": false,
-      "observed": "Authority denial، file failure/quarantine، output rejection و validation/Admission errors با safe codes ثبت می‌شوند.",
+      "verifyDuringT5": false,
+      "additionalT5Scope": true,
+      "observed": "خانواده‌های فاقد شاهد کامل ALLOW/DENY/Audit/SIEM: Document discover؛ Document read؛ Document download؛ Document use؛ Document quote؛ Document manage؛ Knowledge Space access؛ RAG coarse use authorization؛ final RAG candidate authorization؛ File Management download؛ File Management internal materialization/use؛ tenant deny؛ ACL deny؛ classification deny؛ revoked subject.",
+      "directEvidence": null,
       "evidencePaths": [
         "packages/observability/src/index.ts",
         "packages/audit/src/persistence/semantic.ts",
         "packages/security-telemetry/src/worker.ts",
         "docs/verification/02-t5-audit-siem-verification-fa.md",
-        "tests/reports/t5-audit-siem.tap"
+        "tests/reports/t5-audit-siem.tap",
+        "reports/security/t5-authority-inventory.json"
+      ],
+      "missingEvidence": "خانواده‌های فاقد شاهد کامل ALLOW/DENY/Audit/SIEM: Document discover؛ Document read؛ Document download؛ Document use؛ Document quote؛ Document manage؛ Knowledge Space access؛ RAG coarse use authorization؛ final RAG candidate authorization؛ File Management download؛ File Management internal materialization/use؛ tenant deny؛ ACL deny؛ classification deny؛ revoked subject.",
+      "exception": null
+    },
+    {
+      "id": "v5.0.0-V16.3.3",
+      "status": "PASS",
+      "reviewedAt": "2026-10-04T12:50:53.600Z",
+      "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
+      "verifyDuringT5": true,
+      "additionalT5Scope": false,
+      "observed": "Authority denial، file failure/quarantine، output rejection و validation/Admission errors با safe codes ثبت می‌شوند.",
+      "directEvidence": {
+        "testFile": "tests/target/t44-authority-live.integration.test.ts",
+        "testCase": "mandatory decision evidence failure blocks every current Authority path",
+        "reportArtifact": "tests/reports/t5-r1/authority-live.log",
+        "artifactHash": "52b8f4524b755e40492e3bbbb750f1e71e73758d1b540bfa819097cce7b5a7d3",
+        "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a"
+      },
+      "evidencePaths": [
+        "packages/observability/src/index.ts",
+        "packages/audit/src/persistence/semantic.ts",
+        "packages/security-telemetry/src/worker.ts",
+        "docs/verification/02-t5-audit-siem-verification-fa.md",
+        "tests/reports/t5-audit-siem.tap",
+        "tests/target/t44-authority-live.integration.test.ts",
+        "tests/reports/t5-r1/authority-live.log"
       ],
       "missingEvidence": null,
       "exception": null
@@ -1917,29 +2369,39 @@
     {
       "id": "v5.0.0-V16.3.4",
       "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "reviewedAt": "2026-10-04T12:50:53.600Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "provider failures و safe API errors و Worker failures log می‌شوند؛ raw exception/content ثبت نمی‌شود.",
+      "directEvidence": {
+        "testFile": "tests/target/t5-process-errors.test.ts",
+        "testCase": "last-resort handler redacts exception payload and drains before supervisor replacement",
+        "reportArtifact": "tests/reports/t5-r1/foundations.log",
+        "artifactHash": "e98f36033ab05c8b1aa891b40b62fec1cc7a59ab86f7da5b4ac20670847225cb",
+        "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a"
+      },
       "evidencePaths": [
         "packages/observability/src/index.ts",
         "packages/audit/src/persistence/semantic.ts",
         "packages/security-telemetry/src/worker.ts",
         "docs/verification/02-t5-audit-siem-verification-fa.md",
-        "tests/reports/t5-audit-siem.tap"
+        "tests/reports/t5-audit-siem.tap",
+        "tests/target/t5-process-errors.test.ts",
+        "tests/reports/t5-r1/foundations.log"
       ],
       "missingEvidence": null,
       "exception": null
     },
     {
       "id": "v5.0.0-V16.4.1",
-      "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "status": "NOT_VERIFIED",
+      "reviewedAt": "2026-10-04T12:50:53.600Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
-      "observed": "JSON.stringify در logging و strict enum/reference validation ساختار log را حفظ می‌کند.",
+      "observed": "شاهد آزمون اجراشدهٔ مختص این کنترل برای source جاری ثبت نشده است.",
+      "directEvidence": null,
       "evidencePaths": [
         "packages/observability/src/index.ts",
         "packages/audit/src/persistence/semantic.ts",
@@ -1947,17 +2409,18 @@
         "docs/verification/02-t5-audit-siem-verification-fa.md",
         "tests/reports/t5-audit-siem.tap"
       ],
-      "missingEvidence": null,
+      "missingEvidence": "شاهد آزمون اجراشدهٔ مختص این کنترل برای source جاری ثبت نشده است.",
       "exception": null
     },
     {
       "id": "v5.0.0-V16.4.2",
       "status": "NOT_VERIFIED",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "reviewedAt": "2026-10-04T12:50:53.600Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "DB audit immutability برای API/Worker موفق است؛ حفاظت stdout، host collector و destination مشتری آزموده نشده است.",
+      "directEvidence": null,
       "evidencePaths": [
         "packages/observability/src/index.ts",
         "packages/audit/src/persistence/semantic.ts",
@@ -1971,11 +2434,12 @@
     {
       "id": "v5.0.0-V16.4.3",
       "status": "NOT_VERIFIED",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "reviewedAt": "2026-10-04T12:50:53.600Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "receiver مستقل TLS در fixture موفق است؛ SOC واقعی، ACL/retention و جدایی کامل deployment تأیید نشده است.",
+      "directEvidence": null,
       "evidencePaths": [
         "packages/observability/src/index.ts",
         "packages/audit/src/persistence/semantic.ts",
@@ -1989,17 +2453,26 @@
     {
       "id": "v5.0.0-V16.5.3",
       "status": "PASS",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "reviewedAt": "2026-10-04T12:50:53.600Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "transaction rollback، malformed response، ambiguous outcome، dependency outage و denied publication fail closed آزموده شده‌اند.",
+      "directEvidence": {
+        "testFile": "tests/target/t5-failure-runtime.integration.test.ts",
+        "testCase": "actual API/Worker/Storage/Qdrant pipeline fails closed on dependencies, admission, session, Authority and Governance",
+        "reportArtifact": "tests/reports/t5-r1/integrations.log",
+        "artifactHash": "68c374a460f71e091d472493cbe205cee30715ccee3252bc4b54847159a649a0",
+        "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a"
+      },
       "evidencePaths": [
         "packages/observability/src/index.ts",
         "packages/audit/src/persistence/semantic.ts",
         "packages/security-telemetry/src/worker.ts",
         "docs/verification/02-t5-audit-siem-verification-fa.md",
-        "tests/reports/t5-audit-siem.tap"
+        "tests/reports/t5-audit-siem.tap",
+        "tests/target/t5-failure-runtime.integration.test.ts",
+        "tests/reports/t5-r1/integrations.log"
       ],
       "missingEvidence": null,
       "exception": null
@@ -2007,11 +2480,12 @@
     {
       "id": "v5.0.0-V16.5.4",
       "status": "NOT_VERIFIED",
-      "reviewedAt": "2026-10-03T18:33:14.612Z",
+      "reviewedAt": "2026-10-04T12:50:53.600Z",
       "scope": "CURRENT_TARGET_AND_REQUIRED_DEPLOYMENT",
       "verifyDuringT5": true,
       "additionalT5Scope": false,
       "observed": "last-resort handler payload را log نمی‌کند و با drain/exit fail-closed برای supervisor جایگزین می‌شود؛ availability و restart policy همهٔ entrypointها در deployment واقعی هنوز اثبات نشده است.",
+      "directEvidence": null,
       "evidencePaths": [
         "packages/observability/src/index.ts",
         "packages/audit/src/persistence/semantic.ts",

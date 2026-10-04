@@ -3,7 +3,7 @@ import { isCommonPassword } from './common-passwords.js';
 import { assertNewPasswordAllowed, type intfPasswordPolicy } from './password-policy.js';
 export interface intfLoginMembership { readonly membershipId: string; readonly tenantId: string }
 export type typLoginResult =
-  | Readonly<{ kind: 'AUTHENTICATED'; identityId: string; memberships: readonly intfLoginMembership[] }>
+  | Readonly<{ kind: 'AUTHENTICATED'; identityId: string; memberships: readonly intfLoginMembership[]; provisioned?:boolean }>
   | Readonly<{ kind: 'INVALID' }>
   | Readonly<{ kind: 'RATE_LIMITED' }>;
 const N = 1 << 17;

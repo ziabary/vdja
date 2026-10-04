@@ -1,0 +1,109 @@
+# مرز تصمیم Authority پس از T5 و R1
+
+CURRENT — منبع: reports/security/t5-authority-inventory.json
+
+فایل‌های production بررسی‌شده: 219. call siteهای consumer جدید T5: 37. bypass production: 0.
+
+تصمیم ALLOW/DENY در clsAuthorityService ثبت می‌شود و شکست Audit تصمیم را متوقف می‌کند. Document Core، Knowledge و composition rootها به facade متصل‌اند. کنترل DB synchronization مجوز ایجاد نمی‌کند.
+
+اثبات ALLOW و DENY و durable SIEM eligibility برای **تمام شاخه‌های تمام مصرف‌کنندگان** هنوز NOT_VERIFIED است؛ وضعیت T4 برای V16.3.2 به دامنهٔ تازه ارث داده نمی‌شود.
+
+| فایل:خط | فراخوانی | طبقه |
+| --- | --- | --- |
+| apps/api/src/index.ts:54 | runtime.authority.authorizePublicTool | CANONICAL_AUTHORITY_SERVICE |
+| apps/runtime/src/composition.ts:58 | authority.fileLimitTier | CANONICAL_AUTHORITY_SERVICE |
+| apps/runtime/src/composition.ts:65 | authority.authorize | CANONICAL_AUTHORITY_SERVICE |
+| packages/authority/src/index.ts:60 | getPrivValue | AUTHORITY_INTERNAL |
+| packages/authority/src/index.ts:130 | getPrivValue | AUTHORITY_INTERNAL |
+| packages/authority/src/persistence.ts:73 | evaluateAuthority | AUTHORITY_INTERNAL |
+| packages/authority/src/persistence.ts:78 | evaluateAuthority | AUTHORITY_INTERNAL |
+| packages/authority/src/persistence.ts:82 | getPrivValue | AUTHORITY_INTERNAL |
+| packages/authority/src/persistence.ts:83 | evaluateAuthority | AUTHORITY_INTERNAL |
+| packages/authority/src/service.ts:56 | this.authorize | AUTHORITY_INTERNAL |
+| packages/authority/src/service.ts:85 | this.authorize | AUTHORITY_INTERNAL |
+| packages/authority/src/service.ts:116 | getPrivValue | AUTHORITY_INTERNAL |
+| packages/authority/src/service.ts:117 | evaluateAuthority | AUTHORITY_INTERNAL |
+| packages/authority/src/service.ts:126 | evaluateAuthority | AUTHORITY_INTERNAL |
+| packages/authority/src/service.ts:129 | evaluateAuthority | AUTHORITY_INTERNAL |
+| packages/authority/src/service.ts:134 | getPrivValue | AUTHORITY_INTERNAL |
+| packages/authority/src/service.ts:135 | evaluateAuthority | AUTHORITY_INTERNAL |
+| packages/authority/src/service.ts:148 | this.authorize | AUTHORITY_INTERNAL |
+| packages/authority/src/service.ts:156 | this.authorize | AUTHORITY_INTERNAL |
+| packages/authority/src/service.ts:163 | this.authorizeFields | AUTHORITY_INTERNAL |
+| packages/authority/src/service.ts:171 | this.ports.authorizePublicTool | AUTHORITY_INTERNAL |
+| packages/data-governance/src/retention.ts:36 | this.ports.authority.authorize | CANONICAL_AUTHORITY_SERVICE |
+| packages/data-governance/src/retention.ts:41 | this.authorize | CANONICAL_AUTHORITY_SERVICE |
+| packages/data-governance/src/retention.ts:44 | this.authorize | CANONICAL_AUTHORITY_SERVICE |
+| packages/data-governance/src/retention.ts:51 | this.authorize | CANONICAL_AUTHORITY_SERVICE |
+| packages/data-governance/src/retention.ts:61 | this.authorize | CANONICAL_AUTHORITY_SERVICE |
+| packages/documents/src/service.ts:47 | this.ports.authority.authorize | CANONICAL_AUTHORITY_SERVICE |
+| packages/documents/src/service.ts:77 | this.ports.authority.authorizeBatch | CANONICAL_AUTHORITY_SERVICE |
+| packages/documents/src/service.ts:84 | this.authorize | CANONICAL_AUTHORITY_SERVICE |
+| packages/documents/src/service.ts:86 | this.authorize | CANONICAL_AUTHORITY_SERVICE |
+| packages/documents/src/service.ts:94 | this.ports.authority.authorize | CANONICAL_AUTHORITY_SERVICE |
+| packages/documents/src/service.ts:116 | this.authorizeMany | CANONICAL_AUTHORITY_SERVICE |
+| packages/documents/src/service.ts:131 | this.authorize | CANONICAL_AUTHORITY_SERVICE |
+| packages/documents/src/service.ts:192 | this.authorizeMany | CANONICAL_AUTHORITY_SERVICE |
+| packages/file-management/src/service.ts:77 | this.ports.documents.authorize | CANONICAL_AUTHORITY_SERVICE |
+| packages/file-management/src/service.ts:258 | this.ports.documents.authorize | CANONICAL_AUTHORITY_SERVICE |
+| packages/file-management/src/service.ts:268 | this.ports.documents.authorize | CANONICAL_AUTHORITY_SERVICE |
+| packages/file-management/src/service.ts:406 | this.ports.expiryAuthority?.authorize | CANONICAL_AUTHORITY_SERVICE |
+| packages/knowledge/src/service.ts:57 | this.ports.authority.authorize | CANONICAL_AUTHORITY_SERVICE |
+| packages/knowledge/src/service.ts:63 | this.ports.authority.authorize | CANONICAL_AUTHORITY_SERVICE |
+| packages/knowledge/src/service.ts:76 | this.ports.authority.authorizeBatch | CANONICAL_AUTHORITY_SERVICE |
+| packages/knowledge/src/service.ts:84 | this.ports.documents.authorize | CANONICAL_AUTHORITY_SERVICE |
+| packages/knowledge/src/service.ts:116 | this.ports.documents.authorizeMany | CANONICAL_AUTHORITY_SERVICE |
+| packages/knowledge/src/service.ts:142 | this.ports.documents.authorizeMany | CANONICAL_AUTHORITY_SERVICE |
+| packages/knowledge/src/service.ts:142 | this.ports.documents.authorizeMany | CANONICAL_AUTHORITY_SERVICE |
+| packages/knowledge/src/service.ts:167 | this.ports.documents.authorize | CANONICAL_AUTHORITY_SERVICE |
+| packages/knowledge/src/service.ts:171 | this.ports.documents.authorize | CANONICAL_AUTHORITY_SERVICE |
+| packages/knowledge/src/service.ts:186 | this.ports.documents.authorizeMany | CANONICAL_AUTHORITY_SERVICE |
+| packages/knowledge/src/service.ts:199 | this.ports.documents.authorizeMany | CANONICAL_AUTHORITY_SERVICE |
+| packages/knowledge/src/service.ts:222 | this.ports.documents.authorizeMany | CANONICAL_AUTHORITY_SERVICE |
+| packages/knowledge/src/service.ts:229 | this.ports.documents.authorizeMany | CANONICAL_AUTHORITY_SERVICE |
+| packages/knowledge/src/service.ts:260 | this.ports.documents.authorizeMany | CANONICAL_AUTHORITY_SERVICE |
+| packages/knowledge/src/service.ts:260 | this.ports.documents.authorizeMany | CANONICAL_AUTHORITY_SERVICE |
+| packages/knowledge/src/service.ts:269 | this.ports.documents.authorizeMany | CANONICAL_AUTHORITY_SERVICE |
+| packages/knowledge/src/service.ts:269 | this.ports.documents.authorizeMany | CANONICAL_AUTHORITY_SERVICE |
+| packages/knowledge/src/service.ts:269 | this.ports.documents.authorizeMany | CANONICAL_AUTHORITY_SERVICE |
+| tests/conformance/authority/authorityBehavior.test.ts:43 | a.getPrivValue | TEST_ONLY |
+| tests/conformance/authority/authorityBehavior.test.ts:43 | a.getPrivValue | TEST_ONLY |
+| tests/conformance/authority/authorityBehavior.test.ts:43 | a.getPrivValue | TEST_ONLY |
+| tests/conformance/authority/authorityBehavior.test.ts:44 | a.getPrivValue | TEST_ONLY |
+| tests/conformance/authority/authorityBehavior.test.ts:44 | a.getPrivValue | TEST_ONLY |
+| tests/conformance/authority/authorityBehavior.test.ts:44 | a.getPrivValue | TEST_ONLY |
+| tests/target/t44-authority-live.integration.test.ts:142 | authority.authorize | TEST_ONLY |
+| tests/target/t44-authority-live.integration.test.ts:149 | authority.materializeAuthorized | TEST_ONLY |
+| tests/target/t44-authority-live.integration.test.ts:151 | authority.materializeAuthorized | TEST_ONLY |
+| tests/target/t44-authority-live.integration.test.ts:154 | authorize | TEST_ONLY |
+| tests/target/t44-authority-live.integration.test.ts:155 | authorize | TEST_ONLY |
+| tests/target/t44-authority-live.integration.test.ts:156 | authorize | TEST_ONLY |
+| tests/target/t44-authority-live.integration.test.ts:163 | authority.authorizeFields | TEST_ONLY |
+| tests/target/t44-authority-live.integration.test.ts:164 | authority.authorizeFields | TEST_ONLY |
+| tests/target/t44-authority-live.integration.test.ts:166 | authority.materializeFields | TEST_ONLY |
+| tests/target/t44-authority-live.integration.test.ts:175 | authorize | TEST_ONLY |
+| tests/target/t44-authority-live.integration.test.ts:176 | authorize | TEST_ONLY |
+| tests/target/t44-authority-live.integration.test.ts:177 | authorize | TEST_ONLY |
+| tests/target/t44-authority-live.integration.test.ts:178 | authorize | TEST_ONLY |
+| tests/target/t44-authority-live.integration.test.ts:179 | authorize | TEST_ONLY |
+| tests/target/t44-authority-live.integration.test.ts:180 | authorize | TEST_ONLY |
+| tests/target/t44-authority-live.integration.test.ts:181 | authorize | TEST_ONLY |
+| tests/target/t44-authority-live.integration.test.ts:182 | authorize | TEST_ONLY |
+| tests/target/t44-authority-live.integration.test.ts:183 | authorize | TEST_ONLY |
+| tests/target/t44-authority-live.integration.test.ts:187 | authorize | TEST_ONLY |
+| tests/target/t44-authority-live.integration.test.ts:195 | authority.authorizePublicTool | TEST_ONLY |
+| tests/target/t44-authority-live.integration.test.ts:200 | unavailable.authorizePublicTool | TEST_ONLY |
+| tests/target/t44-authority-live.integration.test.ts:202 | unavailable.materializeAuthorized | TEST_ONLY |
+| tests/target/t44-authority-live.integration.test.ts:206 | unavailable.materializeFields | TEST_ONLY |
+| tests/target/t44-authority-live.integration.test.ts:222 | authorize | TEST_ONLY |
+| tests/target/t44-authority-live.integration.test.ts:230 | authorize | TEST_ONLY |
+| tests/target/t44-authority-live.integration.test.ts:235 | authorize | TEST_ONLY |
+| tests/target/t44-authority-live.integration.test.ts:240 | authorize | TEST_ONLY |
+| tests/target/t44-authority-live.integration.test.ts:244 | authorize | TEST_ONLY |
+| tests/target/t44-authority-live.integration.test.ts:248 | authorize | TEST_ONLY |
+| tests/target/t44-authority-live.integration.test.ts:252 | authorize | TEST_ONLY |
+| tests/target/t44-authority-live.integration.test.ts:258 | authority.authorize | TEST_ONLY |
+| tests/target/t44-authority-live.integration.test.ts:262 | invalidService.materializeAuthorized | TEST_ONLY |
+| tests/target/t5-file-management.integration.test.ts:124 | fixture.workerAuthority.authorize | TEST_ONLY |
+| tests/target/t5-worker-multitenant.integration.test.ts:25 | original.workerAuthority.authorize | TEST_ONLY |
+| tests/target/t5-worker-multitenant.integration.test.ts:26 | original.workerAuthority.authorize | TEST_ONLY |

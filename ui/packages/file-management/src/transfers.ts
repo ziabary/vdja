@@ -21,6 +21,8 @@ export interface intfTransferUpdate {
   readonly releaseLease?: boolean;
 }
 export interface intfTransferRepository {
+ purgePlan(transaction:intfTransactionHandle,context:intfExecutionContext,documentId:string):Promise<readonly Readonly<{id:string;storageKey:string;remoteUploadId:string|null}>[]>;
+ purgeMetadata(transaction:intfTransactionHandle,context:intfExecutionContext,documentId:string,leaseToken:string):Promise<void>;
   find(transaction: intfTransactionHandle, context: intfExecutionContext, id: string): Promise<intfFileTransfer | null>;
   byIdempotency(transaction: intfTransactionHandle, context: intfExecutionContext,
     documentId: string, key: string): Promise<intfFileTransfer | null>;

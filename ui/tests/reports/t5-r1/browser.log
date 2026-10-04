@@ -1,0 +1,3 @@
+{"type":"test:pass","name":"built Svelte RAG UI uses real Identity/Session/Authority, managed upload, durable processing, derived retrieval and authorized citations","file":"/home/user/Projects/vadja/ui/tests/target/t5-browser.integration.test.mjs","line":12,"column":1,"skip":false,"todo":false,"testNumber":1}
+{"type":"test:summary","file":"/home/user/Projects/vadja/ui/tests/target/t5-browser.integration.test.mjs","skip":false,"todo":false,"counts":{"tests":1,"failed":0,"passed":1,"cancelled":0,"skipped":0,"todo":0,"topLevel":1,"suites":0},"success":true}
+{"type":"test:summary","skip":false,"todo":false,"counts":{"tests":1,"failed":0,"passed":1,"cancelled":0,"skipped":0,"todo":0,"topLevel":1,"suites":0},"success":true}

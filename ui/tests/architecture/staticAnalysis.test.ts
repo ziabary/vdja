@@ -126,3 +126,5 @@ test('canonical typed manifest alone supplies contribution IDs and routes have m
  analyzeManifestSource('modules/b/manifest.ts',body('b','canonical.route'),route,routeSeen);
  assert.ok(route.some(v=>v.ruleId==='ARCH-MOD-002'&&v.message.includes('routeContribution')));
 });
+
+test('SQL qualification distinguishes DISTINCT FROM expressions and still rejects unqualified relations',()=>{assert.ok(!sqlRules('IF i_tenant IS DISTINCT FROM v_tenant THEN RETURN NULL; END IF;').has('ARCH-DB-006'));assert.ok(!sqlRules('SELECT doc_id FROM documents.tbl_doc_document WHERE doc_id IS NOT DISTINCT FROM i_id;').has('ARCH-DB-006'));assert.ok(sqlRules('SELECT doc_id FROM tbl_doc_document WHERE doc_id IS DISTINCT FROM i_id;').has('ARCH-DB-006'));});

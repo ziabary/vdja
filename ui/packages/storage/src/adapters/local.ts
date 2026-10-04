@@ -84,6 +84,9 @@ export class clsLocalStorageAdapter implements intfStoragePort {
     await this.directory(directory);
     return directory;
   }
+  async purge(key:string):Promise<void>{
+    const path=await this.objectPath(key);await rm(path,{force:true});await rm(path+'.json',{force:true});
+  }
   async begin(input: intfStorageDescriptor, transferId: string): Promise<typStorageMutation> {
     descriptor(input);
     const directory = await this.stagePath(transferId);

@@ -16,6 +16,8 @@ export interface intfFileAdmissionRequest {
   readonly id: string; readonly kind: enuFileReservationKind; readonly bytes: number; readonly expiresAt: string;
 }
 export interface intfFileAdmissionPort {
+ activeWithin(transaction:intfTransactionHandle,context:intfExecutionContext):Promise<boolean>;
+ purgedWithin(transaction:intfTransactionHandle,context:intfExecutionContext,operationId:string):Promise<void>;
   reserve(transaction: intfTransactionHandle, context: intfExecutionContext,
     policy: intfFileAdmissionPolicy, request: intfFileAdmissionRequest): Promise<void>;
   finish(transaction: intfTransactionHandle, context: intfExecutionContext, id: string,

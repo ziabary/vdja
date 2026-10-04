@@ -7,6 +7,7 @@ export type typLoginOutcome = Readonly<{ kind: 'SIGNED_IN' }> | Readonly<{ kind:
 export interface intfAuthClient {
   readonly state: intfAuthState;
   login(email: string, password: string, tenantId?: string): Promise<typLoginOutcome>;
+  loginLegacyKey(key:string,tenantId?:string):Promise<typLoginOutcome>;
   refresh(): Promise<void>;
   logout(): Promise<void>;
 }
@@ -32,6 +33,15 @@ export function provideAuthClient(authOrigin: () => string | null): intfAuthClie
         return { kind: 'INVALID' };
       state.token = body.accessToken; state.tenantId = body.tenantId;
       return { kind: 'SIGNED_IN' };
+    },
+    async loginLegacyKey(key,tenantId){
+      const attempt=++revision,origin=authOrigin();if(!origin)return{kind:'INVALID'};
+      const response=await postAuthRequest(origin,'legacy-key',{key,...(tenantId?{tenantId}:{})});
+      const body:unknown=await response.json().catch(()=>null);
+      if(attempt!==revision)return{kind:'INVALID'};
+      if(response.ok&&record(body)&&body.status==='TENANT_SELECTION_REQUIRED')return{kind:'TENANT_SELECTION_REQUIRED',tenants:tenants(body.tenants)};
+      if(!response.ok||!record(body)||typeof body.accessToken!=='string'||typeof body.tenantId!=='string')return{kind:'INVALID'};
+      state.token=body.accessToken;state.tenantId=body.tenantId;return{kind:'SIGNED_IN'};
     },
     async refresh() {
       const attempt=revision;state.restoring=true;

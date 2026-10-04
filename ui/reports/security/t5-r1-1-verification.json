@@ -1,0 +1,72 @@
+{
+  "generatedAt": "2026-10-04T12:52:34.641Z",
+  "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a",
+  "verificationContractHash": "17f13383778b2511b16aa6e88d1aea5909a499bf9891e0a7a2f539c84e834b80",
+  "status": "COMPLETE",
+  "checks": {
+    "currentExecution": true,
+    "criterionMap": true,
+    "noBroadFeaturePass": true,
+    "metaFromCanonicalGates": true,
+    "contractBound": true,
+    "staleEvidenceSelfTests": true,
+    "authorityInventory": true,
+    "imageCoverage": true,
+    "serviceBoundarySplit": true,
+    "currentAsvs": true,
+    "protectedSources": true,
+    "finalT5Gate": true
+  },
+  "acceptance": {
+    "total": 100,
+    "pass": 74,
+    "fail": 3,
+    "notVerified": 23,
+    "notApplicable": 0,
+    "direct": 74,
+    "broadFeatureDerivedPass": 0
+  },
+  "authority": {
+    "postT5Consumers": 37,
+    "productionBypasses": 0,
+    "operationFamiliesPassed": 0,
+    "operationFamiliesApplicable": 15,
+    "allPostT5DecisionsAudited": "NOT_VERIFIED"
+  },
+  "imageCoverage": {
+    "status": "PASS",
+    "errors": [],
+    "covered": 9,
+    "uniqueRuntimeSets": 7,
+    "uncoveredImages": 0,
+    "shippedRuntimeHighCritical": 97,
+    "fixAvailable": 0
+  },
+  "serviceControls": {
+    "V12_3_5": {
+      "id": "V12.3.5",
+      "platformCapabilityStatus": "GAP",
+      "customerDeploymentStatus": "NOT_VERIFIED",
+      "reason": "Current source supports some boundary controls, but static/replayable credentials or missing client identity remain. No customer topology, certificate, IAM or credential-lifetime evidence is supplied."
+    },
+    "V13_2_1": {
+      "id": "V13.2.1",
+      "platformCapabilityStatus": "GAP",
+      "customerDeploymentStatus": "NOT_VERIFIED",
+      "reason": "Current source supports some boundary controls, but static/replayable credentials or missing client identity remain. No customer topology, certificate, IAM or credential-lifetime evidence is supplied."
+    }
+  },
+  "t5": "PARTIAL",
+  "genai": "FAIL",
+  "t5Security": "FAIL",
+  "asvsRelease": "NO",
+  "asvs": {
+    "total": 345,
+    "PASS": 114,
+    "FAIL": 16,
+    "NOT_VERIFIED": 114,
+    "NOT_APPLICABLE": 101
+  },
+  "t5Blockers": 61,
+  "releaseOnlyBlockers": 69
+}

@@ -41,6 +41,8 @@ async function ownedLease(transaction: intfTransactionHandle, context: intfExecu
 }
 export function createTransferRepository(): intfTransferRepository {
   const repository: intfTransferRepository = {
+ async purgePlan(tx,ctx,id){const result=await resolveTargetTransaction(tx).query<{id:string;storageKey:string;remoteUploadId:string|null}>(`SELECT ftr_id AS id,ftr_storage_key AS "storageKey",ftr_remote_upload_id AS "remoteUploadId" FROM file_management.tbl_fil_transfer WHERE ftr_deployment_id=$1 AND ftr_tenant_id=$2 AND ftr_document__doc_id=$3`,[ctx.deploymentId,ctx.tenantId,id]);return result.rows;},
+ async purgeMetadata(tx,ctx,id,leaseToken){await resolveTargetTransaction(tx).query('SELECT file_management.fn_fil_purge_metadata($1,$2,$3,$4)',[ctx.deploymentId,ctx.tenantId,id,leaseToken]);},
     async find(tx, context, id) {
       const result = await resolveTargetTransaction(tx).query<intfTransferRow>(`SELECT ${TRANSFER_COLUMNS}
         FROM file_management.tbl_fil_transfer WHERE ftr_deployment_id=$1 AND ftr_tenant_id=$2 AND ftr_id=$3`, [...scope(context), id]);

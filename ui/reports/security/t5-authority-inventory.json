@@ -1,0 +1,2795 @@
+{
+  "generatedAt": "2026-10-04T12:50:18.899Z",
+  "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a",
+  "verificationContractHash": "17f13383778b2511b16aa6e88d1aea5909a499bf9891e0a7a2f539c84e834b80",
+  "productionFilesScanned": 219,
+  "inventory": [
+    {
+      "file": "apps/api/src/index.ts",
+      "line": 54,
+      "expression": "runtime.authority.authorizePublicTool",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "authorityContext,moduleId as 'translator' | 'summarizer' | 'faq'"
+    },
+    {
+      "file": "apps/runtime/src/composition.ts",
+      "line": 58,
+      "expression": "authority.fileLimitTier",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "{context:{...ctx,moduleId:'knowledge'},path:'Knowledge.Files.elevatedLimits',resource:facts,requireClassification:true}"
+    },
+    {
+      "file": "apps/runtime/src/composition.ts",
+      "line": 65,
+      "expression": "authority.authorize",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "{context:{...ctx,moduleId:'file-management'},path:'Files.Transfers.expire',\n        resource:{type:'file_transfer',id,tenantId:ctx.tenantId},requireClassification:false}"
+    },
+    {
+      "file": "packages/authority/src/index.ts",
+      "line": 60,
+      "expression": "getPrivValue",
+      "classification": "AUTHORITY_INTERNAL",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "privileges,path,allDefault"
+    },
+    {
+      "file": "packages/authority/src/index.ts",
+      "line": 130,
+      "expression": "getPrivValue",
+      "classification": "AUTHORITY_INTERNAL",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "grant.privileges,input.path,input.allDefault === undefined ? true : input.allDefault"
+    },
+    {
+      "file": "packages/authority/src/persistence.ts",
+      "line": 73,
+      "expression": "evaluateAuthority",
+      "classification": "AUTHORITY_INTERNAL",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "{ facts: { actorId: identityId, tenantId, deploymentId, state: 'ACTIVE' },\n            path, now: row.current_time.toISOString(), grants: [grant] }"
+    },
+    {
+      "file": "packages/authority/src/persistence.ts",
+      "line": 78,
+      "expression": "evaluateAuthority",
+      "classification": "AUTHORITY_INTERNAL",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "{ facts: { actorId: identityId, tenantId, deploymentId,\n        state: first.idn_state, resource: { tenantId } }, path, now: first.current_time.toISOString(), grants, denies }"
+    },
+    {
+      "file": "packages/authority/src/persistence.ts",
+      "line": 82,
+      "expression": "getPrivValue",
+      "classification": "AUTHORITY_INTERNAL",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "grant.privileges,tierPath"
+    },
+    {
+      "file": "packages/authority/src/persistence.ts",
+      "line": 83,
+      "expression": "evaluateAuthority",
+      "classification": "AUTHORITY_INTERNAL",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "{ facts: { actorId: identityId, tenantId, deploymentId, state: first.idn_state },\n          path, now: first.current_time.toISOString(), grants: [grant] }"
+    },
+    {
+      "file": "packages/authority/src/service.ts",
+      "line": 56,
+      "expression": "this.authorize",
+      "classification": "AUTHORITY_INTERNAL",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "{ ...request, path: 'Knowledge.Files.elevatedLimits' }"
+    },
+    {
+      "file": "packages/authority/src/service.ts",
+      "line": 85,
+      "expression": "this.authorize",
+      "classification": "AUTHORITY_INTERNAL",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "request"
+    },
+    {
+      "file": "packages/authority/src/service.ts",
+      "line": 116,
+      "expression": "getPrivValue",
+      "classification": "AUTHORITY_INTERNAL",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "grant.privileges,path,resolved.allDefault"
+    },
+    {
+      "file": "packages/authority/src/service.ts",
+      "line": 117,
+      "expression": "evaluateAuthority",
+      "classification": "AUTHORITY_INTERNAL",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "{ ...base, facts: { ...factsWithoutResource,\n        ...(inputFacts.resource?{resource:resourceWithoutAcl}:{}) },\n        requireClassification: false, grants: [grant],\n        ...(resolved.valueKind === 'CRUD' && crudOperation ? { crud: { value: denyValue, operation: crudOperation } } : {}) }"
+    },
+    {
+      "file": "packages/authority/src/service.ts",
+      "line": 126,
+      "expression": "evaluateAuthority",
+      "classification": "AUTHORITY_INTERNAL",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "{ ...withDenies, grants: resolved.grants }"
+    },
+    {
+      "file": "packages/authority/src/service.ts",
+      "line": 129,
+      "expression": "evaluateAuthority",
+      "classification": "AUTHORITY_INTERNAL",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "{ ...withDenies, grants: [] }"
+    },
+    {
+      "file": "packages/authority/src/service.ts",
+      "line": 134,
+      "expression": "getPrivValue",
+      "classification": "AUTHORITY_INTERNAL",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "grant.privileges,path,resolved.allDefault"
+    },
+    {
+      "file": "packages/authority/src/service.ts",
+      "line": 135,
+      "expression": "evaluateAuthority",
+      "classification": "AUTHORITY_INTERNAL",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "{ ...withDenies, grants: [grant], crud: { value, operation: crudOperation } }"
+    },
+    {
+      "file": "packages/authority/src/service.ts",
+      "line": 148,
+      "expression": "this.authorize",
+      "classification": "AUTHORITY_INTERNAL",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "{ context, path: field.permissionPath, resource }"
+    },
+    {
+      "file": "packages/authority/src/service.ts",
+      "line": 156,
+      "expression": "this.authorize",
+      "classification": "AUTHORITY_INTERNAL",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "request"
+    },
+    {
+      "file": "packages/authority/src/service.ts",
+      "line": 163,
+      "expression": "this.authorizeFields",
+      "classification": "AUTHORITY_INTERNAL",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "context,resource,fields"
+    },
+    {
+      "file": "packages/authority/src/service.ts",
+      "line": 171,
+      "expression": "this.ports.authorizePublicTool",
+      "classification": "AUTHORITY_INTERNAL",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "context.actorId,context.tenantId,module"
+    },
+    {
+      "file": "packages/data-governance/src/retention.ts",
+      "line": 36,
+      "expression": "this.ports.authority.authorize",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "{context:{...ctx,moduleId:'data-governance'},path:'Governance.Documents.'+operation,resource:{type:'document',id,tenantId:ctx.tenantId,classification:facts.classification}}"
+    },
+    {
+      "file": "packages/data-governance/src/retention.ts",
+      "line": 41,
+      "expression": "this.authorize",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "tx,ctx,value.resourceId,'manage'"
+    },
+    {
+      "file": "packages/data-governance/src/retention.ts",
+      "line": 44,
+      "expression": "this.authorize",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "tx,ctx,id,'hold'"
+    },
+    {
+      "file": "packages/data-governance/src/retention.ts",
+      "line": 51,
+      "expression": "this.authorize",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "tx,ctx,id,'purge'"
+    },
+    {
+      "file": "packages/data-governance/src/retention.ts",
+      "line": 61,
+      "expression": "this.authorize",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "tx,ctx,id,'purge'"
+    },
+    {
+      "file": "packages/documents/src/service.ts",
+      "line": 47,
+      "expression": "this.ports.authority.authorize",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "{\n      context: knowledgeContext(context), path: `Knowledge.Documents.${operation}`, resource: facts\n    }"
+    },
+    {
+      "file": "packages/documents/src/service.ts",
+      "line": 77,
+      "expression": "this.ports.authority.authorizeBatch",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "resources.map(resource => ({\n      context: knowledgeContext(context), path: `Knowledge.Documents.${operation}`, resource }))"
+    },
+    {
+      "file": "packages/documents/src/service.ts",
+      "line": 84,
+      "expression": "this.authorize",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "context,enuDocumentOperation.Discover,facts"
+    },
+    {
+      "file": "packages/documents/src/service.ts",
+      "line": 86,
+      "expression": "this.authorize",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "context,operation,facts"
+    },
+    {
+      "file": "packages/documents/src/service.ts",
+      "line": 94,
+      "expression": "this.ports.authority.authorize",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "{ context: knowledgeContext(context),\n      path: `Knowledge.Documents.${enuDocumentOperation.Manage}`,\n      resource: { type: 'document', id: input.id, tenantId: context.tenantId,\n        ownerId: context.actorId, classification: input.classification } }"
+    },
+    {
+      "file": "packages/documents/src/service.ts",
+      "line": 116,
+      "expression": "this.authorizeMany",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": true,
+      "pathExpression": "context,enuDocumentOperation.Discover,facts"
+    },
+    {
+      "file": "packages/documents/src/service.ts",
+      "line": 131,
+      "expression": "this.authorize",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "context,operation,facts"
+    },
+    {
+      "file": "packages/documents/src/service.ts",
+      "line": 192,
+      "expression": "this.authorizeMany",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": true,
+      "pathExpression": "context,operation,facts"
+    },
+    {
+      "file": "packages/file-management/src/service.ts",
+      "line": 77,
+      "expression": "this.ports.documents.authorize",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": true,
+      "pathExpression": "context,operation,facts"
+    },
+    {
+      "file": "packages/file-management/src/service.ts",
+      "line": 258,
+      "expression": "this.ports.documents.authorize",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": true,
+      "pathExpression": "context,enuDocumentOperation.Discover,facts"
+    },
+    {
+      "file": "packages/file-management/src/service.ts",
+      "line": 268,
+      "expression": "this.ports.documents.authorize",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": true,
+      "pathExpression": "context,enuDocumentOperation.Download,fresh"
+    },
+    {
+      "file": "packages/file-management/src/service.ts",
+      "line": 406,
+      "expression": "this.ports.expiryAuthority?.authorize",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "context,id"
+    },
+    {
+      "file": "packages/knowledge/src/service.ts",
+      "line": 57,
+      "expression": "this.ports.authority.authorize",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "{context:{...context,moduleId:'knowledge'},path:operation==='query'?'Knowledge.query':`Knowledge.Spaces.${operation}`,resource:space}"
+    },
+    {
+      "file": "packages/knowledge/src/service.ts",
+      "line": 63,
+      "expression": "this.ports.authority.authorize",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "{context:{...context,moduleId:'knowledge'},path:'Knowledge.Spaces.manage',\n      resource:{type:'knowledge_space',id:input.id,tenantId:context.tenantId,ownerId:context.actorId,classification:input.classification}}"
+    },
+    {
+      "file": "packages/knowledge/src/service.ts",
+      "line": 76,
+      "expression": "this.ports.authority.authorizeBatch",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "spaces.map(resource=>({context:{...context,moduleId:'knowledge'},path:'Knowledge.Spaces.discover',resource}))"
+    },
+    {
+      "file": "packages/knowledge/src/service.ts",
+      "line": 84,
+      "expression": "this.ports.documents.authorize",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": true,
+      "pathExpression": "context,enuDocumentOperation.Manage,facts"
+    },
+    {
+      "file": "packages/knowledge/src/service.ts",
+      "line": 116,
+      "expression": "this.ports.documents.authorizeMany",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": true,
+      "pathExpression": "context,enuDocumentOperation.Discover,facts"
+    },
+    {
+      "file": "packages/knowledge/src/service.ts",
+      "line": 142,
+      "expression": "this.ports.documents.authorizeMany",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": true,
+      "pathExpression": "context,enuDocumentOperation.Use,facts"
+    },
+    {
+      "file": "packages/knowledge/src/service.ts",
+      "line": 142,
+      "expression": "this.ports.documents.authorizeMany",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": true,
+      "pathExpression": "context,enuDocumentOperation.Manage,facts"
+    },
+    {
+      "file": "packages/knowledge/src/service.ts",
+      "line": 167,
+      "expression": "this.ports.documents.authorize",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": true,
+      "pathExpression": "context,enuDocumentOperation.Use,current"
+    },
+    {
+      "file": "packages/knowledge/src/service.ts",
+      "line": 171,
+      "expression": "this.ports.documents.authorize",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": true,
+      "pathExpression": "context,enuDocumentOperation.Use,fresh"
+    },
+    {
+      "file": "packages/knowledge/src/service.ts",
+      "line": 186,
+      "expression": "this.ports.documents.authorizeMany",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": true,
+      "pathExpression": "context,enuDocumentOperation.Use,fresh"
+    },
+    {
+      "file": "packages/knowledge/src/service.ts",
+      "line": 199,
+      "expression": "this.ports.documents.authorizeMany",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": true,
+      "pathExpression": "context,enuDocumentOperation.Use,facts"
+    },
+    {
+      "file": "packages/knowledge/src/service.ts",
+      "line": 222,
+      "expression": "this.ports.documents.authorizeMany",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": true,
+      "pathExpression": "context,enuDocumentOperation.Use,facts"
+    },
+    {
+      "file": "packages/knowledge/src/service.ts",
+      "line": 229,
+      "expression": "this.ports.documents.authorizeMany",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": true,
+      "pathExpression": "context,enuDocumentOperation.Use,retrievalFacts"
+    },
+    {
+      "file": "packages/knowledge/src/service.ts",
+      "line": 260,
+      "expression": "this.ports.documents.authorizeMany",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": true,
+      "pathExpression": "context,enuDocumentOperation.Discover,documentFacts"
+    },
+    {
+      "file": "packages/knowledge/src/service.ts",
+      "line": 260,
+      "expression": "this.ports.documents.authorizeMany",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": true,
+      "pathExpression": "context,enuDocumentOperation.Quote,documentFacts"
+    },
+    {
+      "file": "packages/knowledge/src/service.ts",
+      "line": 269,
+      "expression": "this.ports.documents.authorizeMany",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": true,
+      "pathExpression": "context,enuDocumentOperation.Discover,finalFacts"
+    },
+    {
+      "file": "packages/knowledge/src/service.ts",
+      "line": 269,
+      "expression": "this.ports.documents.authorizeMany",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": true,
+      "pathExpression": "context,enuDocumentOperation.Quote,finalFacts"
+    },
+    {
+      "file": "packages/knowledge/src/service.ts",
+      "line": 269,
+      "expression": "this.ports.documents.authorizeMany",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": true,
+      "pathExpression": "context,enuDocumentOperation.Read,finalFacts"
+    },
+    {
+      "file": "tests/conformance/authority/authorityBehavior.test.ts",
+      "line": 43,
+      "expression": "a.getPrivValue",
+      "classification": "TEST_ONLY",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "{session:{maxActive:5}},'session.maxActive'"
+    },
+    {
+      "file": "tests/conformance/authority/authorityBehavior.test.ts",
+      "line": 43,
+      "expression": "a.getPrivValue",
+      "classification": "TEST_ONLY",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "{review:{groups:['legal']}},'review.groups'"
+    },
+    {
+      "file": "tests/conformance/authority/authorityBehavior.test.ts",
+      "line": 43,
+      "expression": "a.getPrivValue",
+      "classification": "TEST_ONLY",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "{},'missing'"
+    },
+    {
+      "file": "tests/conformance/authority/authorityBehavior.test.ts",
+      "line": 44,
+      "expression": "a.getPrivValue",
+      "classification": "TEST_ONLY",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "{ALL:true},'session.maxActive',null"
+    },
+    {
+      "file": "tests/conformance/authority/authorityBehavior.test.ts",
+      "line": 44,
+      "expression": "a.getPrivValue",
+      "classification": "TEST_ONLY",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "{ALL:true},'session.maxActive',1000000"
+    },
+    {
+      "file": "tests/conformance/authority/authorityBehavior.test.ts",
+      "line": 44,
+      "expression": "a.getPrivValue",
+      "classification": "TEST_ONLY",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "{ALL:true},'session.maxActive'"
+    },
+    {
+      "file": "tests/target/t44-authority-live.integration.test.ts",
+      "line": 142,
+      "expression": "authority.authorize",
+      "classification": "TEST_ONLY",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "{ context: context(actor, overrides), path, resource: facts,\n          ...(crudOperation ? { crudOperation } : {}) }"
+    },
+    {
+      "file": "tests/target/t44-authority-live.integration.test.ts",
+      "line": 149,
+      "expression": "authority.materializeAuthorized",
+      "classification": "TEST_ONLY",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "{ context: context('a'), path: permissions.read, resource: resourceA },load"
+    },
+    {
+      "file": "tests/target/t44-authority-live.integration.test.ts",
+      "line": 151,
+      "expression": "authority.materializeAuthorized",
+      "classification": "TEST_ONLY",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "{ context: context('a'), path: permissions.read, resource: resourceB },load"
+    },
+    {
+      "file": "tests/target/t44-authority-live.integration.test.ts",
+      "line": 154,
+      "expression": "authorize",
+      "classification": "TEST_ONLY",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "'a',permissions.read,resourceOther"
+    },
+    {
+      "file": "tests/target/t44-authority-live.integration.test.ts",
+      "line": 155,
+      "expression": "authorize",
+      "classification": "TEST_ONLY",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "'d',permissions.read,resourceA"
+    },
+    {
+      "file": "tests/target/t44-authority-live.integration.test.ts",
+      "line": 156,
+      "expression": "authorize",
+      "classification": "TEST_ONLY",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "'a',permissions.read,resourceB"
+    },
+    {
+      "file": "tests/target/t44-authority-live.integration.test.ts",
+      "line": 163,
+      "expression": "authority.authorizeFields",
+      "classification": "TEST_ONLY",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "context('a'),resourceA,fields"
+    },
+    {
+      "file": "tests/target/t44-authority-live.integration.test.ts",
+      "line": 164,
+      "expression": "authority.authorizeFields",
+      "classification": "TEST_ONLY",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "context('b'),resourceA,fields"
+    },
+    {
+      "file": "tests/target/t44-authority-live.integration.test.ts",
+      "line": 166,
+      "expression": "authority.materializeFields",
+      "classification": "TEST_ONLY",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "context('b'),resourceA,fields,async names => {\n          loaded = names;\n          return Object.fromEntries(names.map(name => [name, 'loaded']));\n        }"
+    },
+    {
+      "file": "tests/target/t44-authority-live.integration.test.ts",
+      "line": 175,
+      "expression": "authorize",
+      "classification": "TEST_ONLY",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "'a',permissions.read,resourceHigh"
+    },
+    {
+      "file": "tests/target/t44-authority-live.integration.test.ts",
+      "line": 176,
+      "expression": "authorize",
+      "classification": "TEST_ONLY",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "'b',permissions.read,resourceHigh"
+    },
+    {
+      "file": "tests/target/t44-authority-live.integration.test.ts",
+      "line": 177,
+      "expression": "authorize",
+      "classification": "TEST_ONLY",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "'a',permissions.read,{ ...resourceA, classification: 'CRITICAL' }"
+    },
+    {
+      "file": "tests/target/t44-authority-live.integration.test.ts",
+      "line": 178,
+      "expression": "authorize",
+      "classification": "TEST_ONLY",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "'a',permissions.read,{ ...resourceA, classification: undefined }"
+    },
+    {
+      "file": "tests/target/t44-authority-live.integration.test.ts",
+      "line": 179,
+      "expression": "authorize",
+      "classification": "TEST_ONLY",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "'a',permissions.edit,resourceA,{},'READ'"
+    },
+    {
+      "file": "tests/target/t44-authority-live.integration.test.ts",
+      "line": 180,
+      "expression": "authorize",
+      "classification": "TEST_ONLY",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "'a',permissions.edit,resourceA,{},'UPDATE'"
+    },
+    {
+      "file": "tests/target/t44-authority-live.integration.test.ts",
+      "line": 181,
+      "expression": "authorize",
+      "classification": "TEST_ONLY",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "'a',permissions.edit,{ ...resourceA, ownerId: undefined },{},'UPDATE'"
+    },
+    {
+      "file": "tests/target/t44-authority-live.integration.test.ts",
+      "line": 182,
+      "expression": "authorize",
+      "classification": "TEST_ONLY",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "'a',permissions.read,{ ...resourceA, organizationId: undefined }"
+    },
+    {
+      "file": "tests/target/t44-authority-live.integration.test.ts",
+      "line": 183,
+      "expression": "authorize",
+      "classification": "TEST_ONLY",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "'a',permissions.read,{ ...resourceA, organizationId: 'unrelated' }"
+    },
+    {
+      "file": "tests/target/t44-authority-live.integration.test.ts",
+      "line": 187,
+      "expression": "authorize",
+      "classification": "TEST_ONLY",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "'d',permissions.read,resourceA"
+    },
+    {
+      "file": "tests/target/t44-authority-live.integration.test.ts",
+      "line": 195,
+      "expression": "authority.authorizePublicTool",
+      "classification": "TEST_ONLY",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "publicContext,'faq'"
+    },
+    {
+      "file": "tests/target/t44-authority-live.integration.test.ts",
+      "line": 200,
+      "expression": "unavailable.authorizePublicTool",
+      "classification": "TEST_ONLY",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "publicContext,'faq'"
+    },
+    {
+      "file": "tests/target/t44-authority-live.integration.test.ts",
+      "line": 202,
+      "expression": "unavailable.materializeAuthorized",
+      "classification": "TEST_ONLY",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "{ context: context(actor),\n            path: permissions.read, resource: facts },load"
+    },
+    {
+      "file": "tests/target/t44-authority-live.integration.test.ts",
+      "line": 206,
+      "expression": "unavailable.materializeFields",
+      "classification": "TEST_ONLY",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "context('d'),resourceA,fields,async () => { materialized = true; return { public_summary: 'protected' }; }"
+    },
+    {
+      "file": "tests/target/t44-authority-live.integration.test.ts",
+      "line": 222,
+      "expression": "authorize",
+      "classification": "TEST_ONLY",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "'c',permissions.read,resourceA"
+    },
+    {
+      "file": "tests/target/t44-authority-live.integration.test.ts",
+      "line": 230,
+      "expression": "authorize",
+      "classification": "TEST_ONLY",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "'c',permissions.read,resourceA"
+    },
+    {
+      "file": "tests/target/t44-authority-live.integration.test.ts",
+      "line": 235,
+      "expression": "authorize",
+      "classification": "TEST_ONLY",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "'c',permissions.read,resourceA"
+    },
+    {
+      "file": "tests/target/t44-authority-live.integration.test.ts",
+      "line": 240,
+      "expression": "authorize",
+      "classification": "TEST_ONLY",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "'c',permissions.read,resourceA"
+    },
+    {
+      "file": "tests/target/t44-authority-live.integration.test.ts",
+      "line": 244,
+      "expression": "authorize",
+      "classification": "TEST_ONLY",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "'a',permissions.read,resourceA"
+    },
+    {
+      "file": "tests/target/t44-authority-live.integration.test.ts",
+      "line": 248,
+      "expression": "authorize",
+      "classification": "TEST_ONLY",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "'b',permissions.read,resourceA"
+    },
+    {
+      "file": "tests/target/t44-authority-live.integration.test.ts",
+      "line": 252,
+      "expression": "authorize",
+      "classification": "TEST_ONLY",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "'c',permissions.read,resourceA"
+    },
+    {
+      "file": "tests/target/t44-authority-live.integration.test.ts",
+      "line": 258,
+      "expression": "authority.authorize",
+      "classification": "TEST_ONLY",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "{ context: workerContext, path: permissions.read, resource: resourceA }"
+    },
+    {
+      "file": "tests/target/t44-authority-live.integration.test.ts",
+      "line": 262,
+      "expression": "invalidService.materializeAuthorized",
+      "classification": "TEST_ONLY",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "{ context: context('d'),\n          path: permissions.read, resource: resourceA },async () => { loaded = true; return 'secret'; }"
+    },
+    {
+      "file": "tests/target/t5-file-management.integration.test.ts",
+      "line": 124,
+      "expression": "fixture.workerAuthority.authorize",
+      "classification": "TEST_ONLY",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "{ context, path: 'Knowledge.Documents.use', resource: facts }"
+    },
+    {
+      "file": "tests/target/t5-worker-multitenant.integration.test.ts",
+      "line": 25,
+      "expression": "original.workerAuthority.authorize",
+      "classification": "TEST_ONLY",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "{context:job.subject,path:'Knowledge.Documents.use',resource:{type:'document',id:randomUUID(),tenantId:job.subject.tenantId,ownerId:job.subject.actorId!,classification:'LOW'}}"
+    },
+    {
+      "file": "tests/target/t5-worker-multitenant.integration.test.ts",
+      "line": 26,
+      "expression": "original.workerAuthority.authorize",
+      "classification": "TEST_ONLY",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "{context:job.subject,path:'Knowledge.Documents.use',resource:{type:'document',id:randomUUID(),tenantId:job.subject.tenantId===a.context.tenantId?b.context.tenantId:a.context.tenantId,ownerId:job.subject.actorId!,classification:'LOW'}}"
+    }
+  ],
+  "consumers": [
+    {
+      "file": "apps/runtime/src/composition.ts",
+      "line": 58,
+      "expression": "authority.fileLimitTier",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "{context:{...ctx,moduleId:'knowledge'},path:'Knowledge.Files.elevatedLimits',resource:facts,requireClassification:true}"
+    },
+    {
+      "file": "apps/runtime/src/composition.ts",
+      "line": 65,
+      "expression": "authority.authorize",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "{context:{...ctx,moduleId:'file-management'},path:'Files.Transfers.expire',\n        resource:{type:'file_transfer',id,tenantId:ctx.tenantId},requireClassification:false}"
+    },
+    {
+      "file": "packages/data-governance/src/retention.ts",
+      "line": 36,
+      "expression": "this.ports.authority.authorize",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "{context:{...ctx,moduleId:'data-governance'},path:'Governance.Documents.'+operation,resource:{type:'document',id,tenantId:ctx.tenantId,classification:facts.classification}}"
+    },
+    {
+      "file": "packages/data-governance/src/retention.ts",
+      "line": 41,
+      "expression": "this.authorize",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "tx,ctx,value.resourceId,'manage'"
+    },
+    {
+      "file": "packages/data-governance/src/retention.ts",
+      "line": 44,
+      "expression": "this.authorize",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "tx,ctx,id,'hold'"
+    },
+    {
+      "file": "packages/data-governance/src/retention.ts",
+      "line": 51,
+      "expression": "this.authorize",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "tx,ctx,id,'purge'"
+    },
+    {
+      "file": "packages/data-governance/src/retention.ts",
+      "line": 61,
+      "expression": "this.authorize",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "tx,ctx,id,'purge'"
+    },
+    {
+      "file": "packages/documents/src/service.ts",
+      "line": 47,
+      "expression": "this.ports.authority.authorize",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "{\n      context: knowledgeContext(context), path: `Knowledge.Documents.${operation}`, resource: facts\n    }"
+    },
+    {
+      "file": "packages/documents/src/service.ts",
+      "line": 77,
+      "expression": "this.ports.authority.authorizeBatch",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "resources.map(resource => ({\n      context: knowledgeContext(context), path: `Knowledge.Documents.${operation}`, resource }))"
+    },
+    {
+      "file": "packages/documents/src/service.ts",
+      "line": 84,
+      "expression": "this.authorize",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "context,enuDocumentOperation.Discover,facts"
+    },
+    {
+      "file": "packages/documents/src/service.ts",
+      "line": 86,
+      "expression": "this.authorize",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "context,operation,facts"
+    },
+    {
+      "file": "packages/documents/src/service.ts",
+      "line": 94,
+      "expression": "this.ports.authority.authorize",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "{ context: knowledgeContext(context),\n      path: `Knowledge.Documents.${enuDocumentOperation.Manage}`,\n      resource: { type: 'document', id: input.id, tenantId: context.tenantId,\n        ownerId: context.actorId, classification: input.classification } }"
+    },
+    {
+      "file": "packages/documents/src/service.ts",
+      "line": 116,
+      "expression": "this.authorizeMany",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": true,
+      "pathExpression": "context,enuDocumentOperation.Discover,facts"
+    },
+    {
+      "file": "packages/documents/src/service.ts",
+      "line": 131,
+      "expression": "this.authorize",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "context,operation,facts"
+    },
+    {
+      "file": "packages/documents/src/service.ts",
+      "line": 192,
+      "expression": "this.authorizeMany",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": true,
+      "pathExpression": "context,operation,facts"
+    },
+    {
+      "file": "packages/file-management/src/service.ts",
+      "line": 77,
+      "expression": "this.ports.documents.authorize",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": true,
+      "pathExpression": "context,operation,facts"
+    },
+    {
+      "file": "packages/file-management/src/service.ts",
+      "line": 258,
+      "expression": "this.ports.documents.authorize",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": true,
+      "pathExpression": "context,enuDocumentOperation.Discover,facts"
+    },
+    {
+      "file": "packages/file-management/src/service.ts",
+      "line": 268,
+      "expression": "this.ports.documents.authorize",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": true,
+      "pathExpression": "context,enuDocumentOperation.Download,fresh"
+    },
+    {
+      "file": "packages/file-management/src/service.ts",
+      "line": 406,
+      "expression": "this.ports.expiryAuthority?.authorize",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "context,id"
+    },
+    {
+      "file": "packages/knowledge/src/service.ts",
+      "line": 57,
+      "expression": "this.ports.authority.authorize",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "{context:{...context,moduleId:'knowledge'},path:operation==='query'?'Knowledge.query':`Knowledge.Spaces.${operation}`,resource:space}"
+    },
+    {
+      "file": "packages/knowledge/src/service.ts",
+      "line": 63,
+      "expression": "this.ports.authority.authorize",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "{context:{...context,moduleId:'knowledge'},path:'Knowledge.Spaces.manage',\n      resource:{type:'knowledge_space',id:input.id,tenantId:context.tenantId,ownerId:context.actorId,classification:input.classification}}"
+    },
+    {
+      "file": "packages/knowledge/src/service.ts",
+      "line": 76,
+      "expression": "this.ports.authority.authorizeBatch",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": false,
+      "pathExpression": "spaces.map(resource=>({context:{...context,moduleId:'knowledge'},path:'Knowledge.Spaces.discover',resource}))"
+    },
+    {
+      "file": "packages/knowledge/src/service.ts",
+      "line": 84,
+      "expression": "this.ports.documents.authorize",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": true,
+      "pathExpression": "context,enuDocumentOperation.Manage,facts"
+    },
+    {
+      "file": "packages/knowledge/src/service.ts",
+      "line": 116,
+      "expression": "this.ports.documents.authorizeMany",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": true,
+      "pathExpression": "context,enuDocumentOperation.Discover,facts"
+    },
+    {
+      "file": "packages/knowledge/src/service.ts",
+      "line": 142,
+      "expression": "this.ports.documents.authorizeMany",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": true,
+      "pathExpression": "context,enuDocumentOperation.Use,facts"
+    },
+    {
+      "file": "packages/knowledge/src/service.ts",
+      "line": 142,
+      "expression": "this.ports.documents.authorizeMany",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": true,
+      "pathExpression": "context,enuDocumentOperation.Manage,facts"
+    },
+    {
+      "file": "packages/knowledge/src/service.ts",
+      "line": 167,
+      "expression": "this.ports.documents.authorize",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": true,
+      "pathExpression": "context,enuDocumentOperation.Use,current"
+    },
+    {
+      "file": "packages/knowledge/src/service.ts",
+      "line": 171,
+      "expression": "this.ports.documents.authorize",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": true,
+      "pathExpression": "context,enuDocumentOperation.Use,fresh"
+    },
+    {
+      "file": "packages/knowledge/src/service.ts",
+      "line": 186,
+      "expression": "this.ports.documents.authorizeMany",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": true,
+      "pathExpression": "context,enuDocumentOperation.Use,fresh"
+    },
+    {
+      "file": "packages/knowledge/src/service.ts",
+      "line": 199,
+      "expression": "this.ports.documents.authorizeMany",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": true,
+      "pathExpression": "context,enuDocumentOperation.Use,facts"
+    },
+    {
+      "file": "packages/knowledge/src/service.ts",
+      "line": 222,
+      "expression": "this.ports.documents.authorizeMany",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": true,
+      "pathExpression": "context,enuDocumentOperation.Use,facts"
+    },
+    {
+      "file": "packages/knowledge/src/service.ts",
+      "line": 229,
+      "expression": "this.ports.documents.authorizeMany",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": true,
+      "pathExpression": "context,enuDocumentOperation.Use,retrievalFacts"
+    },
+    {
+      "file": "packages/knowledge/src/service.ts",
+      "line": 260,
+      "expression": "this.ports.documents.authorizeMany",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": true,
+      "pathExpression": "context,enuDocumentOperation.Discover,documentFacts"
+    },
+    {
+      "file": "packages/knowledge/src/service.ts",
+      "line": 260,
+      "expression": "this.ports.documents.authorizeMany",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": true,
+      "pathExpression": "context,enuDocumentOperation.Quote,documentFacts"
+    },
+    {
+      "file": "packages/knowledge/src/service.ts",
+      "line": 269,
+      "expression": "this.ports.documents.authorizeMany",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": true,
+      "pathExpression": "context,enuDocumentOperation.Discover,finalFacts"
+    },
+    {
+      "file": "packages/knowledge/src/service.ts",
+      "line": 269,
+      "expression": "this.ports.documents.authorizeMany",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": true,
+      "pathExpression": "context,enuDocumentOperation.Quote,finalFacts"
+    },
+    {
+      "file": "packages/knowledge/src/service.ts",
+      "line": 269,
+      "expression": "this.ports.documents.authorizeMany",
+      "classification": "CANONICAL_AUTHORITY_SERVICE",
+      "mediatedByDocumentCore": true,
+      "pathExpression": "context,enuDocumentOperation.Read,finalFacts"
+    }
+  ],
+  "postT5Consumers": 37,
+  "operationFamilies": [
+    {
+      "name": "Document discover",
+      "applicable": true,
+      "consumerCallSites": [
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 47,
+          "expression": "this.ports.authority.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 77,
+          "expression": "this.ports.authority.authorizeBatch"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 84,
+          "expression": "this.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 86,
+          "expression": "this.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 94,
+          "expression": "this.ports.authority.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 116,
+          "expression": "this.authorizeMany"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 131,
+          "expression": "this.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 192,
+          "expression": "this.authorizeMany"
+        }
+      ],
+      "allowEvidence": [],
+      "denyEvidence": [],
+      "auditEvidence": [],
+      "siemEvidence": [],
+      "missingBranches": [
+        "ALLOW_DECISION_WITH_AUDIT",
+        "DENY_DECISION_WITH_AUDIT",
+        "CONFIGURED_SIEM_DELIVERY_FOR_FAMILY"
+      ],
+      "status": "NOT_VERIFIED"
+    },
+    {
+      "name": "Document read",
+      "applicable": true,
+      "consumerCallSites": [
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 47,
+          "expression": "this.ports.authority.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 77,
+          "expression": "this.ports.authority.authorizeBatch"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 84,
+          "expression": "this.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 86,
+          "expression": "this.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 94,
+          "expression": "this.ports.authority.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 116,
+          "expression": "this.authorizeMany"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 131,
+          "expression": "this.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 192,
+          "expression": "this.authorizeMany"
+        }
+      ],
+      "allowEvidence": [],
+      "denyEvidence": [],
+      "auditEvidence": [],
+      "siemEvidence": [],
+      "missingBranches": [
+        "ALLOW_DECISION_WITH_AUDIT",
+        "DENY_DECISION_WITH_AUDIT",
+        "CONFIGURED_SIEM_DELIVERY_FOR_FAMILY"
+      ],
+      "status": "NOT_VERIFIED"
+    },
+    {
+      "name": "Document download",
+      "applicable": true,
+      "consumerCallSites": [
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 47,
+          "expression": "this.ports.authority.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 77,
+          "expression": "this.ports.authority.authorizeBatch"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 84,
+          "expression": "this.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 86,
+          "expression": "this.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 94,
+          "expression": "this.ports.authority.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 116,
+          "expression": "this.authorizeMany"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 131,
+          "expression": "this.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 192,
+          "expression": "this.authorizeMany"
+        }
+      ],
+      "allowEvidence": [],
+      "denyEvidence": [],
+      "auditEvidence": [],
+      "siemEvidence": [],
+      "missingBranches": [
+        "ALLOW_DECISION_WITH_AUDIT",
+        "DENY_DECISION_WITH_AUDIT",
+        "CONFIGURED_SIEM_DELIVERY_FOR_FAMILY"
+      ],
+      "status": "NOT_VERIFIED"
+    },
+    {
+      "name": "Document use",
+      "applicable": true,
+      "consumerCallSites": [
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 47,
+          "expression": "this.ports.authority.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 77,
+          "expression": "this.ports.authority.authorizeBatch"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 84,
+          "expression": "this.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 86,
+          "expression": "this.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 94,
+          "expression": "this.ports.authority.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 116,
+          "expression": "this.authorizeMany"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 131,
+          "expression": "this.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 192,
+          "expression": "this.authorizeMany"
+        }
+      ],
+      "allowEvidence": [],
+      "denyEvidence": [],
+      "auditEvidence": [],
+      "siemEvidence": [],
+      "missingBranches": [
+        "ALLOW_DECISION_WITH_AUDIT",
+        "DENY_DECISION_WITH_AUDIT",
+        "CONFIGURED_SIEM_DELIVERY_FOR_FAMILY"
+      ],
+      "status": "NOT_VERIFIED"
+    },
+    {
+      "name": "Document quote",
+      "applicable": true,
+      "consumerCallSites": [
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 47,
+          "expression": "this.ports.authority.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 77,
+          "expression": "this.ports.authority.authorizeBatch"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 84,
+          "expression": "this.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 86,
+          "expression": "this.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 94,
+          "expression": "this.ports.authority.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 116,
+          "expression": "this.authorizeMany"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 131,
+          "expression": "this.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 192,
+          "expression": "this.authorizeMany"
+        }
+      ],
+      "allowEvidence": [],
+      "denyEvidence": [],
+      "auditEvidence": [],
+      "siemEvidence": [],
+      "missingBranches": [
+        "ALLOW_DECISION_WITH_AUDIT",
+        "DENY_DECISION_WITH_AUDIT",
+        "CONFIGURED_SIEM_DELIVERY_FOR_FAMILY"
+      ],
+      "status": "NOT_VERIFIED"
+    },
+    {
+      "name": "Document manage",
+      "applicable": true,
+      "consumerCallSites": [
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 47,
+          "expression": "this.ports.authority.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 77,
+          "expression": "this.ports.authority.authorizeBatch"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 84,
+          "expression": "this.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 86,
+          "expression": "this.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 94,
+          "expression": "this.ports.authority.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 116,
+          "expression": "this.authorizeMany"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 131,
+          "expression": "this.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 192,
+          "expression": "this.authorizeMany"
+        }
+      ],
+      "allowEvidence": [],
+      "denyEvidence": [],
+      "auditEvidence": [],
+      "siemEvidence": [],
+      "missingBranches": [
+        "ALLOW_DECISION_WITH_AUDIT",
+        "DENY_DECISION_WITH_AUDIT",
+        "CONFIGURED_SIEM_DELIVERY_FOR_FAMILY"
+      ],
+      "status": "NOT_VERIFIED"
+    },
+    {
+      "name": "Knowledge Space access",
+      "applicable": true,
+      "consumerCallSites": [
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 57,
+          "expression": "this.ports.authority.authorize"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 63,
+          "expression": "this.ports.authority.authorize"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 76,
+          "expression": "this.ports.authority.authorizeBatch"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 84,
+          "expression": "this.ports.documents.authorize"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 116,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 142,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 142,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 167,
+          "expression": "this.ports.documents.authorize"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 171,
+          "expression": "this.ports.documents.authorize"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 186,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 199,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 222,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 229,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 260,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 260,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 269,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 269,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 269,
+          "expression": "this.ports.documents.authorizeMany"
+        }
+      ],
+      "allowEvidence": [],
+      "denyEvidence": [],
+      "auditEvidence": [],
+      "siemEvidence": [],
+      "missingBranches": [
+        "ALLOW_DECISION_WITH_AUDIT",
+        "DENY_DECISION_WITH_AUDIT",
+        "CONFIGURED_SIEM_DELIVERY_FOR_FAMILY"
+      ],
+      "status": "NOT_VERIFIED"
+    },
+    {
+      "name": "RAG coarse use authorization",
+      "applicable": true,
+      "consumerCallSites": [
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 57,
+          "expression": "this.ports.authority.authorize"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 63,
+          "expression": "this.ports.authority.authorize"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 76,
+          "expression": "this.ports.authority.authorizeBatch"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 84,
+          "expression": "this.ports.documents.authorize"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 116,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 142,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 142,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 167,
+          "expression": "this.ports.documents.authorize"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 171,
+          "expression": "this.ports.documents.authorize"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 186,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 199,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 222,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 229,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 260,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 260,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 269,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 269,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 269,
+          "expression": "this.ports.documents.authorizeMany"
+        }
+      ],
+      "allowEvidence": [],
+      "denyEvidence": [],
+      "auditEvidence": [],
+      "siemEvidence": [],
+      "missingBranches": [
+        "ALLOW_DECISION_WITH_AUDIT",
+        "DENY_DECISION_WITH_AUDIT",
+        "CONFIGURED_SIEM_DELIVERY_FOR_FAMILY"
+      ],
+      "status": "NOT_VERIFIED"
+    },
+    {
+      "name": "final RAG candidate authorization",
+      "applicable": true,
+      "consumerCallSites": [
+        {
+          "file": "apps/runtime/src/composition.ts",
+          "line": 58,
+          "expression": "authority.fileLimitTier"
+        },
+        {
+          "file": "apps/runtime/src/composition.ts",
+          "line": 65,
+          "expression": "authority.authorize"
+        },
+        {
+          "file": "packages/data-governance/src/retention.ts",
+          "line": 36,
+          "expression": "this.ports.authority.authorize"
+        },
+        {
+          "file": "packages/data-governance/src/retention.ts",
+          "line": 41,
+          "expression": "this.authorize"
+        },
+        {
+          "file": "packages/data-governance/src/retention.ts",
+          "line": 44,
+          "expression": "this.authorize"
+        },
+        {
+          "file": "packages/data-governance/src/retention.ts",
+          "line": 51,
+          "expression": "this.authorize"
+        },
+        {
+          "file": "packages/data-governance/src/retention.ts",
+          "line": 61,
+          "expression": "this.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 47,
+          "expression": "this.ports.authority.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 77,
+          "expression": "this.ports.authority.authorizeBatch"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 84,
+          "expression": "this.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 86,
+          "expression": "this.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 94,
+          "expression": "this.ports.authority.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 116,
+          "expression": "this.authorizeMany"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 131,
+          "expression": "this.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 192,
+          "expression": "this.authorizeMany"
+        },
+        {
+          "file": "packages/file-management/src/service.ts",
+          "line": 77,
+          "expression": "this.ports.documents.authorize"
+        },
+        {
+          "file": "packages/file-management/src/service.ts",
+          "line": 258,
+          "expression": "this.ports.documents.authorize"
+        },
+        {
+          "file": "packages/file-management/src/service.ts",
+          "line": 268,
+          "expression": "this.ports.documents.authorize"
+        },
+        {
+          "file": "packages/file-management/src/service.ts",
+          "line": 406,
+          "expression": "this.ports.expiryAuthority?.authorize"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 57,
+          "expression": "this.ports.authority.authorize"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 63,
+          "expression": "this.ports.authority.authorize"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 76,
+          "expression": "this.ports.authority.authorizeBatch"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 84,
+          "expression": "this.ports.documents.authorize"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 116,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 142,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 142,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 167,
+          "expression": "this.ports.documents.authorize"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 171,
+          "expression": "this.ports.documents.authorize"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 186,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 199,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 222,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 229,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 260,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 260,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 269,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 269,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 269,
+          "expression": "this.ports.documents.authorizeMany"
+        }
+      ],
+      "allowEvidence": [],
+      "denyEvidence": [],
+      "auditEvidence": [],
+      "siemEvidence": [],
+      "missingBranches": [
+        "ALLOW_DECISION_WITH_AUDIT",
+        "DENY_DECISION_WITH_AUDIT",
+        "CONFIGURED_SIEM_DELIVERY_FOR_FAMILY"
+      ],
+      "status": "NOT_VERIFIED"
+    },
+    {
+      "name": "File Management download",
+      "applicable": true,
+      "consumerCallSites": [
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 47,
+          "expression": "this.ports.authority.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 77,
+          "expression": "this.ports.authority.authorizeBatch"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 84,
+          "expression": "this.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 86,
+          "expression": "this.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 94,
+          "expression": "this.ports.authority.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 116,
+          "expression": "this.authorizeMany"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 131,
+          "expression": "this.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 192,
+          "expression": "this.authorizeMany"
+        },
+        {
+          "file": "packages/file-management/src/service.ts",
+          "line": 77,
+          "expression": "this.ports.documents.authorize"
+        },
+        {
+          "file": "packages/file-management/src/service.ts",
+          "line": 258,
+          "expression": "this.ports.documents.authorize"
+        },
+        {
+          "file": "packages/file-management/src/service.ts",
+          "line": 268,
+          "expression": "this.ports.documents.authorize"
+        },
+        {
+          "file": "packages/file-management/src/service.ts",
+          "line": 406,
+          "expression": "this.ports.expiryAuthority?.authorize"
+        }
+      ],
+      "allowEvidence": [],
+      "denyEvidence": [],
+      "auditEvidence": [],
+      "siemEvidence": [],
+      "missingBranches": [
+        "ALLOW_DECISION_WITH_AUDIT",
+        "DENY_DECISION_WITH_AUDIT",
+        "CONFIGURED_SIEM_DELIVERY_FOR_FAMILY"
+      ],
+      "status": "NOT_VERIFIED"
+    },
+    {
+      "name": "File Management internal materialization/use",
+      "applicable": true,
+      "consumerCallSites": [
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 47,
+          "expression": "this.ports.authority.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 77,
+          "expression": "this.ports.authority.authorizeBatch"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 84,
+          "expression": "this.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 86,
+          "expression": "this.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 94,
+          "expression": "this.ports.authority.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 116,
+          "expression": "this.authorizeMany"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 131,
+          "expression": "this.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 192,
+          "expression": "this.authorizeMany"
+        },
+        {
+          "file": "packages/file-management/src/service.ts",
+          "line": 77,
+          "expression": "this.ports.documents.authorize"
+        },
+        {
+          "file": "packages/file-management/src/service.ts",
+          "line": 258,
+          "expression": "this.ports.documents.authorize"
+        },
+        {
+          "file": "packages/file-management/src/service.ts",
+          "line": 268,
+          "expression": "this.ports.documents.authorize"
+        },
+        {
+          "file": "packages/file-management/src/service.ts",
+          "line": 406,
+          "expression": "this.ports.expiryAuthority?.authorize"
+        }
+      ],
+      "allowEvidence": [],
+      "denyEvidence": [],
+      "auditEvidence": [],
+      "siemEvidence": [],
+      "missingBranches": [
+        "ALLOW_DECISION_WITH_AUDIT",
+        "DENY_DECISION_WITH_AUDIT",
+        "CONFIGURED_SIEM_DELIVERY_FOR_FAMILY"
+      ],
+      "status": "NOT_VERIFIED"
+    },
+    {
+      "name": "tenant deny",
+      "applicable": true,
+      "consumerCallSites": [
+        {
+          "file": "apps/runtime/src/composition.ts",
+          "line": 58,
+          "expression": "authority.fileLimitTier"
+        },
+        {
+          "file": "apps/runtime/src/composition.ts",
+          "line": 65,
+          "expression": "authority.authorize"
+        },
+        {
+          "file": "packages/data-governance/src/retention.ts",
+          "line": 36,
+          "expression": "this.ports.authority.authorize"
+        },
+        {
+          "file": "packages/data-governance/src/retention.ts",
+          "line": 41,
+          "expression": "this.authorize"
+        },
+        {
+          "file": "packages/data-governance/src/retention.ts",
+          "line": 44,
+          "expression": "this.authorize"
+        },
+        {
+          "file": "packages/data-governance/src/retention.ts",
+          "line": 51,
+          "expression": "this.authorize"
+        },
+        {
+          "file": "packages/data-governance/src/retention.ts",
+          "line": 61,
+          "expression": "this.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 47,
+          "expression": "this.ports.authority.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 77,
+          "expression": "this.ports.authority.authorizeBatch"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 84,
+          "expression": "this.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 86,
+          "expression": "this.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 94,
+          "expression": "this.ports.authority.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 116,
+          "expression": "this.authorizeMany"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 131,
+          "expression": "this.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 192,
+          "expression": "this.authorizeMany"
+        },
+        {
+          "file": "packages/file-management/src/service.ts",
+          "line": 77,
+          "expression": "this.ports.documents.authorize"
+        },
+        {
+          "file": "packages/file-management/src/service.ts",
+          "line": 258,
+          "expression": "this.ports.documents.authorize"
+        },
+        {
+          "file": "packages/file-management/src/service.ts",
+          "line": 268,
+          "expression": "this.ports.documents.authorize"
+        },
+        {
+          "file": "packages/file-management/src/service.ts",
+          "line": 406,
+          "expression": "this.ports.expiryAuthority?.authorize"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 57,
+          "expression": "this.ports.authority.authorize"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 63,
+          "expression": "this.ports.authority.authorize"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 76,
+          "expression": "this.ports.authority.authorizeBatch"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 84,
+          "expression": "this.ports.documents.authorize"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 116,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 142,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 142,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 167,
+          "expression": "this.ports.documents.authorize"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 171,
+          "expression": "this.ports.documents.authorize"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 186,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 199,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 222,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 229,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 260,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 260,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 269,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 269,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 269,
+          "expression": "this.ports.documents.authorizeMany"
+        }
+      ],
+      "allowEvidence": [],
+      "denyEvidence": [],
+      "auditEvidence": [],
+      "siemEvidence": [],
+      "missingBranches": [
+        "ALLOW_DECISION_WITH_AUDIT",
+        "DENY_DECISION_WITH_AUDIT",
+        "CONFIGURED_SIEM_DELIVERY_FOR_FAMILY"
+      ],
+      "status": "NOT_VERIFIED"
+    },
+    {
+      "name": "ACL deny",
+      "applicable": true,
+      "consumerCallSites": [
+        {
+          "file": "apps/runtime/src/composition.ts",
+          "line": 58,
+          "expression": "authority.fileLimitTier"
+        },
+        {
+          "file": "apps/runtime/src/composition.ts",
+          "line": 65,
+          "expression": "authority.authorize"
+        },
+        {
+          "file": "packages/data-governance/src/retention.ts",
+          "line": 36,
+          "expression": "this.ports.authority.authorize"
+        },
+        {
+          "file": "packages/data-governance/src/retention.ts",
+          "line": 41,
+          "expression": "this.authorize"
+        },
+        {
+          "file": "packages/data-governance/src/retention.ts",
+          "line": 44,
+          "expression": "this.authorize"
+        },
+        {
+          "file": "packages/data-governance/src/retention.ts",
+          "line": 51,
+          "expression": "this.authorize"
+        },
+        {
+          "file": "packages/data-governance/src/retention.ts",
+          "line": 61,
+          "expression": "this.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 47,
+          "expression": "this.ports.authority.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 77,
+          "expression": "this.ports.authority.authorizeBatch"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 84,
+          "expression": "this.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 86,
+          "expression": "this.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 94,
+          "expression": "this.ports.authority.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 116,
+          "expression": "this.authorizeMany"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 131,
+          "expression": "this.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 192,
+          "expression": "this.authorizeMany"
+        },
+        {
+          "file": "packages/file-management/src/service.ts",
+          "line": 77,
+          "expression": "this.ports.documents.authorize"
+        },
+        {
+          "file": "packages/file-management/src/service.ts",
+          "line": 258,
+          "expression": "this.ports.documents.authorize"
+        },
+        {
+          "file": "packages/file-management/src/service.ts",
+          "line": 268,
+          "expression": "this.ports.documents.authorize"
+        },
+        {
+          "file": "packages/file-management/src/service.ts",
+          "line": 406,
+          "expression": "this.ports.expiryAuthority?.authorize"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 57,
+          "expression": "this.ports.authority.authorize"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 63,
+          "expression": "this.ports.authority.authorize"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 76,
+          "expression": "this.ports.authority.authorizeBatch"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 84,
+          "expression": "this.ports.documents.authorize"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 116,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 142,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 142,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 167,
+          "expression": "this.ports.documents.authorize"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 171,
+          "expression": "this.ports.documents.authorize"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 186,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 199,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 222,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 229,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 260,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 260,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 269,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 269,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 269,
+          "expression": "this.ports.documents.authorizeMany"
+        }
+      ],
+      "allowEvidence": [],
+      "denyEvidence": [],
+      "auditEvidence": [],
+      "siemEvidence": [],
+      "missingBranches": [
+        "ALLOW_DECISION_WITH_AUDIT",
+        "DENY_DECISION_WITH_AUDIT",
+        "CONFIGURED_SIEM_DELIVERY_FOR_FAMILY"
+      ],
+      "status": "NOT_VERIFIED"
+    },
+    {
+      "name": "classification deny",
+      "applicable": true,
+      "consumerCallSites": [
+        {
+          "file": "apps/runtime/src/composition.ts",
+          "line": 58,
+          "expression": "authority.fileLimitTier"
+        },
+        {
+          "file": "apps/runtime/src/composition.ts",
+          "line": 65,
+          "expression": "authority.authorize"
+        },
+        {
+          "file": "packages/data-governance/src/retention.ts",
+          "line": 36,
+          "expression": "this.ports.authority.authorize"
+        },
+        {
+          "file": "packages/data-governance/src/retention.ts",
+          "line": 41,
+          "expression": "this.authorize"
+        },
+        {
+          "file": "packages/data-governance/src/retention.ts",
+          "line": 44,
+          "expression": "this.authorize"
+        },
+        {
+          "file": "packages/data-governance/src/retention.ts",
+          "line": 51,
+          "expression": "this.authorize"
+        },
+        {
+          "file": "packages/data-governance/src/retention.ts",
+          "line": 61,
+          "expression": "this.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 47,
+          "expression": "this.ports.authority.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 77,
+          "expression": "this.ports.authority.authorizeBatch"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 84,
+          "expression": "this.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 86,
+          "expression": "this.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 94,
+          "expression": "this.ports.authority.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 116,
+          "expression": "this.authorizeMany"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 131,
+          "expression": "this.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 192,
+          "expression": "this.authorizeMany"
+        },
+        {
+          "file": "packages/file-management/src/service.ts",
+          "line": 77,
+          "expression": "this.ports.documents.authorize"
+        },
+        {
+          "file": "packages/file-management/src/service.ts",
+          "line": 258,
+          "expression": "this.ports.documents.authorize"
+        },
+        {
+          "file": "packages/file-management/src/service.ts",
+          "line": 268,
+          "expression": "this.ports.documents.authorize"
+        },
+        {
+          "file": "packages/file-management/src/service.ts",
+          "line": 406,
+          "expression": "this.ports.expiryAuthority?.authorize"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 57,
+          "expression": "this.ports.authority.authorize"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 63,
+          "expression": "this.ports.authority.authorize"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 76,
+          "expression": "this.ports.authority.authorizeBatch"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 84,
+          "expression": "this.ports.documents.authorize"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 116,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 142,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 142,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 167,
+          "expression": "this.ports.documents.authorize"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 171,
+          "expression": "this.ports.documents.authorize"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 186,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 199,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 222,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 229,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 260,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 260,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 269,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 269,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 269,
+          "expression": "this.ports.documents.authorizeMany"
+        }
+      ],
+      "allowEvidence": [],
+      "denyEvidence": [],
+      "auditEvidence": [],
+      "siemEvidence": [],
+      "missingBranches": [
+        "ALLOW_DECISION_WITH_AUDIT",
+        "DENY_DECISION_WITH_AUDIT",
+        "CONFIGURED_SIEM_DELIVERY_FOR_FAMILY"
+      ],
+      "status": "NOT_VERIFIED"
+    },
+    {
+      "name": "revoked subject",
+      "applicable": true,
+      "consumerCallSites": [
+        {
+          "file": "apps/runtime/src/composition.ts",
+          "line": 58,
+          "expression": "authority.fileLimitTier"
+        },
+        {
+          "file": "apps/runtime/src/composition.ts",
+          "line": 65,
+          "expression": "authority.authorize"
+        },
+        {
+          "file": "packages/data-governance/src/retention.ts",
+          "line": 36,
+          "expression": "this.ports.authority.authorize"
+        },
+        {
+          "file": "packages/data-governance/src/retention.ts",
+          "line": 41,
+          "expression": "this.authorize"
+        },
+        {
+          "file": "packages/data-governance/src/retention.ts",
+          "line": 44,
+          "expression": "this.authorize"
+        },
+        {
+          "file": "packages/data-governance/src/retention.ts",
+          "line": 51,
+          "expression": "this.authorize"
+        },
+        {
+          "file": "packages/data-governance/src/retention.ts",
+          "line": 61,
+          "expression": "this.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 47,
+          "expression": "this.ports.authority.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 77,
+          "expression": "this.ports.authority.authorizeBatch"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 84,
+          "expression": "this.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 86,
+          "expression": "this.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 94,
+          "expression": "this.ports.authority.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 116,
+          "expression": "this.authorizeMany"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 131,
+          "expression": "this.authorize"
+        },
+        {
+          "file": "packages/documents/src/service.ts",
+          "line": 192,
+          "expression": "this.authorizeMany"
+        },
+        {
+          "file": "packages/file-management/src/service.ts",
+          "line": 77,
+          "expression": "this.ports.documents.authorize"
+        },
+        {
+          "file": "packages/file-management/src/service.ts",
+          "line": 258,
+          "expression": "this.ports.documents.authorize"
+        },
+        {
+          "file": "packages/file-management/src/service.ts",
+          "line": 268,
+          "expression": "this.ports.documents.authorize"
+        },
+        {
+          "file": "packages/file-management/src/service.ts",
+          "line": 406,
+          "expression": "this.ports.expiryAuthority?.authorize"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 57,
+          "expression": "this.ports.authority.authorize"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 63,
+          "expression": "this.ports.authority.authorize"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 76,
+          "expression": "this.ports.authority.authorizeBatch"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 84,
+          "expression": "this.ports.documents.authorize"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 116,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 142,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 142,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 167,
+          "expression": "this.ports.documents.authorize"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 171,
+          "expression": "this.ports.documents.authorize"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 186,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 199,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 222,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 229,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 260,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 260,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 269,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 269,
+          "expression": "this.ports.documents.authorizeMany"
+        },
+        {
+          "file": "packages/knowledge/src/service.ts",
+          "line": 269,
+          "expression": "this.ports.documents.authorizeMany"
+        }
+      ],
+      "allowEvidence": [],
+      "denyEvidence": [],
+      "auditEvidence": [],
+      "siemEvidence": [],
+      "missingBranches": [
+        "ALLOW_DECISION_WITH_AUDIT",
+        "DENY_DECISION_WITH_AUDIT",
+        "CONFIGURED_SIEM_DELIVERY_FOR_FAMILY"
+      ],
+      "status": "NOT_VERIFIED"
+    }
+  ],
+  "productionAuthorityBypasses": 0,
+  "coverageLimitations": [
+    "AST inventory establishes call sites and bypass count. Generic Authority Audit/SIEM tests do not independently prove ALLOW and DENY for each T5 consumer family."
+  ],
+  "allPostT5DecisionsAudited": "NOT_VERIFIED"
+}

@@ -6,6 +6,8 @@ export interface intfProtectedAiSource { readonly classification: 'LOW'|'MEDIUM'
 export interface intfProtectedAiRequest {
   readonly context: intfExecutionContext; readonly task: enuProtectedAiTask;
   readonly sources: readonly intfProtectedAiSource[];
+  /** Semantic owner refreshes authorization immediately before each provider dispatch. */
+  readonly securityFence?:()=>Promise<void>;
   readonly texts?: readonly string[]; readonly query?: string;
   readonly messages?: readonly Readonly<{role:'system'|'user';content:string}>[];
   readonly maxOutputTokens?: number; readonly signal?: AbortSignal;

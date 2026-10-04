@@ -12,121 +12,124 @@ INFORMATION: This version of Docker has been patched by SUSE.
         maintaining access to SCC credentials. In order to use BuildKit, you
         must have the docker-buildx package installed.
 
-Sending build context to Docker daemon  267.3MB
-Step 1/39 : ARG NODE_IMAGE=node:22.23.3-bookworm-slim@sha256:43ac6c60b8f89723f746e8a92ce91abd5017e627ce1ddfe4238355d3a30b772c
-Step 2/39 : FROM ${NODE_IMAGE} AS build
+Sending build context to Docker daemon  268.2MB
+Step 1/40 : ARG NODE_IMAGE=node:22.23.3-bookworm-slim@sha256:43ac6c60b8f89723f746e8a92ce91abd5017e627ce1ddfe4238355d3a30b772c
+Step 2/40 : FROM ${NODE_IMAGE} AS build
  ---> 88f8ba583a88
-Step 3/39 : WORKDIR /app
+Step 3/40 : WORKDIR /app
  ---> Using cache
  ---> ab3da0356aca
-Step 4/39 : COPY package.json package-lock.json ./
+Step 4/40 : COPY package.json package-lock.json ./
  ---> Using cache
  ---> 689ed956d4c5
-Step 5/39 : COPY apps ./apps
+Step 5/40 : COPY apps ./apps
  ---> Using cache
- ---> 564f72a851e4
-Step 6/39 : COPY modules ./modules
+ ---> 6d173d703b29
+Step 6/40 : COPY modules ./modules
  ---> Using cache
- ---> 82c1d55ff520
-Step 7/39 : COPY packages ./packages
+ ---> e94598be8a46
+Step 7/40 : COPY packages ./packages
  ---> Using cache
- ---> 75b709057798
-Step 8/39 : COPY deploy/examples ./deploy/examples
+ ---> 453e627e42d4
+Step 8/40 : COPY deploy/examples ./deploy/examples
  ---> Using cache
- ---> bb284cc2551c
-Step 9/39 : COPY deploy/entrypoint.mjs ./deploy/entrypoint.mjs
+ ---> c15e13236fa1
+Step 9/40 : COPY deploy/entrypoint.mjs ./deploy/entrypoint.mjs
  ---> Using cache
- ---> 0359c094b084
-Step 10/39 : COPY deploy/web-security-headers.mjs ./deploy/web-security-headers.mjs
+ ---> 1b1191fe7567
+Step 10/40 : COPY deploy/web-security-headers.mjs ./deploy/web-security-headers.mjs
  ---> Using cache
- ---> d6f25ee0eac1
-Step 11/39 : COPY tsconfig.target.json ./
+ ---> 523cc6ef73a3
+Step 11/40 : COPY tsconfig.target.json ./
  ---> Using cache
- ---> 7e6c8922cf63
-Step 12/39 : RUN npm ci --ignore-scripts
+ ---> 4bf6254603e6
+Step 12/40 : RUN npm ci --ignore-scripts
  ---> Using cache
- ---> bb5bafd4d851
-Step 13/39 : ARG CUSTOMER
+ ---> bf8905df16b3
+Step 13/40 : ARG CUSTOMER
  ---> Using cache
- ---> cf1fdfccc36d
-Step 14/39 : RUN test -f "deploy/examples/${CUSTOMER}/platform.cjson"  && cp "deploy/examples/${CUSTOMER}/brand/logo.svg" apps/web/static/brand/logo.svg  && cp "deploy/examples/${CUSTOMER}/brand/favicon.svg" apps/web/static/brand/favicon.svg  && npm run build:web  && mkdir -p dist  && ./node_modules/.bin/esbuild apps/api/src/index.ts --bundle --platform=node --format=esm --external:@aws-sdk/* --external:express --external:multer --external:pdfjs-dist --external:pg --outfile=dist/target-api.js  && ./node_modules/.bin/esbuild apps/worker/src/index.ts --bundle --platform=node --format=esm --external:@aws-sdk/* --external:express --external:multer --external:pdfjs-dist --external:pg --outfile=dist/target-worker.js  && ./node_modules/.bin/esbuild packages/persistence/src/target-migrate.ts --bundle --platform=node --format=esm --external:@aws-sdk/* --external:express --external:multer --external:pdfjs-dist --external:pg --outfile=dist/target-migrate.js
+ ---> 0434e3e1c188
+Step 14/40 : RUN test -f "deploy/examples/${CUSTOMER}/platform.cjson"  && cp "deploy/examples/${CUSTOMER}/brand/logo.svg" apps/web/static/brand/logo.svg  && cp "deploy/examples/${CUSTOMER}/brand/favicon.svg" apps/web/static/brand/favicon.svg  && npm run build:web  && mkdir -p dist  && ./node_modules/.bin/esbuild apps/api/src/index.ts --bundle --platform=node --format=esm --external:@aws-sdk/* --external:express --external:multer --external:pdfjs-dist --external:pg --outfile=dist/target-api.js --metafile=dist/target-api.meta.json  && ./node_modules/.bin/esbuild apps/worker/src/index.ts --bundle --platform=node --format=esm --external:@aws-sdk/* --external:express --external:multer --external:pdfjs-dist --external:pg --outfile=dist/target-worker.js --metafile=dist/target-worker.meta.json  && ./node_modules/.bin/esbuild packages/persistence/src/target-migrate.ts --bundle --platform=node --format=esm --external:@aws-sdk/* --external:express --external:multer --external:pdfjs-dist --external:pg --outfile=dist/target-migrate.js
  ---> Using cache
- ---> 0f18abea1d6c
-Step 15/39 : FROM ${NODE_IMAGE} AS runtime_base
+ ---> 4e9ade65a7b8
+Step 15/40 : FROM ${NODE_IMAGE} AS runtime_base
  ---> 88f8ba583a88
-Step 16/39 : WORKDIR /app
+Step 16/40 : WORKDIR /app
  ---> Using cache
  ---> ab3da0356aca
-Step 17/39 : RUN apt-get update && apt-get upgrade -y  && apt-get install -y --no-install-recommends ca-certificates libreoffice-writer tini util-linux  && rm -rf /var/lib/apt/lists/*  && mkdir -p /etc/targoman /app/apps/web/static/brand /tmp/targoman  && chown -R node:node /tmp/targoman
+Step 17/40 : RUN apt-get update && apt-get upgrade -y  && apt-get install -y --no-install-recommends ca-certificates libreoffice-writer tini util-linux bubblewrap  && rm -rf /var/lib/apt/lists/*  && mkdir -p /etc/targoman /app/apps/web/static/brand /tmp/targoman  && chown -R node:node /tmp/targoman
  ---> Using cache
- ---> 83de3cdfa37a
-Step 18/39 : COPY deploy/runtime/package.json deploy/runtime/package-lock.json ./
+ ---> cce475d23ea5
+Step 18/40 : COPY deploy/runtime/package.json deploy/runtime/package-lock.json ./
  ---> Using cache
- ---> 7b28671c0624
-Step 19/39 : RUN npm ci --omit=dev --ignore-scripts --registry=https://registry.npmjs.org  && npm cache clean --force  && rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack  && rm -f /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack /usr/local/bin/pnpm /usr/local/bin/pnpx /usr/local/bin/yarn /usr/local/bin/yarnpkg
+ ---> 3cf7b5cdb43e
+Step 19/40 : RUN npm ci --omit=dev --ignore-scripts --registry=https://registry.npmjs.org  && npm cache clean --force  && rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack  && rm -f /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack /usr/local/bin/pnpm /usr/local/bin/pnpx /usr/local/bin/yarn /usr/local/bin/yarnpkg
  ---> Using cache
- ---> 3d83eec1c3d6
-Step 20/39 : COPY --from=build /app/apps/web/build ./apps/web/build
+ ---> eaadafebe6ad
+Step 20/40 : COPY --from=build /app/apps/web/build ./apps/web/build
  ---> Using cache
- ---> d5f564b29201
-Step 21/39 : COPY --from=build /app/dist ./dist
+ ---> 9acfd82454d4
+Step 21/40 : COPY --from=build /app/dist ./dist
  ---> Using cache
- ---> 3e1cce2347e0
-Step 22/39 : COPY --from=build /app/packages/persistence/src/target-migrations ./dist/target-migrations
+ ---> 71f3b00ef063
+Step 22/40 : COPY --from=build /app/packages/file-processing/src/native-parser.mjs ./dist/parser/native-parser.mjs
  ---> Using cache
- ---> bc383af56341
-Step 23/39 : COPY --from=build /app/packages/authentication/data/LICENSE-SecLists.txt ./licenses/LICENSE-SecLists.txt
+ ---> e43fc35db466
+Step 23/40 : COPY --from=build /app/packages/persistence/src/target-migrations ./dist/target-migrations
  ---> Using cache
- ---> 5c51dc8964f9
-Step 24/39 : COPY --from=build /app/apps/web/static/brand ./apps/web/static/brand
+ ---> 04392ac5f7cb
+Step 24/40 : COPY --from=build /app/packages/authentication/data/LICENSE-SecLists.txt ./licenses/LICENSE-SecLists.txt
  ---> Using cache
- ---> d490e34a9b4d
-Step 25/39 : COPY --from=build /app/deploy/entrypoint.mjs ./deploy/entrypoint.mjs
+ ---> ad290c65f6cc
+Step 25/40 : COPY --from=build /app/apps/web/static/brand ./apps/web/static/brand
  ---> Using cache
- ---> e09238f158ef
-Step 26/39 : COPY --from=build /app/deploy/web-security-headers.mjs ./deploy/web-security-headers.mjs
+ ---> 9faeecb44fe9
+Step 26/40 : COPY --from=build /app/deploy/entrypoint.mjs ./deploy/entrypoint.mjs
  ---> Using cache
- ---> 08f424b6682b
-Step 27/39 : FROM runtime_base AS runtime
- ---> 08f424b6682b
-Step 28/39 : ARG CUSTOMER
+ ---> 917b206e0148
+Step 27/40 : COPY --from=build /app/deploy/web-security-headers.mjs ./deploy/web-security-headers.mjs
  ---> Using cache
- ---> c50444b3b699
-Step 29/39 : ARG ROLE
+ ---> b8f70af2db26
+Step 28/40 : FROM runtime_base AS runtime
+ ---> b8f70af2db26
+Step 29/40 : ARG CUSTOMER
  ---> Using cache
- ---> 02beae4f511c
-Step 30/39 : ARG SOURCE_COMMIT
+ ---> a4d974a4b0f2
+Step 30/40 : ARG ROLE
  ---> Using cache
- ---> c04c09debcc4
-Step 31/39 : ARG PLATFORM_VERSION
+ ---> 54197b7c16e9
+Step 31/40 : ARG SOURCE_COMMIT
  ---> Using cache
- ---> 7ab48a206836
-Step 32/39 : ARG RELEASE_ID
+ ---> ceb65ab05585
+Step 32/40 : ARG PLATFORM_VERSION
  ---> Using cache
- ---> dd5b1ee4fe15
-Step 33/39 : ARG CONFIG_FINGERPRINT
+ ---> 838f5435ff37
+Step 33/40 : ARG RELEASE_ID
  ---> Using cache
- ---> 0bd1f5ec60a9
-Step 34/39 : ARG BUILD_TIMESTAMP
+ ---> 1ec8df9fb9d9
+Step 34/40 : ARG CONFIG_FINGERPRINT
  ---> Using cache
- ---> c45dd75ef80f
-Step 35/39 : LABEL org.opencontainers.image.source-revision="${SOURCE_COMMIT}"       org.opencontainers.image.version="${PLATFORM_VERSION}"       org.opencontainers.image.created="${BUILD_TIMESTAMP}"       org.targoman.customer="${CUSTOMER}"       org.targoman.role="${ROLE}"       org.targoman.release-id="${RELEASE_ID}"       org.targoman.config-schema-version="1"       org.targoman.config-fingerprint="${CONFIG_FINGERPRINT}"
- ---> Running in d9b1e945df23
- ---> Removed intermediate container d9b1e945df23
- ---> 0f6811417042
-Step 36/39 : COPY --from=build /app/deploy/examples/${CUSTOMER}/platform.cjson /etc/targoman/platform.cjson
- ---> e7b37c64ccd9
-Step 37/39 : ENV NODE_ENV=production TARGOMAN_ROLE=${ROLE} TARGOMAN_CONFIG_PATH=/etc/targoman/platform.cjson
- ---> Running in 71e13c1fbbaf
- ---> Removed intermediate container 71e13c1fbbaf
- ---> 73630534a3a2
-Step 38/39 : USER node
- ---> Running in 4fce60eaaf7e
- ---> Removed intermediate container 4fce60eaaf7e
- ---> 3e1a1bd78183
-Step 39/39 : ENTRYPOINT ["/usr/bin/tini", "--", "node", "deploy/entrypoint.mjs"]
- ---> Running in 834258a1f162
- ---> Removed intermediate container 834258a1f162
- ---> b3bcac58dfc7
-Successfully built b3bcac58dfc7
+ ---> 54400f076c8d
+Step 35/40 : ARG BUILD_TIMESTAMP
+ ---> Using cache
+ ---> c7e2f54efcb3
+Step 36/40 : LABEL org.opencontainers.image.source-revision="${SOURCE_COMMIT}"       org.opencontainers.image.version="${PLATFORM_VERSION}"       org.opencontainers.image.created="${BUILD_TIMESTAMP}"       org.targoman.customer="${CUSTOMER}"       org.targoman.role="${ROLE}"       org.targoman.release-id="${RELEASE_ID}"       org.targoman.config-schema-version="1"       org.targoman.config-fingerprint="${CONFIG_FINGERPRINT}"
+ ---> Running in 6f716bbb6705
+ ---> Removed intermediate container 6f716bbb6705
+ ---> a1e1987db70c
+Step 37/40 : COPY --from=build /app/deploy/examples/${CUSTOMER}/platform.cjson /etc/targoman/platform.cjson
+ ---> 0014e0b50b1c
+Step 38/40 : ENV NODE_ENV=production TARGOMAN_ROLE=${ROLE} TARGOMAN_CONFIG_PATH=/etc/targoman/platform.cjson
+ ---> Running in 8d97bc3fb85a
+ ---> Removed intermediate container 8d97bc3fb85a
+ ---> ea84d734b19c
+Step 39/40 : USER node
+ ---> Running in 39eb9deb6dd7
+ ---> Removed intermediate container 39eb9deb6dd7
+ ---> a99dd26832e4
+Step 40/40 : ENTRYPOINT ["/usr/bin/tini", "--", "node", "deploy/entrypoint.mjs"]
+ ---> Running in 8ff4536381ae
+ ---> Removed intermediate container 8ff4536381ae
+ ---> cbde516ba6ff
+Successfully built cbde516ba6ff
 Successfully tagged targoman/t5-customer-b-web:acceptance

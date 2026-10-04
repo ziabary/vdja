@@ -4,6 +4,7 @@ export type typPublicAuditAction =
   | 'public.file.extract.requested' | 'public.file.extract.completed' | 'public.file.extract.failed' | 'public.file.extract.cancelled'
   | 'public.faq.inspect' | 'public.faq.generate.requested' | 'public.faq.generate.completed' | 'public.faq.failed' | 'public.faq.cancelled';
 export type typSecurityAuditAction = 'authentication.success' | 'authentication.failed' | 'authentication.rate_limited'
+  | 'authentication.oidc_start_failed' | 'authentication.oidc_callback_failed' | 'authentication.legacy_provisioned'
   | 'session.created' | 'session.refreshed' | 'session.refresh_replay_detected' | 'session.logout'
   | 'session.revoked' | 'tenant.switched' | 'tenant.mismatch' | 'authority.denied' | 'authority.decision'
   | 'credential.changed' | 'identity.suspended' | 'membership.suspended' | 'security.csp_violation';

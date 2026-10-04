@@ -24,7 +24,7 @@ export interface intfAiRunStore {
   activeRun(deploymentId: string, tenantId: string, moduleId: typModuleId | 'knowledge', requestId: string): Promise<intfActiveRun | null>;
 }
 
-export class exAiRouter extends Error { constructor(readonly code: 'NO_ELIGIBLE_ENDPOINT' | 'PROVIDER_FAILURE' | 'INTERRUPTED' | 'CANCELLED', readonly committed: boolean, readonly safeClass: string) { super(code); } }
+export class exAiRouter extends Error { constructor(readonly code: 'NO_ELIGIBLE_ENDPOINT' | 'PROVIDER_FAILURE' | 'INTERRUPTED' | 'CANCELLED' | 'SECURITY_FENCE_DENIED', readonly committed: boolean, readonly safeClass: string) { super(code); } }
 interface intfCircuit { failures: number; openedUntil: number; probe: boolean }
 interface intfProviderResult { output: string; inputTokens: number; outputTokens: number; committed: boolean }
 
@@ -32,8 +32,8 @@ function textDelta(value: unknown): string | null {
   if (!value || typeof value !== 'object') return null;
   const x = value as Record<string, unknown>;
   if (typeof x.delta === 'string') return x.delta;
-  if (x.delta && typeof x.delta === 'object' && typeof (x.delta as Record<string, unknown>).content === 'string') return (x.delta as Record<string, string>).content;
-  if (Array.isArray(x.choices)) { const first = x.choices[0] as Record<string, unknown> | undefined; if (first?.delta && typeof first.delta === 'object' && typeof (first.delta as Record<string, unknown>).content === 'string') return (first.delta as Record<string, string>).content; }
+  if (x.delta && typeof x.delta === 'object' && typeof (x.delta as Record<string, unknown>).content === 'string') return (x.delta as Record<string, unknown>).content as string;
+  if (Array.isArray(x.choices)) { const first = x.choices[0] as Record<string, unknown> | undefined; if (first?.delta && typeof first.delta === 'object' && typeof (first.delta as Record<string, unknown>).content === 'string') return (first.delta as Record<string, unknown>).content as string; }
   return null;
 }
 function tokenFacts(value: unknown): { inputTokens: number; outputTokens: number } | null {

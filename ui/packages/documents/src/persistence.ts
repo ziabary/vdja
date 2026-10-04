@@ -8,7 +8,7 @@ import type { typClassificationLevel } from '../../authority/src/index.js';
 interface intfDocumentRow {
   doc_id: string; doc_tenant_id: string; doc_title: string; doc_owner_id: string;
   doc_classification: typClassificationLevel; doc_current_version_id: string | null;
-  doc_security_version: string; doc_lifecycle: enuDocumentState;
+  doc_security_version: string;doc_business_id:string|null; doc_lifecycle: enuDocumentState;
 }
 interface intfVersionRow {
   dvr_id: string; dvr_document__doc_id: string; dvr_sequence: number; dvr_processing_state: enuVersionState;
@@ -19,7 +19,7 @@ interface intfAssetRow {
   ast_storage_profile: string; ast_sha256: string; ast_bytes: string; ast_media_type: string;
   ast_filename: string; ast_lifecycle: intfDocumentAsset['lifecycle'];
 }
-const DOCUMENT_COLUMNS = 'doc_id, doc_tenant_id, doc_title, doc_owner_id, doc_classification, doc_current_version_id, doc_security_version, doc_lifecycle';
+const DOCUMENT_COLUMNS = 'doc_id, doc_tenant_id, doc_title, doc_owner_id, doc_classification, doc_current_version_id, doc_security_version, doc_lifecycle,doc_business_id';
 const VERSION_COLUMNS = 'dvr_id, dvr_document__doc_id, dvr_sequence, dvr_processing_state, dvr_processor, dvr_content_hash, dvr_created_at';
 const ASSET_COLUMNS = 'ast_id, ast_document__doc_id, ast_version__dvr_id, ast_storage_key, ast_storage_profile, ast_sha256, ast_bytes, ast_media_type, ast_filename, ast_lifecycle';
 function scope(context: intfExecutionContext): readonly [string, string] {
@@ -43,6 +43,9 @@ function asset(row: intfAssetRow): intfDocumentAsset {
 }
 export function createDocumentRepository(): intfDocumentRepository {
   const repository: intfDocumentRepository = {
+    async retentionFacts(tx,context,id){const result=await resolveTargetTransaction(tx).query<intfDocumentRow>(`SELECT ${DOCUMENT_COLUMNS} FROM documents.tbl_doc_document WHERE doc_deployment_id=$1 AND doc_tenant_id=$2 AND doc_id=$3 FOR SHARE`,[...scope(context),id]);const row=result.rows[0];if(!row)throw new exDocument('DOCUMENT_NOT_AVAILABLE');return{retired:row.doc_lifecycle===enuDocumentState.Retired,classification:row.doc_classification,retainedReferences:row.doc_business_id!==null};},
+    async retainedAssets(tx,context,id){const result=await resolveTargetTransaction(tx).query<intfAssetRow>(`SELECT ${ASSET_COLUMNS} FROM documents.tbl_doc_asset WHERE ast_deployment_id=$1 AND ast_tenant_id=$2 AND ast_document__doc_id=$3`,[...scope(context),id]);return result.rows.map(asset);},
+    async purgeContent(tx,context,id,leaseToken){await resolveTargetTransaction(tx).query('SELECT documents.fn_doc_purge_content($1,$2,$3,$4)',[...scope(context),id,leaseToken]);},
     async assertSnapshot(tx,context,expected){
       if(expected.length>1000||new Set(expected.map(value=>value.id)).size!==expected.length)throw new exDocument('INVALID_DOCUMENT');
       const result=await resolveTargetTransaction(tx).query<intfDocumentRow>(`SELECT ${DOCUMENT_COLUMNS} FROM documents.tbl_doc_document

@@ -23,6 +23,13 @@ body input::file-selector-button { font-family: var(--bs-body-font-family) !impo
 .login-link { display: inline-flex; align-items: center; gap: .3rem; min-height: 2rem; }
 .shell-footer { border-block-start: 1px solid var(--bs-border-color); display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; text-align: center; }
 .shell-main { min-width: 0; padding-block: 1rem 2rem; padding-inline: clamp(1rem, 3vw, 3rem); }
+.shell-main:has(.rag-workspace) {padding:0;}
+.shell:has(.rag-workspace) {grid-template-rows:1fr;width:100%;max-width:100vw;overflow-x:hidden;}
+.shell-main:has(.rag-workspace) {width:100%;min-width:0;overflow:hidden;}
+.shell:has(.rag-workspace) :is(.shell-header,.shell-footer) {display:none;}
+.shell:has(.login-page) {grid-template-rows:1fr;width:100%;max-width:100vw;}
+.shell:has(.login-page) :is(.shell-header,.shell-footer) {display:none;}
+.shell-main:has(.login-page) {padding:0;min-width:0;}
 .skip-link { position: absolute; inset-block-start: -10rem; inset-inline-start: 1rem; z-index: var(--bs-tooltip-zindex, 1080); }
 .skip-link:focus { inset-block-start: 1rem; }
 .ltr-island,code,pre,[type='email'],[type='url'] { direction: ltr; unicode-bidi: isolate; }

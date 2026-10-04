@@ -17,3 +17,18 @@ reconciliation behavior require semantic Audit and SIEM evidence.
 The final ASVS Level 3 assessment remains open until this added surface is
 implemented and verified. The pre-T5 `RAG_SECURITY_GATE` only controls the
 start of T5 development.
+
+The completion gate reports platform enforcement and approved-model behavior
+separately. Platform assertions cover Authority, tenant and classification,
+no unauthorized reranker/generator content, citation/quote limits, external
+egress, bounded context and escaped browser output even when provider output
+is malicious. Protocol fixtures can prove these boundaries but cannot prove
+the semantic behavior or provenance of a customer-selected model.
+
+Approved-model acceptance requires the configured real embedding, reranking
+when enabled, and generation endpoints, plus API, Worker, Storage, Qdrant and
+built-browser execution on isolated synthetic LOW data. If approved current
+model configuration is unavailable, the result is
+`ACTUAL_APPROVED_MODEL_CONFIG_REQUIRED` and `GENAI_RAG_SECURITY_GATE`
+remains closed. A protocol fixture must never be promoted to actual-model
+evidence.

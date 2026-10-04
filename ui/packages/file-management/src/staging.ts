@@ -6,6 +6,7 @@ import { tmpdir } from 'node:os';
 import { Transform, type Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import { withPrivateDirectoryLock, probePrivateDirectory } from './private-filesystem.js';
+import {reserveScratch,releaseScratch} from './scratch-quota.js';
 import { exFileManagement } from './index.js';
 
 export interface intfFileStagingOptions { readonly root: string; readonly maxBytes: number; readonly timeoutMs: number }
@@ -22,9 +23,10 @@ export class clsFileStaging {
     work: (path: string) => Promise<T>): Promise<T> {
     if (!Number.isSafeInteger(descriptor.bytes) || descriptor.bytes < 1 || descriptor.bytes > this.options.maxBytes
       || !/^[a-f0-9]{64}$/u.test(descriptor.sha256)) throw new exFileManagement('FILE_CACHE_LIMIT');
+    const key=createHash('sha256').update(randomUUID()).digest('hex');
     return withPrivateDirectoryLock(this.root, this.options.timeoutMs, async () => {
-      for (const name of await readdir(this.root)) if (/^staged-[a-f0-9-]{36}$/u.test(name)) await rm(join(this.root, name), { force: true });
-      const path = join(this.root, `staged-${randomUUID()}`), hash = createHash('sha256'); let bytes = 0;
+      await reserveScratch(this.root,key,descriptor.bytes,this.options.maxBytes,1000,this.options.timeoutMs);
+      const path = join(this.root, `${key}.pending-${randomUUID()}`), hash = createHash('sha256'); let bytes = 0;
       try {
         const verify = new Transform({ transform(chunk: Buffer, _encoding, callback) {
           bytes += chunk.byteLength;
@@ -36,7 +38,7 @@ export class clsFileStaging {
         if (bytes !== descriptor.bytes || hash.digest('hex') !== descriptor.sha256)
           throw new exFileManagement('FILE_INTEGRITY_FAILURE');
         return await work(path);
-      } finally { await rm(path, { force: true }); }
-    });
+      } finally { await rm(path, { force: true }); await releaseScratch(this.root,key,this.options.timeoutMs); }
+    },key);
   }
 }

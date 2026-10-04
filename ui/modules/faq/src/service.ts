@@ -33,7 +33,7 @@ function parseItems(raw: string, wanted: number): readonly intfFaqItem[] {
   let value: unknown; try { value = JSON.parse(cleaned.slice(start, end + 1)) as unknown; } catch { throw new Error('INVALID_FAQ_OUTPUT'); }
   if (!Array.isArray(value)) throw new Error('INVALID_FAQ_OUTPUT');
   const items = value.filter((item): item is Record<string, unknown> => !!item && typeof item === 'object' && typeof item.question === 'string' && typeof item.answer === 'string')
-    .slice(0, wanted).map(item => ({ question: String(item.question).trim(), answer: String(item.answer).trim(), section: typeof item.section === 'string' ? item.section.trim() : undefined }));
+    .slice(0, wanted).map(item => ({ question: String(item.question).trim(), answer: String(item.answer).trim(), ...(typeof item.section === 'string'?{section:item.section.trim()}:{}) }));
   if (!items.length || items.some(item => !item.question || !item.answer)) throw new Error('INVALID_FAQ_OUTPUT');
   return items;
 }
@@ -68,7 +68,7 @@ export async function generateFaq(storage: intfPublicOperationPersistence, usage
       const source = selected.slice(start, end);
       const system = `Generate grounded FAQs from supplied document content. Return ONLY a valid JSON array. Each item has question, answer and section string fields. Do not invent facts. Questions must be distinct. Answers must be self-contained and no longer than ${options.answerWords} words. Use ${options.tone} register. Preserve exact names, numbers and qualifications.`;
       const user = `Generate exactly ${wanted} FAQ items. Output language: ${options.language}. Requested focus: ${options.focus || 'none'}. Questions already used: ${JSON.stringify(questions)}. DOCUMENT PART ${batch + 1}/${batches}:\n${source}`;
-      const result = await router.run({ task: 'GENERATE_FAQ', moduleId: 'faq', requestId: `${context.requestId}-${batch}`, correlationId: context.correlationId, deploymentId: context.deploymentId, tenantId: context.tenantId, actorKind: context.actorKind, actorId: context.actorId, messages: [{ role: 'system', content: system }, { role: 'user', content: user }], maxOutputTokens: Math.min(Math.floor(policy.outputTokens / batches), wanted * (options.answerWords + 60)), temperature: 0.2, signal: options.signal });
+      const result = await router.run({ task: 'GENERATE_FAQ', moduleId: 'faq', requestId: `${context.requestId}-${batch}`, correlationId: context.correlationId, deploymentId: context.deploymentId, tenantId: context.tenantId, actorKind: context.actorKind, actorId: context.actorId, messages: [{ role: 'system', content: system }, { role: 'user', content: user }], maxOutputTokens: Math.min(Math.floor(policy.outputTokens / batches), wanted * (options.answerWords + 60)), temperature: 0.2, ...(options.signal?{signal:options.signal}:{}) });
       const items = parseItems(result.output, wanted);
       await usage.record(context, { runId: result.runId, inputChars: source.length, uploadedBytes: batch === 0 ? file.size : 0, inputTokens: result.inputTokens, outputTokens: result.outputTokens, providerMs: result.durationMs });
       questions.push(...items.map(item => item.question)); produced += items.length;

@@ -1,0 +1,2606 @@
+{
+  "generatedAt": "2026-10-04T12:50:41.060Z",
+  "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a",
+  "files": {
+    "apps/api/package.json": "5d546879f5fdd81b58bdb814b7d106133f00f5933ac0f7590582c994febe96f5",
+    "apps/api/src/composition.ts": "4633be338443d44c8e3c76ff586279d06cbeb132f0772ab98aaf8cf019bc1ac4",
+    "apps/api/src/index.ts": "8147d69762a054d11868ea45bfe7bab12fd934fc7b49069b57e6a8b0eddfba59",
+    "apps/api/src/knowledge.ts": "005b5b7bf4c22b9e82fc313ad6edaa0440b788198bfb6d2c439756b460479b21",
+    "apps/runtime/src/composition.ts": "32b8118fa1dc8f4db2aceab2d6a65a49377092b2c6178f19605b609ee891c5a4",
+    "apps/web/package.json": "17c8907fdfdd16693609a7a790b2dba86c0213dd69ff7c04a7a689b67cd30644",
+    "apps/web/src/hooks.server.ts": "ff522fdf4783b25026d8adce62d12388c4879a4faa106639963c94a1348b071e",
+    "apps/web/src/lib/api/client.ts": "c08ef047cf2688d6a9656697cc559061e101b7d1cff56ef837297c78c94576e8",
+    "apps/web/src/lib/api/gateway.server.ts": "bf340854224fcfc651e9e3c22db72e9e4a018b7785bd6996be855875c4d73c06",
+    "apps/web/src/lib/api/publicTools.ts": "1b43d81b67110cc2eb7b1d4aa0e2d6e7e55cc97bc6a9db8bab281b027c30ed6f",
+    "apps/web/src/lib/api/transport.ts": "c4031a3ffa3b63dccb28021be16910986220649e4ae860453e6b7268dd07f7be",
+    "apps/web/src/lib/auth/client.svelte.ts": "278e4aa3167aa11c006634dd707f59ebc8d689475e4b889f5de2366f1bcba747",
+    "apps/web/src/lib/auth/session.ts": "33f70e898a1d953e6e1080b04ad8065a09d11870bd714bf6e32785a5c1fa01fb",
+    "apps/web/src/lib/knowledge/Workspace.svelte": "5fdc4c475d418a9d0f5c55e7fa57d4e56bc3e8689ef7aa2965ace9878f2bbca0",
+    "apps/web/src/lib/knowledge/client.ts": "03d082ac0af3242ee3b2e9b1cd93a422b93f4a1884e576a0b825641b59c5d4dd",
+    "apps/web/src/lib/knowledge/messages.ts": "0c29d4636f588ff259604d8dcd585c697347ca272aa66849039d191d21b93175",
+    "apps/web/src/lib/layout/chrome.svelte.ts": "a216e9a960e067b13821189dd2e81034ea208c007129df67ba6cfa1e23d2add0",
+    "apps/web/src/lib/layout/chrome.types.test.ts": "64a4000b66c807a9961f5af0addcfc2bc15a024f7ee88c845d731633fa9ffd08",
+    "apps/web/src/lib/layout/contributions.ts": "1a528a1079eef2059d4838a4516f821712451c95959f0ef3504c91978605fd4f",
+    "apps/web/src/lib/public-tools/TextTool.svelte": "5a0dc4d08c49636608be953496999cb1cb93f3348c44aa6eb9fbe31cac0b1450",
+    "apps/web/src/lib/public-tools/messages.ts": "cb2e7a74dae4f429b5924ab98fac3255c70c0440203ef6f4aef017bb397262a6",
+    "apps/web/src/lib/routing/resolve.ts": "c65fa98162b688d50aeefde2ca9ee542702ee00dd65f727e2e66f352f9d66410",
+    "apps/web/src/lib/server/bootstrap.ts": "905be0c9bbee719288e19592e7cc1f8d7c45b61531d31bbc34ae1d8a586f2211",
+    "apps/web/src/lib/server/deployment.ts": "77f8440cf282eeaf9e93886c39b9d65d1fbfb91413e3d51b0c115cee90f1ccd9",
+    "apps/web/src/lib/server/showcase.ts": "67bade2cd8cc6efc53968f22c40871b40c1abbbcfbab502abdf4e4c188cc11db",
+    "apps/web/src/lib/streaming/parser.ts": "729c9b7607831c275e71302f1bb06c754719f6b03b7d419cd86cd36e19c55ff2",
+    "apps/web/src/lib/streaming/transport.ts": "c939ae63d4b9a611cad6bc08f7a47a30555ea0cdec4e2528c7b639bc08a42ad3",
+    "apps/web/src/routes/(admin)/+layout.svelte": "7574755492c52d59ebd6235001d7bf9c24e656bc9ca5ac627ebcc2ea733ab3da",
+    "apps/web/src/routes/(admin)/admin/+page.svelte": "fbee723b331b9012cda199ccae8cdeb764d9d924b0bcfec8128ee9447ece9f7f",
+    "apps/web/src/routes/(public)/+layout.svelte": "9eded5b2e2d44273dd93bd745837b1b1b8dfe69a4a54b8978e6427c6c743ba8f",
+    "apps/web/src/routes/(public)/+page.svelte": "480a70ad08ed2cf8b5784a12c40395c3cdc46b371a6bce3bacf074a8ead769fe",
+    "apps/web/src/routes/(public)/faq.html/+page.server.ts": "bd642c9e4e675d3483cab2d7a9344e770171efdf4a93ddc072cf345f4ce22075",
+    "apps/web/src/routes/(public)/faq/+page.server.ts": "430e067b26f087cb9ee0f25388ee77ae475b618a50da9ffff9bdd6661b86f29d",
+    "apps/web/src/routes/(public)/faq/+page.svelte": "42f6b22c0e69ecca04b1339a283212844a6109d3d69ab8a3fc893949773b30e5",
+    "apps/web/src/routes/(public)/foundation/+page.server.ts": "9ce7d3f694212c64cd48e23adf14d5146f6a6ec15f1c4ad2a19ce62681ba8c2d",
+    "apps/web/src/routes/(public)/foundation/+page.svelte": "b29b981eb2c63778bc46f3d6809d4d17a3d22d890bae62fbf7b77ce943fa56f3",
+    "apps/web/src/routes/(public)/login/+page.server.ts": "6c8ba7e3e87385c13bc143fe79faa79db61aa183f5d392961fc07b6f6a041ef2",
+    "apps/web/src/routes/(public)/login/+page.svelte": "4e16eb52b95a00d7aa54e11c15b2687eb8aff363b82990435ac7a260a2963bb7",
+    "apps/web/src/routes/(public)/summarize.html/+page.server.ts": "cb3d50443fdaf3e363997c6f9fcab158343394b802b8a4e34412655dbe5dcf1b",
+    "apps/web/src/routes/(public)/summarize/+page.server.ts": "62caaa5844dcc52e1664bc8bf1c0a80eda2bdd537d957fafabd1aa5b0b9bbf49",
+    "apps/web/src/routes/(public)/summarize/+page.svelte": "c8fd9b66e333714e7fcacb1c41de78417968021214f46536d6e2b397a3e03758",
+    "apps/web/src/routes/(public)/translate.html/+page.server.ts": "1f6ab6fe598fa185fee5dc58800175e22d8d826b1161d4ceb5853fce229351fa",
+    "apps/web/src/routes/(public)/translate/+page.server.ts": "d994eb04c4418cfb9b23d182544b2fb08d5e9c448878f3b4708d7c7c4aa9b209",
+    "apps/web/src/routes/(public)/translate/+page.svelte": "16d45ba61e83506b3585e5c567cae9705753e6c7494389763d46afc3ab9bc84f",
+    "apps/web/src/routes/(user)/+layout.svelte": "afb3a825e2ec33a8f17790c4c2f0d94ed5a679c927516d8fa9ffb35b11b5e6d5",
+    "apps/web/src/routes/(user)/dashboard/+page.svelte": "d40e819cd84f75c0de8e3b75190c7f7b5e782fa9110afdc084b9bbfaba19fca4",
+    "apps/web/src/routes/(user)/knowledge/+page.server.ts": "306bfa02ee58b904ea4bc9ea8f552fc659df813e303ae11be9801ab588b14994",
+    "apps/web/src/routes/(user)/knowledge/+page.svelte": "4594d437b7f987590b2d33bb3c2ae47d6e02da37f3711cf239e81ebf40ba8368",
+    "apps/web/src/routes/+layout.server.ts": "213ed1a61de7245e5a7f5199ae61e61009cfffa9707649ec1ad4f5d261b3d61b",
+    "apps/web/src/routes/+layout.svelte": "00b38d2adf5b22e3bed932ce49ebd06c88315b8c61a7ff9e16a65973faf2dd0c",
+    "apps/web/src/routes/api/[...path]/+server.ts": "943bc16ee586df3f164ef8f65413497b3de0e0a8b32834d1c94784a56d0f6d31",
+    "apps/web/static/theme-init.js": "0226df250e5c6a6ebbe88695fbdd02116a238051cc4afc82d9b7849429da4394",
+    "apps/web/tests/MenuFixture.svelte": "274ba6f83696eb9ab7a0bf673e0c23443a0279186d008c3d6c685bc42351d639",
+    "apps/web/tests/OverlayFixture.svelte": "d96a2b4e4bbc605ee0be6140291bc69ccbe8c955acb1f7e139994778825d4dda",
+    "apps/web/tests/api.test.ts": "06381547978c80010f164e2b695f1d69657253f74ce1d547d047c8b434065e70",
+    "apps/web/tests/assets.test.ts": "f4e0a18c895368db473e4adb389d00de3857aa597950c81fda1e3674ff490e85",
+    "apps/web/tests/branding.test.ts": "3ac38816780bd82890b4e2bbd762d335f1e6015fc6e18eed8dc7d25bddc1931e",
+    "apps/web/tests/calendar.test.ts": "cef52546f07430bdbba0f8133ca40227264b291d80beeec3ddcfd03dfb71644e",
+    "apps/web/tests/components.test.ts": "a0bde03fd5010d6b60bcbdc5d0ec328c47e60f030dc7dfe8dd2571527ba67317",
+    "apps/web/tests/foundation.test.ts": "f1ecc71b81411dea0472e3e76569be091a1ddfedbe1e8a3efeb939c457a93f8e",
+    "apps/web/tests/guardrails.test.ts": "19b88e539f6917caf82e9c28e5be3aa03814cae43c05f5c16d1a7d7f649a3e5a",
+    "apps/web/tests/markdown.test.ts": "d5b15063d11f3916e24df49f346647fb39d84faabe360ed8a80c395c7b896b5b",
+    "apps/web/tests/namespace.test.ts": "0b45de76b95c5b7a18fa93290672b75910091d948b7a900e475234df981796ae",
+    "apps/web/tests/public-tools/AuthHarness.svelte": "d7ee68bd2b64ce9cf4391bebc747027bf0670c26e30dc2a1593ca8cbd415f3dd",
+    "apps/web/tests/public-tools/components.test.ts": "3325e1ce4fc98461a00bbe272f312134d163a03bdb37c5541ad2c146b0f2c1ad",
+    "apps/web/tests/public-tools/contracts.test.ts": "48dcd9f42926ca02b5199293fa480e0e3150d5a124ce927d89f9b75fbcb04273",
+    "apps/web/tests/stream.test.ts": "7bf669442591b90bb05ac02d6ca1871bfaf739ff736ac86ca2a97c0d564cd857",
+    "apps/web/tests/u12-foundation.test.ts": "207e9e4dd88b04777c468b9eb4a30b3f2019173e6a16aabdaa008edb85582222",
+    "apps/web/tests/u13-calendar-overlay.test.ts": "b1c7686b52038d8e764f44fec8a9f3b306b85713b7de573c8ef1799b8c47d185",
+    "apps/web/tsconfig.json": "eb509277ba11098cad795a3411563f2e3c227b1f100c476410116c7c96392211",
+    "apps/web/vite.config.ts": "985ccecbfb6b5942fd94fbbb233da63c76b2c607a30a0ee6886d198309cd096f",
+    "apps/worker/package.json": "9c54d0f5c2c8556b85ee8bbe9ad5f10cc26a3910af3a3a55f300cafec6f65692",
+    "apps/worker/src/composition.ts": "f22a57a87361519a47f1da2ea8fd31239db16532e22b6c80e2b326b963ee1b3a",
+    "apps/worker/src/index.ts": "575e6f781b502e5ac3e2ad66250570c77c6ce45228ce8beaaccd33a437f973c4",
+    "deploy/customer.Dockerfile": "45ebcdd4642c32602e069f1dd5ed6044a5f74acc1aec2dcaa2b1870f3dff6ca0",
+    "deploy/entrypoint.mjs": "bd4af181e31e017a006eb8821abe5ecd85c0b383d6065c87b531f138dd5ba78e",
+    "deploy/examples/customer-a/platform.cjson": "a42aab739a059a3cc3396b8fc0f7fba4bcaaeac30d0a19d39579c5aa67c5dd2d",
+    "deploy/examples/customer-b/platform.cjson": "7cd20a813eaa69b47f8c0e959d9e2a01f0611644b698d0f48a61f4e9049c5cbf",
+    "deploy/examples/customer-c/platform.cjson": "034b30a14f57210c017632746057c9e6abc901ad9858aa0431e0430b41a512a8",
+    "deploy/examples/development/platform.cjson": "d05328d084876c6b7d56cc9fd15b220e463110545caa8f29efaac8eaa3a77c28",
+    "deploy/releases/1.0.0/customer-a/compose.yaml": "9fb93431cdb3f2704aaeafc1b6db6914bdbd6291ea75ab2a1ea050bf73d7b30c",
+    "deploy/releases/1.0.0/customer-a/data/multi-dic.json": "2265e763c52d568aa120028b4d4bf6f0765d6fd8033595e3ed30b090c00b59d5",
+    "deploy/releases/1.0.0/customer-a/manifest.json": "c0db52dc7c3c86b65e1581a05e839b2a8ba4f57ec921c4c8de4638463ad8d384",
+    "deploy/releases/1.0.0/customer-a/migrations/001-public-runtime.sql": "d23f808d7ed3558d9f7d27958c4fe71fc3057133f4940ae1e58c5a3d8a38109a",
+    "deploy/releases/1.0.0/customer-a/migrations/002-runtime-grants-and-audit.sql": "484f7975c1ebac10acde61e677ad21ebb406217171799efb84b841267dc267ae",
+    "deploy/releases/1.0.0/customer-a/migrations/003-ai-capacity-lease.sql": "200dcffa01e0c8220174956c367081333dc28f4ae3eb80be46e8b364e2d98a0e",
+    "deploy/releases/1.0.0/customer-a/platform.cjson": "fb71d5d20efc77eae24ba2d8936db00bb3893b80548fbe9aac7c480c2933896b",
+    "deploy/releases/1.0.0/customer-b/compose.yaml": "1fe02e6b812ddf5b05282e05302fd4e739dcb86c4841f28951d1622c95b3eef7",
+    "deploy/releases/1.0.0/customer-b/data/multi-dic.json": "2265e763c52d568aa120028b4d4bf6f0765d6fd8033595e3ed30b090c00b59d5",
+    "deploy/releases/1.0.0/customer-b/manifest.json": "1618ac1ba2e3a2b68a962633c0a9a87990f4899f9401c035b0f0a10ebb85b5c4",
+    "deploy/releases/1.0.0/customer-b/migrations/001-public-runtime.sql": "d23f808d7ed3558d9f7d27958c4fe71fc3057133f4940ae1e58c5a3d8a38109a",
+    "deploy/releases/1.0.0/customer-b/migrations/002-runtime-grants-and-audit.sql": "484f7975c1ebac10acde61e677ad21ebb406217171799efb84b841267dc267ae",
+    "deploy/releases/1.0.0/customer-b/migrations/003-ai-capacity-lease.sql": "200dcffa01e0c8220174956c367081333dc28f4ae3eb80be46e8b364e2d98a0e",
+    "deploy/releases/1.0.0/customer-b/platform.cjson": "a7c5c3720cfcc2b67190c997f9cf2d8465207ef59dc3a98d68d1f2044a7760bb",
+    "deploy/releases/1.0.0/customer-c/compose.yaml": "5ed193cbc5811b4b2044f55d0af89888feb282796a3af1e00b2fb92f09ab12eb",
+    "deploy/releases/1.0.0/customer-c/data/multi-dic.json": "2265e763c52d568aa120028b4d4bf6f0765d6fd8033595e3ed30b090c00b59d5",
+    "deploy/releases/1.0.0/customer-c/manifest.json": "d2b8f1791cb50b2d6a4f01dedf08783fe8f07a97cb6eab6ad3218857523f0f5c",
+    "deploy/releases/1.0.0/customer-c/migrations/001-public-runtime.sql": "d23f808d7ed3558d9f7d27958c4fe71fc3057133f4940ae1e58c5a3d8a38109a",
+    "deploy/releases/1.0.0/customer-c/migrations/002-runtime-grants-and-audit.sql": "484f7975c1ebac10acde61e677ad21ebb406217171799efb84b841267dc267ae",
+    "deploy/releases/1.0.0/customer-c/migrations/003-ai-capacity-lease.sql": "200dcffa01e0c8220174956c367081333dc28f4ae3eb80be46e8b364e2d98a0e",
+    "deploy/releases/1.0.0/customer-c/platform.cjson": "fed44e37b22981a4d0d50055495f5cd990dabf2d3d7496e8f9e04b86ffc1141e",
+    "deploy/releases/1.0.0/dependencies.cdx.json": "b62fcf4917035f2dfdeccc579506be31f96f8dc90277bca35f7b48a929108727",
+    "deploy/releases/1.0.1/customer-c/compose.yaml": "0d2ac5ac55216b9c6a1931d841adf67c755091cd6e87248444427312891df3e3",
+    "deploy/releases/1.0.1/customer-c/data/multi-dic.json": "2265e763c52d568aa120028b4d4bf6f0765d6fd8033595e3ed30b090c00b59d5",
+    "deploy/releases/1.0.1/customer-c/manifest.json": "1945562720e3841258744059b5675789efb2c54d0b36ddc5e510550c8732f0cb",
+    "deploy/releases/1.0.1/customer-c/migrations/001-public-runtime.sql": "d23f808d7ed3558d9f7d27958c4fe71fc3057133f4940ae1e58c5a3d8a38109a",
+    "deploy/releases/1.0.1/customer-c/migrations/002-runtime-grants-and-audit.sql": "484f7975c1ebac10acde61e677ad21ebb406217171799efb84b841267dc267ae",
+    "deploy/releases/1.0.1/customer-c/migrations/003-ai-capacity-lease.sql": "200dcffa01e0c8220174956c367081333dc28f4ae3eb80be46e8b364e2d98a0e",
+    "deploy/releases/1.0.1/customer-c/migrations/004-identity-session-authority.sql": "722a2de7f26b2d0b9c6323c93df54b2e0507d59f2973ae38a06b8eb8d1181a22",
+    "deploy/releases/1.0.1/customer-c/platform.cjson": "fed44e37b22981a4d0d50055495f5cd990dabf2d3d7496e8f9e04b86ffc1141e",
+    "deploy/releases/1.0.1/dependencies.cdx.json": "524aca32ea3dcc71fe0e4f335fd1ea2bee60f462a4e88462141dccf119bd9f50",
+    "deploy/runtime/package-lock.json": "69d1fb0962e748e0d70f5d7ddc9e1a4803396ab76fb7cb8b5b42401104352ebd",
+    "deploy/runtime/package.json": "c6ff4069f6533f6ec95e3640f1f577385cd6f7a1b2c606922d6c456c513b3fad",
+    "deploy/web-security-headers.mjs": "e998984310ee820c977a3918ab8a532a45ac8f9ea38758ed67a13b7efc66746e",
+    "modules/faq/manifest.ts": "183b88a0087d44a9e45c4b34fc5082ba754023d75be17a7b9cff2de25e866fe0",
+    "modules/faq/package.json": "6e5b4f9fc622adeb86eb44f02cf4032adf91f12b66ab7cfdcfadbf4851b3bda0",
+    "modules/faq/src/service.ts": "c4b385ff994189754b7957a272678298dc617399a11880a1d9a2c83f336d41c7",
+    "modules/summarizer/manifest.ts": "ecf18560d5d41c83c2daa0be3b2dbc18f778050fdf896a399d5a1c6368eae473",
+    "modules/summarizer/package.json": "eb034aa0a665b9d4e83fcaacebce4748a1644b218705ef36fff6d396ac36ae1d",
+    "modules/summarizer/src/service.ts": "5ee5a56ee7068fc6fe86b01db4a608e3fc52a7ba6b4a6fc985d7b546f6b720eb",
+    "modules/translator/manifest.ts": "08e6b0a2bdb4d3d58bb85fe8f88d204c349ad3b2e640eef35e8a2f0bee07a54d",
+    "modules/translator/package.json": "dd65051fe175f251e7768e3fa3992d1ca44293ad7a019941b535a352a4ff6c05",
+    "modules/translator/src/contracts.ts": "9bad740c1af2c3c1eb2aa2fbd7dfb2c60e8e9776ad79f13a4b9d74b8d58f8c9f",
+    "modules/translator/src/persistence.ts": "f10182f526e154770e9eab85ed6f4a7d90e7311508d1cbc2091e423b553b36ed",
+    "modules/translator/src/persistence/migrate.ts": "7e83365bc5160ca326ab56b263347c08233be80f6c64a5296ba10663c04e27b3",
+    "modules/translator/src/service.ts": "6ba0025dc8150d296f97a726e17142d6e07abd45f9372d91d0bbf79f297eb488",
+    "package-lock.json": "251973a8506938d597add6a8d4281f83f7bdbf20d8e1525c9c987be498a9f97f",
+    "package.json": "53bac6dc92274d2dc3c1a633c15d620c5cb4c373d6cc98fb13bc8c46f70de1c3",
+    "packages/admission-control/package.json": "93ad5d8695ed90e3a2513eeb5befa640b02f41ba2824645fd5efae23428efc3a",
+    "packages/admission-control/src/files.ts": "c96730ff45a1f5594293d0fdb657815280081e7663849cef509efd516256d21a",
+    "packages/admission-control/src/index.ts": "29a8f082e8bdb80c8358a981322ef90bd82fdcf924bfd9f47270b8fa6c600363",
+    "packages/admission-control/src/persistence.ts": "a256f83c702fdbe2fa0eb8a0c03016e82edae244a3d3d811a34a70bf6039a9aa",
+    "packages/admission-control/src/persistence/files.ts": "c890311d5a6d9cce8615b4d01be2b5493fdbd0ae448a6b11ff5fea9e65ee4c58",
+    "packages/admission-control/src/persistence/query.ts": "4d0b1aa79823a47154652aed064dfeb0f88c09c0eb3cb825fe2e01d30e2af4ed",
+    "packages/admission-control/src/query.ts": "cb2168e8ebd4d0ace5755a858f153613c43000846c99e6e313f83ece80f25547",
+    "packages/ai-router/package.json": "47c17e84205b6ee34246bd0de3c4cac258124ce3c8fe3107766a01d8989773b8",
+    "packages/ai-router/src/index.ts": "d3e3bed523f878cb41bf89e93ece15c1a11f94a44672c8a63f3ab7a1a375c128",
+    "packages/ai-router/src/persistence.ts": "0a67f197201c88023b71fb219a0d1eaa20a1934b5ae84cd3416daaf2202ae02c",
+    "packages/ai-router/src/protected.ts": "540aa5a502baf2834f73a97cdb32affe78f2a31f430c0c3d1c266c61aed559e0",
+    "packages/audit/package.json": "030645340b55f3fa3c96df439be12cd5388cafefc3de3f735c42d044041f8438",
+    "packages/audit/src/index.ts": "ba5f942d2aeb407571cc18833cd813de79244707fdc154157cc238247356c3b6",
+    "packages/audit/src/persistence.ts": "16bc7199dba6e32641e249568fca6985a526f0165aed62a2b39a4a703876f7d2",
+    "packages/audit/src/persistence/security.ts": "a403bceb1f6a60439e64bb61fd1f6beaafe9ebee0097c8e4822654e06b46cdc8",
+    "packages/audit/src/persistence/semantic.ts": "18708b98bf6e55ee6d1bd954e76b37250e3ca4754ccd10bd420d97b4f3e4ba90",
+    "packages/audit/src/semantic.ts": "e84a3840404566ce9f59c99683b169ba8e056a0f6081ff93e80833cca894db48",
+    "packages/authentication/package.json": "364d3f5318765e6c49b1ed4b2f954f293873f1573b2e09345effc83faa125c5c",
+    "packages/authentication/src/common-passwords.ts": "97ad1b91a98f666a7472a0b977198b4d3003868d27536c2ce1883b5a7906b2a8",
+    "packages/authentication/src/index.ts": "c95d1ce6fba6a93330523f8d122d7e0f700e85928e8e00fad594b04eb8faf46a",
+    "packages/authentication/src/password-policy.ts": "f25f7519b3ba449dab3b4697402b2a9631880d659ed2163880d9dba9929c141f",
+    "packages/authentication/src/persistence.ts": "6e1e014b40d8bb2adc9491fe18e2678e11b8ce66f07f6873bdde5c75fd61a22b",
+    "packages/authentication/src/service.ts": "5015d17dc4677c693035b34a14e097230c9b30092a9eb603da9c6cea8779c70d",
+    "packages/authority/package.json": "053fbe48a4bfb6190a3fac38efc4f8056057aeff448c4a96ee921af2b8b7b7ac",
+    "packages/authority/src/contracts.ts": "782746e72ff362d0d05d17590cb52d38a332f2ac4560d55ddf350da2b1f5f525",
+    "packages/authority/src/index.ts": "6b18c900e05d079133b08c7c669d18cd4306f00b52d84425944374d00c543b76",
+    "packages/authority/src/persistence.generic.ts": "89061829455b48e279b0c93c8e277a1103bd5fd44172ab6f677a13d49101edc4",
+    "packages/authority/src/persistence.ts": "7fd275464fd5147530c8b69a6b08c2e561079937c059343f4e9bf6ba580cdbe5",
+    "packages/authority/src/service.ts": "a26e6b89893394541244aa03d14f2966af8cab0ca549dc4a4bd9ee45653f2d99",
+    "packages/branding/package.json": "da0e0a90db1cda1d907e4f5148ca8f1f56cb36d28443b5dd0f221417b525549f",
+    "packages/branding/src/index.ts": "998800bdd413d601de82288768d60f3d568051aa90e395d813b8c3cb472f5ed8",
+    "packages/branding/tsconfig.json": "27ccf48f1bcfd09726869cc713691bd8a4e2458121e3c2e84b89c51e65be83f6",
+    "packages/calendar-core/package.json": "4759e3764ed777ca66cbfd43d6f172dfa5709fd7bc041aba986e926a2312f4ef",
+    "packages/calendar-core/src/index.ts": "ce0d3d05f22a29642c88fcc75aab149d3f0770f0b1a6462faaeae9fe0f57dc70",
+    "packages/calendar-core/tsconfig.json": "27ccf48f1bcfd09726869cc713691bd8a4e2458121e3c2e84b89c51e65be83f6",
+    "packages/calendar-svelte/package.json": "538dccc29048525a81d8f31f9631c07da8cca356704204d8d882bdf6438d24f0",
+    "packages/calendar-svelte/src/CalendarMonth.svelte": "e5dc394f0f6c8912c71b385ab025ce39ce8b7d3edbe7c3e1b4571fbdef1bf46c",
+    "packages/calendar-svelte/src/DateInput.svelte": "c70ee05f73e562f48e56957eedd23461835f6b8bd5c9df0670132aa5fd409cfe",
+    "packages/calendar-svelte/src/DateRangeInput.svelte": "b244872aed7893d42f51c9fa040cbed32077cefb86b2178ec4e05527ebce12ae",
+    "packages/calendar-svelte/src/DateTimeInput.svelte": "f3d78d5cfa07ce3334f83ebdc9695914564a1cb7bffea617420ca4c10394fc1d",
+    "packages/calendar-svelte/src/dismiss.ts": "1d80838f9ad300c9e5d3ac47f8e3fdc12a4e1e8c38f3c68cccbc195d811caff6",
+    "packages/calendar-svelte/src/index.ts": "28ac28409a5372d571587512ee84dedfcf97cabfa85e67a7ec5cd41fc99846e7",
+    "packages/calendar-svelte/src/keyboard.ts": "303dcee8d72397f97d30d6ec8e44ab8a0ed87849cbf338631889d638db4e5d05",
+    "packages/calendar-svelte/src/picker.ts": "6e2940bffca3bac89f8155c7c77ba50d2c9f27f85282696e452f99dbee1a0e0b",
+    "packages/calendar-svelte/src/position.ts": "92b57ffc11662da4fca531a3b185faf9ef7e369a3898721b4269929e3f1bcc69",
+    "packages/calendar-svelte/tsconfig.json": "27ccf48f1bcfd09726869cc713691bd8a4e2458121e3c2e84b89c51e65be83f6",
+    "packages/configuration/package.json": "00f617940e7632323bda266c563867abeaf404a32bf340e9333b7fef9a312af3",
+    "packages/configuration/src/cli.ts": "bf6c4477aee52f000b8413cfbc2669679b8756e559ecefa4d0232054adfbf6b3",
+    "packages/configuration/src/index.ts": "e69a14da08752e264443fe4930d3be56dcae23f996c35f7b35e4df1401035dc3",
+    "packages/configuration/src/knowledge.ts": "94f7ad7b6dc772784d64bef4d956782b13f72f0a1605e1811d089bfabe330ffd",
+    "packages/configuration/src/protected-ai.ts": "9526ec3a3b9e70ad2f3fa1694d870b7474bb332f286539fa1c21e709079cafa6",
+    "packages/contracts/package.json": "35000f35a30a22afc17022ed37caac38eae4f388f2c76abc26cd275416bdcf68",
+    "packages/contracts/src/execution-subject.ts": "e8e2b5d1822116b1ca3184eb47493591f9521c238f0ac01ac60151942e02972f",
+    "packages/contracts/src/index.ts": "b767a2ebc1e7df8cfde18cc78275cf56c79284c7ba290d414f4d379b12ad9183",
+    "packages/contracts/src/knowledge.ts": "3c6e15314f6ea2c0138800ec1b4c63604f4f3f830e0d9ef07ee1ffcb9079ccc0",
+    "packages/contracts/src/protected-ai.ts": "d15da36345d7706e5902605fb466e9afd82611222664ee2da759f35d78d6ddb2",
+    "packages/contracts/src/transaction.ts": "ee7cb3a5371cd96ac0b7d502a4926fee621f2a6d5b236128163025981a9e7181",
+    "packages/contracts/tsconfig.json": "27ccf48f1bcfd09726869cc713691bd8a4e2458121e3c2e84b89c51e65be83f6",
+    "packages/data-governance/package.json": "e4a07bf8f1d23d6f25b5afe0cf7c20858922366fedbcc24b74738621059bbe86",
+    "packages/data-governance/src/index.ts": "40e696d1d3238919eac91e3ad2a5c10fc9128a3ff945129ce1abc554243955d6",
+    "packages/data-governance/src/persistence.ts": "808c1c29930b8f4bb8c118a70195267c539a2e93dc8889d3f845fb1f24ef4461",
+    "packages/data-governance/src/retention.ts": "03c44ec27af512d28005aae5fd991f329a4a2731836d942de8fda6eaeced80d6",
+    "packages/documents/package.json": "dadc10d8d4dd1efc1bba2de413cab93b9683bd60896c4e54695eeb010f16e19f",
+    "packages/documents/src/index.ts": "11a4d665e9924b53b2c1a096da77e86e59f9996fc6dfad7f7ee5851d99274c89",
+    "packages/documents/src/persistence.ts": "a2f1caef70f5c768bffa8ea05fdec1c514bd6c144ad91a59adcf4bf5a9462848",
+    "packages/documents/src/service.ts": "8b61377d9a673b01ccc3f94067120cfbbf8a08f03f0d8e8d7a3331423892087f",
+    "packages/file-management/package.json": "af1df42429edf3915952482f3f08954bb86aee4bcc347d95d6d106a4abe362c9",
+    "packages/file-management/src/cache.ts": "708a8a8458712fb7517e3f5aae11f8ad0f600169055b888515654f0766f8bbbf",
+    "packages/file-management/src/index.ts": "f88ef3fc30e81b510cf66a4c4dd81e856207dea18b7bb1dee6929859c95e0f9f",
+    "packages/file-management/src/persistence.ts": "d659024dbc31e9848b3e57a4235183b9e601947ab6a2290ec9773ef5152623b7",
+    "packages/file-management/src/persistence/storage-migration.ts": "18d07950cc729a0b68899e149ee0dd30a5a15b336cc7ea8838bc7df3cefbf992",
+    "packages/file-management/src/private-filesystem.ts": "36684efd9658bd146bc32e983a89d84ac597f263a509166f7b5573a6bc081c90",
+    "packages/file-management/src/public-service.ts": "0ada4be28e8d55afd196ae4de1a031fa19b04f04c9efac0bdd6c1f6eb0f065f5",
+    "packages/file-management/src/range.ts": "0f220c93d9897b320e5b43a3f6023319406ffd426f11269fe4a05fb50775fd7e",
+    "packages/file-management/src/scratch-quota.ts": "ac81417f45e30af5c9d186bbc3fdb2976caf746436ec373ca9b73ebdc33da138",
+    "packages/file-management/src/service.ts": "95791d07ed1dc86110f5c2bb05f386803ac224797e9f21116b154974bac2629c",
+    "packages/file-management/src/staging.ts": "1b0baa907b40f7206ead698f67a249a1792d0482af27e50fa7d4075a62f30bb1",
+    "packages/file-management/src/storage-migration.ts": "6c6278e0322a4ddb62cbae3424cbf7ed0f4d9fe842e41516c65dd2e55f65c0b7",
+    "packages/file-management/src/temporary.ts": "fb44de643c4b78b721923e5bcad9ec60f27977655f8b0706eef57843d0b4ea0e",
+    "packages/file-management/src/transfers.ts": "96deb17da84f619e348c6cf88c8b73f29c200c2301c7e969b328ab5dfcaa07f8",
+    "packages/file-processing/package.json": "4c7cc581f5ec37898b06be3f94f93879bebbd65a45c89caa53c082ef59c7c918",
+    "packages/file-processing/src/index.ts": "0a752968ecbe36d07989f398cebccb850ede2c80bcfd42c13f678c0d6ab1e093",
+    "packages/file-processing/src/malware.ts": "5a8b667ab83f8f58041e3c82fdadda8da1fb2bf8fe13f5391005478ffaffd658",
+    "packages/file-processing/src/native-parser.mjs": "0e885e4fe5b3574f59bc5c99863eee28904b82d88c60a1ad4bae0ecf140dce3a",
+    "packages/file-processing/src/office-archive.ts": "0f08b0ab90ae662514dc657b15c05cf96aa2297f53dd29094ab61f45ea1e5b41",
+    "packages/file-processing/src/sandbox.ts": "aab149e0291d1c56001944178598befbd0dd6fe3ba63520bc996b519895573de",
+    "packages/identity/package.json": "9c234312722f93a6bd9515d30977506d7dbcd322a8151589f2e9d7835a6f6799",
+    "packages/identity/src/persistence.ts": "7b741ce93ffe75b7dda5ba22566c3e013019cb232658a593f3618963acdbbc8c",
+    "packages/jobs/package.json": "9644ace00481dd93a2d23e6f3ba1220bc2d18def87c2c1349a85d84298452c8e",
+    "packages/jobs/src/index.ts": "40ed686720577595d4d1162950858942ac969b413ff2b3d8f0f9de14bc0d32d1",
+    "packages/jobs/src/persistence.ts": "28dca1b702609b8faa46d485a033e3d233854e52ce89520c35033da6c1f2420e",
+    "packages/jobs/src/worker.ts": "069f6c1e8f1e7a9be91a4e17c96b83dbd4d471052a309f90ab18cfb46b6388e6",
+    "packages/knowledge/package.json": "c428cda8d8aa8b44cf2bb24336c533af77e22b0c66be00fee40e1f3b0665ffbe",
+    "packages/knowledge/src/adapters/qdrant.ts": "f5f21cf810cd7899617a52f08dcb20381e04a747a7483450d15b631f9ec857a2",
+    "packages/knowledge/src/chunking.ts": "95c45db68c9417e3af4e363d7bed0293e91fc442a7cc3308bb7696b25dd0027a",
+    "packages/knowledge/src/disclosure.ts": "538ba99aba03c92d2ed7ce67465844bcd737dade6d636fb84465053c3f44ea03",
+    "packages/knowledge/src/index.ts": "2395e158d6d890a8551279f359e6f2a0518744e4c76b9f505a421f7a9cec9a69",
+    "packages/knowledge/src/legacy-migration.ts": "dc54bc057ed14917a58f68ee7f83510c9f5dd250937f12c2a9c383d76f9b63ee",
+    "packages/knowledge/src/persistence.ts": "2f2ec648e0470ca22696bb3647c6e34522452489c8d852b6731cd03b184c9903",
+    "packages/knowledge/src/service.ts": "44a3264e33ca00c287bd534fb44e173c70dbb8cfe9a15c7b138f29d892c41642",
+    "packages/observability/package.json": "ed4ac4d58aae32f7db814725c3516d9c23165b079fcae377610c0ce5cfb9cc46",
+    "packages/observability/src/index.ts": "7a7b0334642beeea15d1976f9e579aa690debe922491661c02a0819d6a215ff7",
+    "packages/observability/src/process-errors.ts": "5568725fe706916b5e56543340bdba7345eb4d7b69740402ff780ef4f1d0da5c",
+    "packages/persistence/package.json": "93d5adcc80e36b472f9882c79821dbfe7d441429815cf214cfa8c73b3bb23e0b",
+    "packages/persistence/src/bootstrap-target-dev.ts": "2f39f977a84edc47cbc4be23749bf64b3c2d8091a8e6826777e265d615d371c8",
+    "packages/persistence/src/index.ts": "b0b723695d51f1409b2eace272016775708250299681927e9afd68981eb97a10",
+    "packages/persistence/src/migrate.ts": "8d7a146c9b52d4048752230949c31fa09b706729b554514d25e62075aeb8f023",
+    "packages/persistence/src/migrations/001-foundation.sql": "bfc3a963e3447e827e3575b2d3e9a92ce61a028b364bff0eccdd799b68436fe9",
+    "packages/persistence/src/migrations/002-audit-sequence-name.sql": "061effb4f18570c0c73bdbd7b4c06fcbc6bffb01b1b6705148b098c06ea796a7",
+    "packages/persistence/src/ready.ts": "f92440f3a5322d3a6d50bb8e9ee06845a5bbcf2973b82c50f28bc86c28380fcb",
+    "packages/persistence/src/target-migrate.ts": "7505dea41496ee68cd965fcb1ca51eb40403a4314d95f6ce386848c408fc7795",
+    "packages/persistence/src/target-migrations/001-public-runtime.sql": "d23f808d7ed3558d9f7d27958c4fe71fc3057133f4940ae1e58c5a3d8a38109a",
+    "packages/persistence/src/target-migrations/002-runtime-grants-and-audit.sql": "484f7975c1ebac10acde61e677ad21ebb406217171799efb84b841267dc267ae",
+    "packages/persistence/src/target-migrations/003-ai-capacity-lease.sql": "200dcffa01e0c8220174956c367081333dc28f4ae3eb80be46e8b364e2d98a0e",
+    "packages/persistence/src/target-migrations/004-identity-session-authority.sql": "e2a1c6aae4b0690fb534ea83b4af91d1cb32ff4d932244c64fddca3d75816104",
+    "packages/persistence/src/target-migrations/005-session-correlation.sql": "60230da6a22f6857c9acfcfd1607038396d6e727eb5cc4fbf944865850fdaf81",
+    "packages/persistence/src/target-migrations/006-public-tool-permissions.sql": "3cf08ebaaf5651ca317a2fd765ef18a46cb078ed45d720e3c8778d100c224568",
+    "packages/persistence/src/target-migrations/007-authority-rag-foundation.sql": "e100504a0a64571a82669992df7c51da71d32f46cea381ad3bf02a579024467a",
+    "packages/persistence/src/target-migrations/007-authority-tenant-rls.sql": "ca430ebc5932aae860225c37ea8e52b47abf2e4398480c39b320d32c1c6dbc7b",
+    "packages/persistence/src/target-migrations/008-public-tool-limit-tier.sql": "33132d3aaa3880952dcb230afa24ba53091196e62531b338455b17b203020118",
+    "packages/persistence/src/target-migrations/009-document-and-durable-jobs.sql": "9e42f3c1856dc9696741ac55650731b7fd866f1c68e9f5ac6ccedb5dfc871145",
+    "packages/persistence/src/target-migrations/010-file-transfer-admission-and-evidence.sql": "26ab5f4e225334d43480e1d1993ef77bd1a91f3c539fc0db3e80d9b0119b490f",
+    "packages/persistence/src/target-migrations/011-knowledge-vocabulary-and-worker-subjects.sql": "d318a03caab2e98fab956bc6539981f27729930911a542eef7ebc25f110d010d",
+    "packages/persistence/src/target-migrations/012-knowledge-spaces-and-projections.sql": "fa85381b6b2334dbfd8d0456bc158c1aa60e181395a81e61a1c5f354cc91e86b",
+    "packages/persistence/src/target-migrations/013-worker-ai-and-audit-context.sql": "48643149ce669e5ab0ccb8c1c2c15a71c4d8387c6664c7aac58e9861ec51c5f2",
+    "packages/persistence/src/target-migrations/014-ai-execution-subject-evidence.sql": "04a2114e3b6d264b521a15d8319240be691ce1392e8856e80bcb7a0a715d85cf",
+    "packages/persistence/src/target-migrations/015-rag-work-consumption.sql": "888df2d306048a8711818f1c05ebf1b71d603fbb7bb5a351784e6e9b54150591",
+    "packages/persistence/src/target-migrations/016-knowledge-requested-index-state.sql": "ed291866a26850303d3c5af77cc8dc5b62a1cce26b09098a878235d23539728d",
+    "packages/persistence/src/target-migrations/017-storage-migration-proof.sql": "46a58e68dba898a67471e396563c4a9e967a5df740e8074d0274208b8a73c8ef",
+    "packages/persistence/src/target-migrations/018-machine-transfer-expiry-vocabulary.sql": "d895a43f35b3f1cc2c796f5526e79feb563c6b2a7fefe8f8b9c2bc01088c1759",
+    "packages/persistence/src/target-migrations/019-explicit-audit-initiator.sql": "e81d1619bdfa6347e2d47e3242b45208b3d43f34402851c9492c64058e41253f",
+    "packages/persistence/src/target-migrations/020-file-actor-admission.sql": "1eebad6fa64baa93131f22aa4ad09949e54a3f146c6ea0a55e8d5acd42f74979",
+    "packages/persistence/src/target-migrations/021-deployment-worker-queue.sql": "854c5003bc24df9734e787dc5bcf463c8851e7fc952330b4d2e521038c048be0",
+    "packages/persistence/src/target-migrations/022-authority-materialization-fence.sql": "8c02679e06cbe4c971121ef1f5da2e1f58bbbcfcfcee396e12153f4ad2b0c746",
+    "packages/persistence/src/target-migrations/023-governance-retention-lifecycle.sql": "27b93b44bec77cdfb8d279cf778a7de0eca6a78ccd1833fe19950a101fb422b4",
+    "packages/persistence/src/target-migrations/024-governed-owner-purge.sql": "e4a8b5e6ae0f4bca4378c474be45a5b07ee5164f0bf580ff6b686c9c852f5e11",
+    "packages/persistence/src/target-migrations/025-governed-owner-rls-scope.sql": "6dbb90cf72c3d65254a664460838704379e9d9ea0aec70f7f4a0540f35517ba8",
+    "packages/persistence/src/target-transaction.ts": "a4e4166aad2b67c8e3b14c897d6a7432c551b1e66e5fb92ea949b0e11a94b13e",
+    "packages/persistence/src/target.ts": "d77ad3b5557858eee5c16dd7c052f3e0006acb971e66da8febaab560a57428e9",
+    "packages/platform/package.json": "66afbb77899ee9d20f40c033d5440ab6210bde9aedbd72b0d3bbf7be9a108fa2",
+    "packages/platform/src/persistence.ts": "5aeca2def689fb8c2c2ac8dfa63ed028ad4576ef483966132092f63b8c7d7519",
+    "packages/platform/src/publicOperation.ts": "5cd9c33716bc53d76625304a81040b62e20ed6e882a908435dac09a64a69724f",
+    "packages/security-telemetry/package.json": "56b30187409334d10f12fb5b3d0716b6af86a238c1d57ed539dbde81cfa40cb7",
+    "packages/security-telemetry/src/csp-report.ts": "6187eb8fdfd460f4a2e2150a924ee7bca69de84bd0477971a951994ed6e1707a",
+    "packages/security-telemetry/src/index.ts": "260c540a4b2cc7aedea08ff88f3444a639bb920db48ba61b763f726de283dd0b",
+    "packages/security-telemetry/src/persistence.ts": "e04e37f54a147857a9d475c6f1e1057927fd100e7ed45e6cf6831e24c1f98832",
+    "packages/security-telemetry/src/worker.ts": "2bfc48835ae13677db15192688f22d6d6053f05617c9ff47994bbba520c02b67",
+    "packages/session/package.json": "c40890c53bf59121e67a1690894951c9bc20c5129ed856c58d5d5c7eda5abe5c",
+    "packages/session/src/access-token.ts": "2adfab96fc06872ea20715d72bb9b34a613d30d708ed03a7374e6cfe26afc9a1",
+    "packages/session/src/cookie.ts": "cbb9e94a562968bf3eac4f3c7ffb2fd7accddc7c65337df26d24275379a6e8c5",
+    "packages/session/src/index.ts": "c660fa097fe9ed042feae4be335fa2e158aa3391fbbdc906510b5476c7d64871",
+    "packages/session/src/persistence.ts": "81188df3739194ab288f3da8a8860d7d9db3c48d44e1dbf30981673739d7871d",
+    "packages/session/src/subject.ts": "54bcb01f6018822b0fe139f21c10496b90f19b77a6af1ed9b1db896616db69ae",
+    "packages/storage/package.json": "a91568cb5b067cbaaf38bc79243e7090d3f792e6527d0c522a755e18d32a762b",
+    "packages/storage/src/adapters/local.ts": "78b49dad3709c9cc01398a0f9526ca9fcd4b4bab74bcfd07ae037506de3fd119",
+    "packages/storage/src/adapters/s3.ts": "be37f886169ef88497356518dce73fd492998788f935aedda09762b0a0edfc2f",
+    "packages/storage/src/factory.ts": "ef47bb100ef9b7fefbd8a32801d620e8b9dc40471ce12ec36fde97f05f15077c",
+    "packages/storage/src/index.ts": "9cd7e2d68b675e328388eba323fb8fd6d10b7061e3a0c584e72976a5a42d9b2d",
+    "packages/ui-core/package.json": "22f18e06d249a4587ac9275046729f26ac42e7a88d7d6fc91ff40b80f276f182",
+    "packages/ui-core/src/ai-operation/index.ts": "f921c8b8bfea6640cf2170827ce563263fa1032972de8245b86dfdc64513fa2c",
+    "packages/ui-core/src/feedback/BusySurface.svelte": "357cde734fc62d91ea64e009e78eb3fcd2b91dfa04d3f0c57ea511565b680914",
+    "packages/ui-core/src/feedback/EmptyState.svelte": "8cc3d40ef1e07819357275306e0558b617c199566ec3bcf0d92e1d4604e9415a",
+    "packages/ui-core/src/feedback/ErrorState.svelte": "94e9b0340ed33bb8c98a4402d5381de9172bbae865555091482dc9965c193eb6",
+    "packages/ui-core/src/feedback/Toast.svelte": "dc6014cea46613406e3db3b945d64c33dd37d8b3c87aee1d10b80c61de855ca0",
+    "packages/ui-core/src/forms/Checkbox.svelte": "31b24c77745083245a5c525de2634b84b09549854bef0e2e3e9d6c86398732ba",
+    "packages/ui-core/src/forms/EmailInput.svelte": "13d5eacecd850b359e6c02400a713cf01b34454b47bc8ecbc7fa707c6f2da208",
+    "packages/ui-core/src/forms/ErrorSummary.svelte": "38cbd82d018b5938e1c9143baa0ec10f10206082c66394b138ec1db949eb6304",
+    "packages/ui-core/src/forms/FieldHelp.svelte": "0c700ebf3a766465c86fec5d32aa7d00a9233adc83505f9b4bd3515efb578e68",
+    "packages/ui-core/src/forms/FileDropInput.svelte": "90e0624110a98439d9352ce4eb9bfbb6924cf1c6771cce4baad566452baef04e",
+    "packages/ui-core/src/forms/FormError.svelte": "a68d415f8770bc6f3b4b015b6ce42a32f5bcc02a3c54b4d941cc7c22dd889def",
+    "packages/ui-core/src/forms/MultiSelect.svelte": "8c139781fafb8a49f1ba9866d6cd2f2d0be0ac5830781ed095e8f1f29efb6d43",
+    "packages/ui-core/src/forms/NumberInput.svelte": "64288e36f1b3e5a756cb2cdb3c11384ebd7ac2cfc687135abf767309f424b2a3",
+    "packages/ui-core/src/forms/Radio.svelte": "29663872a27d85846bcbd2d398206de9772b14891ed62ce2c51d960ba93a59e1",
+    "packages/ui-core/src/forms/Select.svelte": "2d13b89a541b7374ca7aa0ba1b3866e44eeef0330070a9962c5317848434e730",
+    "packages/ui-core/src/forms/TextInput.svelte": "aa5f61e750f269dc7c6df5a5ed536cd3711eaafc3dd6ecc5f2d61865fdb8d945",
+    "packages/ui-core/src/forms/Textarea.svelte": "65081d5eb8238026ac27577589154682274dafe6c99e906783b0bdad9ff5cac6",
+    "packages/ui-core/src/forms/numeric.ts": "64ca374a6ec95325009ce2ad3ae863b79c492ffb1eefd5f0299f5a0344f7c075",
+    "packages/ui-core/src/i18n/index.ts": "3a5061305e84c7078cc587ec201e06a9110a7b896b15ca2d3b9697183f4eec14",
+    "packages/ui-core/src/index.ts": "579c57b724d0f6c6c2e7203dcdbfb33847cc12797a2ca7cf2720853732d24602",
+    "packages/ui-core/src/lists/CursorTable.svelte": "da94216515166ddbb93e8b032d1d1ea90a16233faeec6669644fbd4370dc4fdb",
+    "packages/ui-core/src/lists/model.ts": "dd425c8d0f647a3d6232a94ce83f52e7efb8ffd264583021681585b7e106954d",
+    "packages/ui-core/src/navigation/DropdownMenu.svelte": "d896b6f76c7b5a8c028b9acfb37aa148c70c25b4ff0cd6f1e3422b57c55acc27",
+    "packages/ui-core/src/overlays/Dialog.svelte": "405fc0fb78326697ba4492a2e01f6eba05adaa66ebf970ca7406b8a4433eaae8",
+    "packages/ui-core/src/overlays/Drawer.svelte": "81e63595a414719f8da732c021d0d141e61321a4dac40ab544608bafcedf8f8c",
+    "packages/ui-core/src/overlays/scrollLock.ts": "4bbf96f5af73d33c13a48fb41c64529554f9b9aa30df776f76736738d8f6591a",
+    "packages/ui-core/src/rich-content/MarkdownView.svelte": "093f197e5315439b0edeaad8445095012e0c84e5e322bb12f369be39f6f16de1",
+    "packages/ui-core/src/rich-content/pipeline.ts": "457a23d562a9b57b2f57383c5b5f260734baccb4124b84f5450309bb3d343458",
+    "packages/ui-core/src/rich-content/render.browser.ts": "9460f0df682dc4cc5cdc3cf407e50c693d3c6a77bdeedd150531cbd2492770bc",
+    "packages/ui-core/src/rich-content/render.server.ts": "30413ec91c0e6570a902747b530903eb1a9f8bc1bcee38e891f80d6d884239f9",
+    "packages/ui-core/src/svelte.d.ts": "ec4a4627f6814f0b8ac7d49d0be79be41bec7b8ea15bd5033f5210cc9d97b6bc",
+    "packages/ui-core/tsconfig.json": "27ccf48f1bcfd09726869cc713691bd8a4e2458121e3c2e84b89c51e65be83f6",
+    "packages/usage/package.json": "df1901a104712ad52bf26431d0213d640922011e44f4377b4594d8107e38d16d",
+    "packages/usage/src/files.ts": "289bb63c3ac6af63ce2164b583f59d70c68d28cd4edc141035c8d6924f093387",
+    "packages/usage/src/index.ts": "b7c1a4b90776d2e96fc6382040e48a30498dedefee3105a9ce750f92cf6bd81c",
+    "packages/usage/src/persistence.ts": "acc34e4d7530b968853b3e557743ba5e7cb48b89b4af1c061f679ccf0f92f213",
+    "packages/usage/src/persistence/files.ts": "154458108f92336d0adb8041d187147067aa6daac6b70525cfb95fd3c3421e39",
+    "packages/usage/src/persistence/rag.ts": "ca3933c34ca90a3beb08292c5cd9283ced4614cd4a7f0be12d1d0c0d398b8e66",
+    "packages/usage/src/rag.ts": "775f9737d3db31e66068175063a0b80312ad2b98d64ad445e7ceae52d271a97b",
+    "scripts/activity-report.ts": "0d19b1e31441b29e9694fec2640db08e38ce9835968d0da0dd5eea7bdd24d229",
+    "scripts/architecture-runner.mjs": "cc0227766fb52e1775b6004d102a741762a6d56d4f15160eb4ed25f3248575b3",
+    "scripts/classify-rag-asvs.mjs": "86466eb2ab4618e8e03438b16b931d99460179304a563ab5ec9655927d6f63fc",
+    "scripts/customer-release.mjs": "5da552d45e16d7cd0e70ae6cb3477de2815c1a0da8146de37e2427ff37965a90",
+    "scripts/guardrail-runner.mjs": "a48f7a33348373bcc59c65b511c18267beac55aa382a714b6ae426b3a79beca4",
+    "scripts/obfuscate-frontend.js": "0b697aa8f2c2a9880ebfb15b6fc967720bfa4fb5eb0a2642ff3bb1d7c8be2649",
+    "scripts/pg-dev.mjs": "2509a149b14890999a699aaaebc910126dfc4ad3d0c11dafcd3d7cd9a945fef9",
+    "scripts/public-tools-cancel-live.mjs": "9d96b77ce096fd76ac5c16d04c04d0f75c279f8fa66f8b4003655086825ce695",
+    "scripts/public-tools-legacy-seed.mjs": "719af2967f4fc4fd7cd4693984791787de0c1a64a214c42814df2e01f35cfeba",
+    "scripts/public-tools-live-smoke.mjs": "3135341eaaf1bc3926e2b07889d469930ab7c84c5870f378b12559881e2e56d7",
+    "scripts/public-tools-pdf-worker.mjs": "0a2644be293fbcaf1cd8b085a2d68ede1dbcab55f1016f5a4fd699a4817162b7",
+    "scripts/public-tools-runtime-check.mjs": "f64a162018eb22eebf5cadf012ecfe9aa11c6a6e0933c610f046528132262ab2",
+    "scripts/rag-security-gate.mjs": "8eff2b7e4b0d8029c6d3320fffd9e920f9d112860a8620a7cb919afae142cd69",
+    "scripts/rag-security-policy.mjs": "a8eeea4175f184775e57a3dc3cd1634edda9670109be067f8d1009a9c462788b",
+    "scripts/reassess-t44c-asvs.mjs": "ecf70e68038ff3582a633a2456e0d80dcaafde3bfab3214912115c95d0eab117",
+    "scripts/static-architecture.ts": "2102518a7771d1fd27b33756b3ee6a917c49aa5d8554bda2b027c436d84451b1",
+    "scripts/t4-gate.mjs": "9c67526cca8fa6ea47552572367f86416758ae8ccaf17d98a5fb507c527acdb0",
+    "scripts/t4-target-architecture.ts": "b37f41ba4637fc485f36d818424da73fec4565f107bff0e78bdfd8ef412511cc",
+    "scripts/t5-acceptance-evidence.mjs": "743f8494194bbf33e7084d2abff7baf1f8db4dd652402ec26ad54d1c25d7fd9d",
+    "scripts/t5-acceptance.mjs": "ded972fa5261328fb5244f493672126ec6589a05f517225f70bc49ce0672a527",
+    "scripts/t5-asvs-evidence.mjs": "bdd9ff88e967b9d25d5e716689ce42c15868ae8dd10c1a70db1e852eaf1f4047",
+    "scripts/t5-audit-siem.mjs": "9f969fce2ae07f23d9ef49b92293c6bfff257a99d16f16b7ec953b3028275da3",
+    "scripts/t5-authority-inventory.mjs": "6fa63ccd879370065a05412699df1223e3539174383386b9496ee9461cd64ca5",
+    "scripts/t5-completion-gate.mjs": "b882ae7264065c6fed1d36e1b74b5c66a9c2cb52485b53ed460954a974708689",
+    "scripts/t5-evidence-gate.mjs": "5aba17146cd8fc4c106aa79d6b6f544cd7d4cb17d730aeab32a091492c952357",
+    "scripts/t5-legacy-migration-plan.ts": "3351f27cc5a0c55ee47e32b521144328c25ea051684c66d0c5299ff3bcc87fbd",
+    "scripts/t5-live-model-acceptance.ts": "727aa9c3371ba3ef50188f46926f80b91be97aad63a70391be652fb8f90b74b0",
+    "scripts/t5-oci-acceptance.ts": "567522ef771c9c30209ef0ac56a17688edd58efe7d0317d77dde7487c7728b6e",
+    "scripts/t5-preliminary-gates.mjs": "1ee9da3af99af92622121fa0b55f92c9e2222036dae5d7fee6af115e1708a0cd",
+    "scripts/t5-protected-paths.mjs": "e650f08fabdb1584b5fed75e681ccadb6027a3f948b1a3ad955d1440329a89b9",
+    "scripts/t5-protected-policy.mjs": "c9671a83185ef7d6a9ef847e8198befad009f538ef42b5f5649158e6f913c6d4",
+    "scripts/t5-r1-1-gate.mjs": "7889aeadd6c0f13f2caf83e0e853203f0f345802d2ba78635def66cae2292afa",
+    "scripts/t5-r1-acceptance.mjs": "41a5897f189d4d280b61824761f42bb4c768eea1e781287780a570e330ab0df4",
+    "scripts/t5-r1-reporter.mjs": "2adcbffbeceb6a9043900baaa43988fd7f5225d72f3f2ba5631e0bf99ab4c8f0",
+    "scripts/t5-r1-source.mjs": "3a48f1176bc1c1a8e0c274dee97a91456393d9f72b31196c5a4760a844503a3c",
+    "scripts/t5-security-assessment.mjs": "5e7700b813bad6ca5556f1079d3bcfade12c59d9394fe9e884dd5c075d65b686",
+    "scripts/t5-service-boundary-assessment.mjs": "256d85b80b91da4fd7a597a0ddcd18f54573311c1e23ca585a721c91e2057cdd",
+    "scripts/t5-supply-chain.mjs": "41855ee6f5a11f3ab91f08765fc4c5180a42073915f0c53aea544125d4cbb500",
+    "scripts/t5-supply-policy.mjs": "5edc03b0c06a8dae239a4116786b5349cd0fd855857f3f40fbc68a58c807a7c6",
+    "scripts/t5-target-architecture.ts": "21e637b9422a99f4d881e4ed99a70165b62c9a20fdbba9fc6850a26a6c661df8",
+    "scripts/target-ui-guardrails.ts": "b758713d09ed7fdead49cda8192b069773c69439fdd3add3da50e9856228adc4",
+    "tests/ai-router/router.test.ts": "ed49b0ec736abbd363a6b1defde15a2516c40011b9b2ddee93067f8eaa98039b",
+    "tests/architecture/config/targetScope.ts": "24395aad83c9dc7d15682636ca1a9f24234e1ccc3df53c4e5fbe23ef5d362081",
+    "tests/architecture/moduleManifestConformance.test.ts": "b9fabcf140cec58aa6a0ff89948e88cb23ac50dc26379d7a6dab4ae486d7d035",
+    "tests/architecture/ruleCatalog.test.ts": "d4bd90977e9fd93fc449a20bf24686309360f241ae8ff515cb71d879f0aa2f34",
+    "tests/architecture/staticAnalysis.test.ts": "5660c5ab153b285aa0a97f1c6ae621c87d16bdd65ac821aa796ed6818da9e634",
+    "tests/architecture/support/architectureHarness.ts": "8cf311c3d0f2fae3a383faf579d0e760d82fbba7ec7fcad2509f495d6645fef0",
+    "tests/architecture/support/staticAnalysis.ts": "defe8d990e975d10563aa32590b863760f37a31a1862546f2d57ff577d86e811",
+    "tests/architecture/t4TargetArchitecture.test.ts": "62ab899da802943450ca5b2a026865c2e7c0298f758f59727d3e8fabb0a8a660",
+    "tests/architecture/t5TargetArchitecture.test.ts": "639af095804af10d7420f7b0805c9d7ba216ffa3737ad4dfe6f24504382e49dd",
+    "tests/architecture/targetPresence.test.ts": "56c680df8ca390776f425eb56674899ce0022a7616be97d5d0328f77e29b07b5",
+    "tests/configuration/configuration.test.ts": "64aef8206b319e7d7086a84d69f26920704a28a6f923ae1911ede3feb4eddcd5",
+    "tests/configuration/t5-file-management.test.ts": "38ec944cd5e4270af1cf3de2f4c13acfc2087196c352a0676032e60eacbae872",
+    "tests/conformance/authority/authorityBehavior.test.ts": "93f4e246e49ccddd420d85412d7c5c94b74a8635393c92441b23dedcdca1c6a4",
+    "tests/conformance/authority/productionAdapter.ts": "1a37be5b4387d434bc4a87e9b14056972107d3af8c026a48f8b14f8fb926ff0f",
+    "tests/db/conformance.ts": "4c423cb3b2806180d141537db9afd3344987f351bd123c573470ad4635c13c5a",
+    "tests/db/fixture.sql": "2af4f8be0ecec8f4972bce2b17bd63834a30acb30602dce8b61d064191d580eb",
+    "tests/db/integration.ts": "81aa5989fd19e1d7b7aa9e0a5ea96365c6e1e969abf7ee4df7591bff584f49bf",
+    "tests/oidc.test.cjs": "5f7d7aefdb28575e1657d6a2774bb8e1880f064d4093e88447498314d7a19e99",
+    "tests/reporting/activityReport.test.ts": "c367d84f32ce4526f382c755775fb8e7e74b116bae7799c1875c9667d7777cd7",
+    "tests/target/customer-web.smoke.mjs": "95f75e2ba73fde48efcd91824fcf06bb0be1aaa803fc220a093dc550e1b5c4b2",
+    "tests/target/runtime.integration.test.ts": "9f07acd02f3e47267e01bd795db13103602cf9fc783fb6e7ae3a7f2c1278076e",
+    "tests/target/support/t5-adversarial-corpus.ts": "b2320263f34de499225c8167042b20d5b220c69475a0e5536a15c5c383310c60",
+    "tests/target/support/t5-browser-session.mjs": "4de511a07b7b8eac0a04814dcc6a24f058449c521e90c8a0d8012a5b35f0ac24",
+    "tests/target/support/t5-live-subject.ts": "8b09a2fbcf8a487151a85c1508a3fbe22a94384eb40232f1b821b2d97529069e",
+    "tests/target/support/t5-provider-fixture.ts": "213b7bfa9e39f90b51f9384ffe2e6f13ee4e5fa5dc14d9eda781dd70fffb7b7f",
+    "tests/target/support/t5-qdrant-fixture.ts": "a33220090b0ed6e8d1318a787e204a6ddcabcb52a3ef069e4bf0351d57e5de00",
+    "tests/target/support/t5-runtime-fixture.ts": "0b68570e900c39aafd9444ed315e86af8ef019a0f9523ae25bab43f59cdea79a",
+    "tests/target/support/t5-s3-fixture.ts": "23942ea19b6603884a2c721d3c0391e18a9f0151cf80c2a47b89453ad4afa9db",
+    "tests/target/t4-access-token.test.ts": "f17061e3f01247ad73b40bfe7c06519c51b7069ab47a4c53301dd3df05f7f151",
+    "tests/target/t4-auth-cookie.test.ts": "c5a73d63ef57b7ebf476bb1ce73ff563e7c747683e20237589f3972b1d4b2571",
+    "tests/target/t4-auth-http.integration.test.ts": "6a72879a18d41ee02cac98fac78319981f62af9648b1c9dccda53cbd95d7c7aa",
+    "tests/target/t4-auth-service.test.ts": "21edbf10408ef3adb7521c1ba12aa146c890c2a5f3849f39b833aa8c59b4f48c",
+    "tests/target/t4-authenticated-public.integration.test.ts": "e66f89c2ebed3ff1a8496d682da54f817bd09f137e79e12ecc38515249937e4f",
+    "tests/target/t4-browser.integration.test.mjs": "91f37ea4bd26c3fa04835f652986cf1ed9b4d81f1983550e4d81e937d3ed39fb",
+    "tests/target/t4-csp.test.ts": "b1d5b2be867fe64ed49c024753efa2863a2efd8d36416f59ed49225809546fc2",
+    "tests/target/t4-dictionary.integration.test.ts": "a36637eefaa81aa847c64903159ee465ef0a01055152c1c65f12e8c3465a141c",
+    "tests/target/t4-file-security.test.ts": "9f630c97051c73868e70896183b6ca8c5b9a875a3e4bd9c5ad143cdf9844b987",
+    "tests/target/t4-four-point.test.ts": "4d30986d3f09d95106d6a5f4c0430d86606125492f82a3fbbe6b4cb86b481679",
+    "tests/target/t4-password-policy.test.ts": "460bd2efd4334e205bf319d0e446543565d45a2bd7805134fb4dbe5c857da566",
+    "tests/target/t4-password.test.ts": "a4c0c684a31b14760ccc16827f13ef18cb88957001f9c7b3a03263603f3fefab",
+    "tests/target/t4-session.integration.test.ts": "12b6df840d072ce1765f6f220d0acc58d8fca664189906f0c259ec4c4c2ecfb5",
+    "tests/target/t4-session.test.ts": "1876f58c886bce7b4488222663791a4c01e812b40bed3a978c89033da54990c0",
+    "tests/target/t4-web-auth-proxy.test.ts": "c04216e4cad074e7e1fdedffcd73326e6778f002048987b60e031954d2d1d5bb",
+    "tests/target/t44-authority-live.integration.test.ts": "c509516adb82c6aeb03fc7e53d85f86c226ec99360e790169c580c75e55d8629",
+    "tests/target/t44-rag-gate-policy.test.mjs": "27fdbc2aa76fb65da4d31a57dcb05cfff4622926e6d0e714ed1e4bf8b3374fe7",
+    "tests/target/t44-release-policy.test.mjs": "f0d30ab780951bd608c08dce1d4ca1d7e7896c976bdb12010d0cc5e5256b235f",
+    "tests/target/t44-static-headers.integration.test.mjs": "c74a9e8e6e0f5b07f6a3df658c4937bebfad139f8f9f40c067cf955218043ff1",
+    "tests/target/t5-audit-siem.integration.test.ts": "1a060a6807ca0b4fdef6c980fc90f690089ed48ccdeec40b7e7261dad7b3667a",
+    "tests/target/t5-authority-post-t5-inventory.test.mjs": "14518ea823d201ce162922fe636f5b7d7baca92618471ece5a00948f64c1cd21",
+    "tests/target/t5-browser.integration.test.mjs": "8967e8019b5d43548b413829d66a990efb53bdfd583ca34600493f6c6ad64aee",
+    "tests/target/t5-cache-concurrency.test.ts": "5f8c7a33b709fe7569837c9d4c97d455e9fe3ae8ef604eeb52971d6a83043c13",
+    "tests/target/t5-chunking.test.ts": "0007af810f7387fddba349b83f976bffe0999bfc8f7e4d8b10578a5042a31437",
+    "tests/target/t5-document-jobs.integration.test.ts": "61be15a4ff701470524940916c207fd1278b92b067dd6822ef4a94a7d5aece30",
+    "tests/target/t5-evidence-selftest.test.mjs": "76dd76850615b7b3d96ee560f1527feda27c05f0a4e9e3737f2d40cc3c6c3122",
+    "tests/target/t5-failure-runtime.integration.test.ts": "33982c60d14bee83ad93f780674cb99d25b0f80a9102b086ca1d0d4317f67a35",
+    "tests/target/t5-file-cache.test.ts": "3dd35f1c94493bf845a41b0f8abbbb7bcf742d130ee3d7e31bcace6f78e2ab20",
+    "tests/target/t5-file-limits.integration.test.ts": "84e3416082fe8e42060927cbe2271db280650ad1c7594875cd45ff04287b879f",
+    "tests/target/t5-file-management.integration.test.ts": "6b4543e6366801bda42ad255a3af50a6835db26f133c30e5efe7e0e720a0a7fa",
+    "tests/target/t5-file-staging.test.ts": "1695e45a36dd5abf47195235861aad111b67ee64578c2b9eb3cc197e218d722c",
+    "tests/target/t5-genai-adversarial.test.ts": "ad27c2edba2170e9abe820a2f21a8e2b6c882deb93497bdb4152faf32861ed49",
+    "tests/target/t5-job-idempotency-security.integration.test.ts": "de3aedf77ed79e00aabbfecbd07cc2d68d67ba68ef74a60ca0631fa16bbe9dce",
+    "tests/target/t5-knowledge-projection.integration.test.ts": "af2409a02330c746987226956a6f585d071ded6d0d1892f80ee8cc9f7cc2643f",
+    "tests/target/t5-legacy-migration.test.ts": "71f091263cc742de64d85c406a4f002448f6e3cec7369339456df043183bc757",
+    "tests/target/t5-machine-expiry.integration.test.ts": "3d2c75390b78afe2748195ef42b5dafbd50a44010c0511695b880ef5b4043b80",
+    "tests/target/t5-malware-policy.test.ts": "9a775120633e1b60bfa8e66a1ec7d2d3216f4779521bc06f46fea52b40471e38",
+    "tests/target/t5-parser-sandbox.test.ts": "83654561fb7ca0eafa1ee3d9f6879c5249549979d3c0fa765ccb49a5d7187209",
+    "tests/target/t5-process-errors.test.ts": "9f2d2ed14b32683174563375edb65343c82d8b41a68552bbe466480f8384b323",
+    "tests/target/t5-protected-ai.integration.test.ts": "6a60dd4a5920ff73d97f68b0eb94a17127b829df68e2216795261a91219b02f0",
+    "tests/target/t5-protected-policy.test.mjs": "548781e7bebd5806a8afc22837650372f7ad6c2c8bf06b63d59474ed44d91831",
+    "tests/target/t5-rag-security.integration.test.ts": "6bd9113c9daeb8b52e8df06b1a4984ee459a5ec4be8e580230343f30b92b7318",
+    "tests/target/t5-retention-purge.integration.test.ts": "d9512841988e1bc88570a57402647108f3ef5de9d13d3b8fc17c8b703817f7a8",
+    "tests/target/t5-runtime.integration.test.ts": "fd883ef4b9f8366bd341995346df02500ed85b5377d9f882fc628bec6db1e206",
+    "tests/target/t5-s3-storage.integration.test.ts": "b7661a6a5f8a6794a8e77941c541811c6987b3d715c36dac5f6e9b224ec86719",
+    "tests/target/t5-security-race.integration.test.ts": "38bfc91e9f68d062615932d61961e5efd82edf0f079696e564615bb0bec12ceb",
+    "tests/target/t5-storage-contract.test.ts": "b3127317ab7f044bf09aef14e77cdc1c9200495f9651d979a033f159ac830f89",
+    "tests/target/t5-storage-migration.integration.test.ts": "934b4dca639d5ad10a0091d5f41e777b94278c082bab93db527bb024e6e8e1ae",
+    "tests/target/t5-supply-policy.test.mjs": "e2392c0988ccee8ad34be628a8df18bfc7f842f4bb97ec73b1856f972808802d",
+    "tests/target/t5-transfer-persistence.integration.test.ts": "0bdd27805dd1f61a5a4f3fd5b0fe624c0a72279e2ff06c7350ad66e598a8172f",
+    "tests/target/t5-worker-multitenant.integration.test.ts": "76a1b02533a78d1f2e7e1165325cb54b734b9c92c21def49aee02ae121fff859",
+    "tests/target/t5-worker.integration.test.ts": "4684603d9c7d00c2c87c1adeb479d01be8ec05d731a10a51e3f5094e8cc0a94d",
+    "tsconfig.persistence.json": "abe3a47f995d0feb64870b34d3abcd0c0a80400e08e6a32343931b4b5f6189ee",
+    "tsconfig.target.json": "d1e67f4637b18cb03fd29a0c90958cc1f725222c41adc920cc7f1cbaa31cf7d4"
+  },
+  "verificationContractHash": "17f13383778b2511b16aa6e88d1aea5909a499bf9891e0a7a2f539c84e834b80",
+  "contractFiles": {
+    "docs/prompts/T5-final.md": "387456639b5b61d8c8c7881a4f9f0531483ebe9fc97fed0f54d45f8a745616ff",
+    "docs/security/06-t5-genai-rag-security-gate.md": "f3615569992c0721b40919c93d159f664fb6081e1611299b46050d26d2a4e615",
+    "scripts/t5-evidence-gate.mjs": "5aba17146cd8fc4c106aa79d6b6f544cd7d4cb17d730aeab32a091492c952357"
+  },
+  "status": "PASS",
+  "providerScope": "PROTOCOL_FIXTURE",
+  "results": [
+    {
+      "name": "strict-target",
+      "command": [
+        "npm",
+        "run",
+        "check:target"
+      ],
+      "status": "PASS",
+      "exitCode": 0,
+      "failed": 0,
+      "skipped": 0,
+      "cases": [],
+      "artifact": "tests/reports/t5-r1/strict-target.log",
+      "artifactHash": "eaa9aea55cc4c52d7af60c94560e39867c44bd226a1f6b0f6d690b82b99d9536",
+      "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a"
+    },
+    {
+      "name": "strict-web",
+      "command": [
+        "npm",
+        "run",
+        "check:web"
+      ],
+      "status": "PASS",
+      "exitCode": 0,
+      "failed": 0,
+      "skipped": 0,
+      "cases": [],
+      "artifact": "tests/reports/t5-r1/strict-web.log",
+      "artifactHash": "fbc1376a9e31efb34f7d386bf62417c1bcf4c9cacc2d01b72087b69577358fa5",
+      "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a"
+    },
+    {
+      "name": "authority-conformance",
+      "command": [
+        "node",
+        "--import",
+        "tsx",
+        "--test",
+        "--test-concurrency=1",
+        "--test-reporter=./scripts/t5-r1-reporter.mjs",
+        "tests/conformance/authority/authorityBehavior.test.ts"
+      ],
+      "status": "PASS",
+      "exitCode": 0,
+      "failed": 0,
+      "skipped": 0,
+      "cases": [
+        {
+          "file": "tests/conformance/authority/authorityBehavior.test.ts",
+          "name": "root ALL",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/conformance/authority/authorityBehavior.test.ts",
+          "name": "internal ALL",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/conformance/authority/authorityBehavior.test.ts",
+          "name": "sibling isolation",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/conformance/authority/authorityBehavior.test.ts",
+          "name": "ALL plus explicit deny",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/conformance/authority/authorityBehavior.test.ts",
+          "name": "root ALL cannot cross tenant boundary",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/conformance/authority/authorityBehavior.test.ts",
+          "name": "classification HIGH denies LOW clearance",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/conformance/authority/authorityBehavior.test.ts",
+          "name": "classification LOW allows HIGH clearance with grant",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/conformance/authority/authorityBehavior.test.ts",
+          "name": "resource ACL explicit deny wins over ordinary grant",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/conformance/authority/authorityBehavior.test.ts",
+          "name": "resource ACL grant allows absent ordinary grant",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/conformance/authority/authorityBehavior.test.ts",
+          "name": "typed value and missing value",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/conformance/authority/authorityBehavior.test.ts",
+          "name": "ALL default value",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/conformance/authority/authorityBehavior.test.ts",
+          "name": "CRUD 0000 READ",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/conformance/authority/authorityBehavior.test.ts",
+          "name": "CRUD 1111 DELETE",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/conformance/authority/authorityBehavior.test.ts",
+          "name": "CRUD 0w10 CREATE",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/conformance/authority/authorityBehavior.test.ts",
+          "name": "CRUD 0w10 UPDATE",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/conformance/authority/authorityBehavior.test.ts",
+          "name": "owner match w",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/conformance/authority/authorityBehavior.test.ts",
+          "name": "owner mismatch w",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/conformance/authority/authorityBehavior.test.ts",
+          "name": "missing owner w",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/conformance/authority/authorityBehavior.test.ts",
+          "name": "parent scope covers child",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/conformance/authority/authorityBehavior.test.ts",
+          "name": "child scope does not expand upward",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/conformance/authority/authorityBehavior.test.ts",
+          "name": "explicit child role grant",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/conformance/authority/authorityBehavior.test.ts",
+          "name": "explicit child identity grant",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/conformance/authority/authorityBehavior.test.ts",
+          "name": "absolute [start,end) 2026-10-01T07:59:59.999Z",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/conformance/authority/authorityBehavior.test.ts",
+          "name": "absolute [start,end) 2026-10-01T08:00:00.000Z",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/conformance/authority/authorityBehavior.test.ts",
+          "name": "absolute [start,end) 2026-10-01T09:00:00.000Z",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/conformance/authority/authorityBehavior.test.ts",
+          "name": "absolute [start,end) 2026-10-01T16:00:00.000Z",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/conformance/authority/authorityBehavior.test.ts",
+          "name": "absolute [start,end) 2026-10-01T16:00:00.001Z",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/conformance/authority/authorityBehavior.test.ts",
+          "name": "recurring timezone inside",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/conformance/authority/authorityBehavior.test.ts",
+          "name": "recurring timezone end exclusive",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/conformance/authority/authorityBehavior.test.ts",
+          "name": "Jalali odd day schedule",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/conformance/authority/authorityBehavior.test.ts",
+          "name": "suspension",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/conformance/authority/authorityBehavior.test.ts",
+          "name": "termination",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/conformance/authority/authorityBehavior.test.ts",
+          "name": "missing classification fails closed",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/conformance/authority/authorityBehavior.test.ts",
+          "name": "malformed CRUD fails closed",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/conformance/authority/authorityBehavior.test.ts",
+          "name": "invalid temporal rule fails closed",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/conformance/authority/authorityBehavior.test.ts",
+          "name": "invalid tenant scope fails closed",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/conformance/authority/authorityBehavior.test.ts",
+          "name": "determinism",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/conformance/authority/authorityBehavior.test.ts",
+          "name": "input non-mutation",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/conformance/authority/authorityBehavior.test.ts",
+          "name": "invalidation contract",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        }
+      ],
+      "artifact": "tests/reports/t5-r1/authority-conformance.log",
+      "artifactHash": "63d37edb083933f2063f448f3b69e555bd82143810f2b723f1d23abb2d0e905f",
+      "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a"
+    },
+    {
+      "name": "authority-live",
+      "command": [
+        "node",
+        "--import",
+        "tsx",
+        "--test",
+        "--test-concurrency=1",
+        "--test-reporter=./scripts/t5-r1-reporter.mjs",
+        "tests/target/t44-authority-live.integration.test.ts"
+      ],
+      "status": "PASS",
+      "exitCode": 0,
+      "failed": 0,
+      "skipped": 0,
+      "cases": [
+        {
+          "file": "tests/target/t44-authority-live.integration.test.ts",
+          "name": "object and ACL authorization precede payload materialization",
+          "line": 21,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t44-authority-live.integration.test.ts",
+          "name": "field decisions return distinct allowed sets",
+          "line": 21,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t44-authority-live.integration.test.ts",
+          "name": "classification, ownership, scope, and missing facts fail closed",
+          "line": 21,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t44-authority-live.integration.test.ts",
+          "name": "mandatory decision evidence failure blocks every current Authority path",
+          "line": 23,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t44-authority-live.integration.test.ts",
+          "name": "persisted UTC and Jalali schedules, suspension, and version invalidation",
+          "line": 23,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t44-authority-live.integration.test.ts",
+          "name": "HUMAN origin, mandatory Audit, SIEM retry, redaction and audit immutability",
+          "line": 32,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t44-authority-live.integration.test.ts",
+          "name": "real persisted Authority resolves object, field, ACL, classification, scope, schedule, version and audited SIEM decisions",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        }
+      ],
+      "artifact": "tests/reports/t5-r1/authority-live.log",
+      "artifactHash": "52b8f4524b755e40492e3bbbb750f1e71e73758d1b540bfa819097cce7b5a7d3",
+      "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a"
+    },
+    {
+      "name": "auth-http",
+      "command": [
+        "node",
+        "--import",
+        "tsx",
+        "--test",
+        "--test-concurrency=1",
+        "--test-reporter=./scripts/t5-r1-reporter.mjs",
+        "tests/target/t4-auth-http.integration.test.ts"
+      ],
+      "status": "PASS",
+      "exitCode": 0,
+      "failed": 0,
+      "skipped": 0,
+      "cases": [
+        {
+          "file": "tests/target/t4-auth-http.integration.test.ts",
+          "name": "HTTP login, Origin, refresh replay, concurrent refresh, logout and disabled Auth",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        }
+      ],
+      "artifact": "tests/reports/t5-r1/auth-http.log",
+      "artifactHash": "d58e3fac05d3bafae39a0c86eec57e0626dc4eb79e04c39fb6c73579e424fddd",
+      "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a"
+    },
+    {
+      "name": "foundations",
+      "command": [
+        "node",
+        "--import",
+        "tsx",
+        "--test",
+        "--test-concurrency=1",
+        "--test-reporter=./scripts/t5-r1-reporter.mjs",
+        "tests/architecture/staticAnalysis.test.ts",
+        "tests/architecture/t5TargetArchitecture.test.ts",
+        "tests/configuration/t5-file-management.test.ts",
+        "tests/target/t5-chunking.test.ts",
+        "tests/target/t5-storage-contract.test.ts",
+        "tests/target/t5-file-cache.test.ts",
+        "tests/target/t5-file-staging.test.ts",
+        "tests/target/t4-file-security.test.ts",
+        "tests/target/t5-process-errors.test.ts"
+      ],
+      "status": "PASS",
+      "exitCode": 0,
+      "failed": 0,
+      "skipped": 0,
+      "cases": [
+        {
+          "file": "tests/architecture/staticAnalysis.test.ts",
+          "name": "catalog IDs are unique and have a detection mechanism",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/architecture/staticAnalysis.test.ts",
+          "name": "dependency and persistence boundaries use imports and calls",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/architecture/staticAnalysis.test.ts",
+          "name": "TypeScript naming and safety checks inspect AST nodes",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/architecture/staticAnalysis.test.ts",
+          "name": "Authority and provider boundaries inspect executable code",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/architecture/staticAnalysis.test.ts",
+          "name": "pure Authority evaluator is restricted to Authority internals and tests",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/architecture/staticAnalysis.test.ts",
+          "name": "SQL rules distinguish SELECT star from COUNT star",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/architecture/staticAnalysis.test.ts",
+          "name": "SQL qualification recognizes declared CTEs and row constructors without hiding unqualified base tables",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/architecture/staticAnalysis.test.ts",
+          "name": "SQL naming checks cover tables, columns, FKs, objects, parameters, locals",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/architecture/staticAnalysis.test.ts",
+          "name": "violations sort deterministically",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/architecture/staticAnalysis.test.ts",
+          "name": "typed manifest AST checks all canonical global IDs and route collisions",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/architecture/staticAnalysis.test.ts",
+          "name": "persistence boundary distinguishes composition wiring and external source adapters",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/architecture/staticAnalysis.test.ts",
+          "name": "SQL qualification inspects SQL contexts and ignores keywords, prose, and referential actions",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/architecture/staticAnalysis.test.ts",
+          "name": "AI output guard ignores run metadata but catches direct model text writes",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/architecture/staticAnalysis.test.ts",
+          "name": "naming accepts exact prefixes and recognizes transitive exceptions",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/architecture/staticAnalysis.test.ts",
+          "name": "Authority and AI checks distinguish facts and owner boundaries",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/architecture/staticAnalysis.test.ts",
+          "name": "magic decisions and constants target stable declarations",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/architecture/staticAnalysis.test.ts",
+          "name": "canonical typed manifest alone supplies contribution IDs and routes have module scope",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/architecture/staticAnalysis.test.ts",
+          "name": "SQL qualification distinguishes DISTINCT FROM expressions and still rejects unqualified relations",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/architecture/t5TargetArchitecture.test.ts",
+          "name": "T5 guards reject S3 and filesystem bypasses while accepting owning infrastructure",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/architecture/t5TargetArchitecture.test.ts",
+          "name": "T5 guards reject direct vectors/providers/signed URLs and retain public File Management and Router contracts",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/configuration/t5-file-management.test.ts",
+          "name": "managed transfer configuration selects one adapter with external credentials and strict bounds",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/configuration/t5-file-management.test.ts",
+          "name": "identity tiers cannot exceed hard platform limits or lower the privileged tier",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t4-file-security.test.ts",
+          "name": "display filename preserves Persian basename and removes dangerous metadata",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t4-file-security.test.ts",
+          "name": "office precheck rejects malicious archives before LibreOffice",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t4-file-security.test.ts",
+          "name": "upload media type, extension, signature, and temporary path agree",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t4-file-security.test.ts",
+          "name": "office parser cleans its conversion directory and profile after processing",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-chunking.test.ts",
+          "name": "maximal overlap and surrogate-pair boundaries always advance and reproduce canonical spans",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-chunking.test.ts",
+          "name": "unsafe overlap expansion is bounded before allocating unbounded chunk metadata",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-file-cache.test.ts",
+          "name": "range boundaries reject multiple, malformed and unsafe ranges",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-file-cache.test.ts",
+          "name": "private bounded cache is version/tenant aware, rebuildable and verifies full bytes before ranges",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-file-cache.test.ts",
+          "name": "cache excludes concurrent fills and kernel releases its lock when the holder crashes",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-file-staging.test.ts",
+          "name": "noncanonical staging streams bounded verified bytes, cleans failure and never exposes partial content",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-process-errors.test.ts",
+          "name": "last-resort handler redacts exception payload and drains before supervisor replacement",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-storage-contract.test.ts",
+          "name": "local multipart contract is immutable, resumable, bounded by opaque identity, and hash verified",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        }
+      ],
+      "artifact": "tests/reports/t5-r1/foundations.log",
+      "artifactHash": "e98f36033ab05c8b1aa891b40b62fec1cc7a59ab86f7da5b4ac20670847225cb",
+      "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a"
+    },
+    {
+      "name": "integrations",
+      "command": [
+        "node",
+        "--import",
+        "tsx",
+        "--test",
+        "--test-concurrency=1",
+        "--test-reporter=./scripts/t5-r1-reporter.mjs",
+        "tests/target/t5-document-jobs.integration.test.ts",
+        "tests/target/t5-transfer-persistence.integration.test.ts",
+        "tests/target/t5-file-management.integration.test.ts",
+        "tests/target/t5-s3-storage.integration.test.ts",
+        "tests/target/t5-knowledge-projection.integration.test.ts",
+        "tests/target/t5-protected-ai.integration.test.ts",
+        "tests/target/t5-rag-security.integration.test.ts",
+        "tests/target/t5-runtime.integration.test.ts",
+        "tests/target/t5-failure-runtime.integration.test.ts",
+        "tests/target/t5-worker.integration.test.ts",
+        "tests/target/t5-machine-expiry.integration.test.ts",
+        "tests/target/t5-file-limits.integration.test.ts",
+        "tests/target/t5-legacy-migration.test.ts",
+        "tests/target/t5-storage-migration.integration.test.ts"
+      ],
+      "status": "PASS",
+      "exitCode": 0,
+      "failed": 0,
+      "skipped": 0,
+      "cases": [
+        {
+          "file": "tests/target/t5-document-jobs.integration.test.ts",
+          "name": "forged, escaped and missing-scope transaction handles fail closed",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-document-jobs.integration.test.ts",
+          "name": "parallel intake has unique sequences and source retry returns one version",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-document-jobs.integration.test.ts",
+          "name": "asset/version/job transaction rolls back at the crash boundary",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-document-jobs.integration.test.ts",
+          "name": "lease fencing prevents replaced Worker from settling durable work",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-document-jobs.integration.test.ts",
+          "name": "tenant/deployment isolation and runtime no-purge hold at the database boundary",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-document-jobs.integration.test.ts",
+          "name": "normalized content is immutable and out-of-order activation cannot replace a newer version",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-document-jobs.integration.test.ts",
+          "name": "publication holds Document security facts until commit and rejects a stale snapshot",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-document-jobs.integration.test.ts",
+          "name": "database mutation evidence omits names, locators and content",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-document-jobs.integration.test.ts",
+          "name": "PostgreSQL Document versions and jobs survive retries, concurrency and Worker replacement",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-failure-runtime.integration.test.ts",
+          "name": "provider outage /v1/embeddings returns no answer and no later task dispatch",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-failure-runtime.integration.test.ts",
+          "name": "provider outage /score returns no answer and no later task dispatch",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-failure-runtime.integration.test.ts",
+          "name": "provider outage /v1/chat/completions returns no answer and no later task dispatch",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-failure-runtime.integration.test.ts",
+          "name": "distributed query reservations reject additional API work before provider dispatch",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-failure-runtime.integration.test.ts",
+          "name": "Governance denial rejects generation before external content leaves its Router",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-failure-runtime.integration.test.ts",
+          "name": "malicious metadata and question resource excess cause bounded errors without provider work",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-failure-runtime.integration.test.ts",
+          "name": "unmatched URL content never enters operational logs",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-failure-runtime.integration.test.ts",
+          "name": "Storage loss cannot serve original bytes or treat a cache as authority",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-failure-runtime.integration.test.ts",
+          "name": "Authority denial produces no provider request",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-failure-runtime.integration.test.ts",
+          "name": "Qdrant outage degrades readiness and produces no generated response",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-failure-runtime.integration.test.ts",
+          "name": "revoked Session cannot query despite a still cryptographically valid bearer",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-failure-runtime.integration.test.ts",
+          "name": "actual API/Worker/Storage/Qdrant pipeline fails closed on dependencies, admission, session, Authority and Governance",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-file-limits.integration.test.ts",
+          "name": "Authority selects file tiers; Admission enforces distributed actor and hard limits after elevation and revocation",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-file-management.integration.test.ts",
+          "name": "version/asset/job/usage/audit are atomic and resumable partial bytes are never downloadable",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-file-management.integration.test.ts",
+          "name": "warm/disposable cache, range and conditional requests cannot skip independent download authorization",
+          "line": 5,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-file-management.integration.test.ts",
+          "name": "revocation after download authorization and before first byte yields no protected content",
+          "line": 5,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-file-management.integration.test.ts",
+          "name": "invalid signature/hash never creates Asset, Version, or processing Job",
+          "line": 5,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-file-management.integration.test.ts",
+          "name": "destroying an unconsumed download releases admission and records zero bytes once",
+          "line": 5,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-file-management.integration.test.ts",
+          "name": "Worker must revalidate original session, membership version and revocation before materialization",
+          "line": 5,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-file-management.integration.test.ts",
+          "name": "File Management enforces real Session/Authority before verified upload commit and cache/range downloads",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-knowledge-projection.integration.test.ts",
+          "name": "retry preserves immutable generation/chunk identity and a conflicting profile fails",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-knowledge-projection.integration.test.ts",
+          "name": "fresh Qdrant rebuild, idempotent upsert and authorized filters return only opaque references",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-knowledge-projection.integration.test.ts",
+          "name": "activation requires complete counts and immutable snapshot; concurrent replacement cannot regress",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-knowledge-projection.integration.test.ts",
+          "name": "real Qdrant restart keeps derived bytes while PostgreSQL remains canonical and scope fails closed",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-knowledge-projection.integration.test.ts",
+          "name": "Knowledge canonical metadata and real Qdrant generation enforce isolation, deterministic rebuild and atomic activation",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-legacy-migration.test.ts",
+          "name": "legacy mapping fails closed for missing/ambiguous owners, privilege imports, duplicate identity and derived source",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-legacy-migration.test.ts",
+          "name": "migration identities ignore enumeration order and remain stable when content changes while exact approval digest changes",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-legacy-migration.test.ts",
+          "name": "approved legacy original migrates through canonical Document/File Management and retries without duplicate versions; index rebuild is fresh",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-machine-expiry.integration.test.ts",
+          "name": "explicit registered-machine expiry grant cleans expired staging after Human Session revocation without publishing or reading an Asset",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-protected-ai.integration.test.ts",
+          "name": "embedding, query, reranking and answer preserve semantic tasks/model revision and actual usage",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-protected-ai.integration.test.ts",
+          "name": "unapproved fallback receives zero bytes and approved provider failure does not grant egress",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-protected-ai.integration.test.ts",
+          "name": "malformed vectors, index duplicates, wrong model, oversized responses and redirects fail before result publication",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-protected-ai.integration.test.ts",
+          "name": "AI Run/Attempt records retain metadata only and context cannot be fabricated from inactive Session",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-protected-ai.integration.test.ts",
+          "name": "protected Router uses actual provider HTTP and PostgreSQL run/capacity evidence with governance on every fallback",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-rag-security.integration.test.ts",
+          "name": "Authority before retrieval limits the real vector query; revoked source bytes never reach reranker or LLM",
+          "line": 2,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-rag-security.integration.test.ts",
+          "name": "final candidate validation rejects a malicious derived hit before File Management materializes its Version",
+          "line": 2,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-rag-security.integration.test.ts",
+          "name": "security revocation after coarse authorization stops vector retrieval before any protected source is used",
+          "line": 2,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-rag-security.integration.test.ts",
+          "name": "security revocation after vector hit rejects the candidate before materialization",
+          "line": 2,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-rag-security.integration.test.ts",
+          "name": "security revocation after final candidate decision denies before normalized materialization",
+          "line": 2,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-rag-security.integration.test.ts",
+          "name": "security revocation after materialization before reranker prevents next provider dispatch",
+          "line": 2,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-rag-security.integration.test.ts",
+          "name": "security revocation after reranker before generation prevents next provider dispatch",
+          "line": 2,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-rag-security.integration.test.ts",
+          "name": "read is not use; use does not disclose/download; unknown citations and direct quotation fail closed",
+          "line": 2,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-rag-security.integration.test.ts",
+          "name": "revocation between reranking and answer, and during answer, prevents output publication",
+          "line": 2,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-rag-security.integration.test.ts",
+          "name": "fresh derived index rebuild uses retained canonical content and preserves Document/Version/Asset identities",
+          "line": 2,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-rag-security.integration.test.ts",
+          "name": "embedding revision change requires a separate generation and atomically switches only after full reindex",
+          "line": 2,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-rag-security.integration.test.ts",
+          "name": "ALL cannot bypass classification and mutation/AI/Semantic Audit retain original tenant/session/request",
+          "line": 2,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-rag-security.integration.test.ts",
+          "name": "secure RAG checkpoints prevent unauthorized materialization, reranking, generation, citation and verbatim disclosure",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-runtime.integration.test.ts",
+          "name": "readiness reports private Storage, Qdrant and configured protected models; missing model degrades the capability",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-runtime.integration.test.ts",
+          "name": "anonymous/mismatched tenant fail and all file operations run through the API File Management boundary",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-runtime.integration.test.ts",
+          "name": "membership schedules indexing atomically, Router runs protected tasks and real citations can be independently read",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-runtime.integration.test.ts",
+          "name": "SSE publishes only a fully validated answer followed by authorized citations and DONE; rejected output emits no delta",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-runtime.integration.test.ts",
+          "name": "new version processing automatically schedules reindex without changing Document identity; revocation blocks a warm download",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-runtime.integration.test.ts",
+          "name": "RAG records actual rejected-generation consumption and denies rewriting Usage facts",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-runtime.integration.test.ts",
+          "name": "terminal indexing failure before vector construction is visible and leaves no queryable generation",
+          "line": 3,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-runtime.integration.test.ts",
+          "name": "authenticated target API + durable Worker + LOCAL + derived Qdrant run without legacy RAG/Auth/MySQL",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-runtime.integration.test.ts",
+          "name": "readiness reports private Storage, Qdrant and configured protected models; missing model degrades the capability",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-runtime.integration.test.ts",
+          "name": "anonymous/mismatched tenant fail and all file operations run through the API File Management boundary",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-runtime.integration.test.ts",
+          "name": "membership schedules indexing atomically, Router runs protected tasks and real citations can be independently read",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-runtime.integration.test.ts",
+          "name": "SSE publishes only a fully validated answer followed by authorized citations and DONE; rejected output emits no delta",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-runtime.integration.test.ts",
+          "name": "new version processing automatically schedules reindex without changing Document identity; revocation blocks a warm download",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-runtime.integration.test.ts",
+          "name": "RAG records actual rejected-generation consumption and denies rewriting Usage facts",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-runtime.integration.test.ts",
+          "name": "terminal indexing failure before vector construction is visible and leaves no queryable generation",
+          "line": 3,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-runtime.integration.test.ts",
+          "name": "authenticated target API + durable Worker + S3_COMPATIBLE + derived Qdrant run without legacy RAG/Auth/MySQL",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-s3-storage.integration.test.ts",
+          "name": "partial upload is invisible and duplicate part is stable across adapter restart",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-s3-storage.integration.test.ts",
+          "name": "lost response after actual commit is UNKNOWN, never blindly retried, and full bytes prove outcome",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-s3-storage.integration.test.ts",
+          "name": "canonical bytes survive storage server replacement/restart and anonymous access is denied",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-s3-storage.integration.test.ts",
+          "name": "abort is idempotent and leaves no readable candidate object",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-s3-storage.integration.test.ts",
+          "name": "real S3 multipart parity, process/server restart and ambiguous completion reconcile safely",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-storage-migration.integration.test.ts",
+          "name": "Local → native S3 → Local preserves canonical IDs and full hashes, retains rollback source and persists retryable proof",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-transfer-persistence.integration.test.ts",
+          "name": "concurrent replicas cannot over-reserve storage and committed storage stays charged",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-transfer-persistence.integration.test.ts",
+          "name": "transfer creation is idempotent, altered payload conflicts and tenant lookup hides existence",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-transfer-persistence.integration.test.ts",
+          "name": "one live lease owns transfer mutation and checksum/size intent survives retry",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-transfer-persistence.integration.test.ts",
+          "name": "Usage is immutable/idempotent and file semantic and mutation evidence exclude sensitive metadata",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-transfer-persistence.integration.test.ts",
+          "name": "managed transfer persistence fences writes, bounds shared quotas and atomically records safe evidence",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-worker.integration.test.ts",
+          "name": "heartbeat prevents a competing replica from replacing a live long-running claim",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-worker.integration.test.ts",
+          "name": "replaced claim aborts the handler and cannot commit through the publication fence",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-worker.integration.test.ts",
+          "name": "shutdown rejects new claims and prevents an interrupted handler from publishing",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-worker.integration.test.ts",
+          "name": "dependency retry is bounded and terminal semantic failure settles with the Job transaction",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-worker.integration.test.ts",
+          "name": "revoked original Human Session stops content processing despite a valid machine identity",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-worker.integration.test.ts",
+          "name": "crash on the last allowed attempt settles terminal metadata atomically after replacement without another content attempt",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-worker.integration.test.ts",
+          "name": "durable Worker heartbeat, claim replacement, shutdown, bounded retry and original Session revocation",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        }
+      ],
+      "artifact": "tests/reports/t5-r1/integrations.log",
+      "artifactHash": "68c374a460f71e091d472493cbe205cee30715ccee3252bc4b54847159a649a0",
+      "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a"
+    },
+    {
+      "name": "authority-inventory",
+      "command": [
+        "node",
+        "scripts/t5-authority-inventory.mjs"
+      ],
+      "status": "PASS",
+      "exitCode": 0,
+      "failed": 0,
+      "skipped": 0,
+      "cases": [],
+      "artifact": "tests/reports/t5-r1/authority-inventory.log",
+      "artifactHash": "704ac12ec5b156f94c8bb13edf19ead122a1a627747fad48600e05d82df42bed",
+      "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a"
+    },
+    {
+      "name": "r1-hardening",
+      "command": [
+        "node",
+        "--import",
+        "tsx",
+        "--test",
+        "--test-concurrency=1",
+        "--test-reporter=./scripts/t5-r1-reporter.mjs",
+        "tests/target/t5-worker-multitenant.integration.test.ts",
+        "tests/target/t5-job-idempotency-security.integration.test.ts",
+        "tests/target/t5-cache-concurrency.test.ts",
+        "tests/target/t5-security-race.integration.test.ts",
+        "tests/target/t5-malware-policy.test.ts",
+        "tests/target/t5-parser-sandbox.test.ts",
+        "tests/target/t5-retention-purge.integration.test.ts",
+        "tests/target/t5-genai-adversarial.test.ts",
+        "tests/target/t5-authority-post-t5-inventory.test.mjs",
+        "tests/target/t5-protected-policy.test.mjs",
+        "tests/target/t5-evidence-selftest.test.mjs",
+        "tests/target/t5-supply-policy.test.mjs"
+      ],
+      "status": "PASS",
+      "exitCode": 0,
+      "failed": 0,
+      "skipped": 0,
+      "cases": [
+        {
+          "file": "tests/target/t5-authority-post-t5-inventory.test.mjs",
+          "name": "post T5 production Authority inventory has no pure-kernel bypass and includes Document Knowledge Runtime consumers",
+          "line": 5,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-cache-concurrency.test.ts",
+          "name": "unrelated cache keys fill concurrently while same immutable key fills only once",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-cache-concurrency.test.ts",
+          "name": "unrelated staging callbacks execute concurrently under durable total-byte reservations",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-evidence-selftest.test.mjs",
+          "name": "current direct and canonical derived evidence pass",
+          "line": 25,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-evidence-selftest.test.mjs",
+          "name": "one executed assertion may support related criteria with distinct claims",
+          "line": 26,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-evidence-selftest.test.mjs",
+          "name": "AST recognizes an assertion inside the exact test callback",
+          "line": 27,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-evidence-selftest.test.mjs",
+          "name": "AST recognizes a local assertion helper but not an arbitrary helper",
+          "line": 28,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-evidence-selftest.test.mjs",
+          "name": "evidence gate rejects missing criterion",
+          "line": 51,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-evidence-selftest.test.mjs",
+          "name": "evidence gate rejects duplicate criterion",
+          "line": 51,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-evidence-selftest.test.mjs",
+          "name": "evidence gate rejects unknown criterion",
+          "line": 51,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-evidence-selftest.test.mjs",
+          "name": "evidence gate rejects stale source hash",
+          "line": 51,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-evidence-selftest.test.mjs",
+          "name": "evidence gate rejects stale verification contract hash",
+          "line": 51,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-evidence-selftest.test.mjs",
+          "name": "evidence gate rejects stale execution contract hash",
+          "line": 51,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-evidence-selftest.test.mjs",
+          "name": "evidence gate rejects missing artifact",
+          "line": 51,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-evidence-selftest.test.mjs",
+          "name": "evidence gate rejects changed artifact hash",
+          "line": 51,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-evidence-selftest.test.mjs",
+          "name": "evidence gate rejects skipped test",
+          "line": 51,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-evidence-selftest.test.mjs",
+          "name": "evidence gate rejects failed test",
+          "line": 51,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-evidence-selftest.test.mjs",
+          "name": "evidence gate rejects test case absent from source",
+          "line": 51,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-evidence-selftest.test.mjs",
+          "name": "evidence gate rejects test case absent from execution",
+          "line": 51,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-evidence-selftest.test.mjs",
+          "name": "evidence gate rejects broad feature flag alone",
+          "line": 51,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-evidence-selftest.test.mjs",
+          "name": "evidence gate rejects direct case without assertion",
+          "line": 51,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-evidence-selftest.test.mjs",
+          "name": "evidence gate rejects stale derived gate evidence",
+          "line": 51,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-evidence-selftest.test.mjs",
+          "name": "evidence gate rejects derived result forged PASS",
+          "line": 51,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-evidence-selftest.test.mjs",
+          "name": "evidence gate rejects fixture declared actual model",
+          "line": 51,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-evidence-selftest.test.mjs",
+          "name": "ASVS blocker classification uses prefixed control IDs",
+          "line": 52,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-genai-adversarial.test.ts",
+          "name": "GenAI adversarial corpus covers at least twenty two distinct direct indirect language and metadata attack families",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-genai-adversarial.test.ts",
+          "name": "platform disclosure rejects malicious output for direct-English",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-genai-adversarial.test.ts",
+          "name": "platform disclosure rejects malicious output for direct-Persian",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-genai-adversarial.test.ts",
+          "name": "platform disclosure rejects malicious output for indirect-English",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-genai-adversarial.test.ts",
+          "name": "platform disclosure rejects malicious output for indirect-Persian",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-genai-adversarial.test.ts",
+          "name": "platform disclosure rejects malicious output for mixed-language",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-genai-adversarial.test.ts",
+          "name": "platform disclosure rejects malicious output for Unicode-normalization",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-genai-adversarial.test.ts",
+          "name": "platform disclosure rejects malicious output for zero-width",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-genai-adversarial.test.ts",
+          "name": "platform disclosure rejects malicious output for bidi",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-genai-adversarial.test.ts",
+          "name": "platform disclosure rejects malicious output for fake-system-role",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-genai-adversarial.test.ts",
+          "name": "platform disclosure rejects malicious output for ignore-previous",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-genai-adversarial.test.ts",
+          "name": "platform disclosure rejects malicious output for secret-exfiltration",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-genai-adversarial.test.ts",
+          "name": "platform disclosure rejects malicious output for hidden-source-discovery",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-genai-adversarial.test.ts",
+          "name": "platform disclosure rejects malicious output for unauthorized-quote",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-genai-adversarial.test.ts",
+          "name": "platform disclosure rejects malicious output for citation-manipulation",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-genai-adversarial.test.ts",
+          "name": "platform disclosure rejects malicious output for cross-tenant-bait",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-genai-adversarial.test.ts",
+          "name": "platform disclosure rejects malicious output for fake-retrieval-metadata",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-genai-adversarial.test.ts",
+          "name": "platform disclosure rejects malicious output for tool-and-URL-execution",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-genai-adversarial.test.ts",
+          "name": "platform disclosure rejects malicious output for tenant-change",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-genai-adversarial.test.ts",
+          "name": "platform disclosure rejects malicious output for classification-change",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-genai-adversarial.test.ts",
+          "name": "platform disclosure rejects malicious output for governance-change",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-genai-adversarial.test.ts",
+          "name": "platform disclosure rejects malicious output for conflicting-documents",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-genai-adversarial.test.ts",
+          "name": "platform disclosure rejects malicious output for multi-turn-pressure",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-genai-adversarial.test.ts",
+          "name": "platform disclosure rejects malicious output for long-context-poisoning",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-job-idempotency-security.integration.test.ts",
+          "name": "Job idempotency binds immutable security identity and excludes request/correlation tracing",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-malware-policy.test.ts",
+          "name": "required malware policy fails closed on unavailable/error and rejects suspect/infected; optional is explicitly degraded",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-malware-policy.test.ts",
+          "name": "Clamd Unix INSTREAM adapter transmits bounded bytes, records version and classifies real protocol replies",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-parser-sandbox.test.ts",
+          "name": "actual native PDF extraction runs inside Linux namespaces and private scratch with bounded output",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-protected-policy.test.mjs",
+          "name": "R1 protected gate rejects unauthorized change to AGENTS.md",
+          "line": 6,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-protected-policy.test.mjs",
+          "name": "R1 protected gate rejects unauthorized change to docs/architecture/rule.md",
+          "line": 6,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-protected-policy.test.mjs",
+          "name": "R1 protected gate rejects unauthorized change to docs/prompts/task.md",
+          "line": 6,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-protected-policy.test.mjs",
+          "name": "R1 protected governing files match the task-specific baseline with no inherited exceptions",
+          "line": 10,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-retention-purge.integration.test.ts",
+          "name": "retained relations and legal hold prevent any physical purge",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-retention-purge.integration.test.ts",
+          "name": "hold placed after scheduling invalidates queued purge before its physical deletion boundary",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-retention-purge.integration.test.ts",
+          "name": "durable Worker executes approved purge; canonical normalized/derived/cache/staging disappear and audit remains",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-retention-purge.integration.test.ts",
+          "name": "Governance legal hold fences LOCAL physical purge and removes owner bytes while retaining audit",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-retention-purge.integration.test.ts",
+          "name": "retained relations and legal hold prevent any physical purge",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-retention-purge.integration.test.ts",
+          "name": "hold placed after scheduling invalidates queued purge before its physical deletion boundary",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-retention-purge.integration.test.ts",
+          "name": "durable Worker executes approved purge; canonical normalized/derived/cache/staging disappear and audit remains",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-retention-purge.integration.test.ts",
+          "name": "Governance legal hold fences S3_COMPATIBLE physical purge and removes owner bytes while retaining audit",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-security-race.integration.test.ts",
+          "name": "authorized immutable snapshot blocks a policy writer until materialization transaction commits",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-security-race.integration.test.ts",
+          "name": "committed ACL explicit deny denies before normalized bytes are read",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-security-race.integration.test.ts",
+          "name": "committed classification raise denies before normalized bytes are read",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-security-race.integration.test.ts",
+          "name": "committed clearance removal denies before normalized bytes are read",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-security-race.integration.test.ts",
+          "name": "committed authorization version change denies before normalized bytes are read",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-security-race.integration.test.ts",
+          "name": "committed identity suspension denies before normalized bytes are read",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-security-race.integration.test.ts",
+          "name": "committed session revocation denies before normalized bytes are read",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-security-race.integration.test.ts",
+          "name": "committed document retirement denies before normalized bytes are read",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-security-race.integration.test.ts",
+          "name": "Authority materialization linearization rejects committed mutations and fences concurrent policy writers without external calls",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-supply-policy.test.mjs",
+          "name": "all nine images share only identical cryptographically identified scan groups",
+          "line": 18,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-supply-policy.test.mjs",
+          "name": "supply coverage rejects uncovered image",
+          "line": 27,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-supply-policy.test.mjs",
+          "name": "supply coverage rejects wrong acceptance image",
+          "line": 27,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-supply-policy.test.mjs",
+          "name": "supply coverage rejects changed rootfs",
+          "line": 27,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-supply-policy.test.mjs",
+          "name": "supply coverage rejects stale contract",
+          "line": 27,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-supply-policy.test.mjs",
+          "name": "supply coverage rejects missing group scan",
+          "line": 27,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-supply-policy.test.mjs",
+          "name": "supply coverage rejects changed scan artifact",
+          "line": 27,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-supply-policy.test.mjs",
+          "name": "supply coverage rejects false finding totals",
+          "line": 27,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-worker-multitenant.integration.test.ts",
+          "name": "one deployment Worker claims interleaved A1 B1 A2 B2 preserving Human subjects and tenant boundaries",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        }
+      ],
+      "artifact": "tests/reports/t5-r1/r1-hardening.log",
+      "artifactHash": "5393c119defa02a79df18c80d8aab88b1a03a2b10cf68c3ce38389bfcc108502",
+      "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a"
+    },
+    {
+      "name": "build-web",
+      "command": [
+        "npm",
+        "run",
+        "build:web"
+      ],
+      "status": "PASS",
+      "exitCode": 0,
+      "failed": 0,
+      "skipped": 0,
+      "cases": [],
+      "artifact": "tests/reports/t5-r1/build-web.log",
+      "artifactHash": "a0741ef60736c668db22f809311ba2913ece8d9a11e2773737779b25a69faaaf",
+      "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a"
+    },
+    {
+      "name": "browser",
+      "command": [
+        "node",
+        "--import",
+        "tsx",
+        "--test",
+        "--test-concurrency=1",
+        "--test-reporter=./scripts/t5-r1-reporter.mjs",
+        "tests/target/t5-browser.integration.test.mjs"
+      ],
+      "status": "PASS",
+      "exitCode": 0,
+      "failed": 0,
+      "skipped": 0,
+      "cases": [
+        {
+          "file": "tests/target/t5-browser.integration.test.mjs",
+          "name": "built Svelte RAG UI uses real Identity/Session/Authority, managed upload, durable processing, derived retrieval and authorized citations",
+          "line": 12,
+          "status": "PASS",
+          "skipped": false
+        }
+      ],
+      "artifact": "tests/reports/t5-r1/browser.log",
+      "artifactHash": "a43eece9814b624bf3cf88f02d5dc2860444d432bcb834326ba848b58a7cdeeb",
+      "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a"
+    },
+    {
+      "name": "audit-siem",
+      "command": [
+        "node",
+        "scripts/t5-audit-siem.mjs"
+      ],
+      "status": "PASS",
+      "exitCode": 0,
+      "failed": 0,
+      "skipped": 0,
+      "cases": [
+        {
+          "file": "tests/target/t5-audit-siem.integration.test.ts",
+          "name": "actual upload/processing/index/query evidence reaches a TLS receiver with matching original Session/request",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-audit-siem.integration.test.ts",
+          "name": "ordinary API and Worker cannot rewrite Audit or disable mutation evidence; rollback leaves no event/outbox",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-audit-siem.integration.test.ts",
+          "name": "lost acknowledgement retries only with stable receiver idempotency; maxAttempts is bounded",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-audit-siem.integration.test.ts",
+          "name": "restart recovers an expired claim and stale Worker cannot settle its replacement",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-audit-siem.integration.test.ts",
+          "name": "optional SIEM outage leaves real RAG successful and NONE guarantees never blindly repeat UNKNOWN",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-audit-siem.integration.test.ts",
+          "name": "sensitive contents, prompts, answers and locators are absent from exported/canonical evidence",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        },
+        {
+          "file": "tests/target/t5-audit-siem.integration.test.ts",
+          "name": "real T5 Audit and TLS SIEM delivery preserve correlation, immutability, redaction and restart semantics",
+          "line": 1,
+          "status": "PASS",
+          "skipped": false
+        }
+      ],
+      "artifact": "tests/reports/t5-r1/audit-siem.log",
+      "artifactHash": "aedd364e0aabffbcb29f1fbcde723ffd6ac16e94b783c8336f5e0978d8a44732",
+      "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a"
+    },
+    {
+      "name": "architecture",
+      "command": [
+        "npm",
+        "run",
+        "test:architecture:target"
+      ],
+      "status": "PASS",
+      "exitCode": 0,
+      "failed": 0,
+      "skipped": 0,
+      "cases": [],
+      "artifact": "tests/reports/t5-r1/architecture.log",
+      "artifactHash": "6d66f4b22febad8831031ba64f1b0daa23e7dcf99e1308b9848421a863d75fc3",
+      "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a"
+    },
+    {
+      "name": "t5-architecture",
+      "command": [
+        "node",
+        "--import",
+        "tsx",
+        "scripts/t5-target-architecture.ts"
+      ],
+      "status": "PASS",
+      "exitCode": 0,
+      "failed": 0,
+      "skipped": 0,
+      "cases": [],
+      "artifact": "tests/reports/t5-r1/t5-architecture.log",
+      "artifactHash": "ac92a6067fe221c6381a0eb18bac4683c1e474efea3eeec0dff38b3dd9559f4a",
+      "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a"
+    },
+    {
+      "name": "ui",
+      "command": [
+        "npm",
+        "run",
+        "test:ui"
+      ],
+      "status": "PASS",
+      "exitCode": 0,
+      "failed": 0,
+      "skipped": 0,
+      "cases": [],
+      "artifact": "tests/reports/t5-r1/ui.log",
+      "artifactHash": "7d60de63bba359bfd5f9baff45fac6f867801ca296cdad25679d799d7f8c598c",
+      "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a"
+    }
+  ]
+}

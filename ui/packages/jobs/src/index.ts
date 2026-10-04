@@ -20,6 +20,7 @@ export interface intfJob extends intfScheduleJob {
 }
 export interface intfJobPort {
   recoverExhausted(transaction:intfTransactionHandle,worker:intfExecutionContext):Promise<readonly intfJob[]>;
+  settleExhausted(transaction:intfTransactionHandle,worker:intfExecutionContext,job:intfJob):Promise<boolean>;
   schedule(transaction: intfTransactionHandle, request: intfScheduleJob): Promise<string>;
   assertLease(transaction: intfTransactionHandle, worker: intfExecutionContext, job: intfJob): Promise<void>;
   claim(transaction: intfTransactionHandle, worker: intfExecutionContext, leaseMs: number): Promise<intfJob | null>;

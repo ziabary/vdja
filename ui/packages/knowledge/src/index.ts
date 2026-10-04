@@ -36,12 +36,16 @@ export interface intfKnowledgeChunk {
   readonly sha256: string; readonly documentSecurityVersion: number; readonly membershipSecurityVersion: number;
 }
 export interface intfKnowledgeRepository {
+ retentionReferences(transaction:intfTransactionHandle,context:intfExecutionContext,id:string):Promise<boolean>;
+ purgeProjections(transaction:intfTransactionHandle,context:intfExecutionContext,id:string):Promise<readonly Readonly<{collection:string;generationId:string;spaceId:string}>[]>;
+ purgeMetadata(transaction:intfTransactionHandle,context:intfExecutionContext,id:string,leaseToken:string):Promise<void>;
   requestIndex(tx:intfTransactionHandle,context:intfExecutionContext,spaceId:string,generationId:string):Promise<void>;
   failGeneration(tx:intfTransactionHandle,context:intfExecutionContext,generationId:string):Promise<void>;
   createSpace(tx: intfTransactionHandle, context: intfExecutionContext, input: intfCreateSpace): Promise<void>;
   spaces(tx: intfTransactionHandle, context: intfExecutionContext, after: string | null, limit: number): Promise<readonly intfKnowledgeSpace[]>;
   space(tx: intfTransactionHandle, context: intfExecutionContext, id: string): Promise<intfKnowledgeSpace | null>;
   membership(tx: intfTransactionHandle, context: intfExecutionContext, input: Omit<intfKnowledgeMembership, 'securityVersion'>): Promise<void>;
+  removeMembership(tx:intfTransactionHandle,context:intfExecutionContext,spaceId:string,documentId:string):Promise<void>;
   memberships(tx: intfTransactionHandle, context: intfExecutionContext, spaceId: string): Promise<readonly intfKnowledgeMembership[]>;
   spacesForDocument(tx: intfTransactionHandle, context: intfExecutionContext, documentId: string): Promise<readonly string[]>;
   generation(tx: intfTransactionHandle, context: intfExecutionContext, id: string): Promise<intfIndexGeneration | null>;
@@ -62,6 +66,7 @@ export interface intfVectorFilter {
   readonly documentIds: readonly string[];
 }
 export interface intfVectorIndexPort {
+ purgeDocument?(collection:string,input:intfVectorFilter):Promise<void>;
   ready(): Promise<void>;
   ensure(collection: string, dimensions: number): Promise<void>;
   upsert(collection: string, points: readonly intfVectorPoint[]): Promise<void>;

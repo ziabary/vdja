@@ -6,6 +6,7 @@ import { Transform, Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import type { intfByteRange } from './range.js';
 import { exFileManagement } from './index.js';
+import {reserveScratch,releaseScratch} from './scratch-quota.js';
 import { withPrivateDirectoryLock, probePrivateDirectory } from './private-filesystem.js';
 
 export interface intfFileCacheOptions {
@@ -28,13 +29,6 @@ export class clsFileCache {
     if (![options.maxBytes, options.maxEntries, options.ttlMs, options.timeoutMs].every(value => Number.isSafeInteger(value) && value > 0))
       throw new exFileManagement('FILE_CACHE_LIMIT');
   }
-  private async locked<T>(work: () => Promise<T>): Promise<T> {
-    return withPrivateDirectoryLock(this.root, this.options.timeoutMs, async () => {
-      for (const name of await readdir(this.root)) if (/^[a-f0-9]{64}\.pending-[a-f0-9-]{36}$/u.test(name))
-        await rm(join(this.root, name), { force: true });
-      return await work();
-    });
-  }
   private async entries(): Promise<readonly intfCacheEntry[]> {
     const result: intfCacheEntry[] = [];
     for (const name of await readdir(this.root)) {
@@ -47,14 +41,6 @@ export class clsFileCache {
       result.push({ name, bytes: details.size, modified: details.mtimeMs });
     }
     return result.sort((a, b) => a.modified - b.modified || a.name.localeCompare(b.name));
-  }
-  private async reserve(bytes: number, except: string): Promise<void> {
-    const entries = (await this.entries()).filter(entry => entry.name !== except);
-    let used = entries.reduce((total, entry) => total + entry.bytes, 0), count = entries.length;
-    for (const entry of entries) {
-      if (used + bytes <= this.options.maxBytes && count + 1 <= this.options.maxEntries) break;
-      await rm(join(this.root, entry.name), { force: true }); used -= entry.bytes; count -= 1;
-    }
   }
   private async verified(path: string, descriptor: Readonly<{ bytes: number; sha256: string }>,
     range?: intfByteRange): Promise<Readable> {
@@ -73,28 +59,33 @@ export class clsFileCache {
       return file.createReadStream({ autoClose: true, start: range?.start ?? 0, end: range?.end });
     } catch (error) { await file.close(); throw error; }
   }
+  async purge(identity:intfCacheIdentity,sha256:string):Promise<void>{
+    const key=createHash('sha256').update(JSON.stringify([identity.deploymentId,identity.tenantId,identity.assetId,identity.versionId,sha256,identity.representation])).digest('hex');
+    await withPrivateDirectoryLock(this.root,this.options.timeoutMs,async()=>{await rm(join(this.root,`${key}.blob`),{force:true});for(const name of await readdir(this.root))if(name.startsWith(`${key}.pending-`))await rm(join(this.root,name),{force:true});await releaseScratch(this.root,key,this.options.timeoutMs);},key);
+  }
   async open(identity: intfCacheIdentity, descriptor: Readonly<{ bytes: number; sha256: string }>,
     load: () => Promise<Readable>, range?: intfByteRange): Promise<intfCachedBody> {
     if (!Number.isSafeInteger(descriptor.bytes) || descriptor.bytes < 1 || descriptor.bytes > this.options.maxBytes
       || !/^[a-f0-9]{64}$/u.test(descriptor.sha256)) throw new exFileManagement('FILE_CACHE_LIMIT');
     const key = createHash('sha256').update(JSON.stringify([identity.deploymentId, identity.tenantId,
       identity.assetId, identity.versionId, descriptor.sha256, identity.representation])).digest('hex');
-    return this.locked(async () => {
+    return withPrivateDirectoryLock(this.root,this.options.timeoutMs,async () => {
       const name = `${key}.blob`, path = join(this.root, name);
-      const entries = await this.entries();
+      const entries = await withPrivateDirectoryLock(this.root,this.options.timeoutMs,()=>this.entries());
       let corruptionRecovered = false;
       if (entries.some(entry => entry.name === name)) {
         try {
           const body = await this.verified(path, descriptor, range);
-          await utimes(path, new Date(), new Date());
-          await this.reserve(descriptor.bytes, name);
+          await utimes(path, new Date(), new Date()).catch(()=>undefined);
           return { body, hit: true, corruptionRecovered };
         } catch {
           corruptionRecovered = true;
           await rm(path, { force: true });
         }
       }
-      await this.reserve(descriptor.bytes, name);
+      for(const residue of await readdir(this.root))if(residue.startsWith(`${key}.pending-`))await rm(join(this.root,residue),{force:true});
+      await releaseScratch(this.root,key,this.options.timeoutMs);
+      await reserveScratch(this.root,key,descriptor.bytes,this.options.maxBytes,this.options.maxEntries,this.options.timeoutMs,true);
       const temporary = join(this.root, `${key}.pending-${randomUUID()}`);
       try {
         const hash = createHash('sha256'); let bytes = 0;
@@ -109,10 +100,12 @@ export class clsFileCache {
           throw new exFileManagement('FILE_INTEGRITY_FAILURE');
         const file = await open(temporary, constants.O_RDONLY | constants.O_NOFOLLOW);
         try { await file.sync(); } finally { await file.close(); }
-        await rename(temporary, path);
+        await withPrivateDirectoryLock(this.root,this.options.timeoutMs,async()=>{
+          await rename(temporary,path);await rm(join(this.root,`${key}.reservation`),{force:true});
+        });
         const body = await this.verified(path, descriptor, range);
         return { body, hit: false, corruptionRecovered };
-      } finally { await rm(temporary, { force: true }); }
-    });
+      } finally { await rm(temporary, { force: true }); await releaseScratch(this.root,key,this.options.timeoutMs); }
+    },key);
   }
 }

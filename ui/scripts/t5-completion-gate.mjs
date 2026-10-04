@@ -1,42 +1,100 @@
 import {readFile,writeFile} from 'node:fs/promises';
+import {acceptanceCriteria,currentEvidence} from './t5-evidence-gate.mjs';
+import {ociSourceFingerprint,sourceFingerprint,verificationContractFingerprint} from './t5-r1-source.mjs';
+import {verifyImageCoverage} from './t5-supply-policy.mjs';
+
 const read=async path=>JSON.parse(await readFile(path,'utf8'));
-const assessment=await read('reports/security/asvs-5.0-l3.json'),acceptance=await read('tests/reports/t5-acceptance.json'),protectedPaths=await read('reports/security/t5-protected-paths-after.json');
+const optional=async(path,fallback)=>{try{return await read(path);}catch{return fallback;}};
+const current={...await sourceFingerprint(),...await verificationContractFingerprint()},ociSourceHash=await ociSourceFingerprint();
+const sourceCriteria=acceptanceCriteria(await readFile('docs/prompts/T5-final.md','utf8'));
+const evidence=await currentEvidence().catch(error=>({status:'FAIL',errors:[String(error)],criteria:sourceCriteria.map(value=>({
+ ...value,status:'NOT_VERIFIED',evidenceKind:'DIRECT_EXECUTED_TEST',reason:'Evidence map missing or unreadable',evidence:[]})),
+ passCount:0,failCount:0,notApplicableCount:0,directEvidenceCount:0,notVerifiedCount:100,broadFeatureDerivedPassCount:0}));
+const assessment=await read('reports/security/asvs-5.0-l3.json');
 const startGate=await read('reports/security/rag-security-gate.json');
-const start=startGate.RAG_SECURITY_GATE==='YES'?'PASS':'FAIL';
-const supply=await read('reports/security/t5-supply-chain.json');
-let oci;try{oci=await read('tests/reports/oci/acceptance.json');}catch{oci={status:'NOT_VERIFIED'};}
-let models;try{models=await read('reports/security/t5-live-model-evidence.json');}catch{models={status:'NOT_VERIFIED',reason:'Actual approved embedding/reranker/vLLM endpoint configuration and provenance have not been supplied. Protocol fixtures are not live-model evidence.'};}
-const suite=name=>acceptance.results.find(result=>result.name===name)?.status==='PASS';
-const auditText=await readFile('tests/reports/t5-audit-siem.tap','utf8');const audit=/^# pass 7$/m.test(auditText)&&/^# fail 0$/m.test(auditText)&&/^# skipped 0$/m.test(auditText);
-const features=suite('t5-integrations')&&suite('t5-foundations')&&suite('authority-conformance')&&suite('authority-live');
-const genaiChecks={authorityBeforeRetrieval:features,poisonedDerivedHitRejected:features,finalCandidateBeforeMaterialization:features,tenantAndEmbeddingIsolation:features,
- rerankAndLlmRevocationFences:features,independentCitationAndQuote:features,insecureOutputEscaped:suite('t5-browser'),egressDenied:features,
- contextAndResourceExhaustion:features,auditAndSiem:audit,actualApprovedModels:models.status==='PASS',actualModelBrowser:models.browserEndToEnd==='PASS'};
-const genai=Object.values(genaiChecks).every(Boolean)?'PASS':'FAIL';
-const supplyVerified=supply.status==='PASS'&&oci.status==='PASS'&&supply.imageId===oci.results?.[0]?.images?.api&&supply.sourceHash===oci.results?.[0]?.sourceHash;
-const security=assessment.t5Assessment.blockingFindings===0&&assessment.t5Assessment.verifyDuringT5Reviewed===102&&genai==='PASS'&&audit&&protectedPaths.unauthorizedCount===0&&supplyVerified?'PASS':'FAIL';
-const source=await readFile('docs/prompts/T5-final.md','utf8'),criteriaSource=source.split('80. T5 ACCEPTANCE CRITERIA')[1].split('81. FINAL RESPONSE')[0];
-const criteria=[...criteriaSource.matchAll(/^(\d+)\. (.+)$/gm)].map(([,number,description])=>{
- const id=Number(number);let status='PASS',evidence=['tests/reports/t5-acceptance.json'];
- if(id===32||id===90){status=genai;evidence=['reports/security/t5-completion-gate.json'];}
- else if([50,89].includes(id)){status=security;evidence=['reports/security/t5-asvs-review.json'];}
- else if(id===99){status=protectedPaths.unauthorizedCount===0?'PASS':'FAIL';evidence=['reports/security/t5-protected-paths-after.json'];}
- else if(id===100){status=assessment.t5Assessment.ASVS_L3_RELEASE_GATE==='YES'||assessment.t5Assessment.ASVS_L3_RELEASE_GATE==='NO'?'PASS':'FAIL';evidence=['reports/security/asvs-5.0-l3.json'];}
- else if([1,2,41,42,43].includes(id)){status=features?'PASS':'FAIL';evidence=['docs/backend/06-t5-rag-legacy-inventory.md','docs/backend/07-t5-rag-data-migration.md','tests/target/t5-legacy-migration.test.ts'];}
- else if(id===87||id===88){status=assessment.t5Assessment.verifyDuringT5Reviewed===102?'PASS':'FAIL';evidence=['docs/security/03-t5-asvs-5.0-level3-assessment-fa.md','reports/security/t5-asvs-review.json'];}
- else if(id>=91&&id<=98){status=audit?'PASS':'FAIL';evidence=['tests/reports/t5-audit-siem.tap'];}
- else if(id===38||id===39||id===40)status=suite('t5-browser')?'PASS':'FAIL';
- else status=features&&suite('t5-architecture')&&suite('target-architecture')?'PASS':'FAIL';
- return{id,description,status,evidence};});
-if(criteria.length!==100||new Set(criteria.map(value=>value.id)).size!==100)throw new Error('T5_ACCEPTANCE_CRITERIA_INCOMPLETE');
-const completion=start==='PASS'&&security==='PASS'&&acceptance.status==='PASS'&&oci.status==='PASS'&&criteria.every(value=>value.status==='PASS')?'COMPLETE':'PARTIAL';
-const result={generatedAt:new Date().toISOString(),T5:completion,T5_START_GATE:start,T5_COMPLETION_SECURITY_GATE:security,RAG_SECURITY_GATE:startGate.RAG_SECURITY_GATE,GENAI_RAG_SECURITY_GATE:genai,
- ASVS_L3_RELEASE_GATE:assessment.t5Assessment.ASVS_L3_RELEASE_GATE,featureAcceptance:acceptance.status,ociAcceptance:oci.status,modelAcceptance:models.status,supplyChainAcceptance:supply.status,
- genaiChecks,asvs:assessment.postT5Counts,t5BlockingFindings:assessment.t5Assessment.blockingFindings,releaseOnlyBlockingFindings:assessment.t5Assessment.releaseOnlyBlockingFindings,
- unauthorizedProtectedChanges:protectedPaths.unauthorizedCount,approvedExceptions:0,customerReleaseAuthorized:false,readyForNextBusinessModule:false,
- additionalUnmetRequirements:models.status!=='PASS'?['Actual approved generation vLLM/embedding/reranker and browser end-to-end evidence is absent.']:[],
- criteria};
+const execution=await optional('tests/reports/t5-r1-execution.json',null);
+const protectedPaths=await optional('reports/security/t5-protected-paths-after.json',{unauthorizedCount:null,status:'NOT_VERIFIED'});
+const supply=await optional('reports/security/t5-supply-chain.json',{status:'NOT_VERIFIED'});
+const oci=await optional('tests/reports/oci/acceptance.json',{status:'NOT_VERIFIED'});
+const models=await optional('reports/security/t5-live-model-evidence.json',{status:'NOT_VERIFIED',reason:'ACTUAL_APPROVED_MODEL_CONFIG_REQUIRED'});
+const inventory=await optional('reports/security/t5-authority-inventory.json',{sourceHash:null,postT5Consumers:0,productionAuthorityBypasses:null,allPostT5DecisionsAudited:'NOT_VERIFIED'});
+const preliminary=await optional('reports/security/t5-preliminary-gates.json',{sourceHash:null,GENAI_RAG_SECURITY_GATE:'FAIL',T5_COMPLETION_SECURITY_GATE:'FAIL',genaiChecks:{}});
+const suite=name=>execution?.sourceHash===current.sourceHash&&execution.results?.some(result=>result.name===name&&result.status==='PASS'&&result.exitCode===0&&result.skipped===0);
+const currentExecution=execution?.sourceHash===current.sourceHash&&execution?.verificationContractHash===current.verificationContractHash&&execution.status==='PASS';
+const currentAssessment=assessment.t5Assessment?.sourceHash===current.sourceHash&&assessment.t5Assessment?.verificationContractHash===current.verificationContractHash;
+const currentInventory=inventory.sourceHash===current.sourceHash&&inventory.verificationContractHash===current.verificationContractHash;
+const currentPreliminary=preliminary.sourceHash===current.sourceHash&&preliminary.verificationContractHash===current.verificationContractHash;
+const currentOci=oci.status==='PASS'&&oci.results?.every(result=>result.sourceHash===ociSourceHash);
+const supplyCoverage=await verifyImageCoverage(supply,oci,ociSourceHash,current.verificationContractHash);
+const currentSupply=supply.status==='PASS'&&currentOci&&supplyCoverage.status==='PASS'&&supplyCoverage.fixAvailable===0;
+const protectedCurrent=protectedPaths.status==='PASS'&&protectedPaths.unauthorizedCount===0;
+const genaiChecks=currentPreliminary?preliminary.genaiChecks:{};
+const genai=currentPreliminary?preliminary.GENAI_RAG_SECURITY_GATE:'FAIL';
+const t5Blockers=currentAssessment?assessment.t5Assessment.blockingFindings:null;
+const releaseBlockers=currentAssessment?assessment.t5Assessment.releaseOnlyBlockingFindings:null;
+const security=currentPreliminary&&preliminary.T5_COMPLETION_SECURITY_GATE==='PASS'&&t5Blockers===0&&currentSupply&&protectedCurrent?'PASS':'FAIL';
+const completion=startGate.RAG_SECURITY_GATE==='YES'&&security==='PASS'&&currentExecution&&currentOci
+ &&evidence.status==='PASS'&&evidence.passCount===100&&evidence.notVerifiedCount===0&&evidence.failCount===0
+ &&suite('r1-hardening')&&suite('browser')&&suite('t5-architecture')?'COMPLETE':'PARTIAL';
+const unmet=[];
+if(!currentExecution)unmet.push('CURRENT_T5_R1_EXECUTION_REQUIRED');
+if(evidence.status!=='PASS')unmet.push('ACCEPTANCE_EVIDENCE_MAP_INVALID');
+if(evidence.notVerifiedCount)unmet.push('ACCEPTANCE_CRITERIA_NOT_VERIFIED');
+if(!currentAssessment)unmet.push('CURRENT_ASVS_REASSESSMENT_REQUIRED');
+if(!currentInventory)unmet.push('CURRENT_AUTHORITY_INVENTORY_REQUIRED');
+if(!currentPreliminary)unmet.push('CURRENT_PRELIMINARY_GATES_REQUIRED');
+if(inventory.allPostT5DecisionsAudited!=='PASS')unmet.push('POST_T5_ALLOW_DENY_AUDIT_COVERAGE_REQUIRED');
+if(!currentOci)unmet.push('CURRENT_OCI_ACCEPTANCE_REQUIRED');
+if(!currentSupply)unmet.push('CURRENT_SHIPPED_RUNTIME_SUPPLY_SCAN_REQUIRED');
+if(models.status!=='PASS')unmet.push(models.reason??'ACTUAL_APPROVED_MODEL_CONFIG_REQUIRED');
+if(!protectedCurrent)unmet.push('CURRENT_PROTECTED_PATH_GATE_REQUIRED');
+const result={generatedAt:new Date().toISOString(),sourceHash:current.sourceHash,verificationContractHash:current.verificationContractHash,T5:completion,
+ T5_START_GATE:startGate.RAG_SECURITY_GATE==='YES'?'PASS':'FAIL',T5_COMPLETION_SECURITY_GATE:security,
+ RAG_SECURITY_GATE:startGate.RAG_SECURITY_GATE,GENAI_RAG_SECURITY_GATE:genai,
+ ASVS_L3_RELEASE_GATE:currentAssessment?assessment.t5Assessment.ASVS_L3_RELEASE_GATE:'NO',
+ featureAcceptance:currentExecution?'PASS':'NOT_VERIFIED',ociAcceptance:currentOci?'PASS':'NOT_VERIFIED',
+ modelAcceptance:models.status,supplyChainAcceptance:currentSupply?'PASS':supply.status==='FAIL'?'FAIL':'NOT_VERIFIED',
+ genaiChecks,asvs:currentAssessment?assessment.postT5Counts:null,t5BlockingFindings:t5Blockers,
+ releaseOnlyBlockingFindings:releaseBlockers,unauthorizedProtectedChanges:protectedPaths.unauthorizedCount,
+ postT5AuthorityConsumers:currentInventory?inventory.postT5Consumers:null,productionAuthorityBypasses:currentInventory?inventory.productionAuthorityBypasses:null,
+ allPostT5DecisionsAudited:inventory.allPostT5DecisionsAudited,acceptanceEvidenceStatus:evidence.status,
+ acceptanceCriteriaPass:evidence.passCount,acceptanceCriteriaFail:evidence.failCount,acceptanceCriteriaNotApplicable:evidence.notApplicableCount,
+ acceptanceCriteriaWithDirectEvidence:evidence.directEvidenceCount,acceptanceCriteriaNotVerified:evidence.notVerifiedCount,
+ broadFeatureFlagDerivedPass:evidence.broadFeatureDerivedPassCount,approvedExceptions:assessment.t5Assessment?.approvedExceptions??0,
+ customerReleaseAuthorized:false,readyForNextBusinessModule:completion==='COMPLETE',additionalUnmetRequirements:[...new Set(unmet)],
+ criteria:evidence.criteria};
 await writeFile('reports/security/t5-completion-gate.json',JSON.stringify(result,null,2)+'\n');
-await writeFile('docs/security/03-t5-rag-security-delta-fa.md',`# دلتا امنیتی Document / Knowledge / RAG در T5\n\n## gateهای مستقل\n\n- T5_START_GATE: ${start}\n- RAG_SECURITY_GATE شروع: ${startGate.RAG_SECURITY_GATE}\n- T5_COMPLETION_SECURITY_GATE: ${security}\n- GENAI_RAG_SECURITY_GATE: ${genai}\n- ASVS_L3_RELEASE_GATE: ${result.ASVS_L3_RELEASE_GATE}\n- وضعیت T5: ${completion}\n- مانع T5 / verifyDuringT5: ${result.t5BlockingFindings}\n- مانع فقط release: ${result.releaseOnlyBlockingFindings}\n- استثنای مصوب: صفر\n- تغییر غیرمجاز protected: ${result.unauthorizedProtectedChanges}\n\n## پیاده‌سازی و شواهد\n\nDocument/Version/Asset canonical در PostgreSQL، File Management in-process، Local/S3-compatible private Storage و Qdrant derived generation پیاده شده‌اند. Subject، Authority و Governance پیش از materialization/reranker/LLM بررسی می‌شوند؛ deny/classification/tenant/operation مستقل‌اند. آزمون‌ها cache revocation، malicious derived hit، quote/citation rejection، context/resource bounds، provider outage، immutable Usage، rollback، audit و TLS SIEM را اجرا می‌کنند. endpointهای AI این بسته protocol fixture هستند و رفتار مدل واقعی را ثابت نمی‌کنند.\n\n| بررسی GenAI/RAG | نتیجه |\n| --- | --- |\n${Object.entries(genaiChecks).map(([key,value])=>'| '+key+' | '+(value?'PASS':'NOT_VERIFIED')+' |').join('\n')}\n\n## اسکن واقعی زنجیرهٔ تأمین\n\nاسکن local/offline تصویر API برند A به image ID و source hash آزموده‌شده متصل است؛ همهٔ تصاویر به‌طور مستقل اسکن نشده‌اند. SBOM هر سه برند ثبت شده و lock اجرایی نیز جدا اسکن شده است.\n\n| دامنه | HIGH / CRITICAL | وضعیت |\n| --- | --- | --- |\n${supply.scans.map(scan=>'| '+scan.name+' | '+scan.highOrCritical+' | '+(scan.highOrCritical?'FAIL':'PASS در دامنهٔ DB scanner')+' |').join('\n')}\n\nاسکن تصویری vulnerabilityهای سیستم‌عامل را باز نگه داشته است؛ dependency lock اجرایی پس از اصلاح فاقد یافتهٔ HIGH/CRITICAL است. این وضعیت معادل گواهی امنیت production نیست. یافته‌های root lock شامل dependencyهای legacy/development نیز هستند؛ هیچ یافته‌ای waive نشده است.\n\n## شکاف‌های باز و دامنه\n\nsandbox/antivirus تمام فرمت‌ها، retention/purge/legal hold، credentials کوتاه‌عمر و authentication مقاوم به replay داخلی، TLS/CA/IAM/NTP/log حفاظت‌شدهٔ مشتری و بخش‌هایی از parser/concurrency assurance هنوز بازند. تمامی ۱۰۲ تعهد قبلی و چهار کنترل تازه در دامنهٔ T5 با نتیجهٔ مستقل در گزارش کامل فارسی بازبینی شده‌اند؛ آن‌ها به release-only بازطبقه‌بندی نشده‌اند. تغییر governing sources برای بستن gate انجام نشده است.\n\nجریان UI پاسخ را با SSE delta/citation/DONE منتقل می‌کند. generation تا تکمیل schema، quote و final authorization buffer می‌شود و سپس بخش‌های متن مجاز ارسال می‌شوند؛ raw provider token پیش از بررسی به browser نمی‌رسد. consumer دارای bounds، terminal/order validation، abort و پاک‌سازی پاسخ ناقص است. streaming transport جای آزمون vLLM واقعی را نمی‌گیرد. پیکربندی approved مدل واقعی و mapping/اصل فایل‌های واقعی legacy ارائه نشده‌اند؛ ابزار migration فقط روی fixture اصلی verified و fail-closed برای owner مبهم آزموده شده است. production migration/cutover اجرا نشده و از snapshotها نتیجهٔ تأیید مشتری ساخته نشده است.\n\n## همهٔ ۱۰۰ معیار\n\nPASS ویژگی‌ها به دامنهٔ local acceptance و protocol providers محدود است. PASS criterionهای migration به مدل/ابزار mapping و fixture اصلی اشاره دارد و ادعای اجرای migration دادهٔ واقعی مشتری نیست. بستهٔ feature test green برای COMPLETE کافی نیست؛ معیارهای امنیتی و الزامات E2E واقعی باید بسته شوند.\n\n| شماره | معیار | نتیجه | شاهد |\n| --- | --- | --- | --- |\n${criteria.map(c=>'| '+c.id+' | '+c.description.replaceAll('|','\\|')+' | '+c.status+' | '+c.evidence.map(path=>'`'+path+'`').join('<br>')+' |').join('\n')}\n\n## منابع اصلی\n\n- \`reports/security/t5-completion-gate.json\`: همهٔ معیارها و تصمیم‌های gate\n- \`reports/security/asvs-5.0-l3.json\`: canonical وضعیت جاری و تاریخ T4\n- \`docs/security/03-t5-asvs-5.0-level3-assessment-fa.md\`: همهٔ ۳۴۵ کنترل\n- \`docs/verification/02-t5-audit-siem-verification-fa.md\`: شاهد و محدودیت Audit/SIEM\n- \`tests/reports/t5-acceptance.json\`: دستور و نتیجهٔ هر suite بدون skip\n\nمجوز customer Level 3 release: NO. آمادگی تأییدشده برای migration ماژول بعدی: NO.\n`);
-console.log(JSON.stringify({T5:completion,T5_COMPLETION_SECURITY_GATE:security,GENAI_RAG_SECURITY_GATE:genai,ASVS_L3_RELEASE_GATE:result.ASVS_L3_RELEASE_GATE,criteriaPass:criteria.filter(c=>c.status==='PASS').length}));
+const rows=evidence.criteria.map(c=>`| ${c.criterionNumber} | ${c.criterionText.replaceAll('|','\\|')} | ${c.status} | ${c.evidence?.map(item=>item.testCase).join('; ')||c.reason||'—'} |`);
+await writeFile('docs/security/03-t5-rag-security-delta-fa.md',`# وضعیت جاری امنیت Document / Knowledge / RAG پس از T5-R1
+
+این سند از \`reports/security/t5-completion-gate.json\` و نقشهٔ شاهد معیارها تولید می‌شود. تاریخ: ${result.generatedAt}.
+
+| Gate | نتیجه |
+| --- | --- |
+| T5 | ${completion} |
+| T5_COMPLETION_SECURITY_GATE | ${security} |
+| GENAI_RAG_SECURITY_GATE | ${genai} |
+| ASVS_L3_RELEASE_GATE | ${result.ASVS_L3_RELEASE_GATE} |
+| معیار با شاهد مستقیم و اجرای جاری | ${evidence.directEvidenceCount}/100 |
+| معیار NOT_VERIFIED | ${evidence.notVerifiedCount} |
+| PASS مشتق از feature flag کلی | ${evidence.broadFeatureDerivedPassCount} |
+| مانع T5 با ارزیابی جاری | ${t5Blockers??'NOT_VERIFIED'} |
+| تغییر غیرمجاز protected | ${protectedPaths.unauthorizedCount??'NOT_VERIFIED'} |
+
+آزمون‌های محلی از PostgreSQL، Qdrant، Storage و fixture پروتکل provider استفاده می‌کنند. این‌ها شاهد رفتار مدل واقعی یا زیرساخت مشتری نیستند. نتیجهٔ قدیمی PASS معیارها به وضعیت جاری منتقل نشده است.
+
+## الزامات باز
+
+${result.additionalUnmetRequirements.map(value=>'- '+value).join('\n')}
+
+## معیارهای پذیرش
+
+| شماره | معیار | نتیجه | شاهد مستقیم یا علت باز بودن |
+| --- | --- | --- | --- |
+${rows.join('\n')}
+
+مجوز انتشار سطح ۳ مشتری: NO.
+`);
+console.log(JSON.stringify({T5:completion,T5_COMPLETION_SECURITY_GATE:security,GENAI_RAG_SECURITY_GATE:genai,
+ acceptanceEvidenceStatus:evidence.status,directEvidenceCount:evidence.directEvidenceCount,notVerifiedCount:evidence.notVerifiedCount}));
 if(completion!=='COMPLETE')process.exitCode=1;

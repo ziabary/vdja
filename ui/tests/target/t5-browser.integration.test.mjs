@@ -29,7 +29,7 @@ test('built Svelte RAG UI uses real Identity/Session/Authority, managed upload, 
     await until(()=>browser.evaluate('document.querySelector("form button[type=submit]")?.disabled===false'),'session restoration before login');
     await browser.evaluate(`(()=>{const email=document.querySelector('#login-email'),password=document.querySelector('#login-password');email.value=${JSON.stringify(credentials.email)};email.dispatchEvent(new Event('input',{bubbles:true}));password.value=${JSON.stringify(credentials.password)};password.dispatchEvent(new Event('input',{bubbles:true}));})()`);
     await until(()=>browser.evaluate('document.querySelector("form button[type=submit]")?.disabled===false'),'login form ready');await browser.evaluate('document.querySelector("form").requestSubmit()');
-    await until(()=>browser.evaluate('document.querySelector("[role=status]")?.textContent.includes("نشست فعال")'),'real login');
+    await until(()=>browser.evaluate('location.pathname==="/knowledge" && document.querySelector("#document-title")!==null'),'real login redirects to authenticated Knowledge');
     assert.equal(await browser.evaluate('document.querySelector("#login-password")!==null'),false);
     await browser.send('Page.navigate',{url:`${origin}/knowledge`});await until(()=>browser.evaluate('document.querySelector("#document-title")!==null'),'refreshed real session workspace');
     await browser.evaluate("document.querySelector('#document-title').focus()");await browser.send('Input.dispatchKeyEvent',{type:'keyDown',key:'Tab',code:'Tab',windowsVirtualKeyCode:9});await browser.send('Input.dispatchKeyEvent',{type:'keyUp',key:'Tab',code:'Tab',windowsVirtualKeyCode:9});assert.equal(await browser.evaluate('document.activeElement.id'),'document-classification');

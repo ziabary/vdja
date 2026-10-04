@@ -58,10 +58,10 @@ export function createJobPersistence(): intfJobPort {
       if (inserted.rows[0]) return inserted.rows[0].job_id;
       const known = await client.query<{ job_id: string; same: boolean }>(`SELECT job_id,
         (job_payload = $5::jsonb AND job_payload_version = $6 AND job_max_attempts = $7
-          AND job_subject->>'actorId' = $8 AND job_subject->>'actorKind' = $9) AS same
+          AND (job_subject - 'requestId' - 'correlationId' - 'source') = $8::jsonb) AS same
         FROM jobs.tbl_job_work WHERE job_deployment_id = $1 AND job_tenant_id = $2 AND job_kind = $3 AND job_idempotency_key = $4`,
         [...scope(value.subject), value.kind, value.idempotencyKey, JSON.stringify(value.payload), value.payloadVersion,
-          value.maxAttempts, value.subject.actorId, value.subject.actorKind]);
+          value.maxAttempts, JSON.stringify(Object.fromEntries(Object.entries(value.subject).filter(([key])=>!['requestId','correlationId','source'].includes(key))))]);
       if (!known.rows[0]?.same) throw new exJob('JOB_IDEMPOTENCY_CONFLICT');
       return known.rows[0].job_id;
     },
@@ -69,33 +69,38 @@ export function createJobPersistence(): intfJobPort {
       const result = await resolveTargetTransaction(tx).query(`SELECT job_id FROM jobs.tbl_job_work
         WHERE job_deployment_id=$1 AND job_tenant_id=$2 AND job_id=$3 AND job_lease_token=$4
         AND job_state=$5 AND job_lease_until>clock_timestamp() FOR UPDATE`,
-        [...scope(context), value.id, value.leaseToken, enuJobState.Running]);
+        [...scope({...context,tenantId:value.subject.tenantId}), value.id, value.leaseToken, enuJobState.Running]);
       if (!result.rowCount) throw new exJob('JOB_LEASE_LOST');
     },
     async recoverExhausted(tx,context){
-      const result=await resolveTargetTransaction(tx).query<intfJobRow>(`WITH exhausted AS (
-        SELECT job_id FROM jobs.tbl_job_work WHERE job_deployment_id = $1 AND job_tenant_id = $2
-          AND job_state = $3 AND job_lease_until < clock_timestamp() AND job_attempts >= job_max_attempts
-        ORDER BY job_lease_until FOR UPDATE SKIP LOCKED LIMIT 100)
-        UPDATE jobs.tbl_job_work SET job_state = $4, job_lease_token = NULL, job_lease_until = NULL,
-          job_error_class = 'LEASE_EXHAUSTED', job_updated_at = clock_timestamp()
-        WHERE job_deployment_id = $1 AND job_tenant_id = $2 AND job_id IN (SELECT job_id FROM exhausted) RETURNING ${JOB_COLUMNS}`,
-        [...scope(context), enuJobState.Running, enuJobState.Failed]);
+      const result=await resolveTargetTransaction(tx).query<intfJobRow>(`SELECT ${JOB_COLUMNS} FROM jobs.tbl_job_work
+        WHERE job_deployment_id=$1 AND ($5::boolean OR job_tenant_id=$2)
+          AND job_state=$3 AND job_lease_until<clock_timestamp() AND job_attempts>=job_max_attempts
+        ORDER BY job_lease_until,job_id LIMIT $4`,
+        [...scope(context),enuJobState.Running,100,context.actorKind==='PLATFORM_SERVICE']);
       return result.rows.map(job);
+    },
+    async settleExhausted(tx,context,value){
+      const result=await resolveTargetTransaction(tx).query(`UPDATE jobs.tbl_job_work SET job_state=$5,
+        job_lease_token=NULL,job_lease_until=NULL,job_error_class='LEASE_EXHAUSTED',job_updated_at=clock_timestamp()
+        WHERE job_deployment_id=$1 AND job_tenant_id=$2 AND job_id=$3 AND job_lease_token=$4
+          AND job_state=$6 AND job_lease_until<clock_timestamp() AND job_attempts>=job_max_attempts RETURNING job_id`,
+        [...scope({...context,tenantId:value.subject.tenantId}),value.id,value.leaseToken,enuJobState.Failed,enuJobState.Running]);
+      return result.rowCount===1;
     },
     async claim(tx, context, leaseMs) {
       lease(leaseMs);
       const client = resolveTargetTransaction(tx);
       const result = await client.query<intfJobRow>(`WITH candidate AS (
-        SELECT job_id FROM jobs.tbl_job_work WHERE job_deployment_id = $1 AND job_tenant_id = $2
+        SELECT job_tenant_id,job_id FROM jobs.tbl_job_work WHERE job_deployment_id = $1 AND ($7::boolean OR job_tenant_id = $2)
           AND job_attempts < job_max_attempts AND ((job_state = $3 AND job_available_at <= clock_timestamp())
             OR (job_state = $4 AND job_lease_until < clock_timestamp()))
         ORDER BY job_available_at, job_created_at FOR UPDATE SKIP LOCKED LIMIT 1)
         UPDATE jobs.tbl_job_work SET job_state = $4, job_attempts = job_attempts + 1,
           job_lease_token = $5, job_lease_until = clock_timestamp() + $6 * interval '1 millisecond',
           job_updated_at = clock_timestamp()
-        WHERE job_deployment_id = $1 AND job_tenant_id = $2 AND job_id IN (SELECT job_id FROM candidate)
-        RETURNING ${JOB_COLUMNS}`, [...scope(context), enuJobState.Pending, enuJobState.Running, randomUUID(), leaseMs]);
+        WHERE job_deployment_id = $1 AND ($7::boolean OR job_tenant_id = $2) AND (job_tenant_id,job_id) IN (SELECT job_tenant_id,job_id FROM candidate)
+        RETURNING ${JOB_COLUMNS}`, [...scope(context), enuJobState.Pending, enuJobState.Running, randomUUID(), leaseMs, context.actorKind==='PLATFORM_SERVICE']);
       return result.rows[0] ? job(result.rows[0]) : null;
     },
     async heartbeat(tx, context, value, leaseMs) {
@@ -104,7 +109,7 @@ export function createJobPersistence(): intfJobPort {
         SET job_lease_until = clock_timestamp() + $5 * interval '1 millisecond', job_updated_at = clock_timestamp()
         WHERE job_deployment_id = $1 AND job_tenant_id = $2 AND job_id = $3 AND job_lease_token = $4
           AND job_state = $6 AND job_lease_until > clock_timestamp() RETURNING job_id`,
-        [...scope(context), value.id, value.leaseToken, leaseMs, enuJobState.Running]);
+        [...scope({...context,tenantId:value.subject.tenantId}), value.id, value.leaseToken, leaseMs, enuJobState.Running]);
       return result.rowCount === 1;
     },
     async finish(tx, context, value) {
@@ -112,7 +117,7 @@ export function createJobPersistence(): intfJobPort {
         SET job_state = $5, job_lease_token = NULL, job_lease_until = NULL, job_updated_at = clock_timestamp()
         WHERE job_deployment_id = $1 AND job_tenant_id = $2 AND job_id = $3 AND job_lease_token = $4
           AND job_state = $6 AND job_lease_until > clock_timestamp() RETURNING job_id`,
-        [...scope(context), value.id, value.leaseToken, enuJobState.Succeeded, enuJobState.Running]);
+        [...scope({...context,tenantId:value.subject.tenantId}), value.id, value.leaseToken, enuJobState.Succeeded, enuJobState.Running]);
       return result.rowCount === 1;
     },
     async fail(tx, context, value, reason, retryable, backoffMs) {
@@ -124,7 +129,7 @@ export function createJobPersistence(): intfJobPort {
           job_lease_token = NULL, job_lease_until = NULL, job_updated_at = clock_timestamp()
         WHERE job_deployment_id = $1 AND job_tenant_id = $2 AND job_id = $3 AND job_lease_token = $4
           AND job_state = $10 AND job_lease_until > clock_timestamp() RETURNING job_id`,
-        [...scope(context), value.id, value.leaseToken, retryable, enuJobState.Pending, enuJobState.Failed,
+        [...scope({...context,tenantId:value.subject.tenantId}), value.id, value.leaseToken, retryable, enuJobState.Pending, enuJobState.Failed,
           backoffMs, reason, enuJobState.Running]);
       return result.rowCount === 1;
     }

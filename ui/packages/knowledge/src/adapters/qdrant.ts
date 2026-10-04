@@ -66,6 +66,7 @@ export class clsQdrantAdapter implements intfVectorIndexPort {
     }
     await this.request(`/collections/${collection}/points?wait=true`,'PUT',{ points });
   }
+  async purgeDocument(collection:string,input:intfVectorFilter):Promise<void>{name(collection);await this.request(`/collections/${collection}/points/delete?wait=true`,'POST',{filter:filter(input)});if(await this.count(collection,input)!==0)throw new exKnowledge('INDEX_UNAVAILABLE');}
   async count(collection: string, input: intfVectorFilter): Promise<number> {
     name(collection);
     if (!input.documentIds.length) return 0;

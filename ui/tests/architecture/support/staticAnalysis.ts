@@ -237,6 +237,8 @@ export function analyzeSql(file:string,text:string,out:intfArchitectureViolation
   /\b(?:CREATE|ALTER|DROP)\s+TABLE\s+(?:IF\s+(?:NOT\s+)?EXISTS\s+)?([a-z_][\w]*(?:\.[a-z_][\w]*)?)/gi,
  ];
  for(const pattern of objectPatterns)for(const match of cleaned.matchAll(pattern)){
+  // IS [NOT] DISTINCT FROM is an expression operator, not a relation clause.
+  if(/^FROM\b/i.test(match[0])&&/\bIS\s+(?:NOT\s+)?DISTINCT\s*$/i.test(cleaned.slice(0,match.index)))continue;
   const object=match[1]!;
   const statement = cleaned.slice(cleaned.lastIndexOf(';', match.index) + 1, match.index);
   const cteNames = new Set([...statement.matchAll(/\bWITH\s+(?:RECURSIVE\s+)?([a-z_][\w]*)\s+AS\s*\(/gi)].map(cte => cte[1]!.toUpperCase()));

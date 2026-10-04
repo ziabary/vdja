@@ -5,6 +5,10 @@ import type { intfLoginMembership, typLoginResult } from './index.js';
 
 export interface intfAuthenticationPorts {
   readonly authenticatePassword: (email: string, password: string, clientAddress: string) => Promise<typLoginResult>;
+  readonly authenticateLegacyKey?: (rawKey: string, clientAddress: string) => Promise<typLoginResult>;
+  readonly resolveOidcIdentity?: (issuer: string, subject: string) => Promise<typLoginResult>;
+  readonly startOidcFlow?: (state: string,verifier:string,nonce:string,returnPath:string) => Promise<void>;
+  readonly consumeOidcFlow?: (state: string) => Promise<{verifier:string;nonce:string;returnPath:string}|null>;
   readonly createTenantSession: (identityId: string, membershipId: string, tenantId: string) => Promise<Readonly<{
     sessionId: string; refreshToken: string; authorizationVersion: number }>>;
   readonly rotateRefreshToken: (rawToken: string) => Promise<typRefreshOutcome>;
@@ -13,7 +17,7 @@ export interface intfAuthenticationPorts {
 }
 
 export type typLoginResponse =
-  | Readonly<{ kind: 'SIGNED_IN'; accessToken: string; refreshToken: string; tenantId: string; identityId: string; sessionId: string }>
+  | Readonly<{ kind: 'SIGNED_IN'; accessToken: string; refreshToken: string; tenantId: string; identityId: string; sessionId: string; provisioned?:boolean }>
   | Readonly<{ kind: 'TENANT_SELECTION_REQUIRED'; tenants: readonly string[] }>
   | Readonly<{ kind: 'INVALID' }>
   | Readonly<{ kind: 'RATE_LIMITED' }>;
@@ -24,6 +28,21 @@ export class clsAuthenticationService {
 
   async login(email: string, password: string, clientAddress: string, selectedTenantId?: string): Promise<typLoginResponse> {
     const result = await this.ports.authenticatePassword(email, password, clientAddress);
+    return this.completeLogin(result, selectedTenantId);
+  }
+
+  async loginLegacyKey(rawKey: string, clientAddress: string, selectedTenantId?: string): Promise<typLoginResponse> {
+    return this.completeLogin(this.ports.authenticateLegacyKey ? await this.ports.authenticateLegacyKey(rawKey,clientAddress) : {kind:'INVALID'},selectedTenantId);
+  }
+
+  async loginOidcIdentity(issuer:string,subject:string,selectedTenantId?:string):Promise<typLoginResponse>{
+    return this.completeLogin(this.ports.resolveOidcIdentity ? await this.ports.resolveOidcIdentity(issuer,subject) : {kind:'INVALID'},selectedTenantId);
+  }
+
+  async startOidcFlow(state:string,verifier:string,nonce:string,returnPath:string):Promise<void>{if(!this.ports.startOidcFlow)throw new Error('OIDC_DISABLED');await this.ports.startOidcFlow(state,verifier,nonce,returnPath);}
+  async consumeOidcFlow(state:string):Promise<{verifier:string;nonce:string;returnPath:string}|null>{return this.ports.consumeOidcFlow ? this.ports.consumeOidcFlow(state) : null;}
+
+  private async completeLogin(result:typLoginResult,selectedTenantId?:string):Promise<typLoginResponse>{
     if (result.kind !== 'AUTHENTICATED') return result;
     if (!selectedTenantId && result.memberships.length > 1)
       return { kind: 'TENANT_SELECTION_REQUIRED', tenants: result.memberships.map(item => item.tenantId) };
@@ -33,6 +52,7 @@ export class clsAuthenticationService {
     const session = await this.ports.createTenantSession(result.identityId, membership.membershipId, membership.tenantId);
     return { kind: 'SIGNED_IN', tenantId: membership.tenantId, identityId: result.identityId,
       sessionId: session.sessionId, refreshToken: session.refreshToken,
+      ...(result.provisioned?{provisioned:true}:{}),
       accessToken: issueAccessToken({ identityId: result.identityId, tenantId: membership.tenantId,
         sessionId: session.sessionId, authorizationVersion: session.authorizationVersion }, this.keys, this.policy) };
   }

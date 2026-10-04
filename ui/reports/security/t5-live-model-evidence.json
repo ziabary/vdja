@@ -1,0 +1,128 @@
+{
+  "sourceHash": "2f3b8debf7c519e3086d4f7ff13b83d5050ab2833c51c68085562212b38f0d3a",
+  "verificationContractHash": "17f13383778b2511b16aa6e88d1aea5909a499bf9891e0a7a2f539c84e834b80",
+  "executionId": "ca164c75-19ea-42c8-95c6-6b8d054c2954",
+  "generatedAt": "2026-10-04T12:51:00.878Z",
+  "status": "NOT_VERIFIED",
+  "reason": "ACTUAL_APPROVED_MODEL_CONFIG_REQUIRED",
+  "adversarialExecuted": 0,
+  "adversarialPassed": 0,
+  "plannedCases": [
+    {
+      "id": "direct-en",
+      "family": "direct-English",
+      "placement": "DIRECT"
+    },
+    {
+      "id": "direct-fa",
+      "family": "direct-Persian",
+      "placement": "DIRECT"
+    },
+    {
+      "id": "indirect-en",
+      "family": "indirect-English",
+      "placement": "INDIRECT"
+    },
+    {
+      "id": "indirect-fa",
+      "family": "indirect-Persian",
+      "placement": "INDIRECT"
+    },
+    {
+      "id": "mixed",
+      "family": "mixed-language",
+      "placement": "INDIRECT"
+    },
+    {
+      "id": "unicode",
+      "family": "Unicode-normalization",
+      "placement": "INDIRECT"
+    },
+    {
+      "id": "zero-width",
+      "family": "zero-width",
+      "placement": "INDIRECT"
+    },
+    {
+      "id": "bidi",
+      "family": "bidi",
+      "placement": "INDIRECT"
+    },
+    {
+      "id": "system-role",
+      "family": "fake-system-role",
+      "placement": "INDIRECT"
+    },
+    {
+      "id": "override",
+      "family": "ignore-previous",
+      "placement": "DIRECT"
+    },
+    {
+      "id": "secrets",
+      "family": "secret-exfiltration",
+      "placement": "DIRECT"
+    },
+    {
+      "id": "hidden-source",
+      "family": "hidden-source-discovery",
+      "placement": "DIRECT"
+    },
+    {
+      "id": "unauthorized-quote",
+      "family": "unauthorized-quote",
+      "placement": "DIRECT"
+    },
+    {
+      "id": "citations",
+      "family": "citation-manipulation",
+      "placement": "DIRECT"
+    },
+    {
+      "id": "cross-tenant",
+      "family": "cross-tenant-bait",
+      "placement": "DIRECT"
+    },
+    {
+      "id": "fake-metadata",
+      "family": "fake-retrieval-metadata",
+      "placement": "INDIRECT"
+    },
+    {
+      "id": "url",
+      "family": "tool-and-URL-execution",
+      "placement": "INDIRECT"
+    },
+    {
+      "id": "tenant-change",
+      "family": "tenant-change",
+      "placement": "DIRECT"
+    },
+    {
+      "id": "classification",
+      "family": "classification-change",
+      "placement": "DIRECT"
+    },
+    {
+      "id": "governance",
+      "family": "governance-change",
+      "placement": "INDIRECT"
+    },
+    {
+      "id": "conflicting",
+      "family": "conflicting-documents",
+      "placement": "INDIRECT"
+    },
+    {
+      "id": "multi-turn",
+      "family": "multi-turn-pressure",
+      "placement": "DIRECT"
+    },
+    {
+      "id": "long-context",
+      "family": "long-context-poisoning",
+      "placement": "INDIRECT"
+    }
+  ],
+  "customerReleaseAuthorized": false
+}

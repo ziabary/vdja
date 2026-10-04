@@ -29,9 +29,9 @@ export class clsJobWorker {
   async next(shutdown?: AbortSignal): Promise<'EMPTY' | 'SUCCEEDED' | 'FAILED' | 'LEASE_LOST'> {
     if (shutdown?.aborted) return 'EMPTY';
     const { transactions, jobs, worker } = this.ports;
-    await transactions.run(worker,async tx=>{
-      const exhausted=await jobs.recoverExhausted(tx,worker);
-      for(const value of exhausted)await this.ports.onFailure?.(tx,value,{reason:'LEASE_EXHAUSTED',retryable:false},true);
+    const exhausted=await transactions.run(worker,tx=>jobs.recoverExhausted(tx,worker));
+    for(const value of exhausted)await transactions.run({...worker,tenantId:value.subject.tenantId},async tx=>{
+      if(await jobs.settleExhausted(tx,worker,value))await this.ports.onFailure?.(tx,value,{reason:'LEASE_EXHAUSTED',retryable:false},true);
     });
     const job = await transactions.run(worker, tx => jobs.claim(tx, worker, this.ports.leaseMs));
     if (!job) return 'EMPTY';
@@ -43,7 +43,7 @@ export class clsJobWorker {
       pending = pending.then(async () => {
         if (controller.signal.aborted) return;
         try {
-          if (!await transactions.run(worker, tx => jobs.heartbeat(tx, worker, job, this.ports.leaseMs))) leaseLost = true;
+          if (!await transactions.run({...worker,tenantId:job.subject.tenantId}, tx => jobs.heartbeat(tx, worker, job, this.ports.leaseMs))) leaseLost = true;
         } catch { leaseLost = true; }
         if (leaseLost) controller.abort();
       });
@@ -53,18 +53,18 @@ export class clsJobWorker {
       await jobs.assertLease(tx, worker, job);
     };
     try {
-      if (job.subject.deploymentId !== worker.deploymentId || job.subject.tenantId !== worker.tenantId)
+      if (job.subject.deploymentId !== worker.deploymentId || !job.subject.tenantId)
         throw new exJob('INVALID_JOB');
       await this.ports.subject.assertActive(await this.ports.executionSubject?.(job)??job.subject);
       const handler = this.ports.handlers.get(job.kind);
       if (!handler || job.payloadVersion !== 1) throw new exJob('INVALID_JOB');
       await handler(job, fence, controller.signal);
-      return await transactions.run(worker, tx => jobs.finish(tx, worker, job)) ? 'SUCCEEDED' : 'LEASE_LOST';
+      return await transactions.run({...worker,tenantId:job.subject.tenantId}, tx => jobs.finish(tx, worker, job)) ? 'SUCCEEDED' : 'LEASE_LOST';
     } catch (error) {
       if (leaseLost || error instanceof exJob && error.code === 'JOB_LEASE_LOST') return 'LEASE_LOST';
       const failure = shutdown?.aborted ? { reason: 'WORKER_SHUTDOWN', retryable: true } : this.ports.classify(error);
       const backoffMs = Math.min(60000, 1000 * 2 ** Math.min(job.attempts - 1, 6));
-      return await transactions.run(worker, async tx => {
+      return await transactions.run({...worker,tenantId:job.subject.tenantId}, async tx => {
         if(!await jobs.fail(tx,worker,job,failure.reason,failure.retryable,backoffMs))return false;
         await this.ports.onFailure?.(tx,job,failure,!failure.retryable||job.attempts>=job.maxAttempts);return true;
       }) ? 'FAILED' : 'LEASE_LOST';

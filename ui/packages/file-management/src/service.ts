@@ -1,3 +1,5 @@
+import {resolvePurgePermit,type intfPurgePermit} from '../../data-governance/src/retention.js';
+import {clsMalwarePolicy,enuMalwareMode,exMalware,type intfMalwarePort} from '../../file-processing/src/malware.js';
 import { createHash, randomUUID } from 'node:crypto';
 import { Readable } from 'node:stream';
 import type { intfExecutionContext } from '../../contracts/src/index.js';
@@ -32,6 +34,7 @@ export interface intfFileManagementPorts {
   readonly audit: intfSemanticAuditPort;
   readonly configuration: Extract<typFileManagementConfiguration, { enabled: true }>;
   readonly limits: intfFileLimits;
+  readonly malware?:intfMalwarePort;
   readonly expiryAuthority?: {authorize(context:intfExecutionContext,transferId:string):Promise<boolean>};
   readonly actorLimits?: (context:intfExecutionContext,documentId:string)=>Promise<intfFileActorLimits>;
 }
@@ -49,12 +52,23 @@ function identifier(value: string): void {
 }
 /** Logical, in-process capability. Only this owner materializes managed Storage bytes. */
 export class clsFileManagement implements intfFileManagement {
-  async ready():Promise<void>{await Promise.all([this.ports.storage.ready(),this.staging.ready(),this.cache.ready()]);}
+  async ready():Promise<void>{await Promise.all([this.ports.storage.ready(),this.staging.ready(),this.cache.ready()]);if(this.ports.configuration.security.malware?.mode===enuMalwareMode.Required&&(!this.ports.malware||!await this.ports.malware.ready()))throw new exMalware('MALWARE_SCANNER_UNAVAILABLE');}
+  async malwareReadiness():Promise<'READY'|'UNAVAILABLE'|'LOW_ASSURANCE'>{const mode=this.ports.configuration.security.malware?.mode??enuMalwareMode.Disabled;return mode===enuMalwareMode.Disabled?'LOW_ASSURANCE':await this.ports.malware?.ready()?'READY':'UNAVAILABLE';}
+  private scan(context:intfExecutionContext,path:string):Promise<void>{const configuration=this.ports.configuration.security.malware;return new clsMalwarePolicy(configuration?.mode??enuMalwareMode.Disabled,this.ports.malware,async evidence=>{await this.ports.transactions.run(context,tx=>this.ports.audit.record(tx,context,{action:'file.malware.scanned',result:evidence.result==='CLEAN'?'SUCCEEDED':'FAILED',reason:evidence.result,resource:{type:'malware_policy',id:evidence.policyVersion}}));},configuration?.policyVersion).inspect(path);}
   private readonly cache: clsFileCache;
   private readonly staging: clsFileStaging;
   constructor(private readonly ports: intfFileManagementPorts) {
+    if(!ports.configuration.security.malware)throw new exMalware('MALWARE_SCANNER_UNAVAILABLE');
     this.cache = new clsFileCache(ports.configuration.cache);
     this.staging = new clsFileStaging({ ...ports.configuration.staging, timeoutMs: ports.configuration.uploads.timeoutMs });
+  }
+  async activeMaterializationsWithin(tx:intfTransactionHandle,context:intfExecutionContext):Promise<boolean>{return this.ports.admission.activeWithin(tx,context);}
+  async purge(context:intfExecutionContext,permit:intfPurgePermit):Promise<void>{
+    const request=resolvePurgePermit(permit,context);if(!request.leaseToken||!this.ports.storage.purge)throw new exFileManagement('FILE_DENIED');
+    const assets=await this.ports.documents.retainedAssets(context,permit),transfers=await this.ports.transactions.run(context,tx=>this.ports.transfers.purgePlan(tx,context,request.resourceId));
+    for(const asset of assets){if(asset.storageProfile!==this.ports.configuration.storage.profileId)throw new exFileManagement('FILE_STORAGE_UNAVAILABLE');await this.cache.purge({deploymentId:context.deploymentId,tenantId:context.tenantId,assetId:asset.id,versionId:asset.versionId,representation:'ORIGINAL'},asset.sha256);await this.ports.storage.purge(asset.storageKey);}
+    for(const transfer of transfers){const remote=transfer.remoteUploadId??await this.ports.storage.reconcileBegin(transfer.storageKey,transfer.id);if(remote)await this.ports.storage.abort(transfer.storageKey,remote);await this.ports.storage.purge(transfer.storageKey);}
+    await this.ports.transactions.run(context,async tx=>{for(const transfer of transfers)await this.ports.admission.purgedWithin(tx,context,transfer.id);await this.ports.transfers.purgeMetadata(tx,context,request.resourceId,request.leaseToken!);});
   }
   private leaseMs(): number { return Math.min(900000, this.ports.configuration.uploads.timeoutMs * 3 + 5000); }
   private async require(context: intfExecutionContext, documentId: string, operation: enuDocumentOperation): Promise<void> {
@@ -193,10 +207,9 @@ export class clsFileManagement implements intfFileManagement {
     if (!stored || stored.bytes !== claim.bytes || stored.sha256 !== claim.sha256 || stored.mediaType !== claim.mediaType)
       throw new exFileManagement('FILE_INTEGRITY_FAILURE');
     try {
-      await this.staging.withVerifiedFile(claim, () => this.ports.storage.open(claim.storageKey), path => inspectFile(
-        { path, originalname: claim.filename, mimetype: claim.mediaType, size: claim.bytes }, this.ports.limits));
+      await this.staging.withVerifiedFile(claim, () => this.ports.storage.open(claim.storageKey), async path => {await inspectFile({path,originalname:claim.filename,mimetype:claim.mediaType,size:claim.bytes},this.ports.limits);await this.scan(context,path);});
     } catch (error) {
-      if (!(error instanceof exFileProcessing) && !(error instanceof exFileManagement && error.code === 'FILE_INTEGRITY_FAILURE')) {
+      if (!(error instanceof exFileProcessing) && !(error instanceof exMalware&&error.code==='MALWARE_REJECTED') && !(error instanceof exFileManagement && error.code === 'FILE_INTEGRITY_FAILURE')) {
         await this.ports.transactions.run(context, tx => this.ports.transfers.update(tx, context, claim.id, claim.leaseToken!,
           { state: enuTransferState.Unresolved, errorClass: 'FILE_STORAGE_UNAVAILABLE' }));
         throw new exFileManagement('FILE_STORAGE_UNAVAILABLE');
@@ -249,10 +262,16 @@ export class clsFileManagement implements intfFileManagement {
       'Content-Type': asset.mediaType.startsWith('text/') ? `${asset.mediaType}; charset=utf-8` : asset.mediaType,
       'Content-Disposition': `attachment; filename="file"${discover ? `; filename*=UTF-8''${encodeURIComponent(asset.filename).replace(/['()*]/gu, char => `%${char.charCodeAt(0).toString(16).toUpperCase()}`)}` : ''}`, ETag: etag
     };
+    const downloadFence=async()=>{
+      await this.ports.subject.assertActive(context);
+      const fresh=(await this.ports.documents.facts(context,[request.documentId]))[0];
+      if(!facts||!fresh||fresh.securityVersion!==facts.securityVersion||fresh.currentVersionId!==facts.currentVersionId||!await this.ports.documents.authorize(context,enuDocumentOperation.Download,fresh))throw new exFileManagement('FILE_DENIED');
+    };
     const operationId = randomUUID();
     await this.ports.transactions.run(context, tx => this.ports.audit.record(tx, context,
       { action: enuFileEvent.DownloadRequested, result: 'REQUESTED', resource: { type: 'asset', id: asset.id } }));
     if (this.ports.configuration.downloads.conditional && request.ifNoneMatch === etag) {
+      await downloadFence();
       await this.ports.transactions.run(context, tx => this.ports.audit.record(tx, context,
         { action: enuFileEvent.DownloadCompleted, result: 'SUCCEEDED', resource: { type: 'asset', id: asset.id } }));
       return { status: 304, headers };
@@ -266,6 +285,7 @@ export class clsFileManagement implements intfFileManagement {
         expiresAt: new Date(Date.now() + this.ports.configuration.uploads.timeoutMs).toISOString() }));
     let cached;
     try {
+      if(this.ports.configuration.security.malware?.mode!==undefined&&this.ports.configuration.security.malware.mode!==enuMalwareMode.Disabled)await this.staging.withVerifiedFile(asset,()=>this.ports.storage.open(asset.storageKey),path=>this.scan(context,path));
       cached = await this.cache.open({ deploymentId: context.deploymentId, tenantId: context.tenantId,
         assetId: asset.id, versionId: asset.versionId, representation: 'ORIGINAL' }, asset,
         () => this.ports.storage.open(asset.storageKey), range ?? undefined);
@@ -301,7 +321,7 @@ export class clsFileManagement implements intfFileManagement {
     };
     const body = Readable.from((async function* () {
       try {
-        for await (const chunk of source) { sent += chunk.length; yield chunk; }
+        for await (const chunk of source) { await downloadFence(); sent += chunk.length; yield chunk; }
         completed = sent === size;
       } finally {
         await finish();
@@ -343,6 +363,7 @@ export class clsFileManagement implements intfFileManagement {
     let processed = false, succeeded = false;
     try {
       const parsed = await this.staging.withVerifiedFile(asset, () => this.ports.storage.open(asset.storageKey), async path => {
+        await this.scan(context,path);
         processed = true;
         return extractText({ path, originalname: asset.filename, mimetype: asset.mediaType, size: asset.bytes }, this.ports.limits);
       });

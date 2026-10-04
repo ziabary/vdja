@@ -3,13 +3,14 @@ import { loadConfiguration, redactConfiguration } from './index.js';
 function pathFromArgs(args: readonly string[]): string {
   const at = args.indexOf('--config');
   if (at < 0) return '/etc/targoman/platform.cjson';
-  if (!args[at + 1]) throw new Error('--config requires a path');
-  return args[at + 1];
+  const path=args[at+1];
+  if (!path) throw new Error('--config requires a path');
+  return path;
 }
 
 const command = process.argv[2];
 try {
-  if (!['validate', 'print-effective', 'fingerprint'].includes(command)) throw new Error('Expected validate, print-effective, or fingerprint');
+  if (!command||!['validate', 'print-effective', 'fingerprint'].includes(command)) throw new Error('Expected validate, print-effective, or fingerprint');
   const snapshot = await loadConfiguration(pathFromArgs(process.argv.slice(3)));
   if (command === 'validate') console.log(JSON.stringify({ status: 'VALID', configVersion: snapshot.value.configVersion, fingerprint: snapshot.fingerprint }));
   else if (command === 'fingerprint') console.log(snapshot.fingerprint);

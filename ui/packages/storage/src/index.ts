@@ -37,6 +37,8 @@ export interface intfStoragePort {
   inspect(key: string): Promise<intfStorageDescriptor | null>;
   open(key: string, signal?: AbortSignal): Promise<Readable>;
   abort(key: string, uploadId: string): Promise<void>;
+  /** Idempotent owner-only physical deletion under a Governance-approved purge. */
+  purge?(key:string):Promise<void>;
 }
 export class exStorage extends Error {
   constructor(readonly code: 'INVALID_STORAGE_KEY' | 'INTEGRITY_FAILURE' | 'STORAGE_UNAVAILABLE'

@@ -31,7 +31,7 @@ export async function createPublicApiRuntime(snapshot: intfConfigurationSnapshot
   const { siem, fileProcessing } = snapshot.value;
   const authConfig = snapshot.value.auth;
   const authentication = authConfig?.enabled ? new clsAuthenticationService({
-    ...createAuthenticationPersistence(pool), ...createSessionPersistence(pool, authConfig.session)
+    ...createAuthenticationPersistence(pool,authConfig.methods?.legacyKey,snapshot.value.deployment.id), ...createSessionPersistence(pool, authConfig.session)
   },
     await loadAccessTokenKeys(authConfig, secretRoot),
     { issuer: authConfig.issuer, audience: authConfig.audience, lifetimeSeconds: authConfig.accessTokenSeconds }) : null;

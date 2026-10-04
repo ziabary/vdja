@@ -17,14 +17,14 @@ RUN test -f "deploy/examples/${CUSTOMER}/platform.cjson" \
  && cp "deploy/examples/${CUSTOMER}/brand/favicon.svg" apps/web/static/brand/favicon.svg \
  && npm run build:web \
  && mkdir -p dist \
- && ./node_modules/.bin/esbuild apps/api/src/index.ts --bundle --platform=node --format=esm --external:@aws-sdk/* --external:express --external:multer --external:pdfjs-dist --external:pg --outfile=dist/target-api.js \
- && ./node_modules/.bin/esbuild apps/worker/src/index.ts --bundle --platform=node --format=esm --external:@aws-sdk/* --external:express --external:multer --external:pdfjs-dist --external:pg --outfile=dist/target-worker.js \
+ && ./node_modules/.bin/esbuild apps/api/src/index.ts --bundle --platform=node --format=esm --external:@aws-sdk/* --external:express --external:multer --external:pdfjs-dist --external:pg --outfile=dist/target-api.js --metafile=dist/target-api.meta.json \
+ && ./node_modules/.bin/esbuild apps/worker/src/index.ts --bundle --platform=node --format=esm --external:@aws-sdk/* --external:express --external:multer --external:pdfjs-dist --external:pg --outfile=dist/target-worker.js --metafile=dist/target-worker.meta.json \
  && ./node_modules/.bin/esbuild packages/persistence/src/target-migrate.ts --bundle --platform=node --format=esm --external:@aws-sdk/* --external:express --external:multer --external:pdfjs-dist --external:pg --outfile=dist/target-migrate.js
 
 FROM ${NODE_IMAGE} AS runtime_base
 WORKDIR /app
 RUN apt-get update && apt-get upgrade -y \
- && apt-get install -y --no-install-recommends ca-certificates libreoffice-writer tini util-linux \
+ && apt-get install -y --no-install-recommends ca-certificates libreoffice-writer tini util-linux bubblewrap \
  && rm -rf /var/lib/apt/lists/* \
  && mkdir -p /etc/targoman /app/apps/web/static/brand /tmp/targoman \
  && chown -R node:node /tmp/targoman
@@ -35,6 +35,7 @@ RUN npm ci --omit=dev --ignore-scripts --registry=https://registry.npmjs.org \
  && rm -f /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack /usr/local/bin/pnpm /usr/local/bin/pnpx /usr/local/bin/yarn /usr/local/bin/yarnpkg
 COPY --from=build /app/apps/web/build ./apps/web/build
 COPY --from=build /app/dist ./dist
+COPY --from=build /app/packages/file-processing/src/native-parser.mjs ./dist/parser/native-parser.mjs
 COPY --from=build /app/packages/persistence/src/target-migrations ./dist/target-migrations
 COPY --from=build /app/packages/authentication/data/LICENSE-SecLists.txt ./licenses/LICENSE-SecLists.txt
 COPY --from=build /app/apps/web/static/brand ./apps/web/static/brand

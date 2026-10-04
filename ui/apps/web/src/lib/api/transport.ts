@@ -19,6 +19,12 @@ export function postKnowledgeQuestion(fetcher:typeof fetch,spaceId:string,questi
     headers:{accept:'text/event-stream','content-type':'application/json'},body:JSON.stringify({question}),
     signal:signal?AbortSignal.any([signal,AbortSignal.timeout(300000)]):AbortSignal.timeout(300000)});
 }
+export function postPersonalChatQuestion(fetcher:typeof fetch,chatId:string,question:string,signal?:AbortSignal):Promise<Response>{
+  if(!/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/u.test(chatId))throw new Error('INVALID_CHAT_PATH');
+  return fetcher(`/api/knowledge/personal/chats/${chatId}/ask`,{method:'POST',credentials:'same-origin',redirect:'error',
+    headers:{accept:'text/event-stream','content-type':'application/json'},body:JSON.stringify({question}),
+    signal:signal?AbortSignal.any([signal,AbortSignal.timeout(300000)]):AbortSignal.timeout(300000)});
+}
 export async function downloadProtectedFile(fetcher:typeof fetch,path:string,maximumBytes:number,signal?:AbortSignal):Promise<Blob>{
   if(!/^\/api\/knowledge\/documents\/[a-f0-9-]{36}\/versions\/[a-f0-9-]{36}\/download$/u.test(path))throw new Error('Invalid download path');
   const response=await fetcher(path,{method:'GET',credentials:'same-origin',redirect:'error',signal});
@@ -38,7 +44,7 @@ export function publicToolFetcher(fetcher:typeof fetch,credentials:()=>Readonly<
     return fetcher(input,{...init,headers});
   }) as typeof fetch;
 }
-export function postAuthRequest(authOrigin:string,path:'login'|'refresh'|'logout',body?:unknown):Promise<Response>{
+export function postAuthRequest(authOrigin:string,path:'login'|'legacy-key'|'refresh'|'logout',body?:unknown):Promise<Response>{
   if(new URL(authOrigin).origin!==authOrigin||!authOrigin.startsWith('https://'))throw new Error('Invalid Auth origin');
   return browserFetcher()(`${authOrigin}/api/auth/${path}`,{method:'POST',credentials:'include',
     headers:{accept:'application/json',...(body===undefined?{}:{'content-type':'application/json'})},

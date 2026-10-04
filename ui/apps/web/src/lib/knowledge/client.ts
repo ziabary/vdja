@@ -1,7 +1,7 @@
 import type {intfCursorPage} from '@targoman/contracts';
 import type {intfKnowledgeDocumentView,intfKnowledgeVersionView,intfKnowledgeSpaceView,intfKnowledgeSpaceStatus,intfManagedTransferView,intfKnowledgeAnswerView,intfKnowledgeCitationView} from '@targoman/contracts/knowledge';
 import {createUiApiClient,type intfTransportRequest} from '#lib/api/client.js';
-import {createFetchTransport,publicToolFetcher,browserFetcher,downloadProtectedFile,postKnowledgeQuestion} from '#lib/api/transport.js';
+import {createFetchTransport,publicToolFetcher,browserFetcher,downloadProtectedFile,postKnowledgeQuestion,postPersonalChatQuestion} from '#lib/api/transport.js';
 import {consumeSseFrames,DEFAULT_STREAM_LIMITS,exStreamProtocol} from '#lib/streaming/parser.js';
 import {enuKnowledgeStreamEvent,enuKnowledgeStreamState} from '@targoman/contracts/knowledge';
 import type {intfAuthClient} from '#lib/auth/client.svelte.js';
@@ -23,6 +23,28 @@ export function createKnowledgeClient(auth:intfAuthClient,fetcher:typeof fetch=b
   const authenticated=publicToolFetcher(fetcher,()=>auth.state),api=createUiApiClient(createFetchTransport(authenticated));
   const request=<T>(input:Omit<intfTransportRequest,'path'> & {readonly path:string},parse:(value:unknown)=>T)=>api.request({...input,path:`/knowledge${input.path}`},parse);
   return{
+    personal: (signal?:AbortSignal)=>request({method:'GET',path:'/personal',signal},value=>{const row=object(value);return{id:id(row.id),state:text(row.state,32),memberships:items(row.memberships).map(value=>id(object(value).documentId))};}),
+    attachPersonal:(documentId:string,signal?:AbortSignal)=>request({method:'PUT',path:`/personal/documents/${id(documentId)}`,signal},()=>undefined),
+    retireDocument:(documentId:string,signal?:AbortSignal)=>request({method:'POST',path:`/documents/${id(documentId)}/retire`,signal},()=>undefined),
+    removePersonalDocument:(documentId:string,signal?:AbortSignal)=>request({method:'DELETE',path:`/personal/documents/${id(documentId)}`,signal},()=>undefined),
+    chats:(signal?:AbortSignal)=>request({method:'GET',path:'/personal/chats',signal},value=>items(object(value).items).map(value=>{const row=object(value);return{id:id(row.id),title:text(row.title,256),updatedAt:text(row.updatedAt,64)};})),
+    createChat:(signal?:AbortSignal)=>request({method:'POST',path:'/personal/chats',signal},value=>id(object(value).id)),
+    messages:(chatId:string,signal?:AbortSignal)=>request({method:'GET',path:`/personal/chats/${id(chatId)}/messages`,signal},value=>items(object(value).items).map(value=>{const row=object(value);const role=text(row.role,16);if(role!=='USER'&&role!=='ASSISTANT')throw new Error('INVALID_RESPONSE');return{id:id(row.id),role:role as 'USER'|'ASSISTANT',text:text(row.text,65536),citations:items(row.citations).map(citation)};})),
+    retireChat:(chatId:string,signal?:AbortSignal)=>request({method:'DELETE',path:`/personal/chats/${id(chatId)}`,signal},()=>undefined),
+    retireAllChats:(signal?:AbortSignal)=>request({method:'DELETE',path:'/personal/chats',signal},()=>undefined),
+    async askChat(chatId:string,question:string,signal?:AbortSignal,onDelta?:(answer:string)=>void):Promise<intfKnowledgeAnswerView>{
+      const response=await postPersonalChatQuestion(authenticated,id(chatId),question,signal);
+      if(!response.ok||!response.body||!response.headers.get('content-type')?.startsWith('text/event-stream'))throw new exStreamProtocol('KNOWLEDGE_REQUEST_FAILED');
+      let answer='',citations:readonly intfKnowledgeCitationView[]|null=null,done=false,bytes=0;
+      await consumeSseFrames(response.body,frame=>{
+        if(done)throw new exStreamProtocol('DATA_AFTER_TERMINAL');const row=object(JSON.parse(frame.data) as unknown);
+        if(frame.event===enuKnowledgeStreamEvent.Delta){if(citations)throw new exStreamProtocol('INVALID_EVENT_ORDER');const delta=text(row.text,2048);bytes+=new TextEncoder().encode(delta).length;if(bytes>DEFAULT_STREAM_LIMITS.maxOutputBytes)throw new exStreamProtocol('OUTPUT_LIMIT');answer+=delta;onDelta?.(answer);}
+        else if(frame.event===enuKnowledgeStreamEvent.Citations){if(citations)throw new exStreamProtocol('DUPLICATE_CITATIONS');citations=items(row.citations).map(citation);}
+        else if(frame.event===enuKnowledgeStreamEvent.Done){if(!citations||row.status!==enuKnowledgeStreamState.Succeeded)throw new exStreamProtocol('INVALID_DONE');done=true;}
+        else throw new exStreamProtocol('INVALID_EVENT');
+      },DEFAULT_STREAM_LIMITS,signal);
+      if(!done||!citations)throw new exStreamProtocol('INTERRUPTED');return{answer,citations};
+    },
     documents:(cursor:string|null,signal?:AbortSignal)=>request({method:'GET',path:`/documents${cursor?`?cursor=${encodeURIComponent(cursor)}`:''}`,signal},value=>page(value,document)),
     createDocument:(title:string,classification:string,signal?:AbortSignal)=>request({method:'POST',path:'/documents',body:{id:crypto.randomUUID(),title,classification},signal},document),
     versions:(documentId:string,signal?:AbortSignal)=>request({method:'GET',path:`/documents/${id(documentId)}/versions`,signal},value=>items(object(value).items).map(version)),
